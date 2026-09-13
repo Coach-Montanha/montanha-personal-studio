@@ -1,13 +1,6 @@
-import { createClient } from "@supabase/supabase-js";
-import { defineTool, type ToolContext } from "@lovable.dev/mcp-js";
+import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
-
-function supabaseForUser(ctx: ToolContext) {
-  return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
-    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
+import { getMcpSupabaseClient } from "../index";
 
 export default defineTool({
   name: "list_students",
@@ -23,7 +16,7 @@ export default defineTool({
   handler: async ({ status, search, limit }, ctx) => {
     if (!ctx.isAuthenticated())
       return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
-    let q = supabaseForUser(ctx)
+    let q = getMcpSupabaseClient(ctx)
       .from("students")
       .select("id,name,email,phone,status,start_date,created_at")
       .is("deleted_at", null)

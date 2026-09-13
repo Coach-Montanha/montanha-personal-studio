@@ -1,8 +1,16 @@
-import { auth, defineMcp } from "@lovable.dev/mcp-js";
+import { createClient } from "@supabase/supabase-js";
+import { auth, defineMcp, type ToolContext } from "@lovable.dev/mcp-js";
 import listStudents from "./tools/list-students";
 import listPtStudents from "./tools/list-pt-students";
 import listRecentPayments from "./tools/list-recent-payments";
 import financialOverview from "./tools/financial-overview";
+
+export function getMcpSupabaseClient(ctx: ToolContext) {
+  return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+    global: { headers: { Authorization: `Bearer ${ctx.getToken()}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 // The OAuth issuer MUST be the direct Supabase host (mcp-js rejects the
 // `.lovable.cloud` proxy). VITE_SUPABASE_PROJECT_ID is inlined by Vite at
@@ -22,3 +30,4 @@ export default defineMcp({
   }),
   tools: [listStudents, listPtStudents, listRecentPayments, financialOverview],
 });
+
