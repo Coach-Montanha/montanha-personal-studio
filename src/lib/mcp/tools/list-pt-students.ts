@@ -16,7 +16,7 @@ export default defineTool({
   handler: async ({ status, search, limit }, ctx) => {
     if (!ctx.isAuthenticated())
       return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
-    let q = supabaseForUser(ctx)
+    let q = getMcpSupabaseClient(ctx)
       .from("pt_students")
       .select("id,name,email,phone,status,goal,start_date,created_at")
       .is("deleted_at", null)

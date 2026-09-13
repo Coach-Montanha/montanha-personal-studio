@@ -127,9 +127,9 @@ export async function generateStudentMonthlyReportPdf({
     theme: "plain",
     styles: { fontSize: 9, cellPadding: 3, textColor: [30, 41, 59] },
     columnStyles: {
-      0: { fontStyle: "bold", width: 90, textColor: [100, 116, 139] },
-      1: { fontStyle: "normal", width: 170 },
-      2: { fontStyle: "bold", width: 90, textColor: [100, 116, 139] },
+      0: { fontStyle: "bold", cellWidth: 90, textColor: [100, 116, 139] },
+      1: { fontStyle: "normal", cellWidth: 170 },
+      2: { fontStyle: "bold", cellWidth: 90, textColor: [100, 116, 139] },
       3: { fontStyle: "normal" },
     },
     body: [
@@ -143,7 +143,7 @@ export async function generateStudentMonthlyReportPdf({
         "Objetivo:",
         student.goal || "Condicionamento e Hipertrofia",
         "Nível & Liga:",
-        `${gamification.currentTier.name} (${gamification.consecutiveWeeks} semanas ativas)`,
+        `${gamification.level.name} (${gamification.currentStreakWeeks} semanas ativas)`,
       ],
       [
         "Emissão:",
@@ -163,8 +163,8 @@ export async function generateStudentMonthlyReportPdf({
   const kpis = [
     { label: "TREINOS NO MÊS", val: `${totalMonthWorkouts} sessões`, color: [14, 165, 233] }, // sky-500
     { label: "TONELAGEM TOTAL", val: totalTonnageKg > 0 ? `${Math.round(totalTonnageKg).toLocaleString("pt-BR")} kg` : "Consistente", color: [234, 179, 8] }, // amber-500
-    { label: "FOGO CONSISTÊNCIA", val: `${gamification.consecutiveWeeks} sem. seguidas`, color: [249, 115, 22] }, // orange-500
-    { label: "CONQUISTAS", val: `${gamification.unlockedBadgesCount}/8 medalhas`, color: [168, 85, 247] }, // purple-500
+    { label: "FOGO CONSISTÊNCIA", val: `${gamification.currentStreakWeeks} sem. seguidas`, color: [249, 115, 22] }, // orange-500
+    { label: "CONQUISTAS", val: `${gamification.badges.filter((badge) => badge.unlocked).length}/8 medalhas`, color: [168, 85, 247] }, // purple-500
   ];
 
   kpis.forEach((kpi, idx) => {
@@ -200,7 +200,7 @@ export async function generateStudentMonthlyReportPdf({
     ? topPrs.map((pr) => [
         pr.exerciseName,
         `${pr.maxLoad} kg`,
-        `${pr.estimated1RM} kg`,
+        `${pr.maxLoad} kg`,
         formatDateBR(pr.achievedAt),
         "Recorde Consolidado",
       ])

@@ -130,9 +130,10 @@ export function WorkoutSummaryDialog({
           .eq("id", executionId)
           .single();
 
+        const execution = exec as { notes?: unknown } | null;
         let currentNotes: any = {};
-        if (exec?.notes) {
-          currentNotes = typeof exec.notes === "string" ? JSON.parse(exec.notes) : exec.notes;
+        if (execution?.notes) {
+          currentNotes = typeof execution.notes === "string" ? JSON.parse(execution.notes) : execution.notes;
         }
         currentNotes.excludedExercises = next;
 
@@ -261,7 +262,7 @@ export function WorkoutSummaryDialog({
                   "relative flex flex-col bg-zinc-900 text-white shadow-2xl transition-all duration-300 border border-zinc-800 shrink-0 overflow-hidden rounded-3xl",
                   format === "story"
                     ? "w-full max-w-[350px] xs:max-w-[360px] min-h-[620px]"
-                    : "w-full max-w-[350px] xs:max-w-[360px] aspect-square min-h-[350px]"
+                    : "w-full max-w-[350px] xs:max-w-[360px] min-h-[350px]"
                 )}
               >
 

@@ -16,7 +16,7 @@ export default defineTool({
   handler: async ({ module, status, limit }, ctx) => {
     if (!ctx.isAuthenticated())
       return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
-    const sb = supabaseForUser(ctx);
+    const sb = getMcpSupabaseClient(ctx);
     const table = module === "pt" ? "pt_payments" : "payments";
     let q = sb
       .from(table)
