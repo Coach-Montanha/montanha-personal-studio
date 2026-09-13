@@ -130,9 +130,10 @@ export function WorkoutSummaryDialog({
           .eq("id", executionId)
           .single();
 
+        const execution = exec as { notes?: unknown } | null;
         let currentNotes: any = {};
-        if (exec?.notes) {
-          currentNotes = typeof exec.notes === "string" ? JSON.parse(exec.notes) : exec.notes;
+        if (execution?.notes) {
+          currentNotes = typeof execution.notes === "string" ? JSON.parse(execution.notes) : execution.notes;
         }
         currentNotes.excludedExercises = next;
 

@@ -93,52 +93,6 @@ export function SessionTimer({
     onReset?.();
   }
 
-  if (variant === "compact") {
-    return (
-      <div className={cn("flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card p-3 shadow-xs", className)}>
-        <div className="flex items-center gap-2 min-w-0">
-          <Timer className={cn("h-4 w-4 shrink-0", currentRunning ? "text-emerald-500 animate-pulse" : "text-primary")} />
-          <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Cronômetro
-            </div>
-            <div className="font-mono text-xl font-extrabold tabular-nums text-foreground">
-              {formatSeconds(currentSeconds)}
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <Button
-            size="sm"
-            variant={currentRunning ? "secondary" : "default"}
-            onClick={() => setCurrentRunning(!currentRunning)}
-            className="h-8 gap-1 px-2.5 text-xs font-semibold"
-          >
-            {currentRunning ? (
-              <>
-                <Pause className="h-3.5 w-3.5" /> Pausar
-              </>
-            ) : (
-              <>
-                <Play className="h-3.5 w-3.5" /> {currentSeconds === 0 ? "Iniciar" : "Retomar"}
-              </>
-            )}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={reset}
-            disabled={currentSeconds === 0 && !currentRunning}
-            className="h-8 px-2 text-xs"
-            title="Zerar"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   if (variant === "compact" || isCollapsed) {
     return (
       <div
