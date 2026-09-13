@@ -316,6 +316,7 @@ export function HistoryShareSelector({ studentId }: { studentId: string }) {
             initialExcludedExercises={notes.excludedExercises || []}
             completedSets={notes.completedSets}
             doneExercises={notes.doneExercises}
+            previousExecutions={history}
           />
         );
       })()}

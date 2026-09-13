@@ -7,8 +7,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Users, DollarSign, Activity, TrendingUp, Percent, Plus, Eye,
-  CalendarPlus, CreditCard, Pencil, Trash2,
+  CalendarPlus, CreditCard, Pencil, Trash2, Timer,
 } from "lucide-react";
+import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
 import { addDays, format, startOfMonth, endOfMonth, startOfWeek, addWeeks, isSameDay, isSameMonth, subMonths, addMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -65,6 +66,7 @@ function PTOverview() {
   const [rangeStart, setRangeStart] = useState("");
   const [rangeEnd, setRangeEnd] = useState("");
   const [revenueOpen, setRevenueOpen] = useState(false);
+  const [timerOpen, setTimerOpen] = useState(false);
 
   const calendarMonthKey = format(calendarMonth, "yyyy-MM");
   const monthStart = startOfMonth(calendarMonth);
@@ -327,6 +329,13 @@ function PTOverview() {
         description="Acompanhe planos, aulas e evolução de cada aluno"
         actions={
           <>
+            <Button
+              variant="outline"
+              onClick={() => setTimerOpen(true)}
+              className="gap-1.5 border-orange-500/40 text-orange-500 hover:bg-orange-500/10 hover:text-orange-600"
+            >
+              <Timer className="h-4 w-4" /> Timer de Treino
+            </Button>
             <Link to="/personal-trainer/plans"><Button variant="outline">Planos PT</Button></Link>
             <Button onClick={() => { setPresetStudentId(undefined); setStudentOpen(true); }}>
               <Plus className="h-4 w-4" /> Novo aluno PT
@@ -723,6 +732,7 @@ function PTOverview() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
     </div>
   );
 }

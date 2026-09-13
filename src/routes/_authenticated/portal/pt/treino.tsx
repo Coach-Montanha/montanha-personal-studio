@@ -256,6 +256,8 @@ function PTTreinoPage() {
           day={selectedDay}
           exercises={exercises.filter((e) => e.training_day_id === selectedDay.id)}
           executions={executions.filter((x) => x.training_day_id === selectedDay.id)}
+          allExecutions={executions}
+          studentName={student?.name}
           onBack={() => setSelectedDayId(null)}
           onOpenProgression={(exName) => {
             setSelectedProgressEx(exName);
@@ -504,6 +506,8 @@ function FocusedDayView({
   day,
   exercises,
   executions,
+  allExecutions,
+  studentName,
   onBack,
   onSaved,
   onOpenProgression,
@@ -513,6 +517,8 @@ function FocusedDayView({
   day: any;
   exercises: any[];
   executions: Array<{ id: string; training_day_id: string; executed_at: string; notes: string | null }>;
+  allExecutions?: Array<{ id: string; training_day_id?: string; executed_at: string; notes: string | null }>;
+  studentName?: string;
   onBack: () => void;
   onSaved: () => void;
   onOpenProgression?: (exName: string) => void;
@@ -1146,6 +1152,8 @@ function FocusedDayView({
         onExcludedExercisesChange={setExcludedExerciseIds}
         completedSets={completedSets}
         doneExercises={done}
+        previousExecutions={allExecutions || executions}
+        studentName={studentName}
       />
 
       <RestCountdownTimer

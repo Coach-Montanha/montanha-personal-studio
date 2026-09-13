@@ -107,13 +107,19 @@ function AgendaPage() {
       .eq("id", classId)
       .maybeSingle();
     if (error || !data) return toast.error(error?.message ?? "Turma não encontrada");
-    setEditing({
-      ...(data as ClassRow),
-      days_of_week: data.days_of_week && data.days_of_week.length > 0
+    const rawDays =
+      data.days_of_week && data.days_of_week.length > 0
         ? data.days_of_week
         : data.day_of_week !== null && data.day_of_week !== undefined
           ? [data.day_of_week]
-          : [],
+          : [];
+    const safeDays = Array.isArray(rawDays)
+      ? rawDays.map(Number).filter((n) => !isNaN(n))
+      : [];
+
+    setEditing({
+      ...(data as ClassRow),
+      days_of_week: safeDays,
     });
     setSelected(null);
     setDialogOpen(true);

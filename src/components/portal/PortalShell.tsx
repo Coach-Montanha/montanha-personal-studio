@@ -11,6 +11,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   RefreshCw,
+  Timer,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { PortalAnnouncementPopup } from "@/components/portal/PortalAnnouncementPopup";
 import { PortalPersistGate, clearPortalCache } from "@/components/portal/PortalPersistGate";
+import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
 
 type PortalMode = "studio" | "pt" | "both";
 
@@ -92,6 +94,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { theme, toggleTheme } = useTheme();
+  const [timerOpen, setTimerOpen] = useState(false);
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
@@ -217,6 +220,15 @@ export function PortalShell({ children }: { children: ReactNode }) {
             </span>
             <NotificationsBell />
             <button
+              type="button"
+              onClick={() => setTimerOpen(true)}
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-orange-500 bg-orange-500/10 hover:bg-orange-500/20 outline-hidden transition-ui focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95 sm:h-10 sm:w-10"
+              title="Timer de Treino"
+              aria-label="Abrir Timer de Treino"
+            >
+              <Timer className="h-5 w-5" />
+            </button>
+            <button
               onClick={toggleTheme}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-muted-foreground outline-hidden transition-ui hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 sm:h-10 sm:w-10"
               title={theme === "dark" ? "Modo claro" : "Modo escuro"}
@@ -232,6 +244,26 @@ export function PortalShell({ children }: { children: ReactNode }) {
         </header>
         <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 lg:p-8 overflow-x-clip">{children}</main>
       </div>
+
+      {/* Aba lateral direita fixa para acesso rápido ao Timer pelo aluno */}
+      <button
+        type="button"
+        onClick={() => setTimerOpen(true)}
+        title="Abrir Timer de Treino"
+        aria-label="Abrir Timer de Treino"
+        className={cn(
+          "fixed right-0 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-l-2xl",
+          "bg-orange-500 hover:bg-orange-600 text-white shadow-xl shadow-orange-500/30 border-y border-l border-orange-400/40",
+          "transition-all duration-200 hover:pl-2.5 active:scale-95 select-none cursor-pointer group"
+        )}
+      >
+        <Timer className="h-4 w-4 text-white group-hover:scale-110 transition-transform" />
+        <span className="text-[10px] font-black uppercase tracking-wider [writing-mode:vertical-rl] rotate-180">
+          Timer
+        </span>
+      </button>
+
+      <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
       <PortalAnnouncementPopup />
     </div>
   );

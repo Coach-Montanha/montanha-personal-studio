@@ -24,6 +24,7 @@ import {
   Pin,
   PinOff,
   Library,
+  Timer,
 } from "lucide-react";
 
 
@@ -46,6 +47,7 @@ import { listTenants } from "@/lib/tenants.functions";
 import { Shield, Eye, UserCircle2 } from "lucide-react";
 import { GlobalSearch } from "@/components/edufinance/GlobalSearch";
 import { NotificationCenter } from "@/components/edufinance/NotificationCenter";
+import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
 
 type NavItem = {
   to: string;
@@ -82,6 +84,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsedState] = useState(false);
   const [hoverExpand, setHoverExpandState] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const [timerOpen, setTimerOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -244,6 +247,23 @@ export function AppShell({ children }: { children: ReactNode }) {
               );
             });
           })()}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setTimerOpen(true);
+              }}
+              title={iconOnly ? "Timer de Treino" : undefined}
+              className={cn(
+                "flex w-full items-center rounded-lg text-sm font-semibold transition-colors text-orange-500 hover:bg-orange-500/10 border border-orange-500/20",
+                iconOnly ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
+              )}
+            >
+              <Timer className="h-4 w-4 shrink-0 text-orange-500" />
+              {!iconOnly && <span className="truncate">Timer de Treino</span>}
+            </button>
+          </div>
         </nav>
 
         <div className={cn("border-t border-sidebar-border", iconOnly ? "p-2" : "p-3")}>
@@ -355,6 +375,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             <GlobalSearch items={visibleNav.map((n) => ({ to: n.to, label: n.label, section: n.section }))} />
             <NotificationCenter />
             <button
+              onClick={() => setTimerOpen(true)}
+              className="focus-ring flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-orange-500 transition-ui hover:border-border hover:bg-orange-500/10"
+              title="Timer de Treino"
+              aria-label="Timer de Treino"
+            >
+              <Timer className="h-[18px] w-[18px]" />
+            </button>
+            <button
               onClick={toggleTheme}
               className="focus-ring flex h-9 w-9 items-center justify-center rounded-lg border border-transparent transition-ui hover:border-border hover:bg-accent"
               title={theme === "dark" ? "Mudar para modo claro" : "Mudar para modo escuro"}
@@ -388,6 +416,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         <main className="flex-1 min-w-0 max-w-full p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden">{children}</main>
       </div>
+
+      <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
     </div>
   );
 }

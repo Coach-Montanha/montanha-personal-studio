@@ -4,9 +4,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { confirmDialog } from "@/lib/confirm-dialog";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronRight, Plus, Search, Trash2, Timer } from "lucide-react";
 
 import { toast } from "sonner";
+import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -73,6 +74,7 @@ function StudentsPage() {
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
   const [migrateOpen, setMigrateOpen] = useState(false);
+  const [timerOpen, setTimerOpen] = useState(false);
 
   const { data: students = [], isLoading } = useQuery({
     queryKey: ["students-list", scopeKey],
@@ -273,9 +275,18 @@ function StudentsPage() {
         title="Alunos"
         description={`${rows.length} aluno(s) cadastrado(s)`}
         actions={
-          <Button data-testid="button-new-student" className="w-full sm:w-auto" onClick={() => { setEditing(null); setOpen(true); }}>
-            <Plus className="h-4 w-4" /> Novo aluno
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setTimerOpen(true)}
+              className="gap-1.5 border-orange-500/40 text-orange-500 hover:bg-orange-500/10 hover:text-orange-600 w-full sm:w-auto"
+            >
+              <Timer className="h-4 w-4" /> Timer de Treino
+            </Button>
+            <Button data-testid="button-new-student" className="w-full sm:w-auto" onClick={() => { setEditing(null); setOpen(true); }}>
+              <Plus className="h-4 w-4" /> Novo aluno
+            </Button>
+          </div>
         }
       />
 
@@ -662,6 +673,7 @@ function StudentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
     </div>
   );
 }
