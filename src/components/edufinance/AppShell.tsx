@@ -24,8 +24,7 @@ import {
   Pin,
   PinOff,
   Library,
-  Timer,
-} from "lucide-react";
+  Timer, Trophy, } from "lucide-react";
 
 
 
@@ -73,6 +72,7 @@ const nav: NavItem[] = [
 
   { to: "/financeiro", label: "Financeiro", icon: Wallet, section: "Gestão", module: "financeiro" },
   { to: "/crm", label: "CRM", icon: Megaphone, section: "Gestão", module: "crm" },
+  { to: "/desafios", label: "Desafios", icon: Trophy, section: "Gestão" },
 ];
 
 
