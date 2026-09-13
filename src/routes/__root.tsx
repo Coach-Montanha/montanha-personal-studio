@@ -71,7 +71,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
     scripts: [
       {
-        children: `try{var t=localStorage.getItem('edufinance.theme');var vt=localStorage.getItem('edufinance.visualTheme');if(!vt||vt==='padrao'){vt='midnight';try{localStorage.setItem('edufinance.visualTheme','midnight')}catch(e){}}var isDark=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}document.documentElement.setAttribute('data-tema',vt);var _w=typeof window!=='undefined'?window.innerWidth:1024;var _fs=localStorage.getItem('edufinance.fontSize');var _map=_w<640?{sm:14,md:15,lg:16,xl:17}:{sm:15,md:17,lg:19,xl:22};var _def=_w<640?'15px':'17px';if(_fs&&_map[_fs]){document.documentElement.style.fontSize=_map[_fs]+'px'}else{document.documentElement.style.fontSize=_def}}catch(e){}`,
+        children: `try{var t=localStorage.getItem('edufinance.theme');var vt=localStorage.getItem('edufinance.visualTheme');if(!vt||!['padrao','pulse','midnight'].includes(vt)){vt='midnight';try{localStorage.setItem('edufinance.visualTheme','midnight')}catch(e){}}var isDark=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}document.documentElement.setAttribute('data-tema',vt);var _w=typeof window!=='undefined'?window.innerWidth:1024;var _fs=localStorage.getItem('edufinance.fontSize');var _map=_w<640?{sm:14,md:15,lg:16,xl:17}:{sm:15,md:17,lg:19,xl:22};var _def=_w<640?'15px':'17px';if(_fs&&_map[_fs]){document.documentElement.style.fontSize=_map[_fs]+'px'}else{document.documentElement.style.fontSize=_def}}catch(e){}`,
       },
     ],
   }),
@@ -212,7 +212,7 @@ function RootComponent() {
     if ("caches" in window) {
       caches.keys().then((names) => {
         names.forEach((name) => {
-          if (name.includes("coach-montanha-pwa-v1") || name.startsWith("coach-montanha-pwa-v")) {
+          if (name === "coach-montanha-pwa-v1" || name === "coach-montanha-pwa-v2") {
             caches.delete(name);
           }
         });

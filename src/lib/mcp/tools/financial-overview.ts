@@ -11,7 +11,7 @@ export default defineTool({
   handler: async (_input, ctx) => {
     if (!ctx.isAuthenticated())
       return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
-    const sb = supabaseForUser(ctx);
+    const sb = getMcpSupabaseClient(ctx);
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10);
@@ -32,14 +32,14 @@ export default defineTool({
       month: monthStart.slice(0, 7),
       studio: {
         active_students: studioActive.count ?? 0,
-        pending_amount: sum((studioPend.data ?? []).filter((r) => r.status === "pending")),
-        overdue_amount: sum((studioPend.data ?? []).filter((r) => r.status === "overdue")),
+        pending_amount: sum((studioPend.data ?? []).filter((r: { status: string }) => r.status === "pending")),
+        overdue_amount: sum((studioPend.data ?? []).filter((r: { status: string }) => r.status === "overdue")),
         month_paid: sum(studioPaid.data),
       },
       pt: {
         active_students: ptActive.count ?? 0,
-        pending_amount: sum((ptPend.data ?? []).filter((r) => r.status === "pending")),
-        overdue_amount: sum((ptPend.data ?? []).filter((r) => r.status === "overdue")),
+        pending_amount: sum((ptPend.data ?? []).filter((r: { status: string }) => r.status === "pending")),
+        overdue_amount: sum((ptPend.data ?? []).filter((r: { status: string }) => r.status === "overdue")),
         month_paid: sum(ptPaid.data),
       },
     };

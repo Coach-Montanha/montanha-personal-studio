@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-export interface SparklineProps extends React.SVGAttributes<SVGSVGElement> {
+export interface SparklineProps extends Omit<React.SVGAttributes<SVGSVGElement>, "fill"> {
   data: number[];
   height?: number;
   strokeWidth?: number;

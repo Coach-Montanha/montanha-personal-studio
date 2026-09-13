@@ -5,6 +5,7 @@ import {
   closestCorners,
   KeyboardSensor,
   PointerSensor,
+  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -152,12 +153,15 @@ export function KanbanColumn({
   emptyText = "Nenhum item nesta coluna",
 }: KanbanColumnProps) {
   const itemIds = React.useMemo(() => items.map((i) => i.id), [items]);
+  const { isOver, setNodeRef } = useDroppable({ id });
 
   return (
     <div
+      ref={setNodeRef}
       data-column-id={id}
       className={cn(
         "flex flex-col rounded-xl border border-border/80 bg-muted/20 p-3 shadow-2xs backdrop-blur-xs min-h-[350px] transition-colors",
+        isOver && "border-primary/60 bg-primary/5 ring-1 ring-primary/20",
         className,
       )}
     >
