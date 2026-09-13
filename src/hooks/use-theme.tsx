@@ -39,10 +39,9 @@ function getInitialVisualTheme(): VisualTheme {
   if (typeof window === "undefined") return "midnight";
   try {
     const stored = localStorage.getItem("edufinance.visualTheme");
-    if (stored === "pulse" || stored === "midnight") {
+    if (stored === "padrao" || stored === "pulse" || stored === "midnight") {
       return stored;
     }
-    // Qualquer dispositivo sem tema ou com o antigo "padrao" adota "midnight" como padrão unificado
     return "midnight";
   } catch {
     /* ignore storage errors */
@@ -54,11 +53,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [visualTheme, setVisualTheme] = useState<VisualTheme>(getInitialVisualTheme);
 
-  // Garante que o padrão midnight seja salvo se ainda não houver preferência ou se for o antigo padrao
+  // Garante que novos dispositivos adotem midnight sem sobrescrever escolhas válidas.
   useEffect(() => {
     try {
       const stored = localStorage.getItem("edufinance.visualTheme");
-      if (!stored || stored === "padrao") {
+      if (!stored) {
         localStorage.setItem("edufinance.visualTheme", "midnight");
       }
     } catch {
