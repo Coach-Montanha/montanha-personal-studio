@@ -236,15 +236,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
             </span>
             <NotificationsBell />
             <button
-              type="button"
-              onClick={() => setTimerOpen(true)}
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-orange-500 bg-orange-500/10 hover:bg-orange-500/20 outline-hidden transition-ui focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-95 sm:h-10 sm:w-10"
-              title="Timer de Treino"
-              aria-label="Abrir Timer de Treino"
-            >
-              <Timer className="h-5 w-5" />
-            </button>
-            <button
               onClick={toggleTheme}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-muted-foreground outline-hidden transition-ui hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 sm:h-10 sm:w-10"
               title={theme === "dark" ? "Modo claro" : "Modo escuro"}

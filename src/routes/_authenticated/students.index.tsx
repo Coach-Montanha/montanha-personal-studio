@@ -275,18 +275,9 @@ function StudentsPage() {
         title="Alunos"
         description={`${rows.length} aluno(s) cadastrado(s)`}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setTimerOpen(true)}
-              className="gap-1.5 border-orange-500/40 text-orange-500 hover:bg-orange-500/10 hover:text-orange-600 w-full sm:w-auto"
-            >
-              <Timer className="h-4 w-4" /> Timer de Treino
-            </Button>
-            <Button data-testid="button-new-student" className="w-full sm:w-auto" onClick={() => { setEditing(null); setOpen(true); }}>
-              <Plus className="h-4 w-4" /> Novo aluno
-            </Button>
-          </div>
+          <Button data-testid="button-new-student" className="w-full sm:w-auto" onClick={() => { setEditing(null); setOpen(true); }}>
+            <Plus className="h-4 w-4" /> Novo aluno
+          </Button>
         }
       />
 

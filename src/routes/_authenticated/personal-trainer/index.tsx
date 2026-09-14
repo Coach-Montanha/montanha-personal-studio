@@ -329,13 +329,6 @@ function PTOverview() {
         description="Acompanhe planos, aulas e evolução de cada aluno"
         actions={
           <>
-            <Button
-              variant="outline"
-              onClick={() => setTimerOpen(true)}
-              className="gap-1.5 border-orange-500/40 text-orange-500 hover:bg-orange-500/10 hover:text-orange-600"
-            >
-              <Timer className="h-4 w-4" /> Timer de Treino
-            </Button>
             <Link to="/personal-trainer/plans"><Button variant="outline">Planos PT</Button></Link>
             <Button onClick={() => { setPresetStudentId(undefined); setStudentOpen(true); }}>
               <Plus className="h-4 w-4" /> Novo aluno PT

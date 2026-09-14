@@ -31,6 +31,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as AuthenticatedStudentsIndexRouteImport } from './routes/_authenticated/students.index'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal/index'
 import { Route as AuthenticatedPersonalTrainerIndexRouteImport } from './routes/_authenticated/personal-trainer/index'
+import { Route as AuthenticatedDesafiosIndexRouteImport } from './routes/_authenticated/desafios/index'
 import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
 import { Route as AuthenticatedPortalPerfilRouteImport } from './routes/_authenticated/portal/perfil'
 import { Route as AuthenticatedPersonalTrainerPlansRouteImport } from './routes/_authenticated/personal-trainer/plans'
@@ -161,6 +162,12 @@ const AuthenticatedPersonalTrainerIndexRoute =
     path: '/personal-trainer/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDesafiosIndexRoute =
+  AuthenticatedDesafiosIndexRouteImport.update({
+    id: '/desafios/',
+    path: '/desafios/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentsIdRoute = AuthenticatedStudentsIdRouteImport.update({
   id: '/students/$id',
   path: '/students/$id',
@@ -267,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/desafios/': typeof AuthenticatedDesafiosIndexRoute
   '/personal-trainer/': typeof AuthenticatedPersonalTrainerIndexRoute
   '/portal/': typeof AuthenticatedPortalIndexRoute
   '/students/': typeof AuthenticatedStudentsIndexRoute
@@ -303,6 +311,7 @@ export interface FileRoutesByTo {
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/desafios': typeof AuthenticatedDesafiosIndexRoute
   '/personal-trainer': typeof AuthenticatedPersonalTrainerIndexRoute
   '/portal': typeof AuthenticatedPortalIndexRoute
   '/students': typeof AuthenticatedStudentsIndexRoute
@@ -341,6 +350,7 @@ export interface FileRoutesById {
   '/_authenticated/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/_authenticated/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/_authenticated/desafios/': typeof AuthenticatedDesafiosIndexRoute
   '/_authenticated/personal-trainer/': typeof AuthenticatedPersonalTrainerIndexRoute
   '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
   '/_authenticated/students/': typeof AuthenticatedStudentsIndexRoute
@@ -379,6 +389,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/plans'
     | '/portal/perfil'
     | '/students/$id'
+    | '/desafios/'
     | '/personal-trainer/'
     | '/portal/'
     | '/students/'
@@ -415,6 +426,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/plans'
     | '/portal/perfil'
     | '/students/$id'
+    | '/desafios'
     | '/personal-trainer'
     | '/portal'
     | '/students'
@@ -452,6 +464,7 @@ export interface FileRouteTypes {
     | '/_authenticated/personal-trainer/plans'
     | '/_authenticated/portal/perfil'
     | '/_authenticated/students/$id'
+    | '/_authenticated/desafios/'
     | '/_authenticated/personal-trainer/'
     | '/_authenticated/portal/'
     | '/_authenticated/students/'
@@ -627,6 +640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPersonalTrainerIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/desafios/': {
+      id: '/_authenticated/desafios/'
+      path: '/desafios'
+      fullPath: '/desafios/'
+      preLoaderRoute: typeof AuthenticatedDesafiosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/students/$id': {
       id: '/_authenticated/students/$id'
       path: '/students/$id'
@@ -743,6 +763,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonalTrainerPlansRoute: typeof AuthenticatedPersonalTrainerPlansRoute
   AuthenticatedPortalPerfilRoute: typeof AuthenticatedPortalPerfilRoute
   AuthenticatedStudentsIdRoute: typeof AuthenticatedStudentsIdRoute
+  AuthenticatedDesafiosIndexRoute: typeof AuthenticatedDesafiosIndexRoute
   AuthenticatedPersonalTrainerIndexRoute: typeof AuthenticatedPersonalTrainerIndexRoute
   AuthenticatedPortalIndexRoute: typeof AuthenticatedPortalIndexRoute
   AuthenticatedStudentsIndexRoute: typeof AuthenticatedStudentsIndexRoute
@@ -778,6 +799,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPersonalTrainerPlansRoute,
   AuthenticatedPortalPerfilRoute: AuthenticatedPortalPerfilRoute,
   AuthenticatedStudentsIdRoute: AuthenticatedStudentsIdRoute,
+  AuthenticatedDesafiosIndexRoute: AuthenticatedDesafiosIndexRoute,
   AuthenticatedPersonalTrainerIndexRoute:
     AuthenticatedPersonalTrainerIndexRoute,
   AuthenticatedPortalIndexRoute: AuthenticatedPortalIndexRoute,

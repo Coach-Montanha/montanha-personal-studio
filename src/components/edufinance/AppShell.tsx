@@ -375,14 +375,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             <GlobalSearch items={visibleNav.map((n) => ({ to: n.to, label: n.label, section: n.section }))} />
             <NotificationCenter />
             <button
-              onClick={() => setTimerOpen(true)}
-              className="focus-ring flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-orange-500 transition-ui hover:border-border hover:bg-orange-500/10"
-              title="Timer de Treino"
-              aria-label="Timer de Treino"
-            >
-              <Timer className="h-[18px] w-[18px]" />
-            </button>
-            <button
               onClick={toggleTheme}
               className="focus-ring flex h-9 w-9 items-center justify-center rounded-lg border border-transparent transition-ui hover:border-border hover:bg-accent"
               title={theme === "dark" ? "Mudar para modo claro" : "Mudar para modo escuro"}
