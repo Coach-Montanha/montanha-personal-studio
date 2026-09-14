@@ -833,3 +833,38 @@
   }
 }
 
+/* ==========================================================================
+   MICROKIT UI EDUFLOW MICRO-INTERACTIONS
+   ========================================================================== */
+
+/* 1. MicroKit Spotlight Module Card */
+.microkit-module-card {
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.microkit-module-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25), 0 0 20px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* 2. MicroKit Sliding Content Tab */
+.microkit-content-tab {
+  position: relative;
+  transition: color 0.2s ease;
+}
+.microkit-content-tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.12);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.microkit-content-tab:hover::before, .microkit-content-tab[aria-selected="true"]::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
