@@ -163,6 +163,22 @@ export function PortalShell({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setTimerOpen(true)}
+              title="Timer de Treino"
+              className={cn(
+                "group relative flex w-full items-center rounded-xl text-sm font-bold outline-hidden transition-all duration-200 active:scale-[0.98]",
+                "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/25 border border-orange-400/40",
+                collapsed ? "h-11 justify-center px-2" : "min-h-11 gap-3 px-3 py-2.5"
+              )}
+            >
+              <Timer className="h-[1.125rem] w-[1.125rem] shrink-0 group-hover:rotate-12 transition-transform" />
+              {!collapsed && <span className="truncate">Timer de Treino</span>}
+              {collapsed && <span className="sr-only">Timer de Treino</span>}
+            </button>
+          </div>
         </nav>
 
         <div className={cn("border-t border-sidebar-border", collapsed ? "p-2" : "p-3")}>
@@ -244,24 +260,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
         </header>
         <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 lg:p-8 overflow-x-clip">{children}</main>
       </div>
-
-      {/* Aba lateral direita fixa para acesso rápido ao Timer pelo aluno */}
-      <button
-        type="button"
-        onClick={() => setTimerOpen(true)}
-        title="Abrir Timer de Treino"
-        aria-label="Abrir Timer de Treino"
-        className={cn(
-          "fixed right-0 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-l-2xl",
-          "bg-orange-500 hover:bg-orange-600 text-white shadow-xl shadow-orange-500/30 border-y border-l border-orange-400/40",
-          "transition-all duration-200 hover:pl-2.5 active:scale-95 select-none cursor-pointer group"
-        )}
-      >
-        <Timer className="h-4 w-4 text-white group-hover:scale-110 transition-transform" />
-        <span className="text-[10px] font-black uppercase tracking-wider [writing-mode:vertical-rl] rotate-180">
-          Timer
-        </span>
-      </button>
 
       <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
       <PortalAnnouncementPopup />
