@@ -50,7 +50,8 @@ function parseReps(s?: string | number | null): number {
   if (typeof s === "number") return s;
   if (!s) return 10;
   const cleaned = String(s).toLowerCase();
-  const matchReps = cleaned.match(/(?:x\s*)?(\d+)(?:\s*-\s*\d+)?/);
+  const valueAfterSets = cleaned.includes("x") ? cleaned.split("x").slice(1).join("x") : cleaned;
+  const matchReps = valueAfterSets.match(/(\d+)(?:\s*-\s*\d+)?/);
   if (matchReps && matchReps[1]) {
     const val = parseInt(matchReps[1], 10);
     return isNaN(val) || val <= 0 ? 10 : val;
@@ -192,7 +193,7 @@ export function WorkoutSummaryDialog({
       const currentLoad = parseNumericLoad(loads[ex.id] || ex.load);
       if (!currentLoad || currentLoad <= 0) return;
 
-      let previousMax = 0;
+      let previousMax: number | null = null;
       previousExecutions.forEach((exec) => {
         if (!exec.notes) return;
         try {
@@ -200,13 +201,13 @@ export function WorkoutSummaryDialog({
           const prevLoads = parsed.loads || {};
           const rawVal = prevLoads[ex.id] || prevLoads[ex.name];
           const n = parseNumericLoad(rawVal);
-          if (n && n > previousMax) {
+          if (n && (previousMax === null || n > previousMax)) {
             previousMax = n;
           }
         } catch { /* ignore */ }
       });
 
-      if (currentLoad > previousMax) {
+      if (previousMax !== null && currentLoad > previousMax) {
         list.push({
           exerciseId: ex.id,
           name: ex.name,
@@ -265,12 +266,6 @@ export function WorkoutSummaryDialog({
             repsProgression: repsChanged && foundPrevReps ? { from: foundPrevReps, to: currentRepsTotal } : undefined,
           });
         }
-      } else if (currentLoad > 0) {
-        list.push({
-          exerciseId: ex.id,
-          name: ex.name,
-          loadProgression: { from: 0, to: currentLoad },
-        });
       }
     });
 
