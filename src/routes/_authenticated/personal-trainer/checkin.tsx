@@ -311,11 +311,15 @@ function CheckinPage() {
       }
       if (totalRemainingAfter === 0) {
         lines.push(``);
-        lines.push(`⚠️ *Atenção:* Esta foi sua última aula em aberto. Renove para continuar treinando!`);
+        lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
       }
     } else {
       lines.push(``);
-      lines.push(`ℹ️ Check-in registrado com sucesso.`);
+      if (bal && bal.contracted > 0) {
+        lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+      } else {
+        lines.push(`ℹ️ Check-in registrado com sucesso.`);
+      }
     }
 
     lines.push(``);
