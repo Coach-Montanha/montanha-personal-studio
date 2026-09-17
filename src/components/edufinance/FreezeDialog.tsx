@@ -27,6 +27,7 @@ export function FreezeDialog({
   maxDays,
   planName,
   freeze,
+  onUnfreeze,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -35,9 +36,11 @@ export function FreezeDialog({
   maxDays?: number | null;
   planName?: string | null;
   freeze?: Freeze | null;
+  onUnfreeze?: () => void;
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<Freeze>({});
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -63,50 +66,78 @@ export function FreezeDialog({
       return toast.error(`Este plano permite no máximo ${maxDays} dias de trancamento.`);
     }
 
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-    if (!userId) return;
+    setSaving(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) return;
 
-    // Se estiver congelando um aluno PT, atualizamos o status dele também
-    const { data: isPt } = await supabase.from("pt_students").select("id").eq("id", studentId).maybeSingle();
-    if (isPt) {
-      await supabase.from("pt_students").update({ status: "paused" }).eq("id", studentId);
-    } else {
-      await supabase.from("students").update({ status: "paused" }).eq("id", studentId);
+      // Se estiver congelando um aluno PT ou Studio, atualizamos o status dele também
+      const { data: isPt } = await supabase.from("pt_students").select("id").eq("id", studentId).maybeSingle();
+      if (isPt) {
+        await supabase.from("pt_students").update({ status: "paused" }).eq("id", studentId);
+      } else {
+        await supabase.from("students").update({ status: "paused" }).eq("id", studentId);
+      }
+
+      const payload = {
+        user_id: userId,
+        student_id: studentId,
+        payment_id: paymentId ?? null,
+        freeze_days: days,
+        start_date: form.start_date,
+        end_date: computedEnd,
+        notes: form.notes ?? null,
+      };
+
+      if (form.id) {
+        const { error } = await supabase.from("payment_freezes").update(payload).eq("id", form.id);
+        if (error) return toast.error(error.message);
+      } else {
+        const { error } = await supabase.from("payment_freezes").insert(payload);
+        if (error) return toast.error(error.message);
+      }
+
+      toast.success(form.id ? "Trancamento atualizado com sucesso!" : "Trancamento registrado com sucesso!");
+      qc.invalidateQueries();
+      onOpenChange(false);
+    } catch (err: any) {
+      toast.error(`Erro: ${err.message}`);
+    } finally {
+      setSaving(false);
     }
+  }
 
-    const payload = {
-      user_id: userId,
-      student_id: studentId,
-      payment_id: paymentId ?? null,
-      freeze_days: days,
-      start_date: form.start_date,
-      end_date: computedEnd,
-      notes: form.notes ?? null,
-    };
-
-    if (form.id) {
-      const { error } = await supabase.from("payment_freezes").update(payload).eq("id", form.id);
-      if (error) return toast.error(error.message);
-    } else {
-      const { error } = await supabase.from("payment_freezes").insert(payload);
-      if (error) return toast.error(error.message);
+  async function handleUnfreezeClick() {
+    setSaving(true);
+    try {
+      const { data: isPt } = await supabase.from("pt_students").select("id").eq("id", studentId).maybeSingle();
+      if (isPt) {
+        await supabase.from("pt_students").update({ status: "active" }).eq("id", studentId);
+      } else {
+        await supabase.from("students").update({ status: "active" }).eq("id", studentId);
+      }
+      toast.success("Plano destrancado e aluno reativado!");
+      if (onUnfreeze) onUnfreeze();
+      qc.invalidateQueries();
+      onOpenChange(false);
+    } catch (err: any) {
+      toast.error(`Erro ao destrancar: ${err.message}`);
+    } finally {
+      setSaving(false);
     }
-    toast.success(form.id ? "Trancamento atualizado" : "Trancamento registrado");
-    qc.invalidateQueries();
-    onOpenChange(false);
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{form.id ? "Editar trancamento" : "Trancar plano"}</DialogTitle>
+          <DialogTitle>{form.id ? "Editar trancamento ativo" : "Trancar plano"}</DialogTitle>
           <DialogDescription>
             {planName ? <>Plano: <strong>{planName}</strong>. </> : null}
             {maxDays
               ? `Limite deste plano: ${maxDays} dias.`
-              : "Este plano não define um limite máximo de dias para compensação automática, mas o trancamento pode ser realizado."}
+              : "Ajuste o período do trancamento. O vencimento do plano será estendido proporcionalmente aos dias congelados."}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
@@ -120,7 +151,7 @@ export function FreezeDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Dias</Label>
+              <Label>Dias de trancamento</Label>
               <Input
                 type="number"
                 min={1}
@@ -131,7 +162,7 @@ export function FreezeDialog({
             </div>
           </div>
           <div className="rounded-md border bg-muted/40 p-3 text-xs">
-            Vencimento será estendido até:{" "}
+            Prazo final do trancamento:{" "}
             <strong>{computedEnd ? new Date(computedEnd + "T00:00").toLocaleDateString("pt-BR") : "—"}</strong>
           </div>
           <div className="space-y-1.5">
@@ -144,9 +175,26 @@ export function FreezeDialog({
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={save}>Salvar</Button>
+        <DialogFooter className="flex flex-col sm:flex-row justify-between gap-2">
+          {form.id && (
+            <Button
+              type="button"
+              variant="outline"
+              className="border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10 mr-auto"
+              onClick={handleUnfreezeClick}
+              disabled={saving}
+            >
+              Destrancar Plano
+            </Button>
+          )}
+          <div className="flex gap-2 justify-end ml-auto">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button onClick={save} disabled={saving}>
+              {saving ? "Salvando..." : form.id ? "Salvar Alterações" : "Trancar Plano"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

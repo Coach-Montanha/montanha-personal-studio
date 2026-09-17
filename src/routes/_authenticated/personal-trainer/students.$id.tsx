@@ -103,6 +103,18 @@ function PTStudentDetail() {
     },
   });
 
+  const { data: freezes = [] } = useQuery({
+    queryKey: ["pt-student-freezes", id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("payment_freezes")
+        .select("*")
+        .eq("student_id", id)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
   const { data: payments = [] } = useQuery({
     queryKey: ["pt-student-payments", id],
     queryFn: async () => {
@@ -249,6 +261,19 @@ function PTStudentDetail() {
 
   if (!student) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
+  const activeFreeze = freezes[0] ?? null;
+  const isFrozen = student?.status === "paused";
+
+  async function handleUnfreeze() {
+    const { error } = await supabase
+      .from("pt_students")
+      .update({ status: "active" })
+      .eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Plano destrancado e aluno PT reativado!");
+    qc.invalidateQueries();
+  }
+
   async function deleteSession(sId: string) {
     if (!(await confirmDialog("Excluir aula?"))) return;
     const { error } = await supabase.from("pt_sessions").delete().eq("id", sId);
@@ -324,7 +349,28 @@ function PTStudentDetail() {
             <Bot className="h-4 w-4" /> Coach Copilot
           </Button>
           <Button variant="outline" onClick={() => setEditStudent(true)}><Pencil className="h-4 w-4" /> Editar</Button>
-          <Button variant="outline" onClick={() => setFreezeOpen(true)}><PauseCircle className="h-4 w-4" /> Congelar Aluno</Button>
+          {isFrozen ? (
+            <Button
+              variant="outline"
+              className="border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10 shadow-xs"
+              onClick={() => {
+                setEditingFreeze(activeFreeze);
+                setFreezeOpen(true);
+              }}
+            >
+              <PauseCircle className="h-4 w-4 text-amber-500" /> Editar Trancamento
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditingFreeze(null);
+                setFreezeOpen(true);
+              }}
+            >
+              <PauseCircle className="h-4 w-4" /> Congelar Aluno
+            </Button>
+          )}
           <Button
             variant="outline"
             className="text-destructive hover:bg-destructive/10 transition-all duration-200 active:scale-[0.98]"
@@ -334,6 +380,54 @@ function PTStudentDetail() {
           </Button>
         </div>
       </div>
+
+      {isFrozen && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-900 dark:text-amber-200 shadow-xs">
+          <div className="flex items-center gap-3 min-w-0">
+            <PauseCircle className="h-6 w-6 text-amber-500 shrink-0" />
+            <div>
+              <div className="font-bold text-sm text-amber-900 dark:text-amber-100 flex items-center gap-2">
+                Plano Trancado (Congelado)
+                {activeFreeze?.end_date && (
+                  <span className="text-xs font-normal opacity-90">
+                    — Vencimento estendido até: <strong>{new Date(activeFreeze.end_date + "T00:00").toLocaleDateString("pt-BR")}</strong>
+                  </span>
+                )}
+              </div>
+              <div className="mt-0.5 text-amber-800/80 dark:text-amber-200/80">
+                {activeFreeze ? (
+                  <>
+                    Início em {new Date(activeFreeze.start_date + "T00:00").toLocaleDateString("pt-BR")} ({activeFreeze.freeze_days} dias de trancamento)
+                    {activeFreeze.notes ? ` · Obs: "${activeFreeze.notes}"` : ""}
+                  </>
+                ) : (
+                  "O plano deste aluno está com trancamento ativo."
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 border-amber-500/40 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20"
+              onClick={() => {
+                setEditingFreeze(activeFreeze);
+                setFreezeOpen(true);
+              }}
+            >
+              <Pencil className="h-3.5 w-3.5" /> Editar Prazo
+            </Button>
+            <Button
+              size="sm"
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-xs"
+              onClick={handleUnfreeze}
+            >
+              Destrancar Plano
+            </Button>
+          </div>
+        </div>
+      )}
 
       {clinicalAlerts.length > 0 && (
         <ClinicalAlertBadge
