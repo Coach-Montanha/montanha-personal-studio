@@ -17,7 +17,6 @@ import { YearPicker } from "@/components/edufinance/MonthYearPicker";
 import { formatBRL, formatMonthLabel, paymentMethodLabel } from "@/lib/format";
 import { EmptyState } from "@/components/edufinance/EmptyState";
 import { useScopeFilter } from "@/hooks/use-scope-filter";
-import { InteractiveBalanceGrid } from "@/components/ui/InteractiveBalanceGrid";
 
 
 type P = {
@@ -226,9 +225,6 @@ export function StudioAnalyticsPanel() {
           </div>
         </div>
       </div>
-
-      {/* Bencho UI Interactive Balance Grid */}
-      <InteractiveBalanceGrid className="my-4" />
 
       <Section title={`Receita — ${year} vs ${compareYear}`}>
         <div className="h-72">
