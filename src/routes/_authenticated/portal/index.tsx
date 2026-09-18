@@ -358,16 +358,16 @@ function PortalHome() {
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-2 p-3">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="truncate text-sm font-semibold leading-tight text-foreground">{s.class_name}</div>
+                  <div className="text-sm font-semibold leading-tight text-foreground line-clamp-2 min-w-0 flex-1">{s.class_name}</div>
                   {tag && (
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide ${tag.cls}`}>
+                    <span className={`shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide ${tag.cls}`}>
                       {tag.label}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium ${
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[11px] font-medium shrink-0 ${
                       isFull
                         ? "bg-destructive/10 text-destructive"
                         : isLastSpot
@@ -383,7 +383,7 @@ function PortalHome() {
                     <Button
                       size="sm"
                       loading={pendingId === s.id}
-                      className="h-9 px-4 text-xs"
+                      className="h-9 px-4 text-xs shrink-0"
                       onClick={(e) => { stop(e); handleCheckIn(s.id); }}
                     >
                       Check-in
@@ -392,13 +392,13 @@ function PortalHome() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-9 px-4 text-xs"
+                      className="h-9 px-4 text-xs shrink-0"
                       onClick={(e) => { stop(e); setCancelId(s.id); }}
                     >
                       Cancelar
                     </Button>
                   ) : s.checked_in ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-state-paid-soft px-2.5 py-1 text-[11px] font-semibold text-state-paid">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-state-paid-soft px-2.5 py-1 text-[11px] font-semibold text-state-paid shrink-0">
                       <CheckCircle2 className="h-3.5 w-3.5" /> Confirmado
                     </span>
                   ) : s.is_enrolled && isFull && !isClosed ? (
@@ -407,7 +407,7 @@ function PortalHome() {
                       variant="outline"
                       disabled
                       title="Em breve: entre na fila para ser avisado se abrir vaga"
-                      className="h-9 px-4 text-xs"
+                      className="h-9 px-3 text-xs shrink-0"
                       onClick={stop}
                     >
                       Lista de espera
