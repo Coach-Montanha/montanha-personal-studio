@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -105,6 +105,24 @@ export function AppShell({ children }: { children: ReactNode }) {
   const iconOnly = collapsed && !(hoverExpand && hovering);
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Microkit SpotlightIndicator Refs & Effect
+  const spotlightNavRef = useRef<HTMLDivElement>(null);
+  const spotlightBarRef = useRef<HTMLSpanElement>(null);
+  const spotlightItemRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
+
+  useEffect(() => {
+    const nav = spotlightNavRef.current;
+    const bar = spotlightBarRef.current;
+    if (!nav || !bar) return;
+    const activeItem = nav.querySelector<HTMLElement>("[data-sidebar-active='true']");
+    if (!activeItem) return;
+    const navRect = nav.getBoundingClientRect();
+    const itemRect = activeItem.getBoundingClientRect();
+    bar.style.top = `${itemRect.top - navRect.top + 2}px`;
+    bar.style.height = `${itemRect.height - 4}px`;
+  }, [pathname, collapsed, hovering]);
+
   const navigate = useNavigate();
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -193,7 +211,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </div>
 
-        <nav className={cn("flex-1 space-y-1 overflow-y-auto py-4", iconOnly ? "px-2" : "px-3")}>
+        <nav ref={spotlightNavRef} className={cn("relative flex-1 space-y-1 overflow-y-auto py-4", iconOnly ? "px-2" : "px-3")}>
+          <span ref={spotlightBarRef} className="pointer-events-none absolute left-1 w-1 rounded-sm bg-primary shadow-[2px_0_5px_rgba(249,115,22,.8),4px_0_11px_rgba(249,115,22,.45)] transition-[top,height] duration-300 ease-[cubic-bezier(.4,0,.2,1)]" />
           {activeProfileLabel && !iconOnly && (
             <div className="mb-3 flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-primary-foreground shadow-sm">
               <UserCircle2 className="h-4 w-4 shrink-0" />
@@ -229,6 +248,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   )}
                   <Link
                     to={item.to}
+                    data-sidebar-active={active}
                     data-testid={`sidebar-nav-${item.to.replace(/^\//, "").replace(/\//g, "-") || "dashboard"}`}
                     onClick={() => setOpen(false)}
                     title={iconOnly ? item.label : undefined}
