@@ -71,6 +71,7 @@ function PTStudentDetail() {
   const [editingPayment, setEditingPayment] = useState<any>(null);
   const [bulkSessionsOpen, setBulkSessionsOpen] = useState(false);
   const [freezeOpen, setFreezeOpen] = useState(false);
+  const [editingFreeze, setEditingFreeze] = useState<any>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
 
@@ -610,6 +611,7 @@ function PTStudentDetail() {
         onOpenChange={setFreezeOpen}
         studentId={id}
         planName={currentPlan}
+        freeze={editingFreeze}
       />
       <StudentMonthlyReportDialog
         open={reportOpen}

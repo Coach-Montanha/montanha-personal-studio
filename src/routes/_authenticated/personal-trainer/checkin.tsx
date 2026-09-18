@@ -315,8 +315,11 @@ function CheckinPage() {
       }
     } else {
       lines.push(``);
-      if (bal && bal.contracted > 0) {
+      if (bal && bal.contracted > 0 && bal.remaining === 0) {
         lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+      } else if (bal && bal.remaining > 0) {
+        lines.push(`📦 *Saldo atual:* ${bal.remaining} aula(s)`);
+        lines.push(`ℹ️ Check-in registrado com sucesso.`);
       } else {
         lines.push(`ℹ️ Check-in registrado com sucesso.`);
       }
@@ -326,7 +329,7 @@ function CheckinPage() {
     lines.push(`Bom treino! 💪`);
 
     const defaultMessage = lines.join("\n");
-    const totalRemainingAfter = chosen && bal ? Math.max(0, bal.remaining - 1) : 0;
+    const totalRemainingAfter = chosen && bal ? Math.max(0, bal.remaining - 1) : (bal?.remaining ?? 0);
     const whatsappMessage = waTemplate.trim()
       ? applyTemplate(waTemplate, {
           aluno: targetStudent.name,
