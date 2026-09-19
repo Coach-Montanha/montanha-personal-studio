@@ -33,3 +33,12 @@ create table if not exists public.pt_physical_assessments (
 -- Índices para buscas rápidas
 create index if not exists idx_pt_physical_assessments_student 
   on public.pt_physical_assessments (pt_student_id, assessment_date desc);
+
+ALTER TABLE public.pt_physical_assessments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage physical assessments"
+  ON public.pt_physical_assessments
+  FOR ALL TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
