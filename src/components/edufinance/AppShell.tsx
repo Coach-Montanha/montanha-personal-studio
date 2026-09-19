@@ -203,9 +203,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           {!iconOnly && (
             <div className="min-w-0">
-              <div className="text-base font-bold leading-none">EduFinance</div>
+              <div className="text-base font-bold leading-none">Montanha Personal Studio</div>
               <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
-                Gestão financeira
+                Gestão Financeira & Inteligência Operacional
               </div>
             </div>
           )}

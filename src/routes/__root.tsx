@@ -24,16 +24,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Studio Coach Montanh — Gestão Financeira de Alunos" },
+      { title: "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais" },
       {
         name: "description",
         content:
-          "Controle pagamentos, alunos e receita do seu curso ou academia com dashboards completos.",
+          "Gestão Financeira & Inteligência Operacional para Studios e Personais.",
       },
-      { property: "og:title", content: "Studio Coach Montanh — Gestão Financeira de Alunos" },
-      { property: "og:description", content: "Controle pagamentos, alunos e receita do seu curso ou academia com dashboards completos." },
-      { name: "twitter:title", content: "Studio Coach Montanh — Gestão Financeira de Alunos" },
-      { name: "twitter:description", content: "Controle pagamentos, alunos e receita do seu curso ou academia com dashboards completos." },
+      { property: "og:title", content: "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais" },
+      { property: "og:description", content: "Gestão Financeira & Inteligência Operacional para Studios e Personais." },
+      { name: "twitter:title", content: "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais" },
+      { name: "twitter:description", content: "Gestão Financeira & Inteligência Operacional para Studios e Personais." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a1e6323a-33d0-41ff-b98a-0744e285697c/id-preview-899e1b68--69e8a911-c73d-4b50-a7e4-fcc5a1be4536.lovable.app-1782521708855.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a1e6323a-33d0-41ff-b98a-0744e285697c/id-preview-899e1b68--69e8a911-c73d-4b50-a7e4-fcc5a1be4536.lovable.app-1782521708855.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -44,7 +44,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "SC Montanha" },
+      { name: "apple-mobile-web-app-title", content: "Montanha Personal" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

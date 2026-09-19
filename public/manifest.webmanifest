@@ -1,7 +1,7 @@
 {
-  "name": "Studio Coach Montanha",
-  "short_name": "SC Montanha",
-  "description": "Gestão de alunos, turmas e pagamentos do Studio Coach Montanha.",
+  "name": "Montanha Personal Studio",
+  "short_name": "Montanha Personal",
+  "description": "Gestão Financeira & Inteligência Operacional para Studios e Personais.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
