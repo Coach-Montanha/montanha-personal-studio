@@ -144,8 +144,146 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="pt-BR" data-tema="midnight">
       <head>
         <HeadContent />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              #app-preloader {
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                z-index: 999999;
+                background-color: #050a14;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                transition: opacity 0.4s ease, visibility 0.4s ease;
+              }
+              #app-preloader.preloader-hidden {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+                display: none !important;
+              }
+              .preloader-emblem-wrap {
+                position: relative;
+                width: 96px;
+                height: 96px;
+                border-radius: 28px;
+                background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+                border: 2px solid rgba(16, 185, 129, 0.4);
+                box-shadow: 0 0 35px rgba(16, 185, 129, 0.3), inset 0 0 15px rgba(16, 185, 129, 0.15);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: preloaderPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+              }
+              .preloader-aura-ring {
+                position: absolute;
+                inset: -6px;
+                border-radius: 34px;
+                border: 1.5px solid rgba(16, 185, 129, 0.25);
+                animation: auraExpand 2.5s linear infinite;
+              }
+              .preloader-title {
+                margin-top: 22px;
+                font-size: 22px;
+                font-weight: 900;
+                letter-spacing: -0.02em;
+                color: #f8fafc;
+                text-align: center;
+              }
+              .preloader-title span {
+                color: #10b981;
+              }
+              .preloader-subtitle {
+                margin-top: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                color: #94a3b8;
+                text-align: center;
+                max-width: 340px;
+                padding: 0 16px;
+              }
+              .preloader-spinner {
+                margin-top: 24px;
+                width: 26px;
+                height: 26px;
+                border: 3px solid rgba(16, 185, 129, 0.15);
+                border-top-color: #10b981;
+                border-radius: 50%;
+                animation: preloaderSpin 0.75s linear infinite;
+              }
+              .preloader-progress-track {
+                margin-top: 20px;
+                width: 160px;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.08);
+                border-radius: 99px;
+                overflow: hidden;
+              }
+              .preloader-progress-bar {
+                height: 100%;
+                width: 60%;
+                background: linear-gradient(90deg, #10b981, #34d399);
+                border-radius: 99px;
+                animation: progressMove 1.5s ease-in-out infinite alternate;
+              }
+              @keyframes preloaderPulse {
+                0%, 100% { transform: scale(1); box-shadow: 0 0 35px rgba(16, 185, 129, 0.3); }
+                50% { transform: scale(1.05); box-shadow: 0 0 50px rgba(16, 185, 129, 0.5); }
+              }
+              @keyframes auraExpand {
+                0% { opacity: 0.8; transform: scale(0.95); }
+                100% { opacity: 0; transform: scale(1.2); }
+              }
+              @keyframes preloaderSpin {
+                to { transform: rotate(360deg); }
+              }
+              @keyframes progressMove {
+                0% { transform: translateX(-40%); }
+                100% { transform: translateX(100%); }
+              }
+            `,
+          }}
+        />
       </head>
       <body>
+        <div id="app-preloader" aria-label="Carregando Montanha Personal Studio...">
+          <div className="preloader-emblem-wrap">
+            <div className="preloader-aura-ring"></div>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          </div>
+          <div className="preloader-title">Montanha <span>Personal Studio</span></div>
+          <div className="preloader-subtitle">Gestão Financeira & Inteligência Operacional para Studios e Personais</div>
+          <div className="preloader-spinner"></div>
+          <div className="preloader-progress-track">
+            <div className="preloader-progress-bar"></div>
+          </div>
+        </div>
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+              function dismiss(){
+                var p = document.getElementById('app-preloader');
+                if(p){
+                  p.classList.add('preloader-hidden');
+                  p.style.display = 'none';
+                }
+              }
+              if (document.readyState === 'complete') {
+                setTimeout(dismiss, 50);
+              } else {
+                window.addEventListener('load', function(){ setTimeout(dismiss, 50); });
+                setTimeout(dismiss, 500);
+              }
+            })();`,
+          }}
+        />
+
         {children}
         <Scripts />
       </body>
