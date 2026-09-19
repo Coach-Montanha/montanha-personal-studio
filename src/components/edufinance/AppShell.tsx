@@ -205,7 +205,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="min-w-0">
               <div className="text-base font-bold leading-none">Montanha Personal Studio</div>
               <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
-                Gestão Financeira & Inteligência Operacional
+                Gestão Financeira & Inteligência Operacional para Studios e Personais
               </div>
             </div>
           )}
@@ -389,7 +389,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Button>
           <h1 className="truncate text-sm font-semibold text-foreground">
             {nav.find((n) => isActive(n.to, n.exact))?.label ??
-              (pathname === "/settings" ? "Configurações" : "EduFinance")}
+              (pathname === "/settings" ? "Configurações" : "Montanha Personal Studio")}
           </h1>
           <div className="ml-auto flex items-center gap-1.5">
             <GlobalSearch items={visibleNav.map((n) => ({ to: n.to, label: n.label, section: n.section }))} />
