@@ -2735,8 +2735,13 @@ FOR ALL
 TO authenticated
 USING (user_id = auth.uid())
 WITH CHECK (user_id = auth.uid());
-INSERT INTO public.announcements (user_id, title, body, active, starts_at, ends_at) 
-VALUES ('f4ddca03-67ad-43ec-bf0b-33ba28c5e295', 'Status da Integração', 'não aconteceu a integração, ainda não consigo ver o banco de exercícios em minha biblioteca', true, now(), now() + interval '1 year');
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM auth.users WHERE id = 'f4ddca03-67ad-43ec-bf0b-33ba28c5e295') THEN
+    INSERT INTO public.announcements (user_id, title, body, active, starts_at, ends_at) 
+    VALUES ('f4ddca03-67ad-43ec-bf0b-33ba28c5e295', 'Status da Integração', 'não aconteceu a integração, ainda não consigo ver o banco de exercícios em minha biblioteca', true, now(), now() + interval '1 year');
+  END IF;
+END $$;
 ALTER TABLE public.pt_training_exercises ADD COLUMN series_type text DEFAULT 'reps_load';
 ALTER TABLE public.pt_training_exercises ADD COLUMN time_seconds integer;
 ALTER TABLE public.pt_training_exercises ADD COLUMN inclination text;
