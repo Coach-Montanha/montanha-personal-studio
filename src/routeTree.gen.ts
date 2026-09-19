@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MasterAdminRouteImport } from './routes/master-admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
@@ -54,6 +55,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MasterAdminRoute = MasterAdminRouteImport.update({
+  id: '/master-admin',
+  path: '/master-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -248,6 +254,7 @@ const AuthenticatedPersonalTrainerStudentsIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/master-admin': typeof MasterAdminRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/master-admin': typeof MasterAdminRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -323,6 +331,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/master-admin': typeof MasterAdminRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -363,6 +372,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/master-admin'
     | '/mcp'
     | '/reset-password'
     | '/.mcp/list-tools'
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/master-admin'
     | '/mcp'
     | '/reset-password'
     | '/.mcp/list-tools'
@@ -437,6 +448,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/master-admin'
     | '/mcp'
     | '/reset-password'
     | '/.mcp/list-tools'
@@ -476,6 +488,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  MasterAdminRoute: typeof MasterAdminRoute
   McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -498,6 +511,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/master-admin': {
+      id: '/master-admin'
+      path: '/master-admin'
+      fullPath: '/master-admin'
+      preLoaderRoute: typeof MasterAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -816,6 +836,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  MasterAdminRoute: MasterAdminRoute,
   McpRoute: McpRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,

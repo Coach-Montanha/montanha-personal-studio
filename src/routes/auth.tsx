@@ -1,9 +1,10 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Loader2, CheckCircle2, Lock, Sparkles, Zap, Globe, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, CheckCircle2, Lock, Sparkles, Zap, Globe, ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { checkAndLockGuestDemo, validateEmailMx, checkProjectAccess } from "@/services/ecosystem-auth-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -93,6 +94,19 @@ function AuthPage() {
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+
+    const mx = await validateEmailMx(email);
+    if (!mx.valid) {
+      setLoading(false);
+      return toast.error(mx.reason || "E-mail inválido.");
+    }
+
+    const access = await checkProjectAccess(null, 'eduflow-finance', email);
+    if (!access.hasAccess) {
+      setLoading(false);
+      return toast.error(access.message);
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) return toast.error(error.message);
@@ -101,11 +115,18 @@ function AuthPage() {
   }
 
   async function handleQuickDemo() {
-    setEmail("demo@eduflow.app");
+    const demoEmail = "demo@eduflow.app";
+    const lockout = await checkAndLockGuestDemo(demoEmail);
+    if (lockout.locked && !lockout.allowed) {
+      toast.error("Trava Anti-Abuso: O modo demonstração já foi utilizado no ecossistema.");
+      return;
+    }
+
+    setEmail(demoEmail);
     setPassword("123456");
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
-      email: "demo@eduflow.app",
+      email: demoEmail,
       password: "123456",
     });
     setLoading(false);
@@ -183,15 +204,24 @@ function AuthPage() {
               <span className="text-[10px] text-slate-400">Gestão Financeira &amp; Inteligência Operacional</span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowEcosystem(!showEcosystem)}
-            className="text-xs text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 transition-all cursor-pointer"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>Ecossistema (5 Apps)</span>
-            {showEcosystem ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <a
+              href="/master-admin"
+              className="text-xs text-purple-300 hover:text-white font-bold flex items-center gap-1 px-3 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/40 transition-all"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+              <span>Painel Master</span>
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowEcosystem(!showEcosystem)}
+              className="text-xs text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 transition-all cursor-pointer"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>Ecossistema (5 Apps)</span>
+              {showEcosystem ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+          </div>
         </div>
       </header>
 
