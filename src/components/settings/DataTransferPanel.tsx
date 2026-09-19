@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, Upload, FileSpreadsheet, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Download, Upload, FileSpreadsheet, AlertTriangle, CheckCircle2, Layers, Database } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -9,10 +9,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { paymentMethodLabel, billingCycleLabel } from "@/lib/format";
 import { PerStudentExport } from "@/components/edufinance/PerStudentExport";
 
-
 // Map a raw header string to a canonical field.
 const headerMap: Record<string, string> = {
-  // students
+  // students (Studio)
   nome: "name", name: "name",
   email: "email",
   telefone: "phone", phone: "phone",
@@ -28,22 +27,32 @@ const headerMap: Record<string, string> = {
   estado: "state", uf: "state", state: "state",
   cep: "postal_code", codigo_postal: "postal_code", postal_code: "postal_code",
   pais: "country", country: "country",
+
+  // pt_students (Personal Trainer)
   objetivo: "goal", goal: "goal",
   saude: "health_notes", notas_saude: "health_notes", health_notes: "health_notes",
   plano_treino: "training_plan", training_plan: "training_plan",
 
-  // payments
+  // payments & pt_payments
   aluno: "student_name", student_name: "student_name",
   valor: "amount", amount: "amount",
   data: "payment_date", data_pagamento: "payment_date", payment_date: "payment_date",
   vencimento: "due_date", due_date: "due_date",
-  mes_referencia: "reference_month", reference_month: "reference_month",
+  mes_ref: "reference_month", mes_referencia: "reference_month", reference_month: "reference_month",
   metodo: "payment_method", forma_pagamento: "payment_method", payment_method: "payment_method",
-  // plans
+  sessoes_pagas: "sessions_paid", sessions_paid: "sessions_paid",
+
+  // plans & pt_plans
   nome_plano: "name", plan_price: "price", preco: "price", price: "price",
   ciclo: "billing_cycle", billing_cycle: "billing_cycle", ciclo_cobranca: "billing_cycle",
   descricao: "description", description: "description",
   ativo: "is_active", is_active: "is_active",
+  tipo_cobranca: "billing_type", billing_type: "billing_type",
+  preco_mensal: "price_per_month", price_per_month: "price_per_month",
+  preco_sessao: "price_per_session", price_per_session: "price_per_session",
+  preco_pacote: "package_price", package_price: "package_price",
+  sessoes_pacote: "package_sessions", package_sessions: "package_sessions",
+  sessoes_mes: "sessions_per_month", sessions_per_month: "sessions_per_month",
 };
 
 const norm = (s: string) =>
@@ -95,6 +104,7 @@ const methodMap: Record<string, string> = {
 };
 const statusMap: Record<string, string> = {
   pago: "paid", pendente: "pending", atrasado: "overdue", cancelado: "cancelled",
+  ativo: "active", congelado: "paused", trancado: "paused", inativo: "inactive",
 };
 const billingCycleMap: Record<string, string> = {
   mensal: "monthly", monthly: "monthly",
@@ -103,13 +113,33 @@ const billingCycleMap: Record<string, string> = {
   anual: "annual", annual: "annual",
 };
 
+export type ImportCategory =
+  | "payments"
+  | "students"
+  | "plans"
+  | "pt_students"
+  | "pt_payments"
+  | "pt_plans"
+  | "full_report";
+
+interface FullReportData {
+  payments?: Record<string, unknown>[];
+  students?: Record<string, unknown>[];
+  plans?: Record<string, unknown>[];
+  pt_students?: Record<string, unknown>[];
+  pt_payments?: Record<string, unknown>[];
+  pt_plans?: Record<string, unknown>[];
+}
+
 export function DataTransferPanel() {
   const qc = useQueryClient();
-  const [importType, setImportType] = useState<"payments" | "students" | "plans">("payments");
+  const [importType, setImportType] = useState<ImportCategory>("payments");
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
+  const [fullReportData, setFullReportData] = useState<FullReportData | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [imported, setImported] = useState<number | null>(null);
 
+  // Queries para exportação / autocriação de vínculos
   const { data: students = [] } = useQuery({
     queryKey: ["students-all"],
     queryFn: async () => {
@@ -132,6 +162,7 @@ export function DataTransferPanel() {
       return all;
     },
   });
+
   const { data: plans = [] } = useQuery({
     queryKey: ["plans-all"],
     queryFn: async () => {
@@ -139,6 +170,7 @@ export function DataTransferPanel() {
       return data ?? [];
     },
   });
+
   const { data: payments = [] } = useQuery({
     queryKey: ["payments-export"],
     queryFn: async () => {
@@ -218,6 +250,16 @@ export function DataTransferPanel() {
     },
   });
 
+  const mapRawRows = (rawRows: Record<string, unknown>[]) => {
+    return rawRows.map((row) => {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(row)) {
+        const key = headerMap[norm(k)] ?? norm(k);
+        out[key] = v;
+      }
+      return out;
+    });
+  };
 
   async function handleFile(file: File) {
     const XLSX = await import("xlsx");
@@ -225,21 +267,244 @@ export function DataTransferPanel() {
     reader.onload = (e) => {
       const data = new Uint8Array(e.target?.result as ArrayBuffer);
       const wb = XLSX.read(data, { type: "array" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: null });
-      const mapped = raw.map((row) => {
-        const out: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(row)) {
-          const key = headerMap[norm(k)] ?? norm(k);
-          out[key] = v;
+
+      if (importType === "full_report" || wb.SheetNames.length > 1) {
+        // Multi-sheet import (Backup Completo)
+        const parsedReport: FullReportData = {};
+        for (const sheetName of wb.SheetNames) {
+          const normName = norm(sheetName);
+          const ws = wb.Sheets[sheetName];
+          const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: null });
+          const mapped = mapRawRows(raw);
+
+          if (normName.includes("pagamento") && normName.includes("pt")) {
+            parsedReport.pt_payments = mapped;
+          } else if (normName.includes("plano") && normName.includes("pt")) {
+            parsedReport.pt_plans = mapped;
+          } else if (normName.includes("aluno") && normName.includes("pt")) {
+            parsedReport.pt_students = mapped;
+          } else if (normName.includes("pagamento")) {
+            parsedReport.payments = mapped;
+          } else if (normName.includes("plano")) {
+            parsedReport.plans = mapped;
+          } else if (normName.includes("aluno")) {
+            parsedReport.students = mapped;
+          }
         }
-        return out;
-      });
-      setRows(mapped);
+        setFullReportData(parsedReport);
+        setRows([]);
+        if (importType !== "full_report") setImportType("full_report");
+      } else {
+        // Single sheet import
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: null });
+        setRows(mapRawRows(raw));
+        setFullReportData(null);
+      }
       setErrors([]);
       setImported(null);
     };
     reader.readAsArrayBuffer(file);
+  }
+
+  // Import block helpers
+  async function importPlansRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
+    let ok = 0;
+    for (let i = 0; i < targetRows.length; i++) {
+      const r = targetRows[i];
+      if (!r.name) { errs.push(`Planos [Linha ${i + 2}]: nome do plano ausente`); continue; }
+      const price = Number(r.price);
+      if (isNaN(price)) { errs.push(`Planos [Linha ${i + 2}]: preço inválido`); continue; }
+      const cycleRaw = r.billing_cycle ? norm(String(r.billing_cycle)) : "monthly";
+      const billing_cycle = billingCycleMap[cycleRaw] ?? "monthly";
+      const isActiveRaw = r.is_active;
+      const is_active = isActiveRaw === undefined || isActiveRaw === null
+        ? true
+        : ["true", "1", "sim", "ativo", true, 1].includes(
+            typeof isActiveRaw === "string" ? isActiveRaw.toLowerCase() : isActiveRaw as never
+          );
+      const { error } = await supabase.from("plans").insert({
+        user_id: userId,
+        name: String(r.name),
+        price,
+        billing_cycle,
+        description: r.description ? String(r.description) : null,
+        is_active,
+      });
+      if (error) errs.push(`Planos [Linha ${i + 2}]: ${error.message}`); else ok++;
+    }
+    return ok;
+  }
+
+  async function importStudentsRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
+    let ok = 0;
+    for (let i = 0; i < targetRows.length; i++) {
+      const r = targetRows[i];
+      if (!r.name) { errs.push(`Alunos [Linha ${i + 2}]: nome ausente`); continue; }
+      const { error } = await supabase.from("students").insert({
+        user_id: userId,
+        name: String(r.name),
+        email: r.email ? String(r.email) : null,
+        phone: r.phone ? String(r.phone) : null,
+        status: r.status ? (statusMap[norm(String(r.status))] ?? String(r.status)) : "active",
+        notes: r.notes ? String(r.notes) : null,
+        cpf: r.cpf ? String(r.cpf) : null,
+        rg: r.rg ? String(r.rg) : null,
+        birth_date: parseDate(r.birth_date),
+        address: r.address ? String(r.address) : null,
+        neighborhood: r.neighborhood ? String(r.neighborhood) : null,
+        city: r.city ? String(r.city) : null,
+        state: r.state ? String(r.state) : null,
+        postal_code: r.postal_code ? String(r.postal_code) : null,
+        country: r.country ? String(r.country) : null,
+        start_date: parseDate(r.start_date),
+      });
+
+      if (error) errs.push(`Alunos [Linha ${i + 2}]: ${error.message}`); else ok++;
+    }
+    return ok;
+  }
+
+  async function importPaymentsRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
+    let ok = 0;
+    const studentByName = new Map(students.map((s) => [s.name.toLowerCase(), s.id]));
+    const planByName = new Map(plans.map((p) => [p.name.toLowerCase(), p.id]));
+
+    for (let i = 0; i < targetRows.length; i++) {
+      const r = targetRows[i];
+      const name = r.student_name ?? r.name;
+      if (!name) { errs.push(`Pagamentos [Linha ${i + 2}]: aluno ausente`); continue; }
+      const amount = Number(r.amount);
+      if (isNaN(amount)) { errs.push(`Pagamentos [Linha ${i + 2}]: valor inválido`); continue; }
+      const pd = parseDate(r.payment_date) ?? new Date().toISOString().slice(0, 10);
+      const rm = parseMonth(r.reference_month) ?? pd.slice(0, 7);
+
+      const key = String(name).toLowerCase();
+      let studentId = studentByName.get(key);
+      if (!studentId) {
+        const { data, error } = await supabase
+          .from("students").insert({ user_id: userId, name: String(name) })
+          .select("id").single();
+        if (error) { errs.push(`Pagamentos [Linha ${i + 2}]: ${error.message}`); continue; }
+        studentId = data.id;
+        studentByName.set(key, studentId);
+      }
+      const planId = r.plan_name ? planByName.get(String(r.plan_name).toLowerCase()) ?? null : null;
+      const methodRaw = r.payment_method ? norm(String(r.payment_method)) : "pix";
+      const method = methodMap[methodRaw] ?? methodRaw;
+      const statusRaw = r.status ? norm(String(r.status)) : "paid";
+      const status = statusMap[statusRaw] ?? statusRaw;
+
+      const { error } = await supabase.from("payments").insert({
+        user_id: userId, student_id: studentId, plan_id: planId,
+        amount, payment_date: pd, reference_month: rm,
+        due_date: parseDate(r.due_date),
+        payment_method: method, status,
+        notes: r.notes ? String(r.notes) : null,
+      });
+      if (error) errs.push(`Pagamentos [Linha ${i + 2}]: ${error.message}`); else ok++;
+    }
+    return ok;
+  }
+
+  async function importPTPlansRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
+    let ok = 0;
+    for (let i = 0; i < targetRows.length; i++) {
+      const r = targetRows[i];
+      if (!r.name) { errs.push(`Planos PT [Linha ${i + 2}]: nome ausente`); continue; }
+      const isActiveRaw = r.is_active;
+      const is_active = isActiveRaw === undefined || isActiveRaw === null
+        ? true
+        : ["true", "1", "sim", "ativo", true, 1].includes(
+            typeof isActiveRaw === "string" ? isActiveRaw.toLowerCase() : isActiveRaw as never
+          );
+      const { error } = await supabase.from("pt_plans").insert({
+        user_id: userId,
+        name: String(r.name),
+        description: r.description ? String(r.description) : null,
+        billing_type: r.billing_type ? String(r.billing_type) : "monthly",
+        price_per_month: r.price_per_month ? Number(r.price_per_month) : null,
+        price_per_session: r.price_per_session ? Number(r.price_per_session) : null,
+        package_price: r.package_price ? Number(r.package_price) : null,
+        package_sessions: r.package_sessions ? Number(r.package_sessions) : null,
+        sessions_per_month: r.sessions_per_month ? Number(r.sessions_per_month) : null,
+        is_active,
+      });
+      if (error) errs.push(`Planos PT [Linha ${i + 2}]: ${error.message}`); else ok++;
+    }
+    return ok;
+  }
+
+  async function importPTStudentsRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
+    let ok = 0;
+    for (let i = 0; i < targetRows.length; i++) {
+      const r = targetRows[i];
+      if (!r.name) { errs.push(`Alunos PT [Linha ${i + 2}]: nome ausente`); continue; }
+      const { error } = await supabase.from("pt_students").insert({
+        user_id: userId,
+        name: String(r.name),
+        email: r.email ? String(r.email) : null,
+        phone: r.phone ? String(r.phone) : null,
+        status: r.status ? (statusMap[norm(String(r.status))] ?? String(r.status)) : "active",
+        goal: r.goal ? String(r.goal) : null,
+        health_notes: r.health_notes ? String(r.health_notes) : null,
+        training_plan: r.training_plan ? String(r.training_plan) : null,
+        birth_date: parseDate(r.birth_date),
+        start_date: parseDate(r.start_date),
+        notes: r.notes ? String(r.notes) : null,
+      });
+
+      if (error) errs.push(`Alunos PT [Linha ${i + 2}]: ${error.message}`); else ok++;
+    }
+    return ok;
+  }
+
+  async function importPTPaymentsRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
+    let ok = 0;
+    const ptStudentByName = new Map(ptStudents.map((s) => [s.name.toLowerCase(), s.id]));
+    const ptPlanByName = new Map(ptPlans.map((p) => [p.name.toLowerCase(), p.id]));
+
+    for (let i = 0; i < targetRows.length; i++) {
+      const r = targetRows[i];
+      const name = r.student_name ?? r.name;
+      if (!name) { errs.push(`Pagamentos PT [Linha ${i + 2}]: aluno ausente`); continue; }
+      const amount = Number(r.amount);
+      if (isNaN(amount)) { errs.push(`Pagamentos PT [Linha ${i + 2}]: valor inválido`); continue; }
+      const pd = parseDate(r.payment_date) ?? new Date().toISOString().slice(0, 10);
+      const rm = parseMonth(r.reference_month) ?? pd.slice(0, 7);
+
+      const key = String(name).toLowerCase();
+      let ptStudentId = ptStudentByName.get(key);
+      if (!ptStudentId) {
+        const { data, error } = await supabase
+          .from("pt_students").insert({ user_id: userId, name: String(name) })
+          .select("id").single();
+        if (error) { errs.push(`Pagamentos PT [Linha ${i + 2}]: ${error.message}`); continue; }
+        ptStudentId = data.id;
+        ptStudentByName.set(key, ptStudentId);
+      }
+      const ptPlanId = r.plan_name ? ptPlanByName.get(String(r.plan_name).toLowerCase()) ?? null : null;
+      const methodRaw = r.payment_method ? norm(String(r.payment_method)) : "pix";
+      const method = methodMap[methodRaw] ?? methodRaw;
+      const statusRaw = r.status ? norm(String(r.status)) : "paid";
+      const status = statusMap[statusRaw] ?? statusRaw;
+
+      const { error } = await supabase.from("pt_payments").insert({
+        user_id: userId,
+        pt_student_id: ptStudentId,
+        pt_plan_id: ptPlanId,
+        amount,
+        payment_date: pd,
+        due_date: parseDate(r.due_date),
+        reference_month: rm,
+        sessions_paid: r.sessions_paid ? Number(r.sessions_paid) : null,
+        payment_method: method,
+        status,
+        notes: r.notes ? String(r.notes) : null,
+      });
+      if (error) errs.push(`Pagamentos PT [Linha ${i + 2}]: ${error.message}`); else ok++;
+    }
+    return ok;
   }
 
   async function confirmImport() {
@@ -249,114 +514,95 @@ export function DataTransferPanel() {
     const errs: string[] = [];
     let okCount = 0;
 
-    if (importType === "plans") {
-      for (let i = 0; i < rows.length; i++) {
-        const r = rows[i];
-        if (!r.name) { errs.push(`Linha ${i + 2}: nome do plano ausente`); continue; }
-        const price = Number(r.price);
-        if (!price) { errs.push(`Linha ${i + 2}: preço inválido`); continue; }
-        const cycleRaw = r.billing_cycle ? norm(String(r.billing_cycle)) : "monthly";
-        const billing_cycle = billingCycleMap[cycleRaw] ?? "monthly";
-        const isActiveRaw = r.is_active;
-        const is_active = isActiveRaw === undefined || isActiveRaw === null
-          ? true
-          : ["true", "1", "sim", "ativo", true, 1].includes(
-              typeof isActiveRaw === "string" ? isActiveRaw.toLowerCase() : isActiveRaw as never
-            );
-        const { error } = await supabase.from("plans").insert({
-          user_id: userId,
-          name: String(r.name),
-          price,
-          billing_cycle,
-          description: r.description ? String(r.description) : null,
-          is_active,
-        });
-        if (error) errs.push(`Linha ${i + 2}: ${error.message}`); else okCount++;
+    if (importType === "full_report" && fullReportData) {
+      // Process full report backup sequentially (Plans -> Students -> Payments)
+      if (fullReportData.plans?.length) {
+        okCount += await importPlansRows(userId, fullReportData.plans, errs);
       }
+      if (fullReportData.students?.length) {
+        okCount += await importStudentsRows(userId, fullReportData.students, errs);
+      }
+      if (fullReportData.payments?.length) {
+        okCount += await importPaymentsRows(userId, fullReportData.payments, errs);
+      }
+      if (fullReportData.pt_plans?.length) {
+        okCount += await importPTPlansRows(userId, fullReportData.pt_plans, errs);
+      }
+      if (fullReportData.pt_students?.length) {
+        okCount += await importPTStudentsRows(userId, fullReportData.pt_students, errs);
+      }
+      if (fullReportData.pt_payments?.length) {
+        okCount += await importPTPaymentsRows(userId, fullReportData.pt_payments, errs);
+      }
+    } else if (importType === "plans") {
+      okCount = await importPlansRows(userId, rows, errs);
     } else if (importType === "students") {
-      for (let i = 0; i < rows.length; i++) {
-        const r = rows[i];
-        if (!r.name) { errs.push(`Linha ${i + 2}: nome ausente`); continue; }
-        const { error } = await supabase.from("students").insert({
-          user_id: userId,
-          name: String(r.name),
-          email: r.email ? String(r.email) : null,
-          phone: r.phone ? String(r.phone) : null,
-          status: r.status ? String(r.status) : "active",
-          notes: r.notes ? String(r.notes) : null,
-          cpf: r.cpf ? String(r.cpf) : null,
-          rg: r.rg ? String(r.rg) : null,
-          birth_date: parseDate(r.birth_date),
-          address: r.address ? String(r.address) : null,
-          neighborhood: r.neighborhood ? String(r.neighborhood) : null,
-          city: r.city ? String(r.city) : null,
-          state: r.state ? String(r.state) : null,
-          postal_code: r.postal_code ? String(r.postal_code) : null,
-          country: r.country ? String(r.country) : null,
-          start_date: parseDate(r.start_date),
-        });
-
-        if (error) errs.push(`Linha ${i + 2}: ${error.message}`); else okCount++;
-      }
-    } else {
-      // Payments: auto-create student if missing
-      const studentByName = new Map(students.map((s) => [s.name.toLowerCase(), s.id]));
-      const planByName = new Map(plans.map((p) => [p.name.toLowerCase(), p.id]));
-
-      for (let i = 0; i < rows.length; i++) {
-        const r = rows[i];
-        const name = r.student_name ?? r.name;
-        if (!name) { errs.push(`Linha ${i + 2}: aluno ausente`); continue; }
-        const amount = Number(r.amount);
-        if (!amount) { errs.push(`Linha ${i + 2}: valor inválido`); continue; }
-        const pd = parseDate(r.payment_date);
-        const rm = parseMonth(r.reference_month) ?? (pd ? pd.slice(0, 7) : null);
-        if (!pd || !rm) { errs.push(`Linha ${i + 2}: data ou mês de referência inválido`); continue; }
-
-        const key = String(name).toLowerCase();
-        let studentId = studentByName.get(key);
-        if (!studentId) {
-          const { data, error } = await supabase
-            .from("students").insert({ user_id: userId, name: String(name) })
-            .select("id").single();
-          if (error) { errs.push(`Linha ${i + 2}: ${error.message}`); continue; }
-          studentId = data.id;
-          studentByName.set(key, studentId);
-        }
-        const planId = r.plan_name ? planByName.get(String(r.plan_name).toLowerCase()) ?? null : null;
-        const methodRaw = r.payment_method ? norm(String(r.payment_method)) : "pix";
-        const method = methodMap[methodRaw] ?? methodRaw;
-        const statusRaw = r.status ? norm(String(r.status)) : "paid";
-        const status = statusMap[statusRaw] ?? statusRaw;
-
-        const { error } = await supabase.from("payments").insert({
-          user_id: userId, student_id: studentId, plan_id: planId,
-          amount, payment_date: pd, reference_month: rm,
-          due_date: parseDate(r.due_date),
-          payment_method: method, status,
-          notes: r.notes ? String(r.notes) : null,
-        });
-        if (error) errs.push(`Linha ${i + 2}: ${error.message}`); else okCount++;
-      }
+      okCount = await importStudentsRows(userId, rows, errs);
+    } else if (importType === "payments") {
+      okCount = await importPaymentsRows(userId, rows, errs);
+    } else if (importType === "pt_plans") {
+      okCount = await importPTPlansRows(userId, rows, errs);
+    } else if (importType === "pt_students") {
+      okCount = await importPTStudentsRows(userId, rows, errs);
+    } else if (importType === "pt_payments") {
+      okCount = await importPTPaymentsRows(userId, rows, errs);
     }
 
     setErrors(errs);
     setImported(okCount);
     qc.invalidateQueries();
-    if (okCount) toast.success(`${okCount} registro(s) importado(s)`);
-    if (errs.length) toast.error(`${errs.length} erro(s)`);
+    if (okCount) toast.success(`${okCount} registro(s) importado(s) com sucesso! 🎉`);
+    if (errs.length) toast.error(`${errs.length} erro(s) durante a importação.`);
   }
 
-  async function downloadTemplate(kind: "payments" | "students" | "plans") {
+  async function downloadTemplate(kind: ImportCategory) {
     const XLSX = await import("xlsx");
+    const wb = XLSX.utils.book_new();
+
+    if (kind === "full_report") {
+      // Full Backup Template (Multi-Sheet)
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+        { student_name: "João Silva", plan_name: "Mensal Basic", amount: 99.9, payment_date: "01/03/2026", reference_month: "03/2026", payment_method: "pix", status: "pago", notes: "" }
+      ]), "Pagamentos");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+        { name: "João Silva", email: "joao@example.com", phone: "11999990000", cpf: "000.000.000-00", rg: "", birth_date: "15/05/1990", address: "Rua A, 123", neighborhood: "Centro", city: "São Paulo", state: "SP", postal_code: "01000-000", country: "Brasil", start_date: "01/03/2026", status: "active", notes: "" }
+      ]), "Alunos");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+        { name: "Mensal Basic", price: 99.9, billing_cycle: "mensal", description: "Plano mensal padrão", is_active: true }
+      ]), "Planos");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+        { name: "Maria Santos", email: "maria@example.com", phone: "11988887777", goal: "Hipertrofia", health_notes: "Nenhuma", training_plan: "Treino A/B", birth_date: "20/10/1995", start_date: "01/03/2026", status: "active", notes: "" }
+      ]), "Alunos PT");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+        { student_name: "Maria Santos", plan_name: "Personal 12 Sessoes", amount: 450.0, payment_date: "01/03/2026", due_date: "01/04/2026", reference_month: "03/2026", sessions_paid: 12, payment_method: "pix", status: "pago", notes: "" }
+      ]), "Pagamentos PT");
+
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+        { name: "Personal 12 Sessoes", description: "Pacote 12 Aulas", billing_type: "package", price_per_month: "", price_per_session: 37.5, package_price: 450.0, package_sessions: 12, sessions_per_month: "", is_active: true }
+      ]), "Planos PT");
+
+      XLSX.writeFile(wb, `edufinance_template_backup_completo.xlsx`);
+      return;
+    }
+
     const data =
       kind === "payments"
-        ? [{ student_name: "João Silva", plan_name: "Mensal Basic", amount: 99.9, payment_date: "01/03/2025", reference_month: "03/2025", payment_method: "pix", status: "pago", notes: "" }]
+        ? [{ student_name: "João Silva", plan_name: "Mensal Basic", amount: 99.9, payment_date: "01/03/2026", reference_month: "03/2026", payment_method: "pix", status: "pago", notes: "" }]
         : kind === "students"
-        ? [{ name: "João Silva", email: "joao@example.com", phone: "11999990000", cpf: "000.000.000-00", rg: "", birth_date: "15/05/1990", address: "Rua A, 123", neighborhood: "Centro", city: "São Paulo", state: "SP", postal_code: "01000-000", country: "Brasil", plan_name: "Mensal Basic", start_date: "01/03/2025", status: "active", notes: "" }]
-        : [{ name: "Mensal Pro", price: 250, billing_cycle: "mensal", description: "Plano mensal completo", is_active: true }];
+        ? [{ name: "João Silva", email: "joao@example.com", phone: "11999990000", cpf: "000.000.000-00", rg: "", birth_date: "15/05/1990", address: "Rua A, 123", neighborhood: "Centro", city: "São Paulo", state: "SP", postal_code: "01000-000", country: "Brasil", start_date: "01/03/2026", status: "active", notes: "" }]
+        : kind === "plans"
+        ? [{ name: "Mensal Pro", price: 250, billing_cycle: "mensal", description: "Plano mensal completo", is_active: true }]
+        : kind === "pt_students"
+        ? [{ name: "Maria Santos", email: "maria@example.com", phone: "11988887777", goal: "Hipertrofia", health_notes: "Sem restrições", training_plan: "ABC", birth_date: "20/10/1995", start_date: "01/03/2026", status: "active", notes: "" }]
+        : kind === "pt_payments"
+        ? [{ student_name: "Maria Santos", plan_name: "Personal 12 Sessoes", amount: 450.0, payment_date: "01/03/2026", due_date: "01/04/2026", reference_month: "03/2026", sessions_paid: 12, payment_method: "pix", status: "pago", notes: "" }]
+        : [{ name: "Personal 12 Sessoes", description: "Pacote 12 Aulas", billing_type: "package", price_per_month: "", price_per_session: 37.5, package_price: 450.0, package_sessions: 12, sessions_per_month: "", is_active: true }];
+
     const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, kind);
     XLSX.writeFile(wb, `edufinance_template_${kind}.xlsx`);
   }
@@ -488,105 +734,171 @@ export function DataTransferPanel() {
       Preco_Pacote: p.package_price ?? "", Sessoes_Pacote: p.package_sessions ?? "",
       Sessoes_Mes: p.sessions_per_month ?? "", Ativo: p.is_active,
     }))), "Planos PT");
-    XLSX.writeFile(wb, `edufinance_relatorio_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `edufinance_relatorio_completo_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
+  const importCategories: { id: ImportCategory; label: string }[] = [
+    { id: "payments", label: "Pagamentos" },
+    { id: "students", label: "Alunos" },
+    { id: "plans", label: "Planos" },
+    { id: "pt_students", label: "Alunos PT" },
+    { id: "pt_payments", label: "Pagamentos PT" },
+    { id: "pt_plans", label: "Planos PT" },
+    { id: "full_report", label: "Relatório Completo (Backup)" },
+  ];
 
   return (
     <div className="space-y-6">
-
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="p-5">
-          <div className="flex items-center gap-2">
-            <Upload className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-semibold">Importar</h2>
-          </div>
-
-          <div className="mt-4 flex gap-2">
-            <Button variant={importType === "payments" ? "default" : "outline"} size="sm" onClick={() => { setImportType("payments"); setRows([]); }}>Pagamentos</Button>
-            <Button variant={importType === "students" ? "default" : "outline"} size="sm" onClick={() => { setImportType("students"); setRows([]); }}>Alunos</Button>
-            <Button variant={importType === "plans" ? "default" : "outline"} size="sm" onClick={() => { setImportType("plans"); setRows([]); }}>Planos</Button>
-          </div>
-
-          <div className="mt-4 rounded-lg border-2 border-dashed p-6 text-center">
-            <FileSpreadsheet className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-2 text-sm">Arraste um arquivo .xlsx ou .csv ou</p>
-            <label className="mt-2 inline-block cursor-pointer text-sm font-medium text-primary hover:underline">
-              selecione um arquivo
-              <input
-                type="file"
-                accept=".xlsx,.csv,.xls"
-                className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-              />
-            </label>
-            <div className="mt-3">
-              <Button variant="ghost" size="sm" onClick={() => downloadTemplate(importType)}>
-                <Download className="h-3.5 w-3.5" /> Baixar template
-              </Button>
+        <Card className="p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-primary" />
+              <h2 className="text-base font-semibold">Importar Dados</h2>
             </div>
-          </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Selecione o tipo de dado ou importe um relatório completo (backup multi-abas .xlsx).
+            </p>
 
-          {rows.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm">
-                <span className="font-medium">{rows.length}</span> linhas detectadas — pré-visualização (5 primeiras):
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {importCategories.map((cat) => {
+                const isActive = importType === cat.id;
+                const isFull = cat.id === "full_report";
+                return (
+                  <Button
+                    key={cat.id}
+                    variant={isActive ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setImportType(cat.id);
+                      setRows([]);
+                      setFullReportData(null);
+                      setErrors([]);
+                      setImported(null);
+                    }}
+                    className={`text-xs ${isFull && !isActive ? "border-primary/40 text-primary bg-primary/5 hover:bg-primary/10" : ""}`}
+                  >
+                    {isFull && <Database className="mr-1 h-3.5 w-3.5" />}
+                    {cat.label}
+                  </Button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 rounded-lg border-2 border-dashed p-6 text-center bg-card/40">
+              <FileSpreadsheet className="mx-auto h-8 w-8 text-muted-foreground/60" />
+              <p className="mt-2 text-sm font-medium">
+                {importType === "full_report"
+                  ? "Arraste o arquivo do Relatório Completo (.xlsx com abas)"
+                  : "Arraste um arquivo .xlsx ou .csv"}
               </p>
-              <div className="mt-2 overflow-auto rounded-lg border bg-muted/30 p-2 text-xs">
-                <pre className="font-mono">{JSON.stringify(rows.slice(0, 5), null, 2)}</pre>
+              <label className="mt-2 inline-block cursor-pointer text-sm font-semibold text-primary hover:underline">
+                selecione um arquivo do computador
+                <input
+                  type="file"
+                  accept=".xlsx,.csv,.xls"
+                  className="hidden"
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+                />
+              </label>
+              <div className="mt-3">
+                <Button variant="ghost" size="sm" onClick={() => downloadTemplate(importType)} className="text-xs gap-1.5">
+                  <Download className="h-3.5 w-3.5" />
+                  {importType === "full_report" ? "Baixar template do Backup Completo (.xlsx)" : "Baixar template"}
+                </Button>
               </div>
-              <Button className="mt-3" onClick={confirmImport}>Confirmar importação</Button>
             </div>
-          )}
 
-          {imported !== null && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg bg-success/10 p-3 text-sm text-success">
-              <CheckCircle2 className="h-4 w-4" /> {imported} registro(s) importado(s) com sucesso
-            </div>
-          )}
-          {errors.length > 0 && (
-            <div className="mt-2 rounded-lg bg-destructive/10 p-3 text-sm">
-              <div className="flex items-center gap-2 font-medium text-destructive">
-                <AlertTriangle className="h-4 w-4" /> {errors.length} erro(s)
+            {/* Single-sheet Preview */}
+            {rows.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-semibold flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <span>{rows.length}</span> linhas detectadas para a categoria <span className="uppercase text-primary font-bold">{importType}</span>
+                </p>
+                <div className="max-h-40 overflow-auto rounded-lg border bg-muted/40 p-2.5 text-[11px]">
+                  <pre className="font-mono leading-relaxed">{JSON.stringify(rows.slice(0, 3), null, 2)}</pre>
+                </div>
+                <Button className="mt-2 w-full font-bold" onClick={confirmImport}>
+                  Confirmar Importação de {rows.length} Registros
+                </Button>
               </div>
-              <ul className="mt-2 max-h-32 list-disc overflow-auto pl-5 text-xs text-destructive">
-                {errors.map((e, i) => <li key={i}>{e}</li>)}
-              </ul>
-            </div>
-          )}
+            )}
+
+            {/* Multi-sheet Backup Preview */}
+            {fullReportData && (
+              <div className="mt-4 space-y-3">
+                <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs space-y-2">
+                  <p className="font-bold text-primary flex items-center gap-1.5">
+                    <Database className="h-4 w-4" /> Relatório Completo Detectado (Backup Multi-Abas):
+                  </p>
+                  <ul className="grid grid-cols-2 gap-1.5 pl-2 font-medium">
+                    {fullReportData.students && <li>• Alunos: <b>{fullReportData.students.length}</b></li>}
+                    {fullReportData.payments && <li>• Pagamentos: <b>{fullReportData.payments.length}</b></li>}
+                    {fullReportData.plans && <li>• Planos: <b>{fullReportData.plans.length}</b></li>}
+                    {fullReportData.pt_students && <li>• Alunos PT: <b>{fullReportData.pt_students.length}</b></li>}
+                    {fullReportData.pt_payments && <li>• Pagamentos PT: <b>{fullReportData.pt_payments.length}</b></li>}
+                    {fullReportData.pt_plans && <li>• Planos PT: <b>{fullReportData.pt_plans.length}</b></li>}
+                  </ul>
+                </div>
+                <Button className="w-full font-bold bg-primary hover:bg-primary/90" onClick={confirmImport}>
+                  Restaurar Backup Completo (Importar Todas as Abas)
+                </Button>
+              </div>
+            )}
+
+            {imported !== null && (
+              <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-3 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="h-4 w-4 shrink-0" /> {imported} registro(s) importado(s) com sucesso no seu banco!
+              </div>
+            )}
+
+            {errors.length > 0 && (
+              <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs">
+                <div className="flex items-center gap-2 font-bold text-destructive">
+                  <AlertTriangle className="h-4 w-4 shrink-0" /> {errors.length} erro(s) durante o processamento:
+                </div>
+                <ul className="mt-2 max-h-32 list-disc overflow-auto pl-5 font-mono text-[11px] text-destructive space-y-0.5">
+                  {errors.map((e, i) => <li key={i}>{e}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
         </Card>
 
-        <Card className="p-5">
-          <div className="flex items-center gap-2">
-            <Download className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-semibold">Exportar</h2>
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Baixe seus dados como planilha Excel.
-          </p>
-          <div className="mt-4 grid gap-2">
-            <Button variant="outline" className="justify-start" onClick={exportPayments}>
-              <FileSpreadsheet className="h-4 w-4" /> Exportar pagamentos
-            </Button>
-            <Button variant="outline" className="justify-start" onClick={exportStudents}>
-              <FileSpreadsheet className="h-4 w-4" /> Exportar alunos
-            </Button>
-            <Button variant="outline" className="justify-start" onClick={exportPlans}>
-              <FileSpreadsheet className="h-4 w-4" /> Exportar planos
-            </Button>
-            <Button variant="outline" className="justify-start" onClick={exportPTStudents}>
-              <FileSpreadsheet className="h-4 w-4" /> Exportar alunos PT
-            </Button>
-            <Button variant="outline" className="justify-start" onClick={exportPTPayments}>
-              <FileSpreadsheet className="h-4 w-4" /> Exportar pagamentos PT
-            </Button>
-            <Button variant="outline" className="justify-start" onClick={exportPTPlans}>
-              <FileSpreadsheet className="h-4 w-4" /> Exportar planos PT
-            </Button>
-            <Button variant="outline" className="justify-start" onClick={exportReport}>
-              <FileSpreadsheet className="h-4 w-4" /> Relatório completo (todas as abas)
-            </Button>
+        <Card className="p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Download className="h-5 w-5 text-primary" />
+              <h2 className="text-base font-semibold">Exportar Dados</h2>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Baixe seus dados cadastrais e financeiros como planilhas Excel organizadas.
+            </p>
 
+            <div className="mt-4 grid gap-2">
+              <Button variant="outline" className="justify-start text-xs font-semibold gap-2" onClick={exportPayments}>
+                <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Exportar pagamentos (Studio)
+              </Button>
+              <Button variant="outline" className="justify-start text-xs font-semibold gap-2" onClick={exportStudents}>
+                <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Exportar alunos (Studio)
+              </Button>
+              <Button variant="outline" className="justify-start text-xs font-semibold gap-2" onClick={exportPlans}>
+                <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Exportar planos (Studio)
+              </Button>
+              <Button variant="outline" className="justify-start text-xs font-semibold gap-2" onClick={exportPTStudents}>
+                <FileSpreadsheet className="h-4 w-4 text-indigo-600" /> Exportar alunos PT (Personal)
+              </Button>
+              <Button variant="outline" className="justify-start text-xs font-semibold gap-2" onClick={exportPTPayments}>
+                <FileSpreadsheet className="h-4 w-4 text-indigo-600" /> Exportar pagamentos PT (Personal)
+              </Button>
+              <Button variant="outline" className="justify-start text-xs font-semibold gap-2" onClick={exportPTPlans}>
+                <FileSpreadsheet className="h-4 w-4 text-indigo-600" /> Exportar planos PT (Personal)
+              </Button>
+              <Button variant="default" className="justify-start text-xs font-bold gap-2 bg-primary hover:bg-primary/90 mt-1 shadow-md shadow-primary/20" onClick={exportReport}>
+                <FileSpreadsheet className="h-4 w-4 text-primary-foreground" /> Relatório completo (todas as abas)
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
