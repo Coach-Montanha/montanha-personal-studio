@@ -194,7 +194,7 @@ function AuthPage() {
       </div>
 
       <header className="relative z-10 w-full border-b border-slate-800/60 bg-slate-950/40 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-md">
               <Lock className="h-5 w-5" />
@@ -204,61 +204,8 @@ function AuthPage() {
               <span className="text-[10px] text-slate-400">Gestão Financeira &amp; Inteligência Operacional</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <a
-              href="/master-admin"
-              className="text-xs text-purple-300 hover:text-white font-bold flex items-center gap-1 px-3 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/40 transition-all"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-              <span>Painel Master</span>
-            </a>
-            <button
-              type="button"
-              onClick={() => setShowEcosystem(!showEcosystem)}
-              className="text-xs text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 transition-all cursor-pointer"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Ecossistema (5 Apps)</span>
-              {showEcosystem ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-          </div>
         </div>
       </header>
-
-      {/* Ecosystem Apps Dropdown Bar */}
-      {showEcosystem && (
-        <div className="relative z-20 mx-auto w-full max-w-md px-4 pt-4 animate-in fade-in">
-          <div className="p-3.5 rounded-2xl bg-slate-900/95 border border-emerald-500/40 shadow-2xl space-y-2">
-            <div className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Plataformas do Ecossistema Montanha</span>
-            </div>
-            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-              {ECOSYSTEM_APPS.map((app) => (
-                <div
-                  key={app.id}
-                  className={`p-2 rounded-xl border text-xs flex items-center justify-between transition-all ${
-                    app.isCurrent
-                      ? "bg-emerald-500/10 border-emerald-500/50 text-white"
-                      : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
-                  }`}
-                >
-                  <div className="flex flex-col">
-                    <span className="font-bold flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: app.accent }} />
-                      {app.name}
-                    </span>
-                    <span className="text-[10px] text-slate-400">{app.slogan}</span>
-                  </div>
-                  <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border ${app.badgeBg}`}>
-                    {app.isCurrent ? "ATUAL" : app.tag}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-8 sm:py-12">
         <Card
@@ -384,17 +331,6 @@ function AuthPage() {
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Entrar no Personal Studio
                   </Button>
-
-                  <div className="pt-2 border-t border-slate-800 text-center">
-                    <button
-                      type="button"
-                      onClick={handleQuickDemo}
-                      className="w-full py-2 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <Zap className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>⚡ Demo Instantânea / Acesso Rápido</span>
-                    </button>
-                  </div>
                 </form>
               )}
             </TabsContent>
@@ -455,8 +391,54 @@ function AuthPage() {
         </Card>
       </main>
 
-      <footer className="relative z-10 w-full border-t border-slate-800/60 bg-slate-950/50 backdrop-blur-sm">
-        <div className="mx-auto max-w-6xl px-4 py-4 text-center text-xs font-medium text-slate-400 sm:px-6">
+      <footer className="relative z-10 w-full border-t border-slate-800/60 bg-slate-950/50 backdrop-blur-sm py-4 space-y-3">
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={() => setShowEcosystem(!showEcosystem)}
+            className="text-xs text-emerald-400 hover:text-emerald-300 font-bold inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 transition-all cursor-pointer shadow-md"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>🌐 Ecossistema (5 Apps Integrados)</span>
+            {showEcosystem ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+
+        {showEcosystem && (
+          <div className="mx-auto w-full max-w-md px-4 animate-in fade-in">
+            <div className="p-3.5 rounded-2xl bg-slate-900/95 border border-emerald-500/40 shadow-2xl space-y-2 text-left">
+              <div className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Plataformas do Ecossistema Montanha</span>
+              </div>
+              <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
+                {ECOSYSTEM_APPS.map((app) => (
+                  <div
+                    key={app.id}
+                    className={`p-2 rounded-xl border text-xs flex items-center justify-between transition-all ${
+                      app.isCurrent
+                        ? "bg-emerald-500/10 border-emerald-500/50 text-white"
+                        : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
+                    }`}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-bold flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: app.accent }} />
+                        {app.name}
+                      </span>
+                      <span className="text-[10px] text-slate-400">{app.slogan}</span>
+                    </div>
+                    <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border ${app.badgeBg}`}>
+                      {app.isCurrent ? "ATUAL" : app.tag}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mx-auto max-w-6xl px-4 text-center text-xs font-medium text-slate-400 sm:px-6">
           © {new Date().getFullYear()} Montanha Personal Studio — Ecossistema Montanha
         </div>
       </footer>
