@@ -114,31 +114,6 @@ function AuthPage() {
     window.location.href = nextPath;
   }
 
-  async function handleQuickDemo() {
-    const demoEmail = "demo@eduflow.app";
-    const lockout = await checkAndLockGuestDemo(demoEmail);
-    if (lockout.locked && !lockout.allowed) {
-      toast.error("Trava Anti-Abuso: O modo demonstração já foi utilizado no ecossistema.");
-      return;
-    }
-
-    setEmail(demoEmail);
-    setPassword("123456");
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: demoEmail,
-      password: "123456",
-    });
-    setLoading(false);
-    if (error) {
-      toast.info("Modo demonstração ativado.");
-      window.location.href = nextPath;
-    } else {
-      toast.success("Bem-vindo ao modo Demo Instantânea!");
-      window.location.href = nextPath;
-    }
-  }
-
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
