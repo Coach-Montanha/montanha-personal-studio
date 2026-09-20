@@ -5,6 +5,7 @@ import {
   HeadContent,
   Scripts,
   useRouter,
+  useRouterState,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -17,6 +18,7 @@ import { useApplyFontSize } from "@/hooks/use-font-size";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { setImpersonate } from "@/hooks/use-impersonate";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 
 
 
@@ -295,6 +297,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const currentSearch = useRouterState({ select: (s) => s.location.search });
   useApplyFontSize();
 
   // Kill-switch: /qualquer-rota?reset=1 limpa impersonação/tenant/sessão e volta ao login.
@@ -326,7 +329,7 @@ function RootComponent() {
         window.location.replace("/auth");
       }
     })();
-  }, []);
+  }, [currentSearch]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
@@ -374,6 +377,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
+          <ImpersonationBanner />
           <Outlet />
           <Toaster richColors position="top-right" />
           <ConfirmDialogHost />

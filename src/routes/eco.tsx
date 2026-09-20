@@ -46,7 +46,7 @@ const ECOSYSTEM_APPS = [
     category: 'Alta Performance & Endurance',
     color: 'border-cyan-500/40 bg-cyan-500/10 text-cyan-300',
     icon: Flame,
-    url: 'http://localhost:5173/eco',
+    url: 'http://localhost:5176/eco',
     isLocal: false,
     description: 'Periodização avançada com IA, prescrição de treinos híbridos, endurance, musculação e LPO.'
   },
@@ -86,32 +86,8 @@ const ECOSYSTEM_APPS = [
 ];
 
 function EcoPage() {
-  const impersonate = useImpersonate();
-
   return (
     <div className="min-h-screen bg-background text-foreground p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
-      {/* Impersonation Notice if active */}
-      {impersonate && (
-        <aside aria-label="Aviso de Modo Suporte Técnico" className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 text-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs shadow-lg">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-amber-400" />
-            <span>
-              <strong>Modo Suporte Técnico:</strong> Você está operando como{' '}
-              <span className="font-mono font-bold text-white bg-slate-900 px-2 py-0.5 rounded border border-amber-500/30">
-                {impersonate.targetEmail}
-              </span>
-            </span>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => clearImpersonation?.() || window.location.reload()}
-            className="border-amber-500/50 text-amber-200 hover:bg-amber-500/20 text-xs font-bold"
-          >
-            Sair do modo suporte
-          </Button>
-        </aside>
-      )}
 
       {/* Header Banner */}
       <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/40 p-6 md:p-10 shadow-2xl backdrop-blur-xl">
