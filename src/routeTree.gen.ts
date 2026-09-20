@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MasterAdminRouteImport } from './routes/master-admin'
+import { Route as EcoRouteImport } from './routes/eco'
+import { Route as CreateRouteImport } from './routes/create'
+import { Route as BoostRouteImport } from './routes/boost'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
@@ -60,6 +63,21 @@ const McpRoute = McpRouteImport.update({
 const MasterAdminRoute = MasterAdminRouteImport.update({
   id: '/master-admin',
   path: '/master-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EcoRoute = EcoRouteImport.update({
+  id: '/eco',
+  path: '/eco',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateRoute = CreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BoostRoute = BoostRouteImport.update({
+  id: '/boost',
+  path: '/boost',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -254,6 +272,9 @@ const AuthenticatedPersonalTrainerStudentsIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
+  '/boost': typeof BoostRoute
+  '/create': typeof CreateRoute
+  '/eco': typeof EcoRoute
   '/master-admin': typeof MasterAdminRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -291,6 +312,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
+  '/boost': typeof BoostRoute
+  '/create': typeof CreateRoute
+  '/eco': typeof EcoRoute
   '/master-admin': typeof MasterAdminRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -331,6 +355,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/boost': typeof BoostRoute
+  '/create': typeof CreateRoute
+  '/eco': typeof EcoRoute
   '/master-admin': typeof MasterAdminRoute
   '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -372,6 +399,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/boost'
+    | '/create'
+    | '/eco'
     | '/master-admin'
     | '/mcp'
     | '/reset-password'
@@ -409,6 +439,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/boost'
+    | '/create'
+    | '/eco'
     | '/master-admin'
     | '/mcp'
     | '/reset-password'
@@ -448,6 +481,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/auth'
+    | '/boost'
+    | '/create'
+    | '/eco'
     | '/master-admin'
     | '/mcp'
     | '/reset-password'
@@ -488,6 +524,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BoostRoute: typeof BoostRoute
+  CreateRoute: typeof CreateRoute
+  EcoRoute: typeof EcoRoute
   MasterAdminRoute: typeof MasterAdminRoute
   McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -518,6 +557,27 @@ declare module '@tanstack/react-router' {
       path: '/master-admin'
       fullPath: '/master-admin'
       preLoaderRoute: typeof MasterAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/eco': {
+      id: '/eco'
+      path: '/eco'
+      fullPath: '/eco'
+      preLoaderRoute: typeof EcoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create': {
+      id: '/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof CreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/boost': {
+      id: '/boost'
+      path: '/boost'
+      fullPath: '/boost'
+      preLoaderRoute: typeof BoostRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -836,6 +896,9 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  BoostRoute: BoostRoute,
+  CreateRoute: CreateRoute,
+  EcoRoute: EcoRoute,
   MasterAdminRoute: MasterAdminRoute,
   McpRoute: McpRoute,
   ResetPasswordRoute: ResetPasswordRoute,

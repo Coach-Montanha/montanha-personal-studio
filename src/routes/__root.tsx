@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApplyFontSize } from "@/hooks/use-font-size";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
+import { setImpersonate } from "@/hooks/use-impersonate";
 
 
 
@@ -300,6 +301,17 @@ function RootComponent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
+    const impersonateParam = params.get("impersonate");
+    if (impersonateParam && impersonateParam.trim()) {
+      const email = impersonateParam.trim().toLowerCase();
+      setImpersonate({
+        targetEmail: email,
+        targetUserId: `support_${email}`,
+        superAdminEmail: "admin@montanha.app",
+        startedAt: Date.now(),
+      });
+    }
+
     if (params.get("reset") !== "1") return;
     (async () => {
       try {

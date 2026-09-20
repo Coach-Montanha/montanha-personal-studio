@@ -40,6 +40,19 @@ export function setImpersonate(meta: ImpersonateMeta | null) {
   emit();
 }
 
+export function clearImpersonation() {
+  setImpersonate(null);
+  if (typeof window !== "undefined") {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("impersonate");
+      window.location.href = url.pathname + (url.search ? url.search : "") + url.hash;
+    } catch {
+      window.location.reload();
+    }
+  }
+}
+
 export function useImpersonate(): ImpersonateMeta | null {
   return useSyncExternalStore(
     (cb) => {
