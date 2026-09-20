@@ -1,0 +1,1 @@
+import{t as e}from"./createLucideIcon-yG3V06bR.js";import{o as t,s as n}from"./pt-BR-pifzlhiu.js";var r=e(`user-round`,[[`circle`,{cx:`12`,cy:`8`,r:`5`,key:`1hypcn`}],[`path`,{d:`M20 21a8 8 0 0 0-16 0`,key:`rfgkzh`}]]);function i(e,r,i){let a=t(e,i?.in);return isNaN(r)?n(i?.in||e,NaN):(r&&a.setDate(a.getDate()+r),a)}export{r as n,i as t};

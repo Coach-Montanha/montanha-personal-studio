@@ -1,0 +1,22 @@
+//#region node_modules/.nitro/vite/services/ssr/assets/chart-theme-DG2ASWF8.js
+/** Tooltip flutuante alinhado ao popover do design system. */
+var chartTooltip = {
+	cursor: { fill: "color-mix(in oklab, var(--color-primary) 8%, transparent)" },
+	contentStyle: {
+		background: "var(--color-popover)",
+		color: "var(--color-popover-foreground)",
+		border: "1px solid var(--color-border)",
+		borderRadius: "0.75rem",
+		boxShadow: "var(--shadow-float)",
+		padding: "0.5rem 0.75rem",
+		fontSize: "0.8125rem"
+	},
+	labelStyle: {
+		color: "var(--color-foreground)",
+		fontWeight: 650,
+		marginBottom: "0.25rem"
+	},
+	itemStyle: { color: "var(--color-popover-foreground)" }
+};
+//#endregion
+export { chartTooltip as t };
