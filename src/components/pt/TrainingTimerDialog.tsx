@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -12,6 +12,7 @@ import {
   X,
   Plus,
   Minus,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -59,8 +60,12 @@ export function TrainingTimerDialog({
   const [mode, setMode] = useState<TimerMode>(defaultMode);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Settings
+  // EMOM / E2MOM Settings
+  const [emomIntervalMinutes, setEmomIntervalMinutes] = useState(1); // 1 = EMOM, 2 = E2MOM, 3 = E3MOM, etc.
   const [totalMinutes, setTotalMinutes] = useState(10); // for EMOM & AMRAP
+  const [currentBlock, setCurrentBlock] = useState(1);
+
+  // Tabata Settings
   const [tabataRounds, setTabataRounds] = useState(8); // 8 rounds = 4 min
   const [tabataWorkSec, setTabataWorkSec] = useState(20);
   const [tabataRestSec, setTabataRestSec] = useState(10);
@@ -68,7 +73,6 @@ export function TrainingTimerDialog({
   // Running state
   const [running, setRunning] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(60); // current countdown
-  const [currentMinute, setCurrentMinute] = useState(1);
   const [amrapRounds, setAmrapRounds] = useState(0);
 
   // Tabata specific
@@ -78,7 +82,14 @@ export function TrainingTimerDialog({
   // Livre specific (stopwatch count up)
   const [livreSeconds, setLivreSeconds] = useState(0);
 
+  // 2x para fechar confirmation state
+  const [confirmClose, setConfirmClose] = useState(false);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Computed total blocks for EMOM
+  const totalBlocks = Math.max(1, Math.ceil(totalMinutes / emomIntervalMinutes));
 
   // Audio helper
   const triggerBeep = (freq: number, dur = 0.15) => {
@@ -87,13 +98,28 @@ export function TrainingTimerDialog({
     }
   };
 
+  // Close handler requiring double confirmation
+  const handleRequestClose = () => {
+    if (confirmClose) {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+      setConfirmClose(false);
+      onOpenChange(false);
+    } else {
+      setConfirmClose(true);
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = setTimeout(() => {
+        setConfirmClose(false);
+      }, 3000);
+    }
+  };
+
   const resetTimer = () => {
     setRunning(false);
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     if (mode === "EMOM") {
-      setSecondsLeft(60);
-      setCurrentMinute(1);
+      setSecondsLeft(emomIntervalMinutes * 60);
+      setCurrentBlock(1);
     } else if (mode === "AMRAP") {
       setSecondsLeft(Math.max(1, totalMinutes) * 60);
       setAmrapRounds(0);
@@ -109,7 +135,14 @@ export function TrainingTimerDialog({
   // Reset when mode changes or dialog opens
   useEffect(() => {
     resetTimer();
-  }, [mode, totalMinutes, tabataRounds, tabataWorkSec, tabataRestSec]);
+  }, [mode, totalMinutes, emomIntervalMinutes, tabataRounds, tabataWorkSec, tabataRestSec]);
+
+  // Clean timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
 
   // Main Timer tick
   useEffect(() => {
@@ -133,16 +166,16 @@ export function TrainingTimerDialog({
         if (prev <= 1) {
           // Transition logic
           if (mode === "EMOM") {
-            if (currentMinute >= totalMinutes) {
+            if (currentBlock >= totalBlocks) {
               // EMOM Finished!
               triggerBeep(1200, 0.5);
               setRunning(false);
               return 0;
             }
-            // Next minute
+            // Next block
             triggerBeep(950, 0.35);
-            setCurrentMinute((m) => m + 1);
-            return 60;
+            setCurrentBlock((b) => b + 1);
+            return emomIntervalMinutes * 60;
           }
 
           if (mode === "AMRAP") {
@@ -181,7 +214,7 @@ export function TrainingTimerDialog({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [running, mode, currentMinute, totalMinutes, isTabataWork, currentTabataRound, tabataRounds, tabataWorkSec, tabataRestSec, soundEnabled]);
+  }, [running, mode, currentBlock, totalBlocks, emomIntervalMinutes, isTabataWork, currentTabataRound, tabataRounds, tabataWorkSec, tabataRestSec, soundEnabled]);
 
   // Format MM : SS
   const formatTime = (secs: number) => {
@@ -192,20 +225,64 @@ export function TrainingTimerDialog({
 
   const displayTime = mode === "Livre" ? formatTime(livreSeconds) : formatTime(secondsLeft);
 
+  const emomModeLabel = emomIntervalMinutes === 1 ? "EMOM" : `E${emomIntervalMinutes}MOM`;
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog 
+      open={open} 
+      onOpenChange={(next) => {
+        if (!next) {
+          handleRequestClose();
+        } else {
+          onOpenChange(true);
+        }
+      }}
+    >
       <DialogContent 
+        onPointerDownOutside={(e) => {
+          e.preventDefault();
+          handleRequestClose();
+        }}
+        onEscapeKeyDown={(e) => {
+          e.preventDefault();
+          handleRequestClose();
+        }}
         className="w-[95vw] max-w-md rounded-2xl bg-zinc-950 text-white border border-zinc-800/90 p-5 sm:p-6 shadow-2xl overflow-hidden"
       >
-        {/* Header matching screenshot */}
+        {/* Double click warning banner */}
+        {confirmClose && (
+          <div className="mb-2 flex items-center justify-between rounded-xl bg-red-500/15 border border-red-500/35 px-3 py-2 text-red-300 text-xs font-semibold animate-in fade-in slide-in-from-top-1">
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-red-400 shrink-0" />
+              <span>Toque 2x para fechar o cronômetro</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmClose(false);
+                onOpenChange(false);
+              }}
+              className="rounded-md bg-red-500 px-2 py-1 text-[11px] font-bold text-white hover:bg-red-600 transition-colors shrink-0"
+            >
+              Fechar agora
+            </button>
+          </div>
+        )}
+
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-500 shadow-sm">
               <Timer className="h-5 w-5 stroke-[2.2]" />
             </div>
-            <DialogTitle className="text-lg font-bold tracking-tight text-orange-500">
-              Timer de Treino
-            </DialogTitle>
+            <div>
+              <DialogTitle className="text-lg font-bold tracking-tight text-orange-500">
+                Timer de Treino
+              </DialogTitle>
+              <div className="text-[11px] text-zinc-400 font-medium">
+                {mode === "EMOM" ? `${emomModeLabel} • Bloco ${currentBlock}/${totalBlocks}` : mode}
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -224,16 +301,23 @@ export function TrainingTimerDialog({
             </button>
             <button
               type="button"
-              onClick={() => onOpenChange(false)}
+              onClick={handleRequestClose}
+              title={confirmClose ? "Clique novamente para fechar" : "Fechar janela (requer 2 cliques)"}
               aria-label="Fechar"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 transition-colors"
+              className={cn(
+                "flex items-center gap-1 h-9 rounded-lg px-2 text-xs font-semibold transition-all",
+                confirmClose
+                  ? "bg-red-500/25 border border-red-500/50 text-red-300 ring-2 ring-red-500/30"
+                  : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+              )}
             >
               <X className="h-5 w-5" />
+              {confirmClose && <span>Confirmar</span>}
             </button>
           </div>
         </div>
 
-        {/* Mode Selector matching screenshot */}
+        {/* Mode Selector */}
         <div className="mt-4 grid grid-cols-4 gap-1 rounded-xl bg-zinc-900/80 p-1 border border-zinc-800/80">
           {(["EMOM", "AMRAP", "Tabata", "Livre"] as TimerMode[]).map((m) => (
             <button
@@ -255,7 +339,7 @@ export function TrainingTimerDialog({
           ))}
         </div>
 
-        {/* Big Counter Card matching screenshot */}
+        {/* Big Counter Card */}
         <div className="mt-4 flex flex-col items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 sm:p-7 relative overflow-hidden">
           {/* Subtle glow background */}
           <div className="absolute -top-16 -right-16 w-36 h-36 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -264,7 +348,7 @@ export function TrainingTimerDialog({
           <div className="mb-2">
             {mode === "EMOM" && (
               <span className="rounded-full bg-zinc-800/90 border border-zinc-700/60 px-3.5 py-1 text-xs font-medium text-zinc-300">
-                Minuto {currentMinute} de {totalMinutes}
+                {emomIntervalMinutes === 1 ? `Minuto ${currentBlock} de ${totalBlocks}` : `Bloco ${currentBlock} de ${totalBlocks} (${emomModeLabel})`}
               </span>
             )}
             {mode === "AMRAP" && (
@@ -322,7 +406,68 @@ export function TrainingTimerDialog({
         </div>
 
         {/* Inputs Configuration Row */}
-        {(mode === "EMOM" || mode === "AMRAP") && (
+        {mode === "EMOM" && (
+          <div className="mt-4 space-y-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-3.5">
+            {/* Interval selection chips: 1m (EMOM), 2m (E2MOM), 3m (E3MOM), etc. */}
+            <div>
+              <div className="flex items-center justify-between text-xs font-medium text-zinc-300 mb-1.5">
+                <span>Intervalo por Bloco:</span>
+                <span className="font-mono font-bold text-orange-400">{emomModeLabel} ({emomIntervalMinutes} min)</span>
+              </div>
+              <div className="grid grid-cols-5 gap-1.5">
+                {[1, 2, 3, 4, 5].map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    disabled={running}
+                    onClick={() => {
+                      setEmomIntervalMinutes(m);
+                      if (totalMinutes < m) {
+                        setTotalMinutes(m * 5);
+                      }
+                    }}
+                    className={cn(
+                      "h-8 rounded-lg text-xs font-bold transition-all select-none",
+                      emomIntervalMinutes === m
+                        ? "bg-orange-500 text-white shadow-sm"
+                        : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                    )}
+                  >
+                    {m === 1 ? "1m" : `E${m}M`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Total Duration & Blocks row */}
+            <div className="flex items-center justify-between border-t border-zinc-800/80 pt-2.5">
+              <div>
+                <span className="text-xs font-medium text-zinc-300 block">Duração total:</span>
+                <span className="text-[11px] text-zinc-500">
+                  {totalBlocks} {totalBlocks === 1 ? "bloco" : "blocos"} de {emomIntervalMinutes} min
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Input
+                  type="number"
+                  min={emomIntervalMinutes}
+                  max={180}
+                  step={emomIntervalMinutes}
+                  value={totalMinutes}
+                  disabled={running}
+                  onChange={(e) => {
+                    const val = Math.max(1, Number(e.target.value) || 1);
+                    setTotalMinutes(val);
+                  }}
+                  className="h-8 w-20 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg focus:ring-orange-500 text-xs"
+                />
+                <span className="text-xs text-zinc-400 font-medium">min</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {mode === "AMRAP" && (
           <div className="mt-4 flex items-center justify-between rounded-xl bg-zinc-900/50 border border-zinc-800/80 px-4 py-3">
             <span className="text-xs font-medium text-zinc-300">
               Duração total (minutos):
@@ -337,6 +482,7 @@ export function TrainingTimerDialog({
                 onChange={(e) => setTotalMinutes(Math.max(1, Number(e.target.value) || 1))}
                 className="h-9 w-20 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg focus:ring-orange-500"
               />
+              <span className="text-xs text-zinc-400 font-medium">min</span>
             </div>
           </div>
         )}
@@ -382,7 +528,7 @@ export function TrainingTimerDialog({
           </div>
         )}
 
-        {/* Action Controls matching screenshot */}
+        {/* Action Controls */}
         <div className="mt-4 grid grid-cols-2 gap-3">
           <Button
             type="button"

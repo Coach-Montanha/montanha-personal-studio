@@ -197,15 +197,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           collapsed && hoverExpand && hovering && "md:shadow-2xl",
         )}
       >
-        <div className={cn("flex h-16 items-center gap-2 border-b border-sidebar-border", iconOnly ? "justify-center px-2" : "px-5")}>
+        <div className={cn("flex min-h-16 items-center gap-2.5 border-b border-sidebar-border py-2.5", iconOnly ? "justify-center px-2" : "px-4")}>
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary">
             <GraduationCap className="h-5 w-5 text-primary-foreground" />
           </div>
           {!iconOnly && (
-            <div className="min-w-0">
-              <div className="text-base font-bold leading-none">Montanha Personal Studio</div>
-              <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">
-                Gestão Financeira & Inteligência Operacional para Studios e Personais
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-bold leading-tight truncate">Montanha Personal Studio</div>
+              <div className="text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/60 truncate" title="Gestão Financeira & Inteligência Operacional para Studios e Personais">
+                Gestão & Inteligência Operacional
               </div>
             </div>
           )}
