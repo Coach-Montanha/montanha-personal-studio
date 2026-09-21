@@ -1,4 +1,4 @@
-export function renderErrorPage(): string {
+export function renderErrorPage(errorDetail?: string): string {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -21,9 +21,10 @@ export function renderErrorPage(): string {
       }
       * { box-sizing: border-box; }
       body { font: 15px/1.6 system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--fg); display: grid; place-items: center; min-height: 100dvh; margin: 0; padding: 1.5rem; }
-      .card { max-width: 28rem; width: 100%; text-align: center; padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow); }
+      .card { max-width: 36rem; width: 100%; text-align: center; padding: 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; box-shadow: var(--shadow); }
       h1 { font-size: 1.25rem; font-weight: 650; letter-spacing: -0.01em; line-height: 1.3; margin: 0 0 0.5rem; }
       p { color: var(--muted); margin: 0 0 1.5rem; }
+      pre { text-align: left; background: #fef2f2; border: 1px solid #fecaca; padding: 1rem; border-radius: 6px; font-size: 12px; overflow-x: auto; color: #b91c1c; max-height: 300px; white-space: pre-wrap; word-break: break-all; }
       .actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
       a, button { padding: 0.625rem 1rem; border-radius: 0.625rem; font: inherit; font-weight: 550; cursor: pointer; text-decoration: none; border: 1px solid transparent; transition: background-color .18s ease, border-color .18s ease, transform .18s ease; }
       a:focus-visible, button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
@@ -39,6 +40,7 @@ export function renderErrorPage(): string {
     <div class="card">
       <h1>This page didn't load</h1>
       <p>Something went wrong on our end. You can try refreshing or head back home.</p>
+      ${errorDetail ? `<pre><code>${errorDetail}</code></pre>` : ''}
       <div class="actions">
         <button class="primary" onclick="location.reload()">Try again</button>
         <a class="secondary" href="/">Go home</a>
