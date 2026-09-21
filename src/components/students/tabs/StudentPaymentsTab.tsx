@@ -227,20 +227,21 @@ export function StudentPaymentsTab({
           return (
             <div key={year} className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground">{year}</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Mês de Referência</TableHead>
-                    <TableHead>Data de Pagamento</TableHead>
-                    <TableHead>Plano</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead>Forma</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Observações</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <div className="w-full max-w-full overflow-x-auto rounded-xl border border-border/60 bg-card/50 shadow-xs [touch-action:pan-x]">
+                <Table className="min-w-[700px]">
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="whitespace-nowrap">Mês de Referência</TableHead>
+                      <TableHead className="whitespace-nowrap">Data de Pagamento</TableHead>
+                      <TableHead className="whitespace-nowrap">Plano</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Valor</TableHead>
+                      <TableHead className="whitespace-nowrap">Forma</TableHead>
+                      <TableHead className="whitespace-nowrap">Status</TableHead>
+                      <TableHead className="whitespace-nowrap">Observações</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                   {rows.map((p) => {
                     const isRenewable = p.auto_renew ?? p.plans?.auto_renew ?? false;
                     const remaining = p.renewals_remaining;
@@ -468,8 +469,9 @@ export function StudentPaymentsTab({
                 </TableBody>
               </Table>
             </div>
-          );
-        })
+          </div>
+        );
+      })
       )}
     </Card>
   );

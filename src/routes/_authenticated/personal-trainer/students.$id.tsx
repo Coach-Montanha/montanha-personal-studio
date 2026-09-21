@@ -1242,20 +1242,21 @@ function PaymentsTab({ payments, student, onAdd, onEdit, onDelete }: {
         return (
           <div key={year} className="space-y-2">
             <h3 className="text-sm font-semibold text-muted-foreground">{year}</h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Referência</TableHead>
-                  <TableHead>Plano</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
-                  <TableHead className="text-right">Aulas</TableHead>
-                  <TableHead className="text-right">Saldo</TableHead>
-                  <TableHead>Forma</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
+            <div className="w-full max-w-full overflow-x-auto rounded-xl border border-border/60 bg-card/50 shadow-xs [touch-action:pan-x]">
+              <Table className="min-w-[700px]">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="whitespace-nowrap">Data</TableHead>
+                    <TableHead className="whitespace-nowrap">Referência</TableHead>
+                    <TableHead className="whitespace-nowrap">Plano</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Valor</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Aulas</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Saldo</TableHead>
+                    <TableHead className="whitespace-nowrap">Forma</TableHead>
+                    <TableHead className="whitespace-nowrap">Status</TableHead>
+                    <TableHead className="text-right whitespace-nowrap">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
               <TableBody>
                 {rows.map((p) => (
                   <Fragment key={p.id}>
@@ -1333,9 +1334,10 @@ function PaymentsTab({ payments, student, onAdd, onEdit, onDelete }: {
                 </TableRow>
               </TableBody>
             </Table>
-
           </div>
-        );
+
+        </div>
+      );
       })}
     </Card>
   );

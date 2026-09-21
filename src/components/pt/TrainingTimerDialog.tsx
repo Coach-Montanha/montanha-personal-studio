@@ -201,16 +201,16 @@ export function TrainingTimerDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="w-[95vw] max-w-md rounded-2xl bg-zinc-950 text-white border border-zinc-800/90 p-5 sm:p-6 shadow-2xl overflow-hidden"
+        className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-zinc-950 text-white border border-zinc-800/90 p-4 sm:p-5 shadow-2xl custom-scrollbar"
       >
         {/* Header - note: DialogContent already renders the single X close button at top-right */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-500 shadow-sm">
-              <Timer className="h-5 w-5 stroke-[2.2]" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-500 shadow-sm">
+              <Timer className="h-4.5 w-4.5 stroke-[2.2]" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold tracking-tight text-orange-500">
+              <DialogTitle className="text-base sm:text-lg font-bold tracking-tight text-orange-500">
                 Timer de Treino
               </DialogTitle>
               <div className="text-[11px] text-zinc-400 font-medium">
@@ -225,19 +225,19 @@ export function TrainingTimerDialog({
               onClick={() => setSoundEnabled(!soundEnabled)}
               title={soundEnabled ? "Som ativado" : "Som desativado"}
               aria-label={soundEnabled ? "Som ativado" : "Som desativado"}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 transition-colors"
             >
               {soundEnabled ? (
-                <Volume2 className="h-5 w-5" />
+                <Volume2 className="h-4.5 w-4.5" />
               ) : (
-                <VolumeX className="h-5 w-5 text-zinc-600" />
+                <VolumeX className="h-4.5 w-4.5 text-zinc-600" />
               )}
             </button>
           </div>
         </div>
 
         {/* Mode Selector */}
-        <div className="mt-4 grid grid-cols-4 gap-1 rounded-xl bg-zinc-900/80 p-1 border border-zinc-800/80">
+        <div className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-zinc-900/80 p-1 border border-zinc-800/80">
           {(["EMOM", "AMRAP", "Tabata", "Livre"] as TimerMode[]).map((m) => (
             <button
               key={m}
@@ -247,7 +247,7 @@ export function TrainingTimerDialog({
                 resetTimer();
               }}
               className={cn(
-                "h-9 rounded-lg text-xs font-semibold transition-all select-none",
+                "h-8.5 rounded-lg text-xs font-semibold transition-all select-none",
                 mode === m
                   ? "bg-zinc-800 text-white shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
@@ -259,7 +259,7 @@ export function TrainingTimerDialog({
         </div>
 
         {/* Big Counter Card */}
-        <div className="mt-4 flex flex-col items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-6 sm:p-7 relative overflow-hidden">
+        <div className="mt-3 flex flex-col items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 sm:p-5 relative overflow-hidden">
           {/* Subtle glow background */}
           <div className="absolute -top-16 -right-16 w-36 h-36 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -326,7 +326,7 @@ export function TrainingTimerDialog({
 
         {/* Inputs Configuration Row */}
         {mode === "EMOM" && (
-          <div className="mt-4 space-y-2.5 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-3.5">
+          <div className="mt-3 space-y-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-3">
             {/* Interval selection chips: 1m (EMOM), 2m (E2MOM), 3m (E3MOM), etc. */}
             <div>
               <div className="flex items-center justify-between text-xs font-medium text-zinc-300 mb-1.5">
@@ -346,7 +346,7 @@ export function TrainingTimerDialog({
                       }
                     }}
                     className={cn(
-                      "h-8 rounded-lg text-xs font-bold transition-all select-none",
+                      "h-7.5 rounded-lg text-xs font-bold transition-all select-none",
                       emomIntervalMinutes === m
                         ? "bg-orange-500 text-white shadow-sm"
                         : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200"
@@ -359,7 +359,7 @@ export function TrainingTimerDialog({
             </div>
 
             {/* Total Duration & Blocks row */}
-            <div className="flex items-center justify-between border-t border-zinc-800/80 pt-2.5">
+            <div className="flex items-center justify-between border-t border-zinc-800/80 pt-2">
               <div>
                 <span className="text-xs font-medium text-zinc-300 block">Duração total:</span>
                 <span className="text-[11px] text-zinc-500">
@@ -387,7 +387,7 @@ export function TrainingTimerDialog({
         )}
 
         {mode === "AMRAP" && (
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-zinc-900/50 border border-zinc-800/80 px-4 py-3">
+          <div className="mt-3 flex items-center justify-between rounded-xl bg-zinc-900/50 border border-zinc-800/80 px-3.5 py-2.5">
             <span className="text-xs font-medium text-zinc-300">
               Duração total (minutos):
             </span>
@@ -399,7 +399,7 @@ export function TrainingTimerDialog({
                 value={totalMinutes}
                 disabled={running}
                 onChange={(e) => setTotalMinutes(Math.max(1, Number(e.target.value) || 1))}
-                className="h-9 w-20 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg focus:ring-orange-500"
+                className="h-8 w-20 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg focus:ring-orange-500 text-xs"
               />
               <span className="text-xs text-zinc-400 font-medium">min</span>
             </div>
@@ -407,7 +407,7 @@ export function TrainingTimerDialog({
         )}
 
         {mode === "Tabata" && (
-          <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-3 text-center">
+          <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-2.5 text-center">
             <div>
               <div className="text-[10px] text-zinc-400 uppercase font-bold">Rounds</div>
               <Input
@@ -448,12 +448,12 @@ export function TrainingTimerDialog({
         )}
 
         {/* Action Controls */}
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-3.5 grid grid-cols-2 gap-2.5">
           <Button
             type="button"
             variant="outline"
             onClick={resetTimer}
-            className="h-12 rounded-xl border-zinc-800 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 font-semibold gap-2 transition-all active:scale-[0.98]"
+            className="h-11 rounded-xl border-zinc-800 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 font-semibold gap-2 transition-all active:scale-[0.98]"
           >
             <RotateCcw className="h-4 w-4 text-zinc-400" />
             Reiniciar
@@ -468,7 +468,7 @@ export function TrainingTimerDialog({
               setRunning(!running);
             }}
             className={cn(
-              "h-12 rounded-xl text-white font-bold gap-2 transition-all active:scale-[0.98] shadow-lg",
+              "h-11 rounded-xl text-white font-bold gap-2 transition-all active:scale-[0.98] shadow-lg",
               running
                 ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/20"
                 : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/25"
