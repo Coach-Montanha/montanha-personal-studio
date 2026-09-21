@@ -9,10 +9,8 @@ import {
   Pause, 
   Volume2, 
   VolumeX, 
-  X,
-  Plus,
+  Plus, 
   Minus,
-  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -82,10 +80,6 @@ export function TrainingTimerDialog({
   // Livre specific (stopwatch count up)
   const [livreSeconds, setLivreSeconds] = useState(0);
 
-  // 2x para fechar confirmation state
-  const [confirmClose, setConfirmClose] = useState(false);
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Computed total blocks for EMOM
@@ -95,21 +89,6 @@ export function TrainingTimerDialog({
   const triggerBeep = (freq: number, dur = 0.15) => {
     if (soundEnabled) {
       playSound(freq, dur);
-    }
-  };
-
-  // Close handler requiring double confirmation
-  const handleRequestClose = () => {
-    if (confirmClose) {
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-      setConfirmClose(false);
-      onOpenChange(false);
-    } else {
-      setConfirmClose(true);
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = setTimeout(() => {
-        setConfirmClose(false);
-      }, 3000);
     }
   };
 
@@ -132,17 +111,10 @@ export function TrainingTimerDialog({
     }
   };
 
-  // Reset when mode changes or dialog opens
+  // Reset when mode changes or settings change
   useEffect(() => {
     resetTimer();
   }, [mode, totalMinutes, emomIntervalMinutes, tabataRounds, tabataWorkSec, tabataRestSec]);
-
-  // Clean timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-    };
-  }, []);
 
   // Main Timer tick
   useEffect(() => {
@@ -224,52 +196,14 @@ export function TrainingTimerDialog({
   };
 
   const displayTime = mode === "Livre" ? formatTime(livreSeconds) : formatTime(secondsLeft);
-
   const emomModeLabel = emomIntervalMinutes === 1 ? "EMOM" : `E${emomIntervalMinutes}MOM`;
 
   return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(next) => {
-        if (!next) {
-          handleRequestClose();
-        } else {
-          onOpenChange(true);
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        onPointerDownOutside={(e) => {
-          e.preventDefault();
-          handleRequestClose();
-        }}
-        onEscapeKeyDown={(e) => {
-          e.preventDefault();
-          handleRequestClose();
-        }}
         className="w-[95vw] max-w-md rounded-2xl bg-zinc-950 text-white border border-zinc-800/90 p-5 sm:p-6 shadow-2xl overflow-hidden"
       >
-        {/* Double click warning banner */}
-        {confirmClose && (
-          <div className="mb-2 flex items-center justify-between rounded-xl bg-red-500/15 border border-red-500/35 px-3 py-2 text-red-300 text-xs font-semibold animate-in fade-in slide-in-from-top-1">
-            <div className="flex items-center gap-1.5">
-              <AlertTriangle className="h-4 w-4 text-red-400 shrink-0" />
-              <span>Toque 2x para fechar o cronômetro</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setConfirmClose(false);
-                onOpenChange(false);
-              }}
-              className="rounded-md bg-red-500 px-2 py-1 text-[11px] font-bold text-white hover:bg-red-600 transition-colors shrink-0"
-            >
-              Fechar agora
-            </button>
-          </div>
-        )}
-
-        {/* Header */}
+        {/* Header - note: DialogContent already renders the single X close button at top-right */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-500 shadow-sm">
@@ -285,7 +219,7 @@ export function TrainingTimerDialog({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 pr-8">
             <button
               type="button"
               onClick={() => setSoundEnabled(!soundEnabled)}
@@ -298,21 +232,6 @@ export function TrainingTimerDialog({
               ) : (
                 <VolumeX className="h-5 w-5 text-zinc-600" />
               )}
-            </button>
-            <button
-              type="button"
-              onClick={handleRequestClose}
-              title={confirmClose ? "Clique novamente para fechar" : "Fechar janela (requer 2 cliques)"}
-              aria-label="Fechar"
-              className={cn(
-                "flex items-center gap-1 h-9 rounded-lg px-2 text-xs font-semibold transition-all",
-                confirmClose
-                  ? "bg-red-500/25 border border-red-500/50 text-red-300 ring-2 ring-red-500/30"
-                  : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
-              )}
-            >
-              <X className="h-5 w-5" />
-              {confirmClose && <span>Confirmar</span>}
             </button>
           </div>
         </div>
