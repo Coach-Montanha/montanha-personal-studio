@@ -7,13 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TooltipRoot, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { PaymentActionsDock } from "@/components/edufinance/PaymentActionsDock";
 import { PaymentStatusBadge, PlanBadge } from "@/components/edufinance/Badges";
 import { EmptyState } from "@/components/edufinance/EmptyState";
 import { formatBRL, formatDateBR, formatMonthLong, paymentMethodLabel } from "@/lib/format";
@@ -245,7 +239,7 @@ export function StudentPaymentsTab({
                       <TableHead className="whitespace-nowrap">Forma</TableHead>
                       <TableHead className="whitespace-nowrap">Status</TableHead>
                       <TableHead className="whitespace-nowrap max-w-[140px]">Observações</TableHead>
-                      <TableHead className="text-right whitespace-nowrap sticky right-0 z-20 bg-card/95 backdrop-blur shadow-[-6px_0_10px_rgba(0,0,0,0.06)] pr-4">
+                      <TableHead className="text-right whitespace-nowrap sticky right-0 z-20 bg-background/95 backdrop-blur shadow-[-8px_0_12px_rgba(0,0,0,0.04)] pr-4">
                         Ações
                       </TableHead>
                     </TableRow>
@@ -328,104 +322,19 @@ export function StudentPaymentsTab({
                           <TableCell className="text-xs text-muted-foreground max-w-[140px] truncate" title={p.notes ?? undefined}>
                             {p.notes ?? "—"}
                           </TableCell>
-                          <TableCell className="text-right sticky right-0 z-10 bg-card/95 backdrop-blur shadow-[-6px_0_10px_rgba(0,0,0,0.06)] group-hover:bg-muted/60 transition-colors pr-3">
-                            <div className="inline-flex items-center justify-end gap-1">
-                              {p.status === "paid" && (
-                                <TooltipRoot>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      aria-label="Gerar recibo em PDF"
-                                      className="h-8 w-8 rounded-md text-blue-600 transition-all duration-200 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96] dark:text-blue-400 dark:hover:bg-blue-950/50"
-                                      onClick={() => handleGenerateReceipt(p)}
-                                    >
-                                      <FileText className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Gerar Recibo em PDF</TooltipContent>
-                                </TooltipRoot>
-                              )}
-                              {canRenew && (
-                                <TooltipRoot>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      aria-label="Renovar pagamento"
-                                      className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]"
-                                      onClick={() => onRenew(p)}
-                                    >
-                                      {isRenewing ? (
-                                        <RefreshCw className="h-4 w-4 animate-spin text-primary" />
-                                      ) : (
-                                        <Plus className="h-4 w-4 text-primary" />
-                                      )}
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Renovar (criar próximo pagamento)</TooltipContent>
-                                </TooltipRoot>
-                              )}
-                              <TooltipRoot>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    aria-label="Editar pagamento"
-                                    className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]"
-                                    onClick={() => onEdit(p)}
-                                  >
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Editar pagamento</TooltipContent>
-                              </TooltipRoot>
-                              <DropdownMenu>
-                                <TooltipRoot>
-                                  <TooltipTrigger asChild>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        aria-label="Mais opções"
-                                        className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]"
-                                      >
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Mais opções</TooltipContent>
-                                </TooltipRoot>
-                                <DropdownMenuContent align="end" className="w-56">
-                                  <DropdownMenuItem onClick={() => onToggleAutoRenew(p)} className="gap-2 cursor-pointer">
-                                    <RefreshCw className="h-4 w-4 text-primary" />
-                                    <span>{isRenewable ? "Desativar renovação auto" : "Ativar renovação auto"}</span>
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => onTransfer(p)} className="gap-2 cursor-pointer">
-                                    <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
-                                    <span>Transferir para outro aluno</span>
-                                  </DropdownMenuItem>
-                                  {p.status !== "paid" && (
-                                    <DropdownMenuItem
-                                      onClick={() => onRenew(p)}
-                                      disabled={!canRenew}
-                                      className="gap-2 cursor-pointer"
-                                    >
-                                      <Plus className="h-4 w-4 text-primary" />
-                                      <span>Renovar pagamento</span>
-                                    </DropdownMenuItem>
-                                  )}
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() => onDelete(p)}
-                                    className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                    <span>Excluir pagamento</span>
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
+                          <TableCell className="text-right sticky right-0 z-10 bg-background/95 backdrop-blur shadow-[-8px_0_12px_rgba(0,0,0,0.04)] group-hover:bg-muted/40 transition-colors pr-3 py-2">
+                            <PaymentActionsDock
+                              canReceipt={p.status === "paid"}
+                              onReceipt={() => handleGenerateReceipt(p)}
+                              isRenewable={Boolean(isRenewable)}
+                              onToggleAutoRenew={() => onToggleAutoRenew(p)}
+                              canRenew={canRenew}
+                              isRenewing={isRenewing}
+                              onRenew={() => onRenew(p)}
+                              onTransfer={() => onTransfer(p)}
+                              onEdit={() => onEdit(p)}
+                              onDelete={() => onDelete(p)}
+                            />
                           </TableCell>
                         </TableRow>
                         {pkg && isExpanded(p.id, pkg) && (

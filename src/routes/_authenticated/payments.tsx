@@ -21,6 +21,7 @@ import {
 import { PaymentDialog } from "@/components/edufinance/PaymentDialog";
 import { PTPaymentDialog } from "@/components/pt/PTPaymentDialog";
 import { PaymentStatusBadge, PlanBadge } from "@/components/edufinance/Badges";
+import { PaymentActionsDock } from "@/components/edufinance/PaymentActionsDock";
 import { EmptyState } from "@/components/edufinance/EmptyState";
 import { MonthYearPicker } from "@/components/edufinance/MonthYearPicker";
 import { BulkPaymentEditBar } from "@/components/edufinance/BulkPaymentEditBar";
@@ -572,7 +573,7 @@ function PaymentsPage() {
                     <TableHead>Método</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="sticky right-0 z-20 bg-card/95 backdrop-blur shadow-[-6px_0_10px_rgba(0,0,0,0.06)] text-right pr-4">Ações</TableHead>
+                    <TableHead className="sticky right-0 z-20 bg-background/95 backdrop-blur shadow-[-8px_0_12px_rgba(0,0,0,0.04)] text-right pr-4">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -604,43 +605,16 @@ function PaymentsPage() {
                         <TableCell className="text-xs">{pmLabel(p.payment_method)}</TableCell>
                         <TableCell className="text-numeric text-right font-semibold">{formatBRL(p.amount)}</TableCell>
                         <TableCell><PaymentStatusBadge status={p.status} /></TableCell>
-                        <TableCell className="sticky right-0 z-10 bg-card/95 backdrop-blur shadow-[-6px_0_10px_rgba(0,0,0,0.06)] text-right pr-4 group-hover:bg-muted/60 transition-colors">
-                          <div className="ml-auto inline-flex items-center gap-0.5 rounded-md border border-border/60 bg-background/40 p-0.5">
-                            {p.status === "paid" && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 rounded-sm text-blue-600 transition-colors duration-200 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 dark:text-blue-400 dark:hover:bg-blue-950/50"
-                                    onClick={() => handleGenerateReceipt(p)}
-                                    aria-label="Gerar recibo em PDF"
-                                  >
-                                    <FileText className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Gerar Recibo em PDF</TooltipContent>
-                              </Tooltip>
-                            )}
-                            <RenewButton row={p} loading={renewingId === p.id} onClick={() => renewRow(p)} />
-                            <span className="h-4 w-px bg-border/60" aria-hidden />
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm transition-colors duration-200 hover:bg-accent/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1" onClick={() => editRow(p)} aria-label="Editar pagamento">
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Editar</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-sm transition-colors duration-200 hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1" onClick={() => remove(p)} aria-label="Excluir pagamento">
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Excluir</TooltipContent>
-                            </Tooltip>
-                          </div>
+                        <TableCell className="sticky right-0 z-10 bg-background/95 backdrop-blur shadow-[-8px_0_12px_rgba(0,0,0,0.04)] text-right pr-3 py-2 group-hover:bg-muted/40 transition-colors">
+                          <PaymentActionsDock
+                            canReceipt={p.status === "paid"}
+                            onReceipt={() => handleGenerateReceipt(p)}
+                            canRenew={true}
+                            isRenewing={renewingId === p.id}
+                            onRenew={() => renewRow(p)}
+                            onEdit={() => editRow(p)}
+                            onDelete={() => remove(p)}
+                          />
                         </TableCell>
                       </TableRow>
                     );
