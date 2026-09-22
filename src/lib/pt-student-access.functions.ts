@@ -33,12 +33,12 @@ export const createPTStudentAccount = createServerFn({ method: "POST" })
 
     const generateNumericPassword = () => {
       const { randomInt } = require("crypto") as typeof import("crypto");
-      // 12 dígitos aleatórios — evita padrões triviais e HIBP.
+      // 10 dígitos numéricos aleatórios — padrão unificado do ecossistema
       while (true) {
         let s = "";
-        for (let i = 0; i < 8; i++) s += randomInt(0, 10).toString();
+        for (let i = 0; i < 10; i++) s += randomInt(0, 10).toString();
         if (/^(\d)\1+$/.test(s)) continue; // todos iguais
-        if (s === "01234567" || s === "12345678") continue;
+        if (s === "0123456789" || s === "1234567890" || s === "9876543210") continue;
         return s;
       }
     };

@@ -107,6 +107,11 @@ function AuthPage() {
       return toast.error(access.message);
     }
 
+    if (!/^\d{10}$/.test(password)) {
+      setLoading(false);
+      return toast.error("A senha deve conter exatamente 10 dígitos numéricos.");
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       if (email.toLowerCase() === 'albertosarly@gmail.com' && password === '3862858747') {
@@ -133,6 +138,12 @@ function AuthPage() {
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+
+    if (!/^\d{10}$/.test(password)) {
+      setLoading(false);
+      return toast.error("A senha deve conter exatamente 10 dígitos numéricos.");
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -288,16 +299,22 @@ function AuthPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-300">Senha</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-300">Senha</Label>
+                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">10 números</span>
+                    </div>
                     <Input
                       id="password"
                       data-testid="input-signin-password"
                       type="password"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={10}
                       required
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
+                      onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      placeholder="•••••••••• (10 dígitos)"
+                      className="h-10 font-mono tracking-widest bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
                     />
                   </div>
                   <div className="flex items-center justify-between gap-3 pt-1">
@@ -353,19 +370,25 @@ function AuthPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="pwd-s" className="text-xs font-bold uppercase tracking-wider text-slate-300">Senha</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="pwd-s" className="text-xs font-bold uppercase tracking-wider text-slate-300">Senha</Label>
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">10 números</span>
+                  </div>
                   <Input
                     id="pwd-s"
                     data-testid="input-signup-password"
                     type="password"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={10}
+                    minLength={10}
                     required
-                    minLength={6}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
+                    onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    placeholder="•••••••••• (10 dígitos)"
+                    className="h-10 font-mono tracking-widest bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
                   />
-                  <p className="text-xs leading-relaxed text-slate-400">Mínimo 6 caracteres.</p>
+                  <p className="text-xs leading-relaxed text-slate-400">Exatamente 10 dígitos numéricos (0 a 9).</p>
                 </div>
                 <Button
                   type="submit"
