@@ -35,12 +35,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:title", content: "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais" },
       { property: "og:description", content: "Gestão Financeira & Inteligência Operacional para Studios e Personais." },
+      { property: "og:url", content: "https://montanha-personal-studio.vercel.app/" },
+      { property: "og:site_name", content: "Montanha Personal Studio" },
       { name: "twitter:title", content: "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais" },
       { name: "twitter:description", content: "Gestão Financeira & Inteligência Operacional para Studios e Personais." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a1e6323a-33d0-41ff-b98a-0744e285697c/id-preview-899e1b68--69e8a911-c73d-4b50-a7e4-fcc5a1be4536.lovable.app-1782521708855.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a1e6323a-33d0-41ff-b98a-0744e285697c/id-preview-899e1b68--69e8a911-c73d-4b50-a7e4-fcc5a1be4536.lovable.app-1782521708855.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+      { name: "google-site-verification", content: "GSC_VERIFICATION_PLACEHOLDER" },
       { name: "theme-color", content: "#F8F9FE", media: "(prefers-color-scheme: light)" },
       { name: "theme-color", content: "#050a14", media: "(prefers-color-scheme: dark)" },
 
@@ -50,6 +54,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-title", content: "Montanha Personal Studio" },
     ],
     links: [
+      { rel: "canonical", href: "https://montanha-personal-studio.vercel.app/" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
@@ -75,6 +80,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     scripts: [
       {
         children: `try{var t=localStorage.getItem('edufinance.theme');var vt=localStorage.getItem('edufinance.visualTheme');if(!vt||!['padrao','pulse','midnight'].includes(vt)){vt='midnight';try{localStorage.setItem('edufinance.visualTheme','midnight')}catch(e){}}var isDark=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}document.documentElement.setAttribute('data-tema',vt);var _w=typeof window!=='undefined'?window.innerWidth:1024;var _fs=localStorage.getItem('edufinance.fontSize');var _map=_w<640?{sm:14,md:15,lg:16,xl:17}:{sm:15,md:17,lg:19,xl:22};var _def=_w<640?'15px':'17px';if(_fs&&_map[_fs]){document.documentElement.style.fontSize=_map[_fs]+'px'}else{document.documentElement.style.fontSize=_def}}catch(e){}`,
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Montanha Personal Studio",
+          headline: "Gestão Financeira & Inteligência Operacional para Studios e Personais",
+          operatingSystem: "Web, iOS, Android",
+          applicationCategory: "BusinessApplication",
+          description: "Gestão Financeira & Inteligência Operacional para Studios e Personais.",
+          url: "https://montanha-personal-studio.vercel.app/",
+          offers: {
+            "@type": "Offer",
+            price: "0",
+            priceCurrency: "BRL",
+          },
+          author: {
+            "@type": "Organization",
+            name: "Ecossistema Montanha",
+            url: "https://montanha-personal-studio.vercel.app/",
+          },
+        }),
       },
     ],
   }),

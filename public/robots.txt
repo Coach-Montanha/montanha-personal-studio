@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://montanha-personal-studio.vercel.app/sitemap.xml
