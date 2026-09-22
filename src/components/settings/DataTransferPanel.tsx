@@ -268,7 +268,7 @@ export function DataTransferPanel() {
       const data = new Uint8Array(e.target?.result as ArrayBuffer);
       const wb = XLSX.read(data, { type: "array" });
 
-      if (importType === "full_report" || wb.SheetNames.length > 1) {
+      if (importType === "full_report") {
         // Multi-sheet import (Backup Completo)
         const parsedReport: FullReportData = {};
         for (const sheetName of wb.SheetNames) {
@@ -291,12 +291,39 @@ export function DataTransferPanel() {
             parsedReport.students = mapped;
           }
         }
+
+        const matchedSheets = Object.keys(parsedReport);
+        if (matchedSheets.length === 0) {
+          setErrors([
+            `Nenhuma aba reconhecida para o Backup Completo. Abas encontradas: ${wb.SheetNames.join(
+              ", "
+            )}. Utilize abas com termos como: 'Alunos', 'Pagamentos', 'Planos'.`,
+          ]);
+          setFullReportData(null);
+          setRows([]);
+          return;
+        }
+
         setFullReportData(parsedReport);
         setRows([]);
-        if (importType !== "full_report") setImportType("full_report");
       } else {
-        // Single sheet import
-        const ws = wb.Sheets[wb.SheetNames[0]];
+        // Single category import - always respect the chosen importType even if workbook has multiple sheets
+        let targetSheetName = wb.SheetNames[0];
+        const categorySheetMatch = wb.SheetNames.find((sName) => {
+          const n = norm(sName);
+          if (importType === "pt_payments") return n.includes("pagamento") && n.includes("pt");
+          if (importType === "pt_plans") return n.includes("plano") && n.includes("pt");
+          if (importType === "pt_students") return n.includes("aluno") && n.includes("pt");
+          if (importType === "payments") return n.includes("pagamento") && !n.includes("pt");
+          if (importType === "plans") return n.includes("plano") && !n.includes("pt");
+          if (importType === "students") return n.includes("aluno") && !n.includes("pt");
+          return false;
+        });
+        if (categorySheetMatch) {
+          targetSheetName = categorySheetMatch;
+        }
+
+        const ws = wb.Sheets[targetSheetName];
         const raw = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: null });
         setRows(mapRawRows(raw));
         setFullReportData(null);
@@ -310,6 +337,17 @@ export function DataTransferPanel() {
   // Import block helpers
   async function importPlansRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
     let ok = 0;
+    const { data: existingPlans } = await supabase
+      .from("plans")
+      .select("id, name")
+      .eq("user_id", userId)
+      .is("deleted_at", null);
+
+    const planMap = new Map<string, string>();
+    for (const p of existingPlans ?? []) {
+      if (p.name) planMap.set(norm(p.name), p.id);
+    }
+
     for (let i = 0; i < targetRows.length; i++) {
       const r = targetRows[i];
       if (!r.name) { errs.push(`Planos [Linha ${i + 2}]: nome do plano ausente`); continue; }
@@ -323,32 +361,78 @@ export function DataTransferPanel() {
         : ["true", "1", "sim", "ativo", true, 1].includes(
             typeof isActiveRaw === "string" ? isActiveRaw.toLowerCase() : isActiveRaw as never
           );
-      const { error } = await supabase.from("plans").insert({
-        user_id: userId,
-        name: String(r.name),
+
+      const rawName = String(r.name).trim();
+      const planPayload = {
+        name: rawName,
         price,
         billing_cycle,
         description: r.description ? String(r.description) : null,
         is_active,
-      });
-      if (error) errs.push(`Planos [Linha ${i + 2}]: ${error.message}`); else ok++;
+      };
+
+      const existingId = planMap.get(norm(rawName));
+      if (existingId) {
+        const { error } = await supabase.from("plans").update(planPayload).eq("id", existingId);
+        if (error) errs.push(`Planos [Linha ${i + 2}]: ${error.message}`); else ok++;
+      } else {
+        const { data: newPlan, error } = await supabase.from("plans").insert({
+          user_id: userId,
+          ...planPayload,
+        }).select("id").single();
+        if (error) {
+          errs.push(`Planos [Linha ${i + 2}]: ${error.message}`);
+        } else if (newPlan) {
+          planMap.set(norm(rawName), newPlan.id);
+          ok++;
+        }
+      }
     }
     return ok;
   }
 
   async function importStudentsRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
     let ok = 0;
+    const { data: existingStudents } = await supabase
+      .from("students")
+      .select("id, name, email, cpf")
+      .eq("user_id", userId)
+      .is("deleted_at", null);
+
+    const studentMap = new Map<string, string>(); // norm(name) -> id
+    const emailMap = new Map<string, string>();   // norm(email) -> id
+    const cpfMap = new Map<string, string>();     // digits-only cpf -> id
+
+    for (const s of existingStudents ?? []) {
+      if (s.name) studentMap.set(norm(s.name), s.id);
+      if (s.email) emailMap.set(norm(s.email), s.id);
+      if (s.cpf) {
+        const cleanCpf = String(s.cpf).replace(/\D/g, "");
+        if (cleanCpf) cpfMap.set(cleanCpf, s.id);
+      }
+    }
+
     for (let i = 0; i < targetRows.length; i++) {
       const r = targetRows[i];
       if (!r.name) { errs.push(`Alunos [Linha ${i + 2}]: nome ausente`); continue; }
-      const { error } = await supabase.from("students").insert({
-        user_id: userId,
-        name: String(r.name),
-        email: r.email ? String(r.email) : null,
-        phone: r.phone ? String(r.phone) : null,
+
+      const rawName = String(r.name).trim();
+      const normName = norm(rawName);
+      const rawEmail = r.email ? String(r.email).trim() : null;
+      const normEmail = rawEmail ? norm(rawEmail) : null;
+      const rawCpf = r.cpf ? String(r.cpf).replace(/\D/g, "") : null;
+
+      const existingId = (rawCpf && cpfMap.get(rawCpf))
+        || (normEmail && emailMap.get(normEmail))
+        || studentMap.get(normName);
+
+      const payload = {
+        name: rawName,
+        email: rawEmail,
+        phone: r.phone ? String(r.phone).trim() : null,
         status: r.status ? (statusMap[norm(String(r.status))] ?? String(r.status)) : "active",
         notes: r.notes ? String(r.notes) : null,
-        cpf: r.cpf ? String(r.cpf) : null,
+        cpf: r.cpf ? String(r.cpf).trim() : null,
         rg: r.rg ? String(r.rg) : null,
         birth_date: parseDate(r.birth_date),
         address: r.address ? String(r.address) : null,
@@ -358,17 +442,53 @@ export function DataTransferPanel() {
         postal_code: r.postal_code ? String(r.postal_code) : null,
         country: r.country ? String(r.country) : null,
         start_date: parseDate(r.start_date),
-      });
+      };
 
-      if (error) errs.push(`Alunos [Linha ${i + 2}]: ${error.message}`); else ok++;
+      if (existingId) {
+        const { error } = await supabase
+          .from("students")
+          .update(payload)
+          .eq("id", existingId);
+        if (error) {
+          errs.push(`Alunos [Linha ${i + 2}]: ${error.message}`);
+        } else {
+          ok++;
+        }
+      } else {
+        const { data: newStudent, error } = await supabase
+          .from("students")
+          .insert({ user_id: userId, ...payload })
+          .select("id")
+          .single();
+        if (error) {
+          errs.push(`Alunos [Linha ${i + 2}]: ${error.message}`);
+        } else if (newStudent) {
+          studentMap.set(normName, newStudent.id);
+          if (normEmail) emailMap.set(normEmail, newStudent.id);
+          if (rawCpf) cpfMap.set(rawCpf, newStudent.id);
+          ok++;
+        }
+      }
     }
     return ok;
   }
 
   async function importPaymentsRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
     let ok = 0;
-    const studentByName = new Map(students.map((s) => [s.name.toLowerCase(), s.id]));
-    const planByName = new Map(plans.map((p) => [p.name.toLowerCase(), p.id]));
+    // Always fetch fresh students and plans from Supabase to prevent duplicate creation and match restored records
+    const [{ data: freshStudents }, { data: freshPlans }] = await Promise.all([
+      supabase.from("students").select("id, name").eq("user_id", userId).is("deleted_at", null),
+      supabase.from("plans").select("id, name").eq("user_id", userId).is("deleted_at", null),
+    ]);
+
+    const studentByName = new Map<string, string>();
+    for (const s of freshStudents ?? []) {
+      if (s.name) studentByName.set(norm(s.name), s.id);
+    }
+    const planByName = new Map<string, string>();
+    for (const p of freshPlans ?? []) {
+      if (p.name) planByName.set(norm(p.name), p.id);
+    }
 
     for (let i = 0; i < targetRows.length; i++) {
       const r = targetRows[i];
@@ -376,20 +496,27 @@ export function DataTransferPanel() {
       if (!name) { errs.push(`Pagamentos [Linha ${i + 2}]: aluno ausente`); continue; }
       const amount = Number(r.amount);
       if (isNaN(amount)) { errs.push(`Pagamentos [Linha ${i + 2}]: valor inválido`); continue; }
-      const pd = parseDate(r.payment_date) ?? new Date().toISOString().slice(0, 10);
+      
+      const pd = parseDate(r.payment_date);
+      if (!pd) {
+        errs.push(`Pagamentos [Linha ${i + 2}]: data de pagamento inválida ou ausente ('${r.payment_date ?? ""}')`);
+        continue;
+      }
       const rm = parseMonth(r.reference_month) ?? pd.slice(0, 7);
 
-      const key = String(name).toLowerCase();
+      const rawName = String(name).trim();
+      const key = norm(rawName);
       let studentId = studentByName.get(key);
       if (!studentId) {
         const { data, error } = await supabase
-          .from("students").insert({ user_id: userId, name: String(name) })
+          .from("students").insert({ user_id: userId, name: rawName, status: "active" })
           .select("id").single();
         if (error) { errs.push(`Pagamentos [Linha ${i + 2}]: ${error.message}`); continue; }
         studentId = data.id;
         studentByName.set(key, studentId);
       }
-      const planId = r.plan_name ? planByName.get(String(r.plan_name).toLowerCase()) ?? null : null;
+      const planKey = r.plan_name ? norm(String(r.plan_name).trim()) : null;
+      const planId = planKey ? planByName.get(planKey) ?? null : null;
       const methodRaw = r.payment_method ? norm(String(r.payment_method)) : "pix";
       const method = methodMap[methodRaw] ?? methodRaw;
       const statusRaw = r.status ? norm(String(r.status)) : "paid";
@@ -409,6 +536,17 @@ export function DataTransferPanel() {
 
   async function importPTPlansRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
     let ok = 0;
+    const { data: existingPlans } = await supabase
+      .from("pt_plans")
+      .select("id, name")
+      .eq("user_id", userId)
+      .is("deleted_at", null);
+
+    const planMap = new Map<string, string>();
+    for (const p of existingPlans ?? []) {
+      if (p.name) planMap.set(norm(p.name), p.id);
+    }
+
     for (let i = 0; i < targetRows.length; i++) {
       const r = targetRows[i];
       if (!r.name) { errs.push(`Planos PT [Linha ${i + 2}]: nome ausente`); continue; }
@@ -418,9 +556,9 @@ export function DataTransferPanel() {
         : ["true", "1", "sim", "ativo", true, 1].includes(
             typeof isActiveRaw === "string" ? isActiveRaw.toLowerCase() : isActiveRaw as never
           );
-      const { error } = await supabase.from("pt_plans").insert({
-        user_id: userId,
-        name: String(r.name),
+      const rawName = String(r.name).trim();
+      const ptPlanPayload = {
+        name: rawName,
         description: r.description ? String(r.description) : null,
         billing_type: r.billing_type ? String(r.billing_type) : "monthly",
         price_per_month: r.price_per_month ? Number(r.price_per_month) : null,
@@ -429,22 +567,59 @@ export function DataTransferPanel() {
         package_sessions: r.package_sessions ? Number(r.package_sessions) : null,
         sessions_per_month: r.sessions_per_month ? Number(r.sessions_per_month) : null,
         is_active,
-      });
-      if (error) errs.push(`Planos PT [Linha ${i + 2}]: ${error.message}`); else ok++;
+      };
+
+      const existingId = planMap.get(norm(rawName));
+      if (existingId) {
+        const { error } = await supabase.from("pt_plans").update(ptPlanPayload).eq("id", existingId);
+        if (error) errs.push(`Planos PT [Linha ${i + 2}]: ${error.message}`); else ok++;
+      } else {
+        const { data: newPlan, error } = await supabase.from("pt_plans").insert({
+          user_id: userId,
+          ...ptPlanPayload,
+        }).select("id").single();
+        if (error) {
+          errs.push(`Planos PT [Linha ${i + 2}]: ${error.message}`);
+        } else if (newPlan) {
+          planMap.set(norm(rawName), newPlan.id);
+          ok++;
+        }
+      }
     }
     return ok;
   }
 
   async function importPTStudentsRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
     let ok = 0;
+    const { data: existingPTStudents } = await supabase
+      .from("pt_students")
+      .select("id, name, email")
+      .eq("user_id", userId)
+      .is("deleted_at", null);
+
+    const studentMap = new Map<string, string>(); // norm(name) -> id
+    const emailMap = new Map<string, string>();   // norm(email) -> id
+
+    for (const s of existingPTStudents ?? []) {
+      if (s.name) studentMap.set(norm(s.name), s.id);
+      if (s.email) emailMap.set(norm(s.email), s.id);
+    }
+
     for (let i = 0; i < targetRows.length; i++) {
       const r = targetRows[i];
       if (!r.name) { errs.push(`Alunos PT [Linha ${i + 2}]: nome ausente`); continue; }
-      const { error } = await supabase.from("pt_students").insert({
-        user_id: userId,
-        name: String(r.name),
-        email: r.email ? String(r.email) : null,
-        phone: r.phone ? String(r.phone) : null,
+
+      const rawName = String(r.name).trim();
+      const normName = norm(rawName);
+      const rawEmail = r.email ? String(r.email).trim() : null;
+      const normEmail = rawEmail ? norm(rawEmail) : null;
+
+      const existingId = (normEmail && emailMap.get(normEmail)) || studentMap.get(normName);
+
+      const payload = {
+        name: rawName,
+        email: rawEmail,
+        phone: r.phone ? String(r.phone).trim() : null,
         status: r.status ? (statusMap[norm(String(r.status))] ?? String(r.status)) : "active",
         goal: r.goal ? String(r.goal) : null,
         health_notes: r.health_notes ? String(r.health_notes) : null,
@@ -452,17 +627,52 @@ export function DataTransferPanel() {
         birth_date: parseDate(r.birth_date),
         start_date: parseDate(r.start_date),
         notes: r.notes ? String(r.notes) : null,
-      });
+      };
 
-      if (error) errs.push(`Alunos PT [Linha ${i + 2}]: ${error.message}`); else ok++;
+      if (existingId) {
+        const { error } = await supabase
+          .from("pt_students")
+          .update(payload)
+          .eq("id", existingId);
+        if (error) {
+          errs.push(`Alunos PT [Linha ${i + 2}]: ${error.message}`);
+        } else {
+          ok++;
+        }
+      } else {
+        const { data: newStudent, error } = await supabase
+          .from("pt_students")
+          .insert({ user_id: userId, ...payload })
+          .select("id")
+          .single();
+        if (error) {
+          errs.push(`Alunos PT [Linha ${i + 2}]: ${error.message}`);
+        } else if (newStudent) {
+          studentMap.set(normName, newStudent.id);
+          if (normEmail) emailMap.set(normEmail, newStudent.id);
+          ok++;
+        }
+      }
     }
     return ok;
   }
 
   async function importPTPaymentsRows(userId: string, targetRows: Record<string, unknown>[], errs: string[]) {
     let ok = 0;
-    const ptStudentByName = new Map(ptStudents.map((s) => [s.name.toLowerCase(), s.id]));
-    const ptPlanByName = new Map(ptPlans.map((p) => [p.name.toLowerCase(), p.id]));
+    // Always fetch fresh PT students and plans from Supabase to prevent duplicate creation
+    const [{ data: freshPTStudents }, { data: freshPTPlans }] = await Promise.all([
+      supabase.from("pt_students").select("id, name").eq("user_id", userId).is("deleted_at", null),
+      supabase.from("pt_plans").select("id, name").eq("user_id", userId).is("deleted_at", null),
+    ]);
+
+    const ptStudentByName = new Map<string, string>();
+    for (const s of freshPTStudents ?? []) {
+      if (s.name) ptStudentByName.set(norm(s.name), s.id);
+    }
+    const ptPlanByName = new Map<string, string>();
+    for (const p of freshPTPlans ?? []) {
+      if (p.name) ptPlanByName.set(norm(p.name), p.id);
+    }
 
     for (let i = 0; i < targetRows.length; i++) {
       const r = targetRows[i];
@@ -470,20 +680,27 @@ export function DataTransferPanel() {
       if (!name) { errs.push(`Pagamentos PT [Linha ${i + 2}]: aluno ausente`); continue; }
       const amount = Number(r.amount);
       if (isNaN(amount)) { errs.push(`Pagamentos PT [Linha ${i + 2}]: valor inválido`); continue; }
-      const pd = parseDate(r.payment_date) ?? new Date().toISOString().slice(0, 10);
+      
+      const pd = parseDate(r.payment_date);
+      if (!pd) {
+        errs.push(`Pagamentos PT [Linha ${i + 2}]: data de pagamento inválida ou ausente ('${r.payment_date ?? ""}')`);
+        continue;
+      }
       const rm = parseMonth(r.reference_month) ?? pd.slice(0, 7);
 
-      const key = String(name).toLowerCase();
+      const rawName = String(name).trim();
+      const key = norm(rawName);
       let ptStudentId = ptStudentByName.get(key);
       if (!ptStudentId) {
         const { data, error } = await supabase
-          .from("pt_students").insert({ user_id: userId, name: String(name) })
+          .from("pt_students").insert({ user_id: userId, name: rawName, status: "active" })
           .select("id").single();
         if (error) { errs.push(`Pagamentos PT [Linha ${i + 2}]: ${error.message}`); continue; }
         ptStudentId = data.id;
         ptStudentByName.set(key, ptStudentId);
       }
-      const ptPlanId = r.plan_name ? ptPlanByName.get(String(r.plan_name).toLowerCase()) ?? null : null;
+      const ptPlanKey = r.plan_name ? norm(String(r.plan_name).trim()) : null;
+      const ptPlanId = ptPlanKey ? ptPlanByName.get(ptPlanKey) ?? null : null;
       const methodRaw = r.payment_method ? norm(String(r.payment_method)) : "pix";
       const method = methodMap[methodRaw] ?? methodRaw;
       const statusRaw = r.status ? norm(String(r.status)) : "paid";

@@ -32,6 +32,8 @@ import {
   EcosystemSubscription
 } from '../services/ecosystem-auth-service';
 
+import { supabase } from '@/integrations/supabase/client';
+
 export interface EcosystemApp {
   id: string;
   name: string;
@@ -87,88 +89,26 @@ export const MasterAdminDashboard: React.FC = () => {
     }
   };
 
-
-  const MOCK_SUBSCRIPTIONS: EcosystemSubscription[] = [
-    {
-      id: 'sub_1',
-      email: 'cliente.pro@montanha.app',
-      project_id: 'smart-language',
-      payment_status: 'PAGO',
-      access_expires_at: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'sub_2',
-      email: 'studio.fit@eduflow.com',
-      project_id: 'eduflow-finance',
-      payment_status: 'PAGO',
-      access_expires_at: new Date(Date.now() + 90 * 24 * 3600 * 1000).toISOString(),
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'sub_3',
-      email: 'editor.pdf@montanha.com',
-      project_id: 'construtor-pdf',
-      payment_status: 'PENDENTE',
-      access_expires_at: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
-      is_active: true,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'sub_4',
-      email: 'coach.treino@hibrido.com',
-      project_id: 'sistema-hibrido',
-      payment_status: 'INADIMPLENTE',
-      access_expires_at: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-      is_active: false,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'sub_5',
-      email: 'marketing.wa@lovable.app',
-      project_id: 'whatsapp-lovable',
-      payment_status: 'PAGO',
-      access_expires_at: new Date(Date.now() + 180 * 24 * 3600 * 1000).toISOString(),
-      is_active: true,
-      created_at: new Date().toISOString()
-    }
-  ];
-
   const fetchSubscriptions = async () => {
     setLoading(true);
     let loaded: EcosystemSubscription[] = [];
 
-    try {
-      const url =
-        (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
-        (typeof process !== 'undefined' && process.env?.SUPABASE_URL);
-      const key =
-        (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_SUPABASE_ANON_KEY || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY)) ||
-        (typeof process !== 'undefined' && (process.env?.SUPABASE_ANON_KEY || process.env?.SUPABASE_PUBLISHABLE_KEY));
+    // Limpar resquícios de dados falsos em cache local
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('master_admin_subscriptions');
+    }
 
-      if (url && key) {
-        const supabase = createClient(url, key);
-        const { data, error } = await supabase.from('ecosystem_subscriptions').select('*').order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) {
-          loaded = data as EcosystemSubscription[];
-        }
+    try {
+      const { data, error } = await supabase
+        .from('ecosystem_subscriptions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        loaded = data as EcosystemSubscription[];
       }
     } catch (err) {
       console.warn('[MasterAdmin] Could not fetch from Supabase:', err);
-    }
-
-    if (loaded.length === 0) {
-      const saved = localStorage.getItem('master_admin_subscriptions');
-      if (saved) {
-        try {
-          loaded = JSON.parse(saved);
-        } catch (e) {}
-      } else {
-        loaded = MOCK_SUBSCRIPTIONS;
-        localStorage.setItem('master_admin_subscriptions', JSON.stringify(MOCK_SUBSCRIPTIONS));
-      }
     }
 
     setSubscriptions(loaded);
@@ -181,24 +121,15 @@ export const MasterAdminDashboard: React.FC = () => {
 
   const saveSubscriptions = async (updated: EcosystemSubscription[]) => {
     setSubscriptions(updated);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('master_admin_subscriptions', JSON.stringify(updated));
-    }
 
     try {
-      const url =
-        (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
-        (typeof process !== 'undefined' && process.env?.SUPABASE_URL);
-      const key =
-        (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_SUPABASE_ANON_KEY || import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY)) ||
-        (typeof process !== 'undefined' && (process.env?.SUPABASE_ANON_KEY || process.env?.SUPABASE_PUBLISHABLE_KEY));
-
-      if (url && key) {
-        const supabase = createClient(url, key);
-        await supabase.from('ecosystem_subscriptions').upsert(updated);
+      const { error } = await supabase.from('ecosystem_subscriptions').upsert(updated);
+      if (error) {
+        notify('error', `Erro ao salvar no Supabase: ${error.message}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn('[MasterAdmin] Supabase sync failed:', err);
+      notify('error', `Erro ao sincronizar com banco de dados: ${err.message}`);
     }
   };
 

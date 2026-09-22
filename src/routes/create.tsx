@@ -21,45 +21,133 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+
 export const Route = createFileRoute('/create')({
   component: CreateStudioPage,
 });
 
 function CreateStudioPage() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
   // Estado para criação rápida de aluno
   const [alunoNome, setAlunoNome] = useState('');
   const [alunoEmail, setAlunoEmail] = useState('');
   const [alunoTelefone, setAlunoTelefone] = useState('');
+  const [savingAluno, setSavingAluno] = useState(false);
 
   // Estado para criação rápida de plano
   const [planoNome, setPlanoNome] = useState('Plano VIP Mensal');
   const [planoValor, setPlanoValor] = useState('350');
   const [planoCiclo, setPlanoCiclo] = useState('mensal');
+  const [savingPlano, setSavingPlano] = useState(false);
 
   // Estado para contrato
   const [contratoTipo, setContratoTipo] = useState('personal');
 
-  const handleSalvarAlunoRapido = (e: React.FormEvent) => {
+  const handleSalvarAlunoRapido = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!alunoNome || !alunoEmail) {
-      toast.error('Informe ao menos nome e e-mail do aluno.');
+    if (!alunoNome.trim()) {
+      toast.error('Informe ao menos o nome do aluno.');
       return;
     }
-    toast.success(`Aluno ${alunoNome} pré-cadastrado com sucesso!`);
-    setAlunoNome('');
-    setAlunoEmail('');
-    setAlunoTelefone('');
+    setSavingAluno(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) {
+        toast.error('Você precisa estar conectado para cadastrar alunos.');
+        return;
+      }
+      const { error } = await supabase.from('students').insert({
+        user_id: userId,
+        name: alunoNome.trim(),
+        email: alunoEmail.trim() || null,
+        phone: alunoTelefone.trim() || null,
+        status: 'active',
+      });
+      if (error) throw error;
+      toast.success(`Aluno ${alunoNome} cadastrado com sucesso no banco de dados! 🎉`);
+      setAlunoNome('');
+      setAlunoEmail('');
+      setAlunoTelefone('');
+      qc.invalidateQueries({ queryKey: ['students'] });
+      qc.invalidateQueries({ queryKey: ['students-all'] });
+    } catch (err: any) {
+      toast.error(`Erro ao cadastrar aluno: ${err.message}`);
+    } finally {
+      setSavingAluno(false);
+    }
   };
 
-  const handleSalvarPlanoRapido = (e: React.FormEvent) => {
+  const handleSalvarPlanoRapido = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!planoNome || !planoValor) {
+    if (!planoNome.trim() || !planoValor) {
       toast.error('Informe nome e valor do plano.');
       return;
     }
-    toast.success(`Plano "${planoNome}" (R$ ${planoValor}/${planoCiclo}) criado!`);
+    const val = Number(planoValor);
+    if (isNaN(val) || val <= 0) {
+      toast.error('Informe um valor numérico válido.');
+      return;
+    }
+    setSavingPlano(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) {
+        toast.error('Você precisa estar conectado para criar planos.');
+        return;
+      }
+      const cycleMap: Record<string, string> = {
+        mensal: 'monthly',
+        trimestral: 'quarterly',
+        semestral: 'semiannual',
+        anual: 'annual',
+      };
+      const { error } = await supabase.from('plans').insert({
+        user_id: userId,
+        name: planoNome.trim(),
+        price: val,
+        billing_cycle: cycleMap[planoCiclo] ?? 'monthly',
+        is_active: true,
+      });
+      if (error) throw error;
+      toast.success(`Plano "${planoNome}" (R$ ${val}/${planoCiclo}) criado com sucesso! 🎉`);
+      setPlanoNome('');
+      setPlanoValor('');
+      qc.invalidateQueries({ queryKey: ['plans'] });
+      qc.invalidateQueries({ queryKey: ['plans-all'] });
+    } catch (err: any) {
+      toast.error(`Erro ao criar plano: ${err.message}`);
+    } finally {
+      setSavingPlano(false);
+    }
+  };
+
+  const handleGerarMinuta = () => {
+    const contratoTitulos: Record<string, string> = {
+      personal: 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE PERSONAL TRAINER PRESENCIAL',
+      online: 'CONTRATO DE CONSULTORIA E TREINAMENTO HÍBRIDO / ONLINE',
+      studio: 'CONTRATO DE ADESÃO AO STUDIO & TREINAMENTO EM GRUPO',
+    };
+    const texto = `${contratoTitulos[contratoTipo] || 'CONTRATO DE PRESTAÇÃO DE SERVIÇOS'}\n\n` +
+      `CONTRATADO: Studio Coach Montanha / Personal Trainer\n` +
+      `CONTRATANTE: ${alunoNome.trim() || '[Nome do Aluno]'}\n\n` +
+      `1. DO OBJETO: Prestação de serviços de orientação física e prescrição de exercícios.\n` +
+      `2. DOS VALORES: Plano ${planoNome || 'Plano Personal'} no valor de R$ ${planoValor || '0,00'} com periodicidade ${planoCiclo}.\n` +
+      `3. CANCELAMENTOS: Notificação prévia com no mínimo 24h de antecedência para reposição.\n` +
+      `4. DISPOSIÇÕES GERAIS: O aluno declara aptidão física e concordância com os termos.\n\n` +
+      `Data: ${new Date().toLocaleDateString('pt-BR')}\nAssinatura: _____________________________`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(texto);
+      toast.success('Minuta de contrato gerada e copiada para a área de transferência! 📋');
+    } else {
+      toast.success('Minuta de contrato gerada com sucesso!');
+    }
   };
 
   return (
@@ -165,8 +253,8 @@ function CreateStudioPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
-              <Plus className="w-4 h-4 mr-1.5" /> Cadastrar Aluno
+            <Button type="submit" disabled={savingAluno} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold disabled:opacity-50">
+              <Plus className="w-4 h-4 mr-1.5" /> {savingAluno ? 'Salvando...' : 'Cadastrar Aluno'}
             </Button>
           </form>
         </Card>
@@ -230,8 +318,8 @@ function CreateStudioPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold">
-              <Plus className="w-4 h-4 mr-1.5" /> Criar Plano
+            <Button type="submit" disabled={savingPlano} className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold disabled:opacity-50">
+              <Plus className="w-4 h-4 mr-1.5" /> {savingPlano ? 'Salvando...' : 'Criar Plano'}
             </Button>
           </form>
         </Card>
@@ -296,7 +384,7 @@ function CreateStudioPage() {
               Termos alinhados com o Código de Defesa do Consumidor e CREF/CONFEF.
             </span>
             <Button
-              onClick={() => toast.success('Minuta de contrato gerada! Você pode compartilhá-la pelo WhatsApp.')}
+              onClick={handleGerarMinuta}
               className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-bold"
             >
               <Sparkles className="w-4 h-4 mr-1.5" /> Gerar Minuta de Contrato
