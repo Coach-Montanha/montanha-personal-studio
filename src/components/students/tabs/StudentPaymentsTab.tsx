@@ -1,5 +1,5 @@
 import { useState, useMemo, Fragment } from "react";
-import { Plus, Pencil, Trash2, RefreshCw, ArrowRightLeft, Ticket, ChevronDown, ArrowRight, Loader2, CalendarClock, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, RefreshCw, ArrowRightLeft, Ticket, ChevronDown, ArrowRight, Loader2, CalendarClock, FileText, MoreHorizontal } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TooltipRoot, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PaymentStatusBadge, PlanBadge } from "@/components/edufinance/Badges";
 import { EmptyState } from "@/components/edufinance/EmptyState";
 import { formatBRL, formatDateBR, formatMonthLong, paymentMethodLabel } from "@/lib/format";
@@ -227,18 +234,20 @@ export function StudentPaymentsTab({
           return (
             <div key={year} className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground">{year}</h3>
-              <div className="w-full max-w-full overflow-x-auto rounded-xl border border-border/60 bg-card/50 shadow-xs [touch-action:pan-x]">
-                <Table className="min-w-[700px]">
+              <div className="w-full max-w-full rounded-xl border border-border/60 bg-card shadow-xs overflow-hidden">
+                <Table className="min-w-[650px]">
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
                       <TableHead className="whitespace-nowrap">Mês de Referência</TableHead>
                       <TableHead className="whitespace-nowrap">Data de Pagamento</TableHead>
-                      <TableHead className="whitespace-nowrap">Plano</TableHead>
+                      <TableHead className="whitespace-nowrap max-w-[200px]">Plano</TableHead>
                       <TableHead className="text-right whitespace-nowrap">Valor</TableHead>
                       <TableHead className="whitespace-nowrap">Forma</TableHead>
                       <TableHead className="whitespace-nowrap">Status</TableHead>
-                      <TableHead className="whitespace-nowrap">Observações</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Ações</TableHead>
+                      <TableHead className="whitespace-nowrap max-w-[140px]">Observações</TableHead>
+                      <TableHead className="text-right whitespace-nowrap sticky right-0 z-20 bg-card/95 backdrop-blur shadow-[-6px_0_10px_rgba(0,0,0,0.06)] pr-4">
+                        Ações
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -277,7 +286,7 @@ export function StudentPaymentsTab({
                           <TableCell className="text-xs font-mono text-muted-foreground">
                             {formatDateBR(p.payment_date)}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="max-w-[200px]">
                             <div className="flex flex-wrap items-center gap-1.5">
                               <PlanBadge name={p.plans?.name} />
                               {pkg && (
@@ -316,127 +325,106 @@ export function StudentPaymentsTab({
                           <TableCell>
                             <PaymentStatusBadge status={p.status} />
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
+                          <TableCell className="text-xs text-muted-foreground max-w-[140px] truncate" title={p.notes ?? undefined}>
                             {p.notes ?? "—"}
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="inline-flex items-center rounded-lg border border-border/60 bg-background/50 p-0.5 shadow-sm divide-x divide-border/60">
+                          <TableCell className="text-right sticky right-0 z-10 bg-card/95 backdrop-blur shadow-[-6px_0_10px_rgba(0,0,0,0.06)] group-hover:bg-muted/60 transition-colors pr-3">
+                            <div className="inline-flex items-center justify-end gap-1">
                               {p.status === "paid" && (
-                                <div className="flex items-center px-0.5">
-                                  <TooltipRoot>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        aria-label="Gerar recibo em PDF"
-                                        className="h-8 w-8 rounded-md text-blue-600 transition-all duration-200 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96] dark:text-blue-400 dark:hover:bg-blue-950/50"
-                                        onClick={() => handleGenerateReceipt(p)}
-                                      >
-                                        <FileText className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Gerar Recibo em PDF</TooltipContent>
-                                  </TooltipRoot>
-                                </div>
-                              )}
-                              <div className="flex items-center px-0.5">
                                 <TooltipRoot>
                                   <TooltipTrigger asChild>
                                     <Button
                                       size="icon"
                                       variant="ghost"
-                                      aria-label={
-                                        isRenewable
-                                          ? "Desativar renovação automática"
-                                          : "Ativar renovação automática"
-                                      }
-                                      aria-pressed={isRenewable}
-                                      className={cn(
-                                        "h-8 w-8 rounded-md transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]",
-                                        isRenewable &&
-                                          "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary",
-                                      )}
-                                      onClick={() => onToggleAutoRenew(p)}
+                                      aria-label="Gerar recibo em PDF"
+                                      className="h-8 w-8 rounded-md text-blue-600 transition-all duration-200 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96] dark:text-blue-400 dark:hover:bg-blue-950/50"
+                                      onClick={() => handleGenerateReceipt(p)}
                                     >
-                                      <RefreshCw className="h-4 w-4" />
+                                      <FileText className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>
-                                    {isRenewable
-                                      ? "Desativar renovação automática"
-                                      : "Ativar renovação automática"}
-                                  </TooltipContent>
+                                  <TooltipContent>Gerar Recibo em PDF</TooltipContent>
                                 </TooltipRoot>
-                              </div>
-                              <div className="flex items-center px-0.5">
+                              )}
+                              {canRenew && (
                                 <TooltipRoot>
                                   <TooltipTrigger asChild>
                                     <Button
                                       size="icon"
                                       variant="ghost"
                                       aria-label="Renovar pagamento"
-                                      disabled={!canRenew}
-                                      className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed"
+                                      className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]"
                                       onClick={() => onRenew(p)}
                                     >
                                       {isRenewing ? (
-                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                        <RefreshCw className="h-4 w-4 animate-spin text-primary" />
                                       ) : (
-                                        <Plus className="h-4 w-4" />
+                                        <Plus className="h-4 w-4 text-primary" />
                                       )}
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>
-                                    {p.status === "paid"
-                                      ? "Renovar (criar próximo pagamento)"
-                                      : "Só pagamentos pagos podem ser renovados"}
-                                  </TooltipContent>
+                                  <TooltipContent>Renovar (criar próximo pagamento)</TooltipContent>
                                 </TooltipRoot>
+                              )}
+                              <TooltipRoot>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    aria-label="Editar pagamento"
+                                    className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]"
+                                    onClick={() => onEdit(p)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Editar pagamento</TooltipContent>
+                              </TooltipRoot>
+                              <DropdownMenu>
                                 <TooltipRoot>
                                   <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      aria-label="Transferir para outro aluno"
-                                      className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]"
-                                      onClick={() => onTransfer(p)}
-                                    >
-                                      <ArrowRightLeft className="h-4 w-4" />
-                                    </Button>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        aria-label="Mais opções"
+                                        className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]"
+                                      >
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
                                   </TooltipTrigger>
-                                  <TooltipContent>Transferir para outro aluno</TooltipContent>
+                                  <TooltipContent>Mais opções</TooltipContent>
                                 </TooltipRoot>
-                              </div>
-                              <div className="flex items-center px-0.5">
-                                <TooltipRoot>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      aria-label="Editar pagamento"
-                                      className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 active:scale-[0.96]"
-                                      onClick={() => onEdit(p)}
+                                <DropdownMenuContent align="end" className="w-56">
+                                  <DropdownMenuItem onClick={() => onToggleAutoRenew(p)} className="gap-2 cursor-pointer">
+                                    <RefreshCw className="h-4 w-4 text-primary" />
+                                    <span>{isRenewable ? "Desativar renovação auto" : "Ativar renovação auto"}</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => onTransfer(p)} className="gap-2 cursor-pointer">
+                                    <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+                                    <span>Transferir para outro aluno</span>
+                                  </DropdownMenuItem>
+                                  {p.status !== "paid" && (
+                                    <DropdownMenuItem
+                                      onClick={() => onRenew(p)}
+                                      disabled={!canRenew}
+                                      className="gap-2 cursor-pointer"
                                     >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Editar</TooltipContent>
-                                </TooltipRoot>
-                                <TooltipRoot>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      aria-label="Excluir pagamento"
-                                      className="h-8 w-8 rounded-md transition-all duration-200 hover:bg-destructive/10 hover:text-destructive focus-visible:ring-2 focus-visible:ring-destructive focus-visible:ring-offset-1 active:scale-[0.96]"
-                                      onClick={() => onDelete(p)}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Excluir</TooltipContent>
-                                </TooltipRoot>
-                              </div>
+                                      <Plus className="h-4 w-4 text-primary" />
+                                      <span>Renovar pagamento</span>
+                                    </DropdownMenuItem>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => onDelete(p)}
+                                    className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span>Excluir pagamento</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>

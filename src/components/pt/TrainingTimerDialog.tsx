@@ -201,19 +201,19 @@ export function TrainingTimerDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl bg-zinc-950 text-white border border-zinc-800/90 p-4 sm:p-5 shadow-2xl custom-scrollbar"
+        className="w-[95vw] max-w-md max-h-[85vh] overflow-y-auto rounded-2xl bg-zinc-950 text-white border border-zinc-800/90 p-3.5 sm:p-4 shadow-2xl custom-scrollbar"
       >
         {/* Header - note: DialogContent already renders the single X close button at top-right */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-500 shadow-sm">
-              <Timer className="h-4.5 w-4.5 stroke-[2.2]" />
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-500/15 border border-orange-500/25 text-orange-500 shadow-sm">
+              <Timer className="h-4 w-4 stroke-[2.2]" />
             </div>
             <div>
-              <DialogTitle className="text-base sm:text-lg font-bold tracking-tight text-orange-500">
+              <DialogTitle className="text-sm sm:text-base font-bold tracking-tight text-orange-500">
                 Timer de Treino
               </DialogTitle>
-              <div className="text-[11px] text-zinc-400 font-medium">
+              <div className="text-[10px] text-zinc-400 font-medium">
                 {mode === "EMOM" ? `${emomModeLabel} • Bloco ${currentBlock}/${totalBlocks}` : mode}
               </div>
             </div>
@@ -225,19 +225,19 @@ export function TrainingTimerDialog({
               onClick={() => setSoundEnabled(!soundEnabled)}
               title={soundEnabled ? "Som ativado" : "Som desativado"}
               aria-label={soundEnabled ? "Som ativado" : "Som desativado"}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 transition-colors"
             >
               {soundEnabled ? (
-                <Volume2 className="h-4.5 w-4.5" />
+                <Volume2 className="h-4 w-4" />
               ) : (
-                <VolumeX className="h-4.5 w-4.5 text-zinc-600" />
+                <VolumeX className="h-4 w-4 text-zinc-600" />
               )}
             </button>
           </div>
         </div>
 
         {/* Mode Selector */}
-        <div className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-zinc-900/80 p-1 border border-zinc-800/80">
+        <div className="mt-2.5 grid grid-cols-4 gap-1 rounded-xl bg-zinc-900/80 p-1 border border-zinc-800/80">
           {(["EMOM", "AMRAP", "Tabata", "Livre"] as TimerMode[]).map((m) => (
             <button
               key={m}
@@ -247,7 +247,7 @@ export function TrainingTimerDialog({
                 resetTimer();
               }}
               className={cn(
-                "h-8.5 rounded-lg text-xs font-semibold transition-all select-none",
+                "h-7.5 rounded-lg text-xs font-semibold transition-all select-none",
                 mode === m
                   ? "bg-zinc-800 text-white shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200"
@@ -259,25 +259,25 @@ export function TrainingTimerDialog({
         </div>
 
         {/* Big Counter Card */}
-        <div className="mt-3 flex flex-col items-center justify-center rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4 sm:p-5 relative overflow-hidden">
+        <div className="mt-2.5 flex flex-col items-center justify-center rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-3 sm:p-4 relative overflow-hidden">
           {/* Subtle glow background */}
           <div className="absolute -top-16 -right-16 w-36 h-36 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
 
           {/* Badge indicator */}
-          <div className="mb-2">
+          <div className="mb-1.5">
             {mode === "EMOM" && (
-              <span className="rounded-full bg-zinc-800/90 border border-zinc-700/60 px-3.5 py-1 text-xs font-medium text-zinc-300">
+              <span className="rounded-full bg-zinc-800/90 border border-zinc-700/60 px-3 py-0.5 text-[11px] font-medium text-zinc-300">
                 {emomIntervalMinutes === 1 ? `Minuto ${currentBlock} de ${totalBlocks}` : `Bloco ${currentBlock} de ${totalBlocks} (${emomModeLabel})`}
               </span>
             )}
             {mode === "AMRAP" && (
-              <span className="rounded-full bg-zinc-800/90 border border-zinc-700/60 px-3.5 py-1 text-xs font-medium text-zinc-300">
+              <span className="rounded-full bg-zinc-800/90 border border-zinc-700/60 px-3 py-0.5 text-[11px] font-medium text-zinc-300">
                 Tempo Restante • {amrapRounds} {amrapRounds === 1 ? "round" : "rounds"}
               </span>
             )}
             {mode === "Tabata" && (
               <span className={cn(
-                "rounded-full px-3.5 py-1 text-xs font-bold uppercase tracking-wider transition-colors",
+                "rounded-full px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider transition-colors",
                 isTabataWork
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                   : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
@@ -286,28 +286,28 @@ export function TrainingTimerDialog({
               </span>
             )}
             {mode === "Livre" && (
-              <span className="rounded-full bg-zinc-800/90 border border-zinc-700/60 px-3.5 py-1 text-xs font-medium text-zinc-300">
+              <span className="rounded-full bg-zinc-800/90 border border-zinc-700/60 px-3 py-0.5 text-[11px] font-medium text-zinc-300">
                 Cronômetro Livre
               </span>
             )}
           </div>
 
           {/* Giant Numbers Display */}
-          <div className="text-5xl sm:text-6xl font-mono font-black tracking-tight text-white select-none my-1 tabular-nums">
+          <div className="text-4xl sm:text-5xl font-mono font-black tracking-tight text-white select-none my-0.5 tabular-nums">
             {displayTime}
           </div>
 
           {/* AMRAP Round Counter button if running AMRAP */}
           {mode === "AMRAP" && (
-            <div className="mt-3 flex items-center gap-3">
+            <div className="mt-2 flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => setAmrapRounds((r) => Math.max(0, r - 1))}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
               >
-                <Minus className="h-4 w-4" />
+                <Minus className="h-3.5 w-3.5" />
               </button>
-              <span className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-300">
                 {amrapRounds} Rounds
               </span>
               <button
@@ -316,9 +316,9 @@ export function TrainingTimerDialog({
                   setAmrapRounds((r) => r + 1);
                   triggerBeep(880, 0.1);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-orange-500/40 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30"
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-orange-500/40 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
               </button>
             </div>
           )}
@@ -326,14 +326,14 @@ export function TrainingTimerDialog({
 
         {/* Inputs Configuration Row */}
         {mode === "EMOM" && (
-          <div className="mt-3 space-y-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-3">
+          <div className="mt-2.5 space-y-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-2.5">
             {/* Interval selection chips: 1m (EMOM), 2m (E2MOM), 3m (E3MOM), etc. */}
             <div>
-              <div className="flex items-center justify-between text-xs font-medium text-zinc-300 mb-1.5">
+              <div className="flex items-center justify-between text-xs font-medium text-zinc-300 mb-1">
                 <span>Intervalo por Bloco:</span>
                 <span className="font-mono font-bold text-orange-400">{emomModeLabel} ({emomIntervalMinutes} min)</span>
               </div>
-              <div className="grid grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-5 gap-1">
                 {[1, 2, 3, 4, 5].map((m) => (
                   <button
                     key={m}
@@ -346,7 +346,7 @@ export function TrainingTimerDialog({
                       }
                     }}
                     className={cn(
-                      "h-7.5 rounded-lg text-xs font-bold transition-all select-none",
+                      "h-7 rounded-lg text-xs font-bold transition-all select-none",
                       emomIntervalMinutes === m
                         ? "bg-orange-500 text-white shadow-sm"
                         : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200"
@@ -359,10 +359,10 @@ export function TrainingTimerDialog({
             </div>
 
             {/* Total Duration & Blocks row */}
-            <div className="flex items-center justify-between border-t border-zinc-800/80 pt-2">
+            <div className="flex items-center justify-between border-t border-zinc-800/80 pt-1.5">
               <div>
                 <span className="text-xs font-medium text-zinc-300 block">Duração total:</span>
-                <span className="text-[11px] text-zinc-500">
+                <span className="text-[10px] text-zinc-500">
                   {totalBlocks} {totalBlocks === 1 ? "bloco" : "blocos"} de {emomIntervalMinutes} min
                 </span>
               </div>
@@ -378,7 +378,7 @@ export function TrainingTimerDialog({
                     const val = Math.max(1, Number(e.target.value) || 1);
                     setTotalMinutes(val);
                   }}
-                  className="h-8 w-20 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg focus:ring-orange-500 text-xs"
+                  className="h-7 w-16 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg focus:ring-orange-500 text-xs"
                 />
                 <span className="text-xs text-zinc-400 font-medium">min</span>
               </div>
@@ -387,7 +387,7 @@ export function TrainingTimerDialog({
         )}
 
         {mode === "AMRAP" && (
-          <div className="mt-3 flex items-center justify-between rounded-xl bg-zinc-900/50 border border-zinc-800/80 px-3.5 py-2.5">
+          <div className="mt-2.5 flex items-center justify-between rounded-xl bg-zinc-900/50 border border-zinc-800/80 px-3 py-2">
             <span className="text-xs font-medium text-zinc-300">
               Duração total (minutos):
             </span>
@@ -399,7 +399,7 @@ export function TrainingTimerDialog({
                 value={totalMinutes}
                 disabled={running}
                 onChange={(e) => setTotalMinutes(Math.max(1, Number(e.target.value) || 1))}
-                className="h-8 w-20 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg focus:ring-orange-500 text-xs"
+                className="h-7 w-16 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg focus:ring-orange-500 text-xs"
               />
               <span className="text-xs text-zinc-400 font-medium">min</span>
             </div>
@@ -407,7 +407,7 @@ export function TrainingTimerDialog({
         )}
 
         {mode === "Tabata" && (
-          <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-2.5 text-center">
+          <div className="mt-2.5 grid grid-cols-3 gap-2 rounded-xl bg-zinc-900/50 border border-zinc-800/80 p-2 text-center">
             <div>
               <div className="text-[10px] text-zinc-400 uppercase font-bold">Rounds</div>
               <Input
@@ -417,7 +417,7 @@ export function TrainingTimerDialog({
                 value={tabataRounds}
                 disabled={running}
                 onChange={(e) => setTabataRounds(Math.max(1, Number(e.target.value) || 1))}
-                className="h-8 mt-1 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg text-xs"
+                className="h-7 mt-1 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-white rounded-lg text-xs"
               />
             </div>
             <div>
@@ -429,7 +429,7 @@ export function TrainingTimerDialog({
                 value={tabataWorkSec}
                 disabled={running}
                 onChange={(e) => setTabataWorkSec(Math.max(1, Number(e.target.value) || 1))}
-                className="h-8 mt-1 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-emerald-400 rounded-lg text-xs"
+                className="h-7 mt-1 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-emerald-400 rounded-lg text-xs"
               />
             </div>
             <div>
@@ -441,19 +441,19 @@ export function TrainingTimerDialog({
                 value={tabataRestSec}
                 disabled={running}
                 onChange={(e) => setTabataRestSec(Math.max(0, Number(e.target.value) || 0))}
-                className="h-8 mt-1 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-amber-400 rounded-lg text-xs"
+                className="h-7 mt-1 text-center font-mono font-bold bg-zinc-900 border-zinc-700 text-amber-400 rounded-lg text-xs"
               />
             </div>
           </div>
         )}
 
         {/* Action Controls */}
-        <div className="mt-3.5 grid grid-cols-2 gap-2.5">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <Button
             type="button"
             variant="outline"
             onClick={resetTimer}
-            className="h-11 rounded-xl border-zinc-800 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 font-semibold gap-2 transition-all active:scale-[0.98]"
+            className="h-10 rounded-xl border-zinc-800 bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 font-semibold gap-2 transition-all active:scale-[0.98]"
           >
             <RotateCcw className="h-4 w-4 text-zinc-400" />
             Reiniciar
@@ -468,7 +468,7 @@ export function TrainingTimerDialog({
               setRunning(!running);
             }}
             className={cn(
-              "h-11 rounded-xl text-white font-bold gap-2 transition-all active:scale-[0.98] shadow-lg",
+              "h-10 rounded-xl text-white font-bold gap-2 transition-all active:scale-[0.98] shadow-lg",
               running
                 ? "bg-amber-600 hover:bg-amber-700 shadow-amber-600/20"
                 : "bg-orange-500 hover:bg-orange-600 shadow-orange-500/25"

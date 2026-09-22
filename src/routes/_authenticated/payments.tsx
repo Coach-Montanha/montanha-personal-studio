@@ -572,7 +572,7 @@ function PaymentsPage() {
                     <TableHead>Método</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead></TableHead>
+                    <TableHead className="sticky right-0 z-20 bg-card/95 backdrop-blur shadow-[-6px_0_10px_rgba(0,0,0,0.06)] text-right pr-4">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -604,7 +604,7 @@ function PaymentsPage() {
                         <TableCell className="text-xs">{pmLabel(p.payment_method)}</TableCell>
                         <TableCell className="text-numeric text-right font-semibold">{formatBRL(p.amount)}</TableCell>
                         <TableCell><PaymentStatusBadge status={p.status} /></TableCell>
-                        <TableCell>
+                        <TableCell className="sticky right-0 z-10 bg-card/95 backdrop-blur shadow-[-6px_0_10px_rgba(0,0,0,0.06)] text-right pr-4 group-hover:bg-muted/60 transition-colors">
                           <div className="ml-auto inline-flex items-center gap-0.5 rounded-md border border-border/60 bg-background/40 p-0.5">
                             {p.status === "paid" && (
                               <Tooltip>

@@ -55,8 +55,10 @@ export const paymentMethodLabel = (m: string) => {
     bank_slip: "Boleto",
     cash: "Dinheiro",
     transfer: "Transferência",
+    pagamento_infinity: "Infinity",
+    infinity: "Infinity",
   };
-  return map[m] ?? m;
+  return map[m] ?? (m ? m.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) : "—");
 };
 
 export const billingCycleLabel = (c: string) => {
