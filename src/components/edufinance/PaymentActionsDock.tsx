@@ -32,7 +32,7 @@ export function PaymentActionsDock({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-full bg-zinc-950/90 dark:bg-zinc-900/95 border border-zinc-800/90 px-1.5 py-1 shadow-lg backdrop-blur-md select-none",
+        "inline-flex items-center gap-0.5 rounded-full border border-border/80 bg-muted/60 hover:bg-muted/90 dark:bg-zinc-900/85 dark:border-zinc-800/80 p-0.5 shadow-xs backdrop-blur-md select-none transition-colors",
         className
       )}
     >
@@ -44,7 +44,7 @@ export function PaymentActionsDock({
               type="button"
               onClick={onReceipt}
               aria-label="Gerar recibo em PDF"
-              className="relative group/btn flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:text-blue-400 hover:bg-blue-500/15 transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
+              className="relative group/btn flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/15 transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <FileText className="h-3.5 w-3.5 shrink-0 transition-transform duration-150" />
             </button>
@@ -52,7 +52,7 @@ export function PaymentActionsDock({
           <TooltipContent
             side="top"
             sideOffset={8}
-            className="rounded-full bg-zinc-950 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-200 border border-zinc-800 shadow-xl"
+            className="rounded-full bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shadow-lg pointer-events-none"
           >
             Recibo
           </TooltipContent>
@@ -68,22 +68,22 @@ export function PaymentActionsDock({
               onClick={onToggleAutoRenew}
               aria-label={isRenewable ? "Desativar auto-renovação" : "Ativar auto-renovação"}
               className={cn(
-                "relative group/btn flex h-7 w-7 items-center justify-center rounded-full transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-400",
+                "relative group/btn flex h-7 w-7 items-center justify-center rounded-full transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                 isRenewable
-                  ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20"
-                  : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/80"
+                  ? "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-500/15"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-zinc-800/80"
               )}
             >
               <RefreshCw className="h-3.5 w-3.5 shrink-0 transition-transform duration-150" />
               {isRenewable && (
-                <span className="absolute bottom-0.5 h-1 w-1 rounded-full bg-emerald-400 ring-1 ring-emerald-400/50" />
+                <span className="absolute bottom-0.5 h-1 w-1 rounded-full bg-emerald-500 ring-1 ring-emerald-500/40" />
               )}
             </button>
           </TooltipTrigger>
           <TooltipContent
             side="top"
             sideOffset={8}
-            className="rounded-full bg-zinc-950 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-200 border border-zinc-800 shadow-xl"
+            className="rounded-full bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shadow-lg pointer-events-none"
           >
             {isRenewable ? "Auto-Renovação: Ativa" : "Ativar Auto-Renovação"}
           </TooltipContent>
@@ -100,10 +100,10 @@ export function PaymentActionsDock({
               disabled={!canRenew && !isRenewing}
               aria-label="Renovar pagamento"
               className={cn(
-                "relative group/btn flex h-7 w-7 items-center justify-center rounded-full transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary",
+                "relative group/btn flex h-7 w-7 items-center justify-center rounded-full transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                 canRenew
-                  ? "text-primary hover:text-primary-foreground hover:bg-primary/90"
-                  : "text-zinc-600 cursor-not-allowed opacity-40 hover:scale-100"
+                  ? "text-muted-foreground hover:text-primary hover:bg-primary/15"
+                  : "text-muted-foreground/30 cursor-not-allowed hover:scale-100"
               )}
             >
               {isRenewing ? (
@@ -116,7 +116,7 @@ export function PaymentActionsDock({
           <TooltipContent
             side="top"
             sideOffset={8}
-            className="rounded-full bg-zinc-950 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-200 border border-zinc-800 shadow-xl"
+            className="rounded-full bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shadow-lg pointer-events-none"
           >
             {canRenew ? "Renovar" : "Apenas Pagos"}
           </TooltipContent>
@@ -131,7 +131,7 @@ export function PaymentActionsDock({
               type="button"
               onClick={onTransfer}
               aria-label="Transferir pagamento para outro aluno"
-              className="relative group/btn flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:text-purple-400 hover:bg-purple-500/15 transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-purple-400"
+              className="relative group/btn flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-500/15 transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <ArrowRightLeft className="h-3.5 w-3.5 shrink-0 transition-transform duration-150" />
             </button>
@@ -139,7 +139,7 @@ export function PaymentActionsDock({
           <TooltipContent
             side="top"
             sideOffset={8}
-            className="rounded-full bg-zinc-950 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-200 border border-zinc-800 shadow-xl"
+            className="rounded-full bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shadow-lg pointer-events-none"
           >
             Transferir
           </TooltipContent>
@@ -154,7 +154,7 @@ export function PaymentActionsDock({
               type="button"
               onClick={onEdit}
               aria-label="Editar pagamento"
-              className="relative group/btn flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:text-amber-400 hover:bg-amber-500/15 transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400"
+              className="relative group/btn flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/15 transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <Pencil className="h-3.5 w-3.5 shrink-0 transition-transform duration-150" />
             </button>
@@ -162,7 +162,7 @@ export function PaymentActionsDock({
           <TooltipContent
             side="top"
             sideOffset={8}
-            className="rounded-full bg-zinc-950 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-200 border border-zinc-800 shadow-xl"
+            className="rounded-full bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shadow-lg pointer-events-none"
           >
             Editar
           </TooltipContent>
@@ -177,7 +177,7 @@ export function PaymentActionsDock({
               type="button"
               onClick={onDelete}
               aria-label="Excluir pagamento"
-              className="relative group/btn flex h-7 w-7 items-center justify-center rounded-full text-zinc-400 hover:text-rose-400 hover:bg-rose-500/15 transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-400"
+              className="relative group/btn flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/15 transition-all duration-150 ease-out hover:scale-125 hover:z-30 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <Trash2 className="h-3.5 w-3.5 shrink-0 transition-transform duration-150" />
             </button>
@@ -185,7 +185,7 @@ export function PaymentActionsDock({
           <TooltipContent
             side="top"
             sideOffset={8}
-            className="rounded-full bg-zinc-950 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-rose-400 border border-rose-950/50 shadow-xl"
+            className="rounded-full bg-zinc-900 text-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 border border-zinc-800 dark:border-zinc-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider shadow-lg pointer-events-none"
           >
             Excluir
           </TooltipContent>
