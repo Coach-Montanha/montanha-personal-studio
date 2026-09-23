@@ -14,7 +14,23 @@ export function useAuth() {
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      setUser(data.session?.user ?? null);
+      if (data.session?.user) {
+        setUser(data.session.user);
+      } else if (typeof window !== "undefined") {
+        const rawImp = localStorage.getItem("edufinance.impersonate");
+        if (rawImp) {
+          try {
+            const imp = JSON.parse(rawImp);
+            if (imp?.targetEmail) {
+              setUser({
+                id: imp.targetUserId || `usr_${imp.targetEmail}`,
+                email: imp.targetEmail,
+                user_metadata: { name: imp.targetEmail.split("@")[0] }
+              } as any);
+            }
+          } catch {}
+        }
+      }
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();

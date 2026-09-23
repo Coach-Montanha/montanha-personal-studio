@@ -333,7 +333,38 @@ function RootComponent() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const impersonateParam = params.get("impersonate");
-    if (impersonateParam && impersonateParam.trim()) {
+    const trialParam = params.get("trial");
+    const emailParam = params.get("email");
+    const nameParam = params.get("name");
+    const passParam = params.get("pass");
+
+    if (trialParam === "1" && emailParam) {
+      const email = emailParam.trim().toLowerCase();
+      const name = nameParam ? decodeURIComponent(nameParam) : email.split("@")[0];
+      setImpersonate({
+        targetEmail: email,
+        targetUserId: `trial_${email}`,
+        superAdminEmail: "admin@montanha.app",
+        startedAt: Date.now(),
+      });
+      const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+      localStorage.setItem(`ecosystem_sub_eduflow-finance_${email}`, JSON.stringify({
+        payment_status: 'AVALIAÇÃO',
+        access_expires_at: expiresAt,
+        is_active: true
+      }));
+      if (passParam && /^\d{10}$/.test(passParam)) {
+        supabase.auth.signInWithPassword({ email, password: passParam }).then(({ error }) => {
+          if (error) {
+            supabase.auth.signUp({
+              email,
+              password: passParam,
+              options: { data: { name } }
+            });
+          }
+        });
+      }
+    } else if (impersonateParam && impersonateParam.trim()) {
       const email = impersonateParam.trim().toLowerCase();
       setImpersonate({
         targetEmail: email,

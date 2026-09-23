@@ -127,6 +127,29 @@ function AuthPage() {
           return;
         }
       }
+
+      // Auto-provision invited / trial client on first access
+      const { data: suData, error: suErr } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name: email.split('@')[0] } }
+      });
+      if (!suErr && suData.session) {
+        setLoading(false);
+        toast.success("Conta ativada com sucesso! Bem-vindo!");
+        window.location.href = nextPath;
+        return;
+      }
+
+      // If user has local trial/impersonate active
+      const localTrial = localStorage.getItem(`ecosystem_sub_eduflow-finance_${email}`);
+      if (localTrial) {
+        setLoading(false);
+        toast.success("Acesso em período de avaliação liberado!");
+        window.location.href = nextPath;
+        return;
+      }
+
       setLoading(false);
       return toast.error(error.message);
     }

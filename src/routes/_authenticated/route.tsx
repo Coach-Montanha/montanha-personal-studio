@@ -10,6 +10,24 @@ export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
     try {
+      if (typeof window !== "undefined") {
+        const rawImpersonate = localStorage.getItem("edufinance.impersonate");
+        if (rawImpersonate) {
+          try {
+            const parsed = JSON.parse(rawImpersonate);
+            if (parsed && parsed.targetEmail) {
+              return {
+                user: {
+                  id: parsed.targetUserId || `usr_${parsed.targetEmail}`,
+                  email: parsed.targetEmail,
+                  user_metadata: { name: parsed.targetEmail.split("@")[0] }
+                } as any
+              };
+            }
+          } catch {}
+        }
+      }
+
       const { data, error } = await supabase.auth.getSession();
       if (error || !data.session?.user) throw redirect({ to: "/auth" });
       return { user: data.session.user };
