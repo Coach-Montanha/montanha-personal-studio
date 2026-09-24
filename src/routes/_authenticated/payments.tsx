@@ -340,15 +340,6 @@ function PaymentsPage() {
         icon={PageIcon}
         eyebrow="Gestão"
         title="Pagamentos"
-        description={
-          <>
-            {totals.count} registro(s)
-            {useRange && rangeStart && rangeEnd
-              ? ` · ${new Date(rangeStart + "T00:00").toLocaleDateString("pt-BR")} até ${new Date(rangeEnd + "T00:00").toLocaleDateString("pt-BR")}`
-              : ""}
-            {" · "}Total pago: <span className="text-numeric font-medium text-foreground">{formatBRL(totals.paid)}</span>
-          </>
-        }
         actions={
           <>
             {/* Kind toggle: Studio / PT / Todos */}
@@ -410,6 +401,15 @@ function PaymentsPage() {
           </>
         }
       />
+
+      <div className="-mt-3 mb-2 flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
+        <span>{totals.count} registro(s)</span>
+        {useRange && rangeStart && rangeEnd && (
+          <span>· {new Date(rangeStart + "T00:00").toLocaleDateString("pt-BR")} até {new Date(rangeEnd + "T00:00").toLocaleDateString("pt-BR")}</span>
+        )}
+        <span>·</span>
+        <span>Total pago: <b className="text-numeric font-semibold text-foreground">{formatBRL(totals.paid)}</b></span>
+      </div>
 
       <Card className="p-3 sm:p-5">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
