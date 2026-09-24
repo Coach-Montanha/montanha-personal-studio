@@ -4,7 +4,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { confirmDialog } from "@/lib/confirm-dialog";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Plus, Search, Trash2, Timer } from "lucide-react";
+import { ChevronRight, Plus, Search, Trash2, Timer, Gift } from "lucide-react";
 
 import { toast } from "sonner";
 import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
@@ -24,6 +24,7 @@ import {
 import { StudentDialog } from "@/components/edufinance/StudentDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BulkStudentEditDialog } from "@/components/edufinance/BulkStudentEditDialog";
+import { BulkGrantBonusDialog } from "@/components/students/dialogs/BulkGrantBonusDialog";
 import { MigrateStudentsDialog } from "@/components/MigrateStudentsDialog";
 import { StudentStatusBadge, PlanBadge } from "@/components/edufinance/Badges";
 import { EmptyState } from "@/components/edufinance/EmptyState";
@@ -73,6 +74,7 @@ function StudentsPage() {
   const [bulkPlanId, setBulkPlanId] = useState("");
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
+  const [bulkBonusOpen, setBulkBonusOpen] = useState(false);
   const [migrateOpen, setMigrateOpen] = useState(false);
   const [timerOpen, setTimerOpen] = useState(false);
 
@@ -375,8 +377,15 @@ function StudentsPage() {
         {selected.size > 0 && (
           <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 p-2 text-sm">
             <span className="font-medium">{selected.size} aluno(s) selecionado(s)</span>
-            <Button size="sm" onClick={() => setBulkOpen(true)}>Alterar plano em massa</Button>
-            <Button size="sm" variant="secondary" onClick={() => setBulkEditOpen(true)}>Editar informações em massa</Button>
+            <Button
+              size="sm"
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => setBulkBonusOpen(true)}
+            >
+              <Gift className="h-4 w-4" /> Conceder bônus em massa
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setBulkOpen(true)}>Alterar plano</Button>
+            <Button size="sm" variant="outline" onClick={() => setBulkEditOpen(true)}>Editar informações</Button>
             <Button size="sm" variant="outline" onClick={() => setMigrateOpen(true)}>Migrar para PT</Button>
             <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>Limpar seleção</Button>
           </div>
@@ -626,6 +635,13 @@ function StudentsPage() {
       <BulkStudentEditDialog
         open={bulkEditOpen}
         onOpenChange={setBulkEditOpen}
+        selectedIds={[...selected]}
+        onDone={() => setSelected(new Set())}
+      />
+
+      <BulkGrantBonusDialog
+        open={bulkBonusOpen}
+        onOpenChange={setBulkBonusOpen}
         selectedIds={[...selected]}
         onDone={() => setSelected(new Set())}
       />

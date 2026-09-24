@@ -214,3 +214,54 @@ export const getStudentBonusTransactions = createServerFn({ method: "POST" })
 
     return txs ?? [];
   });
+
+// ------------------------------------------------------------------
+// 5. bulkAdjustStudentBonus (Studio Coach / Admin)
+// ------------------------------------------------------------------
+
+export type BulkAdjustStudentBonusInput = {
+  studentIds: string[];
+  amount: number;
+  reason?: string;
+};
+
+export const bulkAdjustStudentBonus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: BulkAdjustStudentBonusInput) => {
+    if (!Array.isArray(input?.studentIds) || input.studentIds.length === 0) {
+      throw new Error("Pelo menos um aluno deve ser selecionado");
+    }
+    if (
+      typeof input.amount !== "number" ||
+      isNaN(input.amount) ||
+      input.amount === 0 ||
+      !Number.isInteger(input.amount)
+    ) {
+      throw new Error("A quantidade para ajuste deve ser um número inteiro diferente de zero");
+    }
+    return {
+      studentIds: input.studentIds,
+      amount: input.amount,
+      reason: input.reason?.trim() || undefined,
+    };
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    let successCount = 0;
+    const errors: string[] = [];
+
+    for (const studentId of data.studentIds) {
+      const { error } = await supabase.rpc("admin_adjust_bonus_checkins", {
+        p_student_id: studentId,
+        p_amount: data.amount,
+        p_reason: data.reason ?? null,
+      });
+      if (error) {
+        errors.push(error.message);
+      } else {
+        successCount++;
+      }
+    }
+
+    return { successCount, errors };
+  });
