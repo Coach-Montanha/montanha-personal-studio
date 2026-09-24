@@ -340,6 +340,7 @@ function PaymentsPage() {
         icon={PageIcon}
         eyebrow="Gestão"
         title="Pagamentos"
+        description="Gerencie os pagamentos do seu negócio"
         actions={
           <>
             {/* Kind toggle: Studio / PT / Todos */}
