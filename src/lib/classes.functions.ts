@@ -114,46 +114,50 @@ export const getAgenda = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data, context }): Promise<AgendaSession[]> => {
-    const { supabase, userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { userId } = context;
     const today = toDateKey(new Date());
 
-    // (1) Paralelo: aluno + sessões do range
-    const [stuRes, sessionsRes] = await Promise.all([
-      supabase
-        .from("students")
-        .select("id, bonus_checkins_balance")
-        .eq("account_user_id", userId)
-        .maybeSingle(),
-      supabase
-        .from("class_sessions")
-        .select(`
-          id, session_date, start_time, duration_minutes, class_id, user_id,
-          capacity_override, notes, status,
-          classes:class_id (
-            name, trainer_name, capacity, program_id,
-            checkin_opens_minutes_before, checkin_closes_minutes_before,
-            programs:program_id ( id, name, color )
-          )
-        `)
-        .gte("session_date", data.from)
-        .lte("session_date", data.to)
-        .order("session_date", { ascending: true })
-        .order("start_time", { ascending: true }),
-    ]);
+    // (1) Identifica se userId é aluno (pega o user_id do studio) ou coach
+    const { data: stu } = await supabaseAdmin
+      .from("students")
+      .select("id, user_id, bonus_checkins_balance")
+      .eq("account_user_id", userId)
+      .maybeSingle();
 
-    if (sessionsRes.error) throw new Error(sessionsRes.error.message);
-    const studentId: string | null = stuRes.data?.id ?? null;
-    const bonusBalance: number = (stuRes.data as any)?.bonus_checkins_balance ?? 0;
-    const sessions = sessionsRes.data ?? [];
+    const studentId: string | null = stu?.id ?? null;
+    const studioUserId: string = stu?.user_id ?? userId;
+    const bonusBalance: number = (stu as any)?.bonus_checkins_balance ?? 0;
+
+    // (2) Busca sessões do range atreladas ao studioUserId com bypass RLS serverless seguro
+    const { data: sessionsData, error: sessionsError } = await supabaseAdmin
+      .from("class_sessions")
+      .select(`
+        id, session_date, start_time, duration_minutes, class_id, user_id,
+        capacity_override, notes, status,
+        classes:class_id (
+          name, trainer_name, capacity, program_id,
+          checkin_opens_minutes_before, checkin_closes_minutes_before,
+          programs:program_id ( id, name, color )
+        )
+      `)
+      .eq("user_id", studioUserId)
+      .gte("session_date", data.from)
+      .lte("session_date", data.to)
+      .order("session_date", { ascending: true })
+      .order("start_time", { ascending: true });
+
+    if (sessionsError) throw new Error(sessionsError.message);
+    const sessions = sessionsData ?? [];
     const sessionIds = sessions.map((s: any) => s.id);
 
-    // (2) Paralelo: attendance (todas as linhas do range) + payments (plano vigente do aluno)
+    // (3) Paralelo: attendance (todas as linhas do range) + payments (plano vigente do aluno)
     const [attRes, paymentsRes] = await Promise.all([
       sessionIds.length > 0
-        ? supabase.from("class_attendance").select("session_id, student_id").in("session_id", sessionIds)
+        ? supabaseAdmin.from("class_attendance").select("session_id, student_id").in("session_id", sessionIds)
         : Promise.resolve({ data: [] as any[] }),
       studentId
-        ? supabase
+        ? supabaseAdmin
             .from("payments")
             .select("plan_id,due_date,payment_date")
             .eq("student_id", studentId)
@@ -179,7 +183,7 @@ export const getAgenda = createServerFn({ method: "POST" })
     const current = ((paymentsRes.data ?? []) as any[]).find((p) => !p.due_date || p.due_date >= today);
     if (current?.plan_id) {
       hasCurrentPlan = true;
-      const { data: pp } = await supabase
+      const { data: pp } = await supabaseAdmin
         .from("plan_programs")
         .select("program_id")
         .eq("plan_id", current.plan_id);
