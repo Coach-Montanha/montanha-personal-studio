@@ -114,10 +114,12 @@ export async function computeQuotaUsage(
 
   const { data: attRows } = await supabase
     .from("class_attendance")
-    .select("id, class_sessions:session_id ( session_date )")
-    .eq("student_id", studentId);
+    .select("id, is_bonus, class_sessions:session_id ( session_date )")
+    .eq("student_id", studentId)
+    .eq("is_bonus", false);
 
   const used = (attRows ?? []).filter((r: any) => {
+    if (r.is_bonus === true) return false;
     const sd = r.class_sessions?.session_date;
     if (!sd) return false;
     const d = new Date(`${sd}T12:00:00`);

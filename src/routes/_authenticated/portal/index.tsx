@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AgendaView } from "@/components/edufinance/AgendaView";
 import { useServerFn } from "@tanstack/react-start";
 import { studentCheckIn, studentCancelCheckIn, getMyQuotaUsage, getMyAttendanceStats, getSessionAttendees } from "@/lib/classes.functions";
+import { getMyBonusBalance } from "@/lib/bonus.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, AlertTriangle, Trophy, Users, Dumbbell } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,6 +24,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { formatDateBR } from "@/lib/format";
 import { useWakeLock } from "@/hooks/use-wake-lock";
+import { BonusDecisionModal } from "@/components/portal/BonusDecisionModal";
+import { BonusBalanceCard } from "@/components/portal/BonusBalanceCard";
 
 export const Route = createFileRoute("/_authenticated/portal/")({
   head: () => ({ meta: [{ title: "Agendamento de check-ins — Portal do aluno" }] }),
@@ -48,6 +51,7 @@ function PortalHome() {
   const fetchQuota = useServerFn(getMyQuotaUsage);
   const fetchStats = useServerFn(getMyAttendanceStats);
   const fetchAttendees = useServerFn(getSessionAttendees);
+  const fetchBonusBalance = useServerFn(getMyBonusBalance);
 
   const { data: quota } = useQuery({
     queryKey: ["portal-quota"],
@@ -62,6 +66,14 @@ function PortalHome() {
     staleTime: 60_000,
     gcTime: 5 * 60_000,
   });
+
+  const { data: bonusData } = useQuery({
+    queryKey: ["portal-bonus-balance"],
+    queryFn: () => fetchBonusBalance(),
+    staleTime: 30_000,
+    gcTime: 5 * 60_000,
+  });
+  const bonusBalance = bonusData?.balance ?? 0;
 
   const [attendeesFor, setAttendeesFor] = useState<{ id: string; label: string } | null>(null);
   const { data: attendees = [], isFetching: attendeesLoading } = useQuery({
@@ -109,16 +121,22 @@ function PortalHome() {
     sessionStorage.setItem(key, "1");
   }, [dueInfo]);
 
-
+  // Bonus decision modal state
+  const [bonusModal, setBonusModal] = useState<{ sessionId: string; label: string } | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
-  async function handleCheckIn(sessionId: string) {
+
+  async function executeCheckIn(sessionId: string, useBonus: boolean) {
     setPendingId(sessionId);
     try {
-      await checkIn({ data: { sessionId } });
-      toast.success("Check-in confirmado!");
-      // Invalidação cirúrgica — nunca `invalidateQueries()` sem chave.
+      const result = await checkIn({ data: { sessionId, useBonus } });
+      if ((result as any)?.isBonus) {
+        toast.success(`Check-in confirmado com bônus! Saldo restante: ${(result as any).remainingBalance ?? bonusBalance - 1}`);
+      } else {
+        toast.success("Check-in confirmado!");
+      }
       qc.invalidateQueries({ queryKey: ["agenda"] });
       qc.invalidateQueries({ queryKey: ["portal-quota"] });
+      qc.invalidateQueries({ queryKey: ["portal-bonus-balance"] });
       qc.invalidateQueries({ queryKey: ["portal-attendees", sessionId] });
     } catch (e: any) {
       toast.error(e.message);
@@ -126,13 +144,36 @@ function PortalHome() {
       setPendingId(null);
     }
   }
+
+  function handleCheckIn(sessionId: string, sessionLabel: string) {
+    // If student has bonus credits, ask which to use
+    if (bonusBalance > 0) {
+      setBonusModal({ sessionId, label: sessionLabel });
+      return;
+    }
+    // Otherwise proceed directly with plan quota
+    executeCheckIn(sessionId, false);
+  }
+
+  function handleBonusDecision(useBonus: boolean) {
+    if (!bonusModal) return;
+    const { sessionId } = bonusModal;
+    setBonusModal(null);
+    executeCheckIn(sessionId, useBonus);
+  }
+
   const [cancelId, setCancelId] = useState<string | null>(null);
   async function handleCancel(sessionId: string) {
     try {
-      await cancel({ data: { sessionId } });
-      toast.success("Check-in cancelado");
+      const result = await cancel({ data: { sessionId } });
+      if ((result as any)?.refunded) {
+        toast.success("Check-in cancelado — bônus restituído ao seu saldo");
+      } else {
+        toast.success("Check-in cancelado");
+      }
       qc.invalidateQueries({ queryKey: ["agenda"] });
       qc.invalidateQueries({ queryKey: ["portal-quota"] });
+      qc.invalidateQueries({ queryKey: ["portal-bonus-balance"] });
       qc.invalidateQueries({ queryKey: ["portal-attendees", sessionId] });
     } catch (e: any) {
       toast.error(e.message);
@@ -277,6 +318,7 @@ function PortalHome() {
           </div>
         </Card>
       )}
+      <BonusBalanceCard balance={bonusBalance} />
 
       <ProgramLegend />
 
@@ -384,7 +426,7 @@ function PortalHome() {
                       size="sm"
                       loading={pendingId === s.id}
                       className="h-9 px-4 text-xs shrink-0"
-                      onClick={(e) => { stop(e); handleCheckIn(s.id); }}
+                      onClick={(e) => { stop(e); handleCheckIn(s.id, `${s.class_name} · ${hh}:${mm}`); }}
                     >
                       Check-in
                     </Button>
@@ -481,6 +523,21 @@ function PortalHome() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BonusDecisionModal
+        open={!!bonusModal}
+        onOpenChange={(o) => !o && setBonusModal(null)}
+        sessionLabel={bonusModal?.label ?? ""}
+        bonusBalance={bonusBalance}
+        onConfirm={handleBonusDecision}
+        loading={!!pendingId}
+        hasPlanQuota={
+          !quota ||
+          quota.quota_type === "none" ||
+          !quota.quota_amount ||
+          (quota.used ?? 0) < quota.quota_amount
+        }
+      />
     </div>
   );
 }

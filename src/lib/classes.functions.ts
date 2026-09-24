@@ -97,6 +97,7 @@ export type AgendaSession = {
   capacity: number;
   filled: number;
   is_enrolled: boolean;
+  has_plan_access?: boolean;
   checked_in: boolean;
   checkin_opens_minutes_before: number;
   checkin_closes_minutes_before: number;
@@ -118,7 +119,11 @@ export const getAgenda = createServerFn({ method: "POST" })
 
     // (1) Paralelo: aluno + sessões do range
     const [stuRes, sessionsRes] = await Promise.all([
-      supabase.from("students").select("id").eq("account_user_id", userId).maybeSingle(),
+      supabase
+        .from("students")
+        .select("id, bonus_checkins_balance")
+        .eq("account_user_id", userId)
+        .maybeSingle(),
       supabase
         .from("class_sessions")
         .select(`
@@ -138,6 +143,7 @@ export const getAgenda = createServerFn({ method: "POST" })
 
     if (sessionsRes.error) throw new Error(sessionsRes.error.message);
     const studentId: string | null = stuRes.data?.id ?? null;
+    const bonusBalance: number = (stuRes.data as any)?.bonus_checkins_balance ?? 0;
     const sessions = sessionsRes.data ?? [];
     const sessionIds = sessions.map((s: any) => s.id);
 
@@ -181,34 +187,45 @@ export const getAgenda = createServerFn({ method: "POST" })
       allowedProgramIds = ids.length > 0 ? new Set(ids) : null;
     }
 
-    const hasAccess = (programId: string | null) => {
+    const hasPlanAccess = (programId: string | null) => {
       if (!studentId || !hasCurrentPlan) return false;
       if (allowedProgramIds === null) return true;
       return programId ? allowedProgramIds.has(programId) : false;
     };
 
-    let out: AgendaSession[] = sessions.map((s: any) => ({
-      id: s.id,
-      session_date: s.session_date,
-      start_time: s.start_time,
-      duration_minutes: s.duration_minutes,
-      class_id: s.class_id,
-      class_name: s.classes?.name ?? "Turma removida",
-      trainer_name: s.classes?.trainer_name ?? null,
-      program_id: s.classes?.program_id ?? null,
-      program_name: s.classes?.programs?.name ?? null,
-      program_color: s.classes?.programs?.color ?? null,
-      capacity: s.capacity_override ?? s.classes?.capacity ?? 0,
-      filled: countsMap.get(s.id) ?? 0,
-      is_enrolled: hasAccess(s.classes?.program_id ?? null),
-      checked_in: checkedInSessionIds.has(s.id),
-      checkin_opens_minutes_before: s.classes?.checkin_opens_minutes_before ?? 60,
-      checkin_closes_minutes_before: s.classes?.checkin_closes_minutes_before ?? 15,
-      studio_user_id: s.user_id,
-      capacity_override: s.capacity_override ?? null,
-      session_notes: s.notes ?? null,
-      status: s.status ?? "scheduled",
-    }));
+    const hasAccess = (programId: string | null) => {
+      if (!studentId) return false;
+      // Se o aluno possui saldo de check-ins bônus, tem acesso universal para agendar com bônus
+      if (bonusBalance > 0) return true;
+      return hasPlanAccess(programId);
+    };
+
+    let out: AgendaSession[] = sessions.map((s: any) => {
+      const progId = s.classes?.program_id ?? null;
+      return {
+        id: s.id,
+        session_date: s.session_date,
+        start_time: s.start_time,
+        duration_minutes: s.duration_minutes,
+        class_id: s.class_id,
+        class_name: s.classes?.name ?? "Turma removida",
+        trainer_name: s.classes?.trainer_name ?? null,
+        program_id: progId,
+        program_name: s.classes?.programs?.name ?? null,
+        program_color: s.classes?.programs?.color ?? null,
+        capacity: s.capacity_override ?? s.classes?.capacity ?? 0,
+        filled: countsMap.get(s.id) ?? 0,
+        is_enrolled: hasAccess(progId),
+        has_plan_access: hasPlanAccess(progId),
+        checked_in: checkedInSessionIds.has(s.id),
+        checkin_opens_minutes_before: s.classes?.checkin_opens_minutes_before ?? 60,
+        checkin_closes_minutes_before: s.classes?.checkin_closes_minutes_before ?? 15,
+        studio_user_id: s.user_id,
+        capacity_override: s.capacity_override ?? null,
+        session_notes: s.notes ?? null,
+        status: s.status ?? "scheduled",
+      };
+    });
 
     if (data.programId) {
       out = out.filter((s) => s.program_id === data.programId);
@@ -340,19 +357,39 @@ export const getSessionAttendees = createServerFn({ method: "POST" })
 
 export const studentCheckIn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { sessionId: string }) => {
+  .inputValidator((input: { sessionId: string; useBonus?: boolean }) => {
     if (!input.sessionId) throw new Error("sessionId requerido");
-    return input;
+    return {
+      sessionId: input.sessionId,
+      useBonus: Boolean(input.useBonus),
+    };
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: stu } = await supabase
       .from("students")
-      .select("id, user_id")
+      .select("id, user_id, bonus_checkins_balance")
       .eq("account_user_id", userId)
       .maybeSingle();
     if (!stu) throw new Error("Perfil de aluno não encontrado");
 
+    // Rota 1: Agendamento Atômico com Check-in Bônus (RPC book_class_with_bonus)
+    if (data.useBonus) {
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc("book_class_with_bonus", {
+        p_session_id: data.sessionId,
+        p_student_id: stu.id,
+      });
+      if (rpcErr) throw new Error(rpcErr.message);
+      return {
+        ok: true,
+        isBonus: true,
+        remainingBalance: (rpcRes as any)?.remaining_balance,
+        attendanceId: (rpcRes as any)?.attendance_id,
+        transactionId: (rpcRes as any)?.transaction_id,
+      };
+    }
+
+    // Rota 2: Agendamento Regular com Cota de Plano Ativo
     const session = await loadSessionContext(supabase, data.sessionId);
     if (session.user_id !== stu.user_id) throw new Error("Sessão não pertence ao seu studio");
     if (!session.class_id) throw new Error("Sessão sem turma associada");
@@ -436,9 +473,10 @@ export const studentCheckIn = createServerFn({ method: "POST" })
       session_id: session.id,
       student_id: stu.id,
       status: "present",
+      is_bonus: false,
     });
     if (insErr) throw new Error(insErr.message);
-    return { ok: true };
+    return { ok: true, isBonus: false };
   });
 
 export const studentCancelCheckIn = createServerFn({ method: "POST" })
@@ -451,26 +489,29 @@ export const studentCancelCheckIn = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: stu } = await supabase
       .from("students")
-      .select("id, user_id")
+      .select("id")
       .eq("account_user_id", userId)
       .maybeSingle();
     if (!stu) throw new Error("Perfil de aluno não encontrado");
 
-    const session = await loadSessionContext(supabase, data.sessionId);
-    const start = combineDateTime(session.session_date, session.start_time);
-    const closes = new Date(start.getTime() - (session.classes?.checkin_closes_minutes_before ?? 15) * 60_000);
-    const now = new Date();
-    if (now > closes) {
-      throw new Error(`Cancelamento encerrado às ${closes.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`);
-    }
+    // Invoca RPC atômica cancel_class_checkin
+    // Executa locks FOR UPDATE, valida janela de cancelamento,
+    // detecta se o check-in foi bônus (is_bonus = true),
+    // estorna o crédito ao saldo do aluno, grava auditoria no ledger
+    // e remove o registro de presença em uma única transação atômica.
+    const { data: res, error } = await supabase.rpc("cancel_class_checkin", {
+      p_session_id: data.sessionId,
+      p_student_id: stu.id,
+    });
 
-    const { error } = await supabase
-      .from("class_attendance")
-      .delete()
-      .eq("session_id", session.id)
-      .eq("student_id", stu.id);
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return {
+      ok: true,
+      refunded: Boolean((res as any)?.refunded),
+      wasBonus: Boolean((res as any)?.was_bonus),
+      newBalance: (res as any)?.new_balance,
+      refundTransactionId: (res as any)?.refund_transaction_id ?? (res as any)?.transaction_id ?? null,
+    };
   });
 
 // ------------------------------------------------------------------

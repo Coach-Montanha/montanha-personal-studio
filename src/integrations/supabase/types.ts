@@ -90,6 +90,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_bonus: boolean
           notes: string | null
           session_id: string
           status: string
@@ -99,6 +100,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_bonus?: boolean
           notes?: string | null
           session_id: string
           status?: string
@@ -108,6 +110,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_bonus?: boolean
           notes?: string | null
           session_id?: string
           status?: string
@@ -1309,6 +1312,77 @@ export type Database = {
           },
         ]
       }
+      student_bonus_transactions: {
+        Row: {
+          amount: number
+          attendance_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          reason: string | null
+          related_student_id: string | null
+          session_id: string | null
+          student_id: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          attendance_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          related_student_id?: string | null
+          session_id?: string | null
+          student_id: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          attendance_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reason?: string | null
+          related_student_id?: string | null
+          session_id?: string | null
+          student_id?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_bonus_transactions_attendance_id_fkey"
+            columns: ["attendance_id"]
+            isOneToOne: false
+            referencedRelation: "class_attendance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_bonus_transactions_related_student_id_fkey"
+            columns: ["related_student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_bonus_transactions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "class_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_bonus_transactions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_contracts: {
         Row: {
           created_at: string
@@ -1410,6 +1484,7 @@ export type Database = {
           address: string | null
           attendance_offset: number
           birth_date: string | null
+          bonus_checkins_balance: number
           city: string | null
           country: string | null
           cpf: string | null
@@ -1435,6 +1510,7 @@ export type Database = {
           address?: string | null
           attendance_offset?: number
           birth_date?: string | null
+          bonus_checkins_balance?: number
           city?: string | null
           country?: string | null
           cpf?: string | null
@@ -1460,6 +1536,7 @@ export type Database = {
           address?: string | null
           attendance_offset?: number
           birth_date?: string | null
+          bonus_checkins_balance?: number
           city?: string | null
           country?: string | null
           cpf?: string | null
@@ -1601,6 +1678,79 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_adjust_bonus_checkins: {
+        Args: {
+          p_amount: number
+          p_reason?: string | null
+          p_student_id: string
+        }
+        Returns: {
+          amount: number
+          new_balance: number
+          previous_balance: number
+          student_id: string
+          student_name: string
+          success: boolean
+          transaction_id: string
+          transaction_type: string
+        }
+      }
+      admin_transfer_bonus_checkins: {
+        Args: {
+          p_amount: number
+          p_reason?: string | null
+          p_source_student_id: string
+          p_target_student_id: string
+        }
+        Returns: {
+          amount: number
+          source_new_balance: number
+          source_previous_balance: number
+          source_student_id: string
+          source_student_name: string
+          source_transaction_id: string
+          success: boolean
+          target_new_balance: number
+          target_previous_balance: number
+          target_student_id: string
+          target_student_name: string
+          target_transaction_id: string
+        }
+      }
+      book_class_with_bonus: {
+        Args: {
+          p_session_id: string
+          p_student_id?: string | null
+        }
+        Returns: {
+          attendance_id: string
+          class_name: string
+          remaining_balance: number
+          session_id: string
+          student_id: string
+          student_name: string
+          success: boolean
+          transaction_id: string
+        }
+      }
+      cancel_class_checkin: {
+        Args: {
+          p_session_id: string
+          p_student_id?: string | null
+        }
+        Returns: {
+          class_name: string
+          new_balance: number
+          refunded: boolean
+          refund_transaction_id: string | null
+          session_id: string
+          student_id: string
+          student_name: string
+          success: boolean
+          transaction_id?: string | null
+          was_bonus: boolean
+        }
+      }
       get_pt_student_credentials: {
         Args: { _student_id: string }
         Returns: {
@@ -1784,3 +1934,21 @@ export const Constants = {
     },
   },
 } as const
+
+export type StudentBonusTransaction = Tables<"student_bonus_transactions">
+export type StudentBonusTransactionInsert = TablesInsert<"student_bonus_transactions">
+export type StudentBonusTransactionUpdate = TablesUpdate<"student_bonus_transactions">
+
+export type BonusTransactionType =
+  | "grant"
+  | "adjustment"
+  | "usage"
+  | "checkin"
+  | "refund"
+  | "transfer_in"
+  | "transfer_out"
+
+export type AdminAdjustBonusResult = Database["public"]["Functions"]["admin_adjust_bonus_checkins"]["Returns"]
+export type AdminTransferBonusResult = Database["public"]["Functions"]["admin_transfer_bonus_checkins"]["Returns"]
+export type BookClassWithBonusResult = Database["public"]["Functions"]["book_class_with_bonus"]["Returns"]
+export type CancelClassCheckinResult = Database["public"]["Functions"]["cancel_class_checkin"]["Returns"]

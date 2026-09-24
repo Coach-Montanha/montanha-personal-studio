@@ -12,6 +12,7 @@ import {
   PauseCircle,
   Ticket,
   UserRound,
+  Gift,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -44,6 +45,7 @@ import { StudentPlanTab } from "@/components/students/tabs/StudentPlanTab";
 import { StudentPaymentsTab, type PaymentRow } from "@/components/students/tabs/StudentPaymentsTab";
 import { StudentCheckinsTab, type CheckinEntry } from "@/components/students/tabs/StudentCheckinsTab";
 import { StudentAttendanceTab } from "@/components/students/tabs/StudentAttendanceTab";
+import { BonusBalancePanel } from "@/components/students/tabs/BonusBalancePanel";
 
 const STUDENT_TABS = [
   "overview",
@@ -52,6 +54,7 @@ const STUDENT_TABS = [
   "payments",
   "checkins",
   "attendance",
+  "bonus",
 ] as const;
 type StudentTab = (typeof STUDENT_TABS)[number];
 
@@ -375,6 +378,9 @@ function StudentDetail() {
               <TabsTrigger value="attendance" className="gap-1.5 transition-all duration-200">
                 <CalendarDays className="h-3.5 w-3.5" /> Frequência
               </TabsTrigger>
+              <TabsTrigger value="bonus" className="gap-1.5 transition-all duration-200">
+                <Gift className="h-3.5 w-3.5" /> Bônus
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -468,6 +474,14 @@ function StudentDetail() {
             <StudentAttendanceTab
               payments={payments}
               studentCreatedAt={student.created_at}
+            />
+          </TabsContent>
+
+          <TabsContent value="bonus">
+            <BonusBalancePanel
+              studentId={student.id}
+              studentName={student.name}
+              bonusBalance={student.bonus_checkins_balance ?? 0}
             />
           </TabsContent>
         </Tabs>
