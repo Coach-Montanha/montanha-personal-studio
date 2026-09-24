@@ -239,9 +239,7 @@ export function StudentPaymentsTab({
                       <TableHead className="whitespace-nowrap">Forma</TableHead>
                       <TableHead className="whitespace-nowrap">Status</TableHead>
                       <TableHead className="whitespace-nowrap max-w-[140px]">Observações</TableHead>
-                      <TableHead className="text-right whitespace-nowrap sticky right-0 z-20 bg-card/95 backdrop-blur-xs pr-3 pl-2">
-                        Ações
-                      </TableHead>
+                      <TableHead className="text-right whitespace-nowrap pr-4 w-36"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -322,7 +320,7 @@ export function StudentPaymentsTab({
                           <TableCell className="text-xs text-muted-foreground max-w-[140px] truncate" title={p.notes ?? undefined}>
                             {p.notes ?? "—"}
                           </TableCell>
-                          <TableCell className="text-right whitespace-nowrap sticky right-0 z-10 bg-card/95 backdrop-blur-xs group-hover:bg-muted/40 transition-colors pr-3 pl-2 py-1.5">
+                          <TableCell className="text-right whitespace-nowrap pr-4 py-3">
                             <PaymentActionsDock
                               canReceipt={p.status === "paid"}
                               onReceipt={() => handleGenerateReceipt(p)}

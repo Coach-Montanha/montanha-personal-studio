@@ -4,8 +4,8 @@ import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useServerFn } from "@tanstack/react-start";
-import { getAgenda, type AgendaSession } from "@/lib/classes.functions";
+import { fetchAgendaClient } from "@/lib/agenda.client";
+import type { AgendaSession } from "@/lib/classes.functions";
 import { cn } from "@/lib/utils";
 
 const DOW_FULL = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -34,7 +34,6 @@ export function AgendaView({
 }) {
   const [anchor, setAnchor] = useState(() => weekStart(new Date()));
   const [programId, setProgramId] = useState<string>("all");
-  const fetchAgenda = useServerFn(getAgenda);
 
   const from = anchor;
   const to = addDays(anchor, 6);
@@ -63,9 +62,11 @@ export function AgendaView({
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ["agenda", fmtDateKey(rangeFrom), fmtDateKey(rangeTo), programId],
     queryFn: () =>
-      fetchAgenda({
-        data: { from: fmtDateKey(rangeFrom), to: fmtDateKey(rangeTo), programId: programId === "all" ? null : programId },
-      }),
+      fetchAgendaClient(
+        fmtDateKey(rangeFrom),
+        fmtDateKey(rangeTo),
+        programId === "all" ? null : programId,
+      ),
     staleTime: 30_000,
     gcTime: 5 * 60_000,
     placeholderData: (prev) => prev,
