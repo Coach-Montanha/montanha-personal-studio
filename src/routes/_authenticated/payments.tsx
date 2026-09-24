@@ -573,7 +573,7 @@ function PaymentsPage() {
                     <TableHead>Método</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right pr-4">Ações</TableHead>
+                    <TableHead className="text-right whitespace-nowrap sticky right-0 z-20 bg-card/95 backdrop-blur-xs pr-3 pl-2">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -605,7 +605,7 @@ function PaymentsPage() {
                         <TableCell className="text-xs">{pmLabel(p.payment_method)}</TableCell>
                         <TableCell className="text-numeric text-right font-semibold">{formatBRL(p.amount)}</TableCell>
                         <TableCell><PaymentStatusBadge status={p.status} /></TableCell>
-                        <TableCell className="text-right whitespace-nowrap pr-4 py-2">
+                        <TableCell className="text-right whitespace-nowrap sticky right-0 z-10 bg-card/95 backdrop-blur-xs group-hover:bg-muted/40 transition-colors pr-3 pl-2 py-1.5">
                           <PaymentActionsDock
                             canReceipt={p.status === "paid"}
                             onReceipt={() => handleGenerateReceipt(p)}
