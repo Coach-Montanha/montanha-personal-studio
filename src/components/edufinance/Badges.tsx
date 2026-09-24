@@ -64,11 +64,14 @@ export function StudentStatusBadge({ status }: { status: string }) {
   );
 }
 
-export function PlanBadge({ name }: { name: string | null | undefined }) {
+export function PlanBadge({ name, className }: { name: string | null | undefined; className?: string }) {
   if (!name) return <span className="text-xs text-muted-foreground">—</span>;
   return (
     <span
-      className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary max-w-[180px] sm:max-w-[220px] truncate"
+      className={cn(
+        "inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary max-w-[130px] truncate",
+        className,
+      )}
       title={name}
     >
       <span className="truncate">{name}</span>

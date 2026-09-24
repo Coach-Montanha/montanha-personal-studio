@@ -566,12 +566,12 @@ function PaymentsPage() {
                     )}
                     <TableHead className="text-xs px-2.5 py-2.5">Aluno</TableHead>
                     {kind === "all" && <TableHead className="text-xs px-2 py-2.5">Tipo</TableHead>}
-                    <TableHead className="text-xs px-2.5 py-2.5">Plano</TableHead>
+                    <TableHead className="text-xs px-2 py-2.5 max-w-[130px]">Plano</TableHead>
                     <TableHead className="text-xs px-2 py-2.5">Mês ref.</TableHead>
                     <TableHead className="text-xs px-2 py-2.5">Pagamento</TableHead>
                     <TableHead className="text-xs px-2 py-2.5">Vencimento</TableHead>
                     <TableHead className="text-xs px-2 py-2.5">Método</TableHead>
-                    <TableHead className="text-right text-xs px-2.5 py-2.5">Valor</TableHead>
+                    <TableHead className="text-right text-xs px-2 py-2.5">Valor</TableHead>
                     <TableHead className="text-xs px-2 py-2.5">Status</TableHead>
                     <TableHead className="text-right pr-2 py-2.5 w-28"></TableHead>
                   </TableRow>
@@ -600,7 +600,7 @@ function PaymentsPage() {
                           {p.student_name}
                         </TableCell>
                         {kind === "all" && <TableCell className="px-2 py-2.5"><KindBadge kind={p.kind} /></TableCell>}
-                        <TableCell className="px-2.5 py-2.5"><PlanBadge name={p.plan_name} /></TableCell>
+                        <TableCell className="px-2 py-2.5 max-w-[130px]"><PlanBadge name={p.plan_name} className="max-w-[125px]" /></TableCell>
                         <TableCell className="text-[11px] uppercase font-mono px-2 py-2.5">{formatMonthLabel(p.reference_month)}</TableCell>
                         <TableCell className="text-[11px] font-mono px-2 py-2.5">{formatDateBR(p.payment_date)}</TableCell>
                         <TableCell className="text-[11px] font-mono px-2 py-2.5">{effectiveDueDate(p)}</TableCell>
