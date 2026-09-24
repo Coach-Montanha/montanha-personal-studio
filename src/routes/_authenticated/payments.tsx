@@ -564,15 +564,15 @@ function PaymentsPage() {
                         />
                       </TableHead>
                     )}
-                    <TableHead className="text-xs px-2.5 py-2.5">Aluno</TableHead>
-                    {kind === "all" && <TableHead className="text-xs px-2 py-2.5">Tipo</TableHead>}
-                    <TableHead className="text-xs px-2 py-2.5 max-w-[130px]">Plano</TableHead>
-                    <TableHead className="text-xs px-2 py-2.5">Mês ref.</TableHead>
-                    <TableHead className="text-xs px-2 py-2.5">Pagamento</TableHead>
-                    <TableHead className="text-xs px-2 py-2.5">Vencimento</TableHead>
-                    <TableHead className="text-xs px-2 py-2.5">Método</TableHead>
-                    <TableHead className="text-right text-xs px-2 py-2.5">Valor</TableHead>
-                    <TableHead className="text-xs px-2 py-2.5">Status</TableHead>
+                    <TableHead className="px-2.5 py-2.5">Aluno</TableHead>
+                    {kind === "all" && <TableHead className="px-2 py-2.5">Tipo</TableHead>}
+                    <TableHead className="px-2 py-2.5 max-w-[130px]">Plano</TableHead>
+                    <TableHead className="px-2 py-2.5">Mês ref.</TableHead>
+                    <TableHead className="px-2 py-2.5">Pagamento</TableHead>
+                    <TableHead className="px-2 py-2.5">Vencimento</TableHead>
+                    <TableHead className="px-2 py-2.5">Método</TableHead>
+                    <TableHead className="text-right px-2 py-2.5">Valor</TableHead>
+                    <TableHead className="px-2 py-2.5">Status</TableHead>
                     <TableHead className="text-right pr-2 py-2.5 w-28"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -596,16 +596,16 @@ function PaymentsPage() {
                             />
                           </TableCell>
                         )}
-                        <TableCell className="font-medium text-[12px] px-2.5 py-2.5 min-w-[130px] max-w-[170px] leading-snug">
+                        <TableCell className="font-medium text-sm px-2.5 py-2.5 min-w-[130px] max-w-[180px] leading-snug">
                           {p.student_name}
                         </TableCell>
                         {kind === "all" && <TableCell className="px-2 py-2.5"><KindBadge kind={p.kind} /></TableCell>}
                         <TableCell className="px-2 py-2.5 max-w-[130px]"><PlanBadge name={p.plan_name} className="max-w-[125px]" /></TableCell>
-                        <TableCell className="text-[11px] uppercase font-mono px-2 py-2.5">{formatMonthLabel(p.reference_month)}</TableCell>
-                        <TableCell className="text-[11px] font-mono px-2 py-2.5">{formatDateBR(p.payment_date)}</TableCell>
-                        <TableCell className="text-[11px] font-mono px-2 py-2.5">{effectiveDueDate(p)}</TableCell>
-                        <TableCell className="text-[11px] px-2 py-2.5">{pmLabel(p.payment_method)}</TableCell>
-                        <TableCell className="text-numeric text-right font-semibold text-[12px] px-2.5 py-2.5">{formatBRL(p.amount)}</TableCell>
+                        <TableCell className="text-xs uppercase font-mono px-2 py-2.5">{formatMonthLabel(p.reference_month)}</TableCell>
+                        <TableCell className="text-xs font-mono px-2 py-2.5">{formatDateBR(p.payment_date)}</TableCell>
+                        <TableCell className="text-xs font-mono px-2 py-2.5">{effectiveDueDate(p)}</TableCell>
+                        <TableCell className="text-xs sm:text-sm px-2 py-2.5">{pmLabel(p.payment_method)}</TableCell>
+                        <TableCell className="text-numeric text-right font-semibold text-sm px-2.5 py-2.5">{formatBRL(p.amount)}</TableCell>
                         <TableCell className="px-2 py-2.5"><PaymentStatusBadge status={p.status} /></TableCell>
                         <TableCell className="text-right whitespace-nowrap pr-2 py-2.5">
                           <PaymentActionsDock
