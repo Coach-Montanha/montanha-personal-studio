@@ -41,9 +41,9 @@ export function PageHeader({
         )}
         <div className="min-w-0 flex-1">
           {eyebrow && <p className="text-overline mb-0.5 text-muted-foreground">{eyebrow}</p>}
-          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-title break-words">{title}</h1>
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground whitespace-nowrap">{title}</h1>
           {description && (
-            <p className="text-caption mt-1 max-w-prose text-muted-foreground break-words">{description}</p>
+            <p className="text-xs mt-0.5 text-muted-foreground whitespace-nowrap">{description}</p>
           )}
         </div>
       </div>

@@ -564,16 +564,16 @@ function PaymentsPage() {
                         />
                       </TableHead>
                     )}
-                    <TableHead>Aluno</TableHead>
-                    {kind === "all" && <TableHead>Tipo</TableHead>}
-                    <TableHead>Plano</TableHead>
-                    <TableHead>Mês ref.</TableHead>
-                    <TableHead>Pagamento</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                    <TableHead>Método</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right pr-4 w-36"></TableHead>
+                    <TableHead className="text-xs px-2.5 py-2.5">Aluno</TableHead>
+                    {kind === "all" && <TableHead className="text-xs px-2 py-2.5">Tipo</TableHead>}
+                    <TableHead className="text-xs px-2.5 py-2.5">Plano</TableHead>
+                    <TableHead className="text-xs px-2 py-2.5">Mês ref.</TableHead>
+                    <TableHead className="text-xs px-2 py-2.5">Pagamento</TableHead>
+                    <TableHead className="text-xs px-2 py-2.5">Vencimento</TableHead>
+                    <TableHead className="text-xs px-2 py-2.5">Método</TableHead>
+                    <TableHead className="text-right text-xs px-2.5 py-2.5">Valor</TableHead>
+                    <TableHead className="text-xs px-2 py-2.5">Status</TableHead>
+                    <TableHead className="text-right pr-2 py-2.5 w-28"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -582,7 +582,7 @@ function PaymentsPage() {
                     return (
                       <TableRow key={`${p.kind}-${p.id}`} data-state={checked ? "selected" : undefined}>
                         {bulkEnabled && (
-                          <TableCell>
+                          <TableCell className="px-2 py-2.5">
                             <Checkbox
                               checked={checked}
                               onCheckedChange={(v) => {
@@ -596,16 +596,18 @@ function PaymentsPage() {
                             />
                           </TableCell>
                         )}
-                        <TableCell className="font-medium">{p.student_name}</TableCell>
-                        {kind === "all" && <TableCell><KindBadge kind={p.kind} /></TableCell>}
-                        <TableCell><PlanBadge name={p.plan_name} /></TableCell>
-                        <TableCell className="text-xs uppercase font-mono">{formatMonthLabel(p.reference_month)}</TableCell>
-                        <TableCell className="text-xs font-mono">{formatDateBR(p.payment_date)}</TableCell>
-                        <TableCell className="text-xs font-mono">{effectiveDueDate(p)}</TableCell>
-                        <TableCell className="text-xs">{pmLabel(p.payment_method)}</TableCell>
-                        <TableCell className="text-numeric text-right font-semibold">{formatBRL(p.amount)}</TableCell>
-                        <TableCell><PaymentStatusBadge status={p.status} /></TableCell>
-                        <TableCell className="text-right whitespace-nowrap pr-4 py-3">
+                        <TableCell className="font-medium text-[12px] px-2.5 py-2.5 min-w-[130px] max-w-[170px] leading-snug">
+                          {p.student_name}
+                        </TableCell>
+                        {kind === "all" && <TableCell className="px-2 py-2.5"><KindBadge kind={p.kind} /></TableCell>}
+                        <TableCell className="px-2.5 py-2.5"><PlanBadge name={p.plan_name} /></TableCell>
+                        <TableCell className="text-[11px] uppercase font-mono px-2 py-2.5">{formatMonthLabel(p.reference_month)}</TableCell>
+                        <TableCell className="text-[11px] font-mono px-2 py-2.5">{formatDateBR(p.payment_date)}</TableCell>
+                        <TableCell className="text-[11px] font-mono px-2 py-2.5">{effectiveDueDate(p)}</TableCell>
+                        <TableCell className="text-[11px] px-2 py-2.5">{pmLabel(p.payment_method)}</TableCell>
+                        <TableCell className="text-numeric text-right font-semibold text-[12px] px-2.5 py-2.5">{formatBRL(p.amount)}</TableCell>
+                        <TableCell className="px-2 py-2.5"><PaymentStatusBadge status={p.status} /></TableCell>
+                        <TableCell className="text-right whitespace-nowrap pr-2 py-2.5">
                           <PaymentActionsDock
                             canReceipt={p.status === "paid"}
                             onReceipt={() => handleGenerateReceipt(p)}
