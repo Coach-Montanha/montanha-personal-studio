@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAgendaClient } from "@/lib/agenda.client";
+import { fetchAgendaClient } from "@/lib/agenda-fetch";
 import type { AgendaSession } from "@/lib/classes.functions";
 import { cn } from "@/lib/utils";
 
