@@ -342,30 +342,30 @@ function PTOverview() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <KPICard label="👥 Alunos PT Ativos" value={kpis.active} icon={<Users className="h-5 w-5" />} />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <KPICard label="Alunos PT Ativos" value={kpis.active} icon={<Users className="h-4 w-4" />} />
         <div
           className="cursor-pointer transition-transform hover:scale-[1.01]"
           onClick={() => setRevenueOpen(true)}
           title="Clique para ver detalhes da receita"
         >
           <KPICard
-            label={`💰 Receita PT — ${format(calendarMonth, "MMM/yyyy", { locale: ptBR })}`}
+            label={`Receita PT — ${format(calendarMonth, "MMM/yyyy", { locale: ptBR })}`}
             value={formatBRL(kpis.revenue)}
-            icon={<DollarSign className="h-5 w-5" />}
+            icon={<DollarSign className="h-4 w-4" />}
             trendData={kpis.revenueTrend}
             hint="Clique para filtrar"
           />
         </div>
         <KPICard
-          label="🏃 Aulas realizadas"
+          label="Aulas realizadas"
           value={kpis.completed}
-          icon={<Activity className="h-5 w-5" />}
+          icon={<Activity className="h-4 w-4" />}
           trendData={kpis.completedTrend}
           hint={`em ${format(calendarMonth, "MMMM/yyyy", { locale: ptBR })}`}
         />
-        <KPICard label="📊 Ticket Médio PT" value={formatBRL(kpis.avg)} icon={<TrendingUp className="h-5 w-5" />} />
-        <KPICard label="⚡ Taxa de presença" value={`${kpis.attendanceRate.toFixed(1).replace(".", ",")}%`} icon={<Percent className="h-5 w-5" />} />
+        <KPICard label="Ticket Médio PT" value={formatBRL(kpis.avg)} icon={<TrendingUp className="h-4 w-4" />} />
+        <KPICard label="Taxa de presença" value={`${kpis.attendanceRate.toFixed(1).replace(".", ",")}%`} icon={<Percent className="h-4 w-4" />} />
       </div>
 
       <Tabs defaultValue="students" className="space-y-4">

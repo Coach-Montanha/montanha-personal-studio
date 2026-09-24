@@ -531,7 +531,7 @@ function FinanceiroPage() {
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={kpiOrder} strategy={verticalListSortingStrategy}>
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 xl:grid-cols-6 min-w-0 max-w-full">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6 min-w-0 max-w-full">
             {kpiOrder.map((id) => {
               if (hiddenKpis.includes(id)) return null;
 
@@ -591,7 +591,7 @@ function FinanceiroPage() {
                   <SortableKPICard
                     key={id}
                     id={id}
-                    label={kpis.profit >= 0 ? "✅ Lucro líquido" : "❌ Prejuízo"}
+                    label={kpis.profit >= 0 ? "Lucro líquido" : "Prejuízo"}
                     value={formatBRL(Math.abs(kpis.profit))}
                     icon={<DollarSign className="h-4 w-4" />}
                     hint={`Margem: ${kpis.margin.toFixed(1)}%`}
