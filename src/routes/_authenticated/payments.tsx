@@ -402,29 +402,20 @@ function PaymentsPage() {
         }
       />
 
-      <div className="-mt-3 mb-2 flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
-        <span>{totals.count} registro(s)</span>
-        {useRange && rangeStart && rangeEnd && (
-          <span>· {new Date(rangeStart + "T00:00").toLocaleDateString("pt-BR")} até {new Date(rangeEnd + "T00:00").toLocaleDateString("pt-BR")}</span>
-        )}
-        <span>·</span>
-        <span>Total pago: <b className="text-numeric font-semibold text-foreground">{formatBRL(totals.paid)}</b></span>
-      </div>
-
       <Card className="p-3 sm:p-5">
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
-          <div className="relative flex-1 sm:min-w-[200px]">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
+          <div className="relative w-full sm:w-[210px]">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               data-testid="input-search-payments"
               placeholder="Buscar por aluno"
-              className="h-11 pl-9 sm:h-10"
+              className="h-10 pl-9 text-xs sm:h-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <Select value={method} onValueChange={setMethod}>
-            <SelectTrigger className="h-11 w-full sm:h-10 sm:w-[180px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-10 w-full text-xs sm:h-9 sm:w-[145px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos métodos</SelectItem>
               {(availableMethods.length > 0
@@ -436,7 +427,7 @@ function PaymentsPage() {
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="h-11 w-full sm:h-10 sm:w-[160px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-10 w-full text-xs sm:h-9 sm:w-[130px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos status</SelectItem>
               <SelectItem value="paid">Pago</SelectItem>
@@ -446,8 +437,8 @@ function PaymentsPage() {
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="h-11 w-full sm:h-10 sm:w-[220px]">
-              <span className="mr-1 text-xs text-muted-foreground">Organizar por:</span>
+            <SelectTrigger className="h-10 w-full text-xs sm:h-9 sm:w-[190px]">
+              <span className="mr-1 text-[11px] text-muted-foreground">Organizar:</span>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -466,6 +457,15 @@ function PaymentsPage() {
               <SelectItem value="method">Método</SelectItem>
             </SelectContent>
           </Select>
+
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap bg-muted/40 px-3 py-1.5 rounded-lg border border-border/50 sm:ml-auto">
+            <span>{totals.count} registro(s)</span>
+            {useRange && rangeStart && rangeEnd && (
+              <span>· {new Date(rangeStart + "T00:00").toLocaleDateString("pt-BR")} até {new Date(rangeEnd + "T00:00").toLocaleDateString("pt-BR")}</span>
+            )}
+            <span className="text-border">|</span>
+            <span>Total pago: <b className="text-numeric font-semibold text-foreground">{formatBRL(totals.paid)}</b></span>
+          </div>
         </div>
 
         {isLoading ? (
