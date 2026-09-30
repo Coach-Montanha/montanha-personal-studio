@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Gift, Loader2 } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { adjustStudentBonus } from "@/lib/bonus.functions";
 
 interface Props {
   open: boolean;
@@ -33,7 +33,7 @@ export function GrantBonusDialog({
   currentBalance,
   onSuccess,
 }: Props) {
-  const adjust = useServerFn(adjustStudentBonus);
+  const qc = useQueryClient();
   const [amount, setAmount] = useState<string>("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,9 +47,14 @@ export function GrantBonusDialog({
     if (!isValid) return;
     setLoading(true);
     try {
-      const result = await adjust({
-        data: { studentId, amount: parsed, reason: reason || undefined },
+      const { data: result, error } = await supabase.rpc("admin_adjust_bonus_checkins", {
+        p_student_id: studentId,
+        p_amount: parsed,
+        p_reason: reason || null,
       });
+
+      if (error) throw error;
+
       toast.success(
         parsed > 0
           ? `+${parsed} check-in(s) bônus adicionado(s). Saldo: ${(result as any)?.new_balance ?? previewBalance}`
@@ -58,9 +63,10 @@ export function GrantBonusDialog({
       setAmount("");
       setReason("");
       onOpenChange(false);
+      qc.invalidateQueries();
       onSuccess?.();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Erro ao conceder bônus");
     } finally {
       setLoading(false);
     }
@@ -103,28 +109,35 @@ export function GrantBonusDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="reason">Motivo (opcional)</Label>
+            <Label htmlFor="reason">
+              Motivo / Observação{" "}
+              <span className="text-muted-foreground font-normal">(opcional)</span>
+            </Label>
             <Textarea
               id="reason"
-              placeholder="Ex: Sorteio de outubro, premiação por frequência…"
+              placeholder="Ex: Sorteio do mês, bonificação de boas-vindas..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={2}
             />
           </div>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={!isValid || loading} className="gap-1.5">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gift className="h-4 w-4" />}
-              Salvar
+            <Button
+              type="submit"
+              disabled={!isValid || loading}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {parsed > 0 ? "Conceder Bônus" : "Ajustar Saldo"}
             </Button>
           </DialogFooter>
         </form>

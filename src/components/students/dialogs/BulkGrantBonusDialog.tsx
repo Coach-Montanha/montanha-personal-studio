@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Gift, Loader2 } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { bulkAdjustStudentBonus } from "@/lib/bonus.functions";
 
 interface Props {
   open: boolean;
@@ -31,7 +30,6 @@ export function BulkGrantBonusDialog({
   onDone,
 }: Props) {
   const qc = useQueryClient();
-  const bulkAdjust = useServerFn(bulkAdjustStudentBonus);
   const [amount, setAmount] = useState<string>("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,23 +42,31 @@ export function BulkGrantBonusDialog({
     if (!isValid || selectedIds.length === 0) return;
     setLoading(true);
     try {
-      const res = await bulkAdjust({
-        data: {
-          studentIds: selectedIds,
-          amount: parsed,
-          reason: reason || undefined,
-        },
-      });
+      let okCount = 0;
+      const errors: string[] = [];
 
-      if (res.successCount > 0) {
+      for (const studentId of selectedIds) {
+        const { error } = await supabase.rpc("admin_adjust_bonus_checkins", {
+          p_student_id: studentId,
+          p_amount: parsed,
+          p_reason: reason || null,
+        });
+        if (error) {
+          errors.push(error.message);
+        } else {
+          okCount++;
+        }
+      }
+
+      if (okCount > 0) {
         toast.success(
           parsed > 0
-            ? `+${parsed} check-in(s) bônus concedido(s) para ${res.successCount} aluno(s)!`
-            : `${parsed} check-in(s) bônus debitado(s) de ${res.successCount} aluno(s)!`,
+            ? `+${parsed} check-in(s) bônus concedido(s) para ${okCount} aluno(s)!`
+            : `${parsed} check-in(s) bônus debitado(s) de ${okCount} aluno(s)!`,
         );
       }
-      if (res.errors.length > 0) {
-        toast.error(`${res.errors.length} erro(s) durante o processamento.`);
+      if (errors.length > 0) {
+        toast.error(`${errors.length} erro(s) durante o processamento.`);
       }
 
       setAmount("");

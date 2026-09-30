@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { ArrowRightLeft, Loader2, Search } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -15,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { transferStudentBonus } from "@/lib/bonus.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -42,7 +40,6 @@ export function TransferBonusDialog({
   onSuccess,
 }: Props) {
   const { user } = useAuth();
-  const transfer = useServerFn(transferStudentBonus);
 
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<StudentOption | null>(null);
@@ -87,21 +84,22 @@ export function TransferBonusDialog({
     if (!isValid || !selected) return;
     setLoading(true);
     try {
-      await transfer({
-        data: {
-          sourceStudentId,
-          targetStudentId: selected.id,
-          amount: parsed,
-          reason: reason || undefined,
-        },
+      const { error } = await supabase.rpc("admin_transfer_bonus_checkins", {
+        p_source_student_id: sourceStudentId,
+        p_target_student_id: selected.id,
+        p_amount: parsed,
+        p_reason: reason || null,
       });
+
+      if (error) throw error;
+
       toast.success(
         `${parsed} check-in(s) bônus transferido(s) para ${selected.name}`,
       );
       onOpenChange(false);
       onSuccess?.();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Erro ao transferir bônus");
     } finally {
       setLoading(false);
     }

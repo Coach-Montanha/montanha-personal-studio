@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Gift, ArrowRightLeft, TrendingUp, TrendingDown, RotateCcw, Loader2 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getStudentBonusTransactions } from "@/lib/bonus.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { GrantBonusDialog } from "@/components/students/dialogs/GrantBonusDialog";
 import { TransferBonusDialog } from "@/components/students/dialogs/TransferBonusDialog";
 import { cn } from "@/lib/utils";
@@ -40,13 +39,21 @@ const TX_LABELS: Record<string, string> = {
 
 export function BonusBalancePanel({ studentId, studentName, bonusBalance }: Props) {
   const qc = useQueryClient();
-  const fetchTxs = useServerFn(getStudentBonusTransactions);
   const [grantOpen, setGrantOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
 
   const { data: transactions = [], isLoading } = useQuery<StudentBonusTransaction[]>({
     queryKey: ["bonus-transactions", studentId],
-    queryFn: () => fetchTxs({ data: { studentId, limit: 30 } }),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("student_bonus_transactions")
+        .select("*")
+        .eq("student_id", studentId)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return (data ?? []) as StudentBonusTransaction[];
+    },
     staleTime: 30_000,
   });
 
