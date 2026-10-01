@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Loader2, CheckCircle2, Lock, Sparkles, Zap, Globe, ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
+import { Loader2, CheckCircle2, Lock, Zap, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -16,54 +16,6 @@ function safeNext(next: unknown): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) return "/";
   return next;
 }
-
-const ECOSYSTEM_APPS = [
-  {
-    id: "personal",
-    name: "Montanha Personal Studio",
-    tag: "Finanças & Operação",
-    slogan: "Gestão Financeira & Inteligência para Studios",
-    accent: "#10b981",
-    badgeBg: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
-    isCurrent: true,
-  },
-  {
-    id: "pdf",
-    name: "Montanha PDF Studio",
-    tag: "Diagramação & IA",
-    slogan: "Diagramação Editorial & Publicações com IA",
-    accent: "#f59e0b",
-    badgeBg: "bg-amber-500/20 text-amber-300 border-amber-500/40",
-    isCurrent: false,
-  },
-  {
-    id: "hybrid",
-    name: "Montanha Hybrid Training",
-    tag: "Performance & Treino",
-    slogan: "Alta Performance & Periodização de Treino",
-    accent: "#06b6d4",
-    badgeBg: "bg-cyan-500/20 text-cyan-300 border-cyan-500/40",
-    isCurrent: false,
-  },
-  {
-    id: "language",
-    name: "Montanha Language AI",
-    tag: "Idiomas & IA",
-    slogan: "Tutor de Idiomas com IA & Treinos Diários",
-    accent: "#6366f1",
-    badgeBg: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40",
-    isCurrent: false,
-  },
-  {
-    id: "whatsapp",
-    name: "Montanha WhatsApp Automation",
-    tag: "SaaS & CRM",
-    slogan: "Automação Multi-Tenant & Disparos WhatsApp",
-    accent: "#a855f7",
-    badgeBg: "bg-purple-500/20 text-purple-300 border-purple-500/40",
-    isCurrent: false,
-  },
-];
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -83,7 +35,6 @@ function AuthPage() {
   const nextPath = safeNext(next);
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [showReset, setShowReset] = useState(false);
-  const [showEcosystem, setShowEcosystem] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,9 +58,9 @@ function AuthPage() {
       return toast.error(access.message);
     }
 
-    if (!/^\d{10}$/.test(password)) {
+    if (!/^\d{8,10}$/.test(password)) {
       setLoading(false);
-      return toast.error("A senha deve conter exatamente 10 dígitos numéricos.");
+      return toast.error("A senha deve conter no mínimo 8 dígitos numéricos.");
     }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -162,9 +113,9 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
 
-    if (!/^\d{10}$/.test(password)) {
+    if (!/^\d{8,10}$/.test(password)) {
       setLoading(false);
-      return toast.error("A senha deve conter exatamente 10 dígitos numéricos.");
+      return toast.error("A senha deve conter no mínimo 8 dígitos numéricos.");
     }
 
     const { error } = await supabase.auth.signUp({
@@ -186,15 +137,20 @@ function AuthPage() {
     e.preventDefault();
     setResetError(null);
     setLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setLoading(false);
-    if (error) {
-      setResetError(error.message);
-      return;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        setResetError(error.message);
+        return;
+      }
+      setResetSent(true);
+    } catch (err: any) {
+      setResetError(err?.message || "Erro ao solicitar recuperação de senha.");
+    } finally {
+      setLoading(false);
     }
-    setResetSent(true);
   }
 
   function openReset() {
@@ -249,27 +205,30 @@ function AuthPage() {
                     <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400">
                       <CheckCircle2 className="h-7 w-7 text-emerald-400" />
                     </div>
-                    <div className="space-y-1.5">
-                      <h3 className="text-lg font-semibold leading-tight tracking-tight text-white">Link enviado!</h3>
-                      <p className="text-sm leading-relaxed text-slate-400">
-                        Verifique sua caixa de entrada e a pasta de spam.
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold leading-tight tracking-tight text-white">Instruções enviadas!</h3>
+                      <p className="text-xs leading-relaxed text-slate-400">
+                        Verifique sua caixa de entrada e a pasta de <strong>Spam / Lixo Eletrônico</strong> para criar sua nova senha.
+                      </p>
+                      <p className="text-[11px] text-amber-300/90 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed text-left">
+                        💡 Se não receber em alguns minutos ou se tiver uma senha temporária concedida pelo studio, contate seu coach para confirmação de acesso.
                       </p>
                     </div>
-                    <button
+                    <Button
                       type="button"
-                      data-testid="button-back-to-signin"
-                      className="block w-full text-center text-sm text-emerald-400 hover:underline focus-ring rounded-md font-medium"
+                      variant="outline"
+                      className="w-full text-xs font-semibold text-slate-300 border-slate-700 hover:bg-slate-800"
                       onClick={backToSignIn}
                     >
-                      ← Voltar para o login
-                    </button>
+                      Voltar para o login
+                    </Button>
                   </div>
                 ) : (
                   <form onSubmit={handleReset} className="space-y-5" data-testid="form-reset-password">
                     <div className="space-y-1.5">
                       <h3 className="text-lg font-semibold leading-tight tracking-tight text-white">Recuperar senha</h3>
                       <p className="text-sm leading-relaxed text-slate-400">
-                        Digite seu e-mail cadastrado e enviaremos um link para criar uma nova senha.
+                        Digite seu e-mail cadastrado e enviaremos o link para criar uma nova senha.
                       </p>
                     </div>
                     <div className="space-y-2">
@@ -324,7 +283,7 @@ function AuthPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-300">Senha</Label>
-                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">10 números</span>
+                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">8 dígitos</span>
                     </div>
                     <Input
                       id="password"
@@ -332,11 +291,12 @@ function AuthPage() {
                       type="password"
                       inputMode="numeric"
                       pattern="[0-9]*"
+                      minLength={8}
                       maxLength={10}
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                      placeholder="•••••••••• (10 dígitos)"
+                      placeholder="•••••••• (8 dígitos)"
                       className="h-10 font-mono tracking-widest bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
                     />
                   </div>
@@ -395,7 +355,7 @@ function AuthPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="pwd-s" className="text-xs font-bold uppercase tracking-wider text-slate-300">Senha</Label>
-                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">10 números</span>
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">8 dígitos</span>
                   </div>
                   <Input
                     id="pwd-s"
@@ -403,15 +363,15 @@ function AuthPage() {
                     type="password"
                     inputMode="numeric"
                     pattern="[0-9]*"
+                    minLength={8}
                     maxLength={10}
-                    minLength={10}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    placeholder="•••••••••• (10 dígitos)"
+                    placeholder="•••••••• (8 dígitos)"
                     className="h-10 font-mono tracking-widest bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
                   />
-                  <p className="text-xs leading-relaxed text-slate-400">Exatamente 10 dígitos numéricos (0 a 9).</p>
+                  <p className="text-xs leading-relaxed text-slate-400">No mínimo 8 dígitos numéricos (0 a 9).</p>
                 </div>
                 <Button
                   type="submit"
@@ -428,55 +388,9 @@ function AuthPage() {
         </Card>
       </main>
 
-      <footer className="relative z-10 w-full border-t border-slate-800/60 bg-slate-950/50 backdrop-blur-sm py-4 space-y-3">
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => setShowEcosystem(!showEcosystem)}
-            className="text-xs text-emerald-400 hover:text-emerald-300 font-bold inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 transition-all cursor-pointer shadow-md"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>🌐 Ecossistema (5 Apps Integrados)</span>
-            {showEcosystem ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
-        </div>
-
-        {showEcosystem && (
-          <div className="mx-auto w-full max-w-md px-4 animate-in fade-in">
-            <div className="p-3.5 rounded-2xl bg-slate-900/95 border border-emerald-500/40 shadow-2xl space-y-2 text-left">
-              <div className="text-[11px] font-bold text-emerald-300 flex items-center gap-1.5 uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Plataformas do Ecossistema Montanha</span>
-              </div>
-              <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
-                {ECOSYSTEM_APPS.map((app) => (
-                  <div
-                    key={app.id}
-                    className={`p-2 rounded-xl border text-xs flex items-center justify-between transition-all ${
-                      app.isCurrent
-                        ? "bg-emerald-500/10 border-emerald-500/50 text-white"
-                        : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-bold flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: app.accent }} />
-                        {app.name}
-                      </span>
-                      <span className="text-[10px] text-slate-400">{app.slogan}</span>
-                    </div>
-                    <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full border ${app.badgeBg}`}>
-                      {app.isCurrent ? "ATUAL" : app.tag}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
+      <footer className="relative z-10 w-full border-t border-slate-800/60 bg-slate-950/50 backdrop-blur-sm py-4">
         <div className="mx-auto max-w-6xl px-4 text-center text-xs font-medium text-slate-400 sm:px-6">
-          © {new Date().getFullYear()} Montanha Personal Studio — Ecossistema Montanha
+          © {new Date().getFullYear()} Montanha Personal Studio
         </div>
       </footer>
     </div>

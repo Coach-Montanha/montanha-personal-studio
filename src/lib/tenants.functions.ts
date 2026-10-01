@@ -102,7 +102,7 @@ export const createTrainer = createServerFn({ method: "POST" })
     const gen = () => {
       while (true) {
         let s = "";
-        for (let i = 0; i < 10; i++) s += randomInt(0, 10).toString();
+        for (let i = 0; i < 8; i++) s += randomInt(0, 10).toString();
         if (/^(\d)\1+$/.test(s)) continue;
         return s;
       }
@@ -202,7 +202,7 @@ export const resetTrainerPassword = createServerFn({ method: "POST" })
     const { randomInt } = require("crypto") as typeof import("crypto");
     const gen = () => {
       let s = "";
-      for (let i = 0; i < 10; i++) s += randomInt(0, 10).toString();
+      for (let i = 0; i < 8; i++) s += randomInt(0, 10).toString();
       return s;
     };
     const tempPassword = gen();

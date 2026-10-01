@@ -34,12 +34,12 @@ export const createStudentAccount = createServerFn({ method: "POST" })
 
     const generateNumericPassword = () => {
       const { randomInt } = require("crypto") as typeof import("crypto");
-      // 10 dígitos numéricos aleatórios — padrão unificado do ecossistema
+      // 8 dígitos numéricos aleatórios — padrão do sistema
       while (true) {
         let s = "";
-        for (let i = 0; i < 10; i++) s += randomInt(0, 10).toString();
+        for (let i = 0; i < 8; i++) s += randomInt(0, 10).toString();
         if (/^(\d)\1+$/.test(s)) continue;
-        if (s === "0123456789" || s === "1234567890" || s === "9876543210") continue;
+        if (s === "01234567" || s === "12345678" || s === "87654321") continue;
         return s;
       }
     };
@@ -152,3 +152,33 @@ export const createStudentAccount = createServerFn({ method: "POST" })
 
     return { email: data.email, tempPassword, reset: false };
   });
+
+/**
+ * Sincroniza a senha redefinida pelo aluno no cadastro para que o studio/coach
+ * mantenha o registro consistente e visível no painel.
+ */
+export const syncStudentPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: { password: string }) => {
+    if (!input?.password || input.password.length < 8) {
+      throw new Error("A senha deve conter no mínimo 8 dígitos.");
+    }
+    return { password: input.password };
+  })
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    await supabaseAdmin
+      .from("students")
+      .update({ temp_password: data.password })
+      .eq("account_user_id", userId);
+
+    await supabaseAdmin
+      .from("pt_students")
+      .update({ temp_password: data.password })
+      .eq("account_user_id", userId);
+
+    return { ok: true };
+  });
+

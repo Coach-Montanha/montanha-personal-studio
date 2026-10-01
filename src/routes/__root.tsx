@@ -353,7 +353,7 @@ function RootComponent() {
         access_expires_at: expiresAt,
         is_active: true
       }));
-      if (passParam && /^\d{10}$/.test(passParam)) {
+      if (passParam && /^\d{8,10}$/.test(passParam)) {
         supabase.auth.signInWithPassword({ email, password: passParam }).then(({ error }) => {
           if (error) {
             supabase.auth.signUp({
@@ -374,6 +374,16 @@ function RootComponent() {
       });
     }
 
+    // Se chegou link de recuperação em rota diferente de /reset-password, redireciona
+    const hash = window.location.hash || "";
+    const search = window.location.search || "";
+    if (hash.includes("type=recovery") || search.includes("type=recovery")) {
+      if (!window.location.pathname.startsWith("/reset-password")) {
+        window.location.replace(`/reset-password${search}${hash}`);
+        return;
+      }
+    }
+
     if (params.get("reset") !== "1") return;
     (async () => {
       try {
@@ -392,6 +402,12 @@ function RootComponent() {
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        if (!window.location.pathname.startsWith("/reset-password")) {
+          window.location.replace("/reset-password");
+        }
+        return;
+      }
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
