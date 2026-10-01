@@ -2,7 +2,7 @@
 // Atualização 100% silenciosa e automática.
 // Navegação de páginas (HTML) sempre busca direto da rede para garantir que o aluno veja sempre a versão mais recente.
 
-const CACHE_NAME = "coach-montanha-pwa-v4";
+const CACHE_NAME = "coach-montanha-pwa-v5";
 
 const STATIC_SHELL = [
   "/manifest.webmanifest",
@@ -19,7 +19,7 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-// ── Activate: limpa caches antigos e assume controle imediatamente ────────────
+// ── Activate: limpa caches antigos e força recarregamento das abas/PWAs abertos ───
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -30,7 +30,20 @@ self.addEventListener("activate", (event) => {
           }
         })
       )
-    )
+    ).then(() => {
+      // Notifica e força navegação em todas as instâncias abertas do app (inclusive PWAs instalados)
+      return self.clients.matchAll({ type: "window" }).then((clients) => {
+        clients.forEach((client) => {
+          if (client && "navigate" in client) {
+            try {
+              client.navigate(client.url);
+            } catch (e) {
+              client.postMessage({ type: "SW_UPDATED" });
+            }
+          }
+        });
+      });
+    })
   );
   self.clients.claim();
 });

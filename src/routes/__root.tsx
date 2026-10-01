@@ -436,11 +436,27 @@ function RootComponent() {
         console.warn("Falha ao registrar Service Worker:", err);
       });
 
-    // Limpeza preventiva de caches antigos de versões anteriores no dispositivo do aluno
+    // Recarrega silenciosamente quando o Service Worker assumir controle ou enviar mensagem de atualização
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!reloading) {
+        reloading = true;
+        window.location.reload();
+      }
+    });
+
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      if (event.data?.type === "SW_UPDATED" && !reloading) {
+        reloading = true;
+        window.location.reload();
+      }
+    });
+
+    // Limpeza preventiva de qualquer cache antigo no dispositivo do aluno
     if ("caches" in window) {
       caches.keys().then((names) => {
         names.forEach((name) => {
-          if (name === "coach-montanha-pwa-v1" || name === "coach-montanha-pwa-v2") {
+          if (name !== "coach-montanha-pwa-v5") {
             caches.delete(name);
           }
         });
