@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { addDays, format } from "date-fns";
+import { applyFreezeToPayment } from "@/lib/freeze";
 
 type Freeze = {
   id?: string;
@@ -80,10 +81,20 @@ export function FreezeDialog({
         await supabase.from("students").update({ status: "paused" }).eq("id", studentId);
       }
 
+      // Desloca automaticamente a data de vencimento do pagamento vigente pelo período trancado
+      const prevDays = freeze?.freeze_days ?? 0;
+      const freezeRes = await applyFreezeToPayment({
+        studentId,
+        days,
+        previousDays: form.id ? prevDays : 0,
+        paymentId: paymentId ?? form.payment_id,
+        isPt: !!isPt,
+      });
+
       const payload = {
         user_id: userId,
         student_id: studentId,
-        payment_id: paymentId ?? null,
+        payment_id: freezeRes.paymentId ?? paymentId ?? null,
         freeze_days: days,
         start_date: form.start_date,
         end_date: computedEnd,
@@ -98,7 +109,12 @@ export function FreezeDialog({
         if (error) return toast.error(error.message);
       }
 
-      toast.success(form.id ? "Trancamento atualizado com sucesso!" : "Trancamento registrado com sucesso!");
+      if (freezeRes.newDueDate) {
+        const [y, m, d] = freezeRes.newDueDate.split("-");
+        toast.success(`Trancamento salvo! Próximo vencimento deslocado para ${d}/${m}/${y}.`);
+      } else {
+        toast.success(form.id ? "Trancamento atualizado com sucesso!" : "Trancamento registrado com sucesso!");
+      }
       qc.invalidateQueries();
       onOpenChange(false);
     } catch (err: any) {
