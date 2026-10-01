@@ -377,19 +377,120 @@ export const studentCheckIn = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!stu) throw new Error("Perfil de aluno não encontrado");
 
-    // Rota 1: Agendamento Atômico com Check-in Bônus (RPC book_class_with_bonus)
+    // Rota 1: Agendamento Atômico com Check-in Bônus (RPC book_class_with_bonus com fallback resiliente)
     if (data.useBonus) {
       const { data: rpcRes, error: rpcErr } = await supabase.rpc("book_class_with_bonus", {
         p_session_id: data.sessionId,
         p_student_id: stu.id,
       });
-      if (rpcErr) throw new Error(rpcErr.message);
+
+      if (!rpcErr) {
+        return {
+          ok: true,
+          isBonus: true,
+          remainingBalance: (rpcRes as any)?.remaining_balance,
+          attendanceId: (rpcRes as any)?.attendance_id,
+          transactionId: (rpcRes as any)?.transaction_id,
+        };
+      }
+
+      // Se a RPC não foi encontrada no schema cache do Supabase, executa fallback via supabaseAdmin
+      const isMissingRpc = rpcErr.message?.includes("schema cache") || rpcErr.message?.includes("not find") || (rpcErr as any)?.code === "42883";
+      if (!isMissingRpc) {
+        throw new Error(rpcErr.message);
+      }
+
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      // 1. Recarrega dados atualizados do aluno
+      const { data: freshStu } = await supabaseAdmin
+        .from("students")
+        .select("id, user_id, bonus_checkins_balance, name")
+        .eq("id", stu.id)
+        .single();
+
+      if (!freshStu || (freshStu.bonus_checkins_balance ?? 0) < 1) {
+        throw new Error(`Saldo de bônus insuficiente para reservar a aula (saldo atual: ${freshStu?.bonus_checkins_balance ?? 0})`);
+      }
+
+      // 2. Carrega contexto da sessão
+      const session = await loadSessionContext(supabaseAdmin, data.sessionId);
+      if (session.status && session.status !== "scheduled") {
+        throw new Error(`Não é possível agendar nesta aula (status: ${session.status})`);
+      }
+
+      // 3. Valida duplicidade
+      const { data: existingAtt } = await supabaseAdmin
+        .from("class_attendance")
+        .select("id")
+        .eq("session_id", session.id)
+        .eq("student_id", freshStu.id)
+        .maybeSingle();
+
+      if (existingAtt) {
+        throw new Error("Você já possui check-in nesta sessão");
+      }
+
+      // 4. Valida capacidade
+      const effectiveCapacity = session.capacity_override ?? session.classes?.capacity ?? 10;
+      const { count } = await supabaseAdmin
+        .from("class_attendance")
+        .select("id", { count: "exact", head: true })
+        .eq("session_id", session.id);
+
+      if ((count ?? 0) >= effectiveCapacity) {
+        throw new Error(`Turma sem vagas disponíveis (${count} de ${effectiveCapacity} vagas preenchidas)`);
+      }
+
+      // 5. Atualiza saldo de bônus do aluno (-1)
+      const newBalance = freshStu.bonus_checkins_balance - 1;
+      const { error: updErr } = await supabaseAdmin
+        .from("students")
+        .update({ bonus_checkins_balance: newBalance, updated_at: new Date().toISOString() })
+        .eq("id", freshStu.id);
+
+      if (updErr) throw new Error(updErr.message);
+
+      // 6. Insere presença com is_bonus = true
+      const { data: newAtt, error: insErr } = await supabaseAdmin
+        .from("class_attendance")
+        .insert({
+          user_id: session.user_id,
+          session_id: session.id,
+          student_id: freshStu.id,
+          status: "present",
+          is_bonus: true,
+        })
+        .select("id")
+        .single();
+
+      if (insErr) {
+        // Rollback do saldo caso a inserção falhe
+        await supabaseAdmin.from("students").update({ bonus_checkins_balance: freshStu.bonus_checkins_balance }).eq("id", freshStu.id);
+        throw new Error(insErr.message);
+      }
+
+      // 7. Registra transação no ledger
+      const { data: txRow } = await supabaseAdmin
+        .from("student_bonus_transactions")
+        .insert({
+          user_id: session.user_id,
+          student_id: freshStu.id,
+          amount: -1,
+          transaction_type: "usage",
+          session_id: session.id,
+          attendance_id: newAtt.id,
+          reason: `Agendamento de aula com bônus (${session.classes?.name ?? "Aula"})`,
+          created_by: userId,
+        })
+        .select("id")
+        .maybeSingle();
+
       return {
         ok: true,
         isBonus: true,
-        remainingBalance: (rpcRes as any)?.remaining_balance,
-        attendanceId: (rpcRes as any)?.attendance_id,
-        transactionId: (rpcRes as any)?.transaction_id,
+        remainingBalance: newBalance,
+        attendanceId: newAtt.id,
+        transactionId: txRow?.id,
       };
     }
 
@@ -498,23 +599,90 @@ export const studentCancelCheckIn = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!stu) throw new Error("Perfil de aluno não encontrado");
 
-    // Invoca RPC atômica cancel_class_checkin
-    // Executa locks FOR UPDATE, valida janela de cancelamento,
-    // detecta se o check-in foi bônus (is_bonus = true),
-    // estorna o crédito ao saldo do aluno, grava auditoria no ledger
-    // e remove o registro de presença em uma única transação atômica.
+    // Invoca RPC atômica cancel_class_checkin com fallback resiliente
     const { data: res, error } = await supabase.rpc("cancel_class_checkin", {
       p_session_id: data.sessionId,
       p_student_id: stu.id,
     });
 
-    if (error) throw new Error(error.message);
+    if (!error) {
+      return {
+        ok: true,
+        refunded: Boolean((res as any)?.refunded),
+        wasBonus: Boolean((res as any)?.was_bonus),
+        newBalance: (res as any)?.new_balance,
+        refundTransactionId: (res as any)?.refund_transaction_id ?? (res as any)?.transaction_id ?? null,
+      };
+    }
+
+    const isMissingRpc = error.message?.includes("schema cache") || error.message?.includes("not find") || (error as any)?.code === "42883";
+    if (!isMissingRpc) {
+      throw new Error(error.message);
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // 1. Localiza a presença do aluno na sessão
+    const { data: att } = await supabaseAdmin
+      .from("class_attendance")
+      .select("id, is_bonus, user_id")
+      .eq("session_id", data.sessionId)
+      .eq("student_id", stu.id)
+      .maybeSingle();
+
+    if (!att) {
+      throw new Error("Você não possui check-in confirmado nesta aula");
+    }
+
+    const wasBonus = Boolean(att.is_bonus);
+    let newBalance: number | undefined;
+    let refundTxId: string | null = null;
+
+    // 2. Se foi check-in bônus, estorna o crédito (+1) e audita
+    if (wasBonus) {
+      const { data: freshStu } = await supabaseAdmin
+        .from("students")
+        .select("id, bonus_checkins_balance")
+        .eq("id", stu.id)
+        .single();
+
+      newBalance = (freshStu?.bonus_checkins_balance ?? 0) + 1;
+      await supabaseAdmin
+        .from("students")
+        .update({ bonus_checkins_balance: newBalance, updated_at: new Date().toISOString() })
+        .eq("id", stu.id);
+
+      const { data: txRow } = await supabaseAdmin
+        .from("student_bonus_transactions")
+        .insert({
+          user_id: att.user_id,
+          student_id: stu.id,
+          amount: 1,
+          transaction_type: "refund",
+          session_id: data.sessionId,
+          attendance_id: att.id,
+          reason: "Estorno de check-in cancelado pelo aluno",
+          created_by: userId,
+        })
+        .select("id")
+        .maybeSingle();
+
+      refundTxId = txRow?.id ?? null;
+    }
+
+    // 3. Remove a presença
+    const { error: delErr } = await supabaseAdmin
+      .from("class_attendance")
+      .delete()
+      .eq("id", att.id);
+
+    if (delErr) throw new Error(delErr.message);
+
     return {
       ok: true,
-      refunded: Boolean((res as any)?.refunded),
-      wasBonus: Boolean((res as any)?.was_bonus),
-      newBalance: (res as any)?.new_balance,
-      refundTransactionId: (res as any)?.refund_transaction_id ?? (res as any)?.transaction_id ?? null,
+      refunded: wasBonus,
+      wasBonus,
+      newBalance,
+      refundTransactionId: refundTxId,
     };
   });
 
