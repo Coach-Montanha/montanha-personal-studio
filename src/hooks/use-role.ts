@@ -22,6 +22,6 @@ export function useRole() {
   const roles = data ?? [];
   const isSuperAdmin = roles.includes("super_admin");
   const isAdmin = roles.includes("admin") || isSuperAdmin;
-  const isStudent = roles.includes("student") && !isAdmin;
+  const isStudent = !isAdmin;
   return { roles, isAdmin, isSuperAdmin, isStudent, loading: authLoading || isLoading };
 }
