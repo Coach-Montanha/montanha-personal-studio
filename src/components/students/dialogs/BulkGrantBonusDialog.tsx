@@ -66,7 +66,7 @@ export function BulkGrantBonusDialog({
         );
       }
       if (errors.length > 0) {
-        toast.error(`${errors.length} erro(s) durante o processamento.`);
+        toast.error(errors[0] || `${errors.length} erro(s) durante o processamento.`);
       }
 
       setAmount("");

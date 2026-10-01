@@ -28,8 +28,8 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 
-const DEFAULT_SUPABASE_URL = "https://xhxlzawgrzmtgilrzout.supabase.co";
-const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoeGx6YXdncnptdGdpbHJ6b3V0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1MTEwMjgsImV4cCI6MjA5ODA4NzAyOH0.ze5PYRKE9ogJ96CdBEycMRgz7oVKsQZF5oaBkXw1EbI";
+const DEFAULT_SUPABASE_URL = "https://muryznvaxzszcffrbxpv.supabase.co";
+const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11cnl6bnZheHpzemNmZnJieHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NDExNjksImV4cCI6MjEwMDAxNzE2OX0.RHa_GLUGiRTVBGGCPvOcoLH6rh4IhyNM7YJWeJvI4Uo";
 
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
