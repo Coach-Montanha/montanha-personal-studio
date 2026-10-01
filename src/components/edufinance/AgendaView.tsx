@@ -115,6 +115,17 @@ export function AgendaView({
     </div>
   );
 
+  const availablePrograms = useMemo(() => {
+    if (programs.length > 0) return programs;
+    const map = new Map<string, { id: string; name: string; color: string | null }>();
+    for (const s of sessions) {
+      if (s.program_id && s.program_name && !map.has(s.program_id)) {
+        map.set(s.program_id, { id: s.program_id, name: s.program_name, color: s.program_color });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [programs, sessions]);
+
   return (
     <div className="space-y-4" aria-busy={isLoading || undefined}>
       <div className="flex flex-wrap items-center justify-end gap-3 md:justify-between">
@@ -139,7 +150,7 @@ export function AgendaView({
             <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os programas</SelectItem>
-              {programs.map((p: any) => (
+              {availablePrograms.map((p: any) => (
                 <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
               ))}
             </SelectContent>

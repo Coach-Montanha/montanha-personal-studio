@@ -1,11 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { AgendaSession } from "@/lib/classes.functions";
+import { getAgenda, type AgendaSession } from "@/lib/classes.functions";
 
 export async function fetchAgendaClient(
   from: string,
   to: string,
   programId?: string | null,
 ): Promise<AgendaSession[]> {
+  try {
+    const serverSessions = await getAgenda({ data: { from, to, programId } });
+    if (serverSessions && Array.isArray(serverSessions)) {
+      return serverSessions;
+    }
+  } catch (err) {
+    console.warn("getAgenda server function failed, falling back to direct client query:", err);
+  }
+
   const { data: u } = await supabase.auth.getUser();
   const userId = u.user?.id;
   const today = new Date().toISOString().slice(0, 10);
