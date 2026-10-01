@@ -1,5 +1,5 @@
 import { chartTooltip } from "@/lib/chart-theme";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, redirect, isRedirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { LANDING_STORAGE_KEY, LANDING_REDIRECT_FLAG } from "@/hooks/use-landing-page";
 import { useRole } from "@/hooks/use-role";
@@ -79,6 +79,23 @@ const VISIBLE_MONTHS = 6;
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({ meta: [{ title: "Dashboard — EduFinance" }] }),
+  beforeLoad: async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.user) return;
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.session.user.id);
+      const roles = (roleData ?? []).map((r) => r.role);
+      const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+      if (!isAdmin) {
+        throw redirect({ to: "/portal" });
+      }
+    } catch (err) {
+      if (isRedirect(err)) throw err;
+    }
+  },
   component: Dashboard,
 });
 
@@ -337,6 +354,14 @@ type Payment = {
 function Dashboard() {
   const navigate = useNavigate();
   const { scopeId, scopeKey, ready } = useScopeFilter();
+  const { isSuperAdmin, isStudent, loading: roleLoading } = useRole();
+
+  useEffect(() => {
+    if (!roleLoading && isStudent) {
+      navigate({ to: "/portal", replace: true });
+    }
+  }, [isStudent, roleLoading, navigate]);
+
   useEffect(() => {
     if (sessionStorage.getItem(LANDING_REDIRECT_FLAG)) return;
     sessionStorage.setItem(LANDING_REDIRECT_FLAG, "1");
@@ -345,8 +370,8 @@ function Dashboard() {
       navigate({ to: target, replace: true });
     }
   }, [navigate]);
+
   const [month, setMonth] = useState(currentMonthKey());
-  const { isSuperAdmin } = useRole();
   const [allMonths, setAllMonths] = useState(false);
   const [useRange, setUseRange] = useState(false);
   const [rangeStart, setRangeStart] = useState("");
@@ -666,7 +691,19 @@ function Dashboard() {
     };
   }, [payments, activeStudents]);
 
-
+  if (isStudent) {
+    return (
+      <div className="grid min-h-[50vh] place-items-center">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground animate-in fade-in duration-200">
+          <span
+            aria-hidden
+            className="h-6 w-6 rounded-full border-2 border-border border-t-primary animate-spin"
+          />
+          <p className="text-sm leading-relaxed">Redirecionando para o portal do aluno…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-w-0 max-w-full space-y-6 overflow-hidden">

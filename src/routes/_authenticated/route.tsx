@@ -50,15 +50,17 @@ function AuthenticatedLayout() {
   const isPTPortalPath = pathname === "/portal/pt" || pathname.startsWith("/portal/pt/");
 
   useEffect(() => {
-    if (loading || modeLoading) return;
+    if (loading) return;
     if (isStudent) {
-      if (mode === "both") {
-        if (!isPortalPath) navigate({ to: "/portal", replace: true });
-      } else if (mode === "pt" && !isPTPortalPath) {
+      if (!isPortalPath && !isPTPortalPath) {
+        if (mode === "pt") {
+          navigate({ to: "/portal/pt", replace: true });
+        } else {
+          navigate({ to: "/portal", replace: true });
+        }
+      } else if (mode === "pt" && !isPTPortalPath && !modeLoading) {
         navigate({ to: "/portal/pt", replace: true });
-      } else if (mode === "studio" && (isPTPortalPath || !isPortalPath)) {
-        navigate({ to: "/portal", replace: true });
-      } else if (mode === null && !isPortalPath) {
+      } else if (mode === "studio" && isPTPortalPath && !modeLoading) {
         navigate({ to: "/portal", replace: true });
       }
     }
@@ -81,6 +83,20 @@ function AuthenticatedLayout() {
     );
   }
 
+  // Alunos tentando acessar rotas administrativas (como /, /students, etc.) são bloqueados imediatamente
+  if (isStudent && !isPortalPath && !isPTPortalPath) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background px-6">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground animate-in fade-in duration-200">
+          <span
+            aria-hidden
+            className="h-6 w-6 rounded-full border-2 border-border border-t-primary animate-spin"
+          />
+          <p className="text-sm leading-relaxed">Redirecionando para a área do aluno…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isStudent || isPortalPath) {
     return (

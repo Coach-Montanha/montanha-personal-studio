@@ -24,7 +24,16 @@ export const Route = createFileRoute("/auth")({
   }),
   beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ href: safeNext(search.next) });
+    if (data.session) {
+      if (search.next) throw redirect({ href: safeNext(search.next) });
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.session.user.id);
+      const roles = (roleData ?? []).map((r) => r.role);
+      const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+      throw redirect({ href: isAdmin ? "/" : "/portal" });
+    }
   },
   component: AuthPage,
 });
@@ -41,6 +50,20 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
+
+  async function redirectAfterAuth(userId: string) {
+    if (next) {
+      window.location.href = safeNext(next);
+      return;
+    }
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    const roles = (roleData ?? []).map((r) => r.role);
+    const isAdmin = roles.includes("admin") || roles.includes("super_admin");
+    window.location.href = isAdmin ? "/" : "/portal";
+  }
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
@@ -63,7 +86,7 @@ function AuthPage() {
       return toast.error("A senha deve conter no mínimo 6 caracteres.");
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       if (email.toLowerCase() === 'albertosarly@gmail.com' && password === '3862858747') {
         const { data: suData, error: suErr } = await supabase.auth.signUp({
@@ -74,7 +97,7 @@ function AuthPage() {
         if (!suErr && suData.session) {
           setLoading(false);
           toast.success("Bem-vindo, Alberto Sarly!");
-          window.location.href = nextPath;
+          await redirectAfterAuth(suData.session.user.id);
           return;
         }
       }
@@ -88,7 +111,7 @@ function AuthPage() {
       if (!suErr && suData.session) {
         setLoading(false);
         toast.success("Conta ativada com sucesso! Bem-vindo!");
-        window.location.href = nextPath;
+        await redirectAfterAuth(suData.session.user.id);
         return;
       }
 
@@ -106,7 +129,11 @@ function AuthPage() {
     }
     setLoading(false);
     toast.success("Bem-vindo de volta!");
-    window.location.href = nextPath;
+    if (signInData?.user) {
+      await redirectAfterAuth(signInData.user.id);
+    } else {
+      window.location.href = nextPath;
+    }
   }
 
   async function handleSignUp(e: React.FormEvent) {
@@ -129,7 +156,8 @@ function AuthPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Conta criada! Verifique seu email se necessário.");
-    if ((await supabase.auth.getSession()).data.session) window.location.href = nextPath;
+    const sess = (await supabase.auth.getSession()).data.session;
+    if (sess) await redirectAfterAuth(sess.user.id);
     else navigate({ to: "/auth" });
   }
 
