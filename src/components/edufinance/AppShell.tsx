@@ -211,10 +211,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </div>
 
-        <nav ref={spotlightNavRef} className={cn("relative flex-1 space-y-1 overflow-y-auto py-4", iconOnly ? "px-2" : "px-3")}>
+        <nav ref={spotlightNavRef} className={cn("relative flex-1 space-y-0.5 overflow-y-auto py-2", iconOnly ? "px-2" : "px-3")}>
           <span ref={spotlightBarRef} className="pointer-events-none absolute left-1 w-1 rounded-sm bg-primary shadow-[2px_0_5px_rgba(249,115,22,.8),4px_0_11px_rgba(249,115,22,.45)] transition-[top,height] duration-300 ease-[cubic-bezier(.4,0,.2,1)]" />
           {activeProfileLabel && !iconOnly && (
-            <div className="mb-3 flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-primary-foreground shadow-sm">
+            <div className="mb-2 flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-primary-foreground shadow-sm">
               <UserCircle2 className="h-4 w-4 shrink-0" />
               <div className="min-w-0">
                 <div className="text-[9px] font-semibold uppercase tracking-wider opacity-80">
@@ -225,7 +225,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           )}
           {activeProfileLabel && iconOnly && (
-            <div className="mb-3 flex justify-center rounded-lg bg-primary p-2 text-primary-foreground" title={`Perfil: ${activeProfileLabel}`}>
+            <div className="mb-2 flex justify-center rounded-lg bg-primary p-2 text-primary-foreground" title={`Perfil: ${activeProfileLabel}`}>
               <UserCircle2 className="h-4 w-4" />
             </div>
           )}
@@ -239,12 +239,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               return (
                 <div key={item.to}>
                   {showHeader && !iconOnly && (
-                    <div className="mt-3 mb-1 px-3 text-[10px] uppercase tracking-wider text-sidebar-foreground/50">
+                    <div className="mt-2 mb-0.5 px-3 text-[10px] uppercase tracking-wider text-sidebar-foreground/50 font-semibold">
                       {item.section}
                     </div>
                   )}
                   {showHeader && iconOnly && (
-                    <div className="mx-2 my-2 border-t border-sidebar-border/60" />
+                    <div className="mx-2 my-1.5 border-t border-sidebar-border/60" />
                   )}
                   <Link
                     to={item.to}
@@ -254,9 +254,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                     title={iconOnly ? item.label : undefined}
                     className={cn(
                       "flex items-center rounded-lg text-sm font-medium transition-colors",
-                      iconOnly ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
+                      iconOnly ? "justify-center px-2 py-1.5" : "gap-2.5 px-3 py-1.5",
                       active
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary text-primary-foreground font-semibold"
                         : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                     )}
                   >
