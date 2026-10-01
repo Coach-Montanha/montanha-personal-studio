@@ -179,10 +179,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   // Widths
-  const asideWidth = iconOnly ? "md:w-16" : "md:w-60";
+  const asideWidth = iconOnly ? "md:w-14" : "md:w-52";
   // Main padding must match the fixed strip width, NOT the hover-expanded width,
   // so hover doesn't push content around.
-  const mainPad = collapsed ? "md:pl-16" : "md:pl-60";
+  const mainPad = collapsed ? "md:pl-14" : "md:pl-52";
 
   return (
     <div className="flex min-h-screen w-full max-w-full overflow-x-clip bg-background">
@@ -191,42 +191,42 @@ export function AppShell({ children }: { children: ReactNode }) {
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-60 flex-col bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-52 flex-col bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 md:translate-x-0",
           asideWidth,
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           collapsed && hoverExpand && hovering && "md:shadow-2xl",
         )}
       >
-        <div className={cn("flex min-h-16 items-center gap-2.5 border-b border-sidebar-border py-2.5", iconOnly ? "justify-center px-2" : "px-4")}>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary">
-            <GraduationCap className="h-5 w-5 text-primary-foreground" />
+        <div className={cn("flex min-h-12 items-center gap-2 border-b border-sidebar-border py-2", iconOnly ? "justify-center px-1.5" : "px-3")}>
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary">
+            <GraduationCap className="h-4 w-4 text-primary-foreground" />
           </div>
           {!iconOnly && (
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-bold leading-tight truncate">Montanha Personal Studio</div>
-              <div className="text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/60 truncate" title="Gestão Financeira & Inteligência Operacional para Studios e Personais">
-                Gestão & Inteligência Operacional
+              <div className="text-xs font-bold leading-tight truncate">Montanha Personal Studio</div>
+              <div className="text-[9px] font-medium uppercase tracking-wider text-sidebar-foreground/60 truncate" title="Gestão Financeira & Inteligência Operacional para Studios e Personais">
+                Gestão & Inteligência
               </div>
             </div>
           )}
         </div>
 
-        <nav ref={spotlightNavRef} className={cn("relative flex-1 space-y-0.5 overflow-y-auto py-2", iconOnly ? "px-2" : "px-3")}>
+        <nav ref={spotlightNavRef} className={cn("relative flex-1 space-y-0.5 overflow-y-auto py-2", iconOnly ? "px-1.5" : "px-2.5")}>
           <span ref={spotlightBarRef} className="pointer-events-none absolute left-1 w-1 rounded-sm bg-primary shadow-[2px_0_5px_rgba(249,115,22,.8),4px_0_11px_rgba(249,115,22,.45)] transition-[top,height] duration-300 ease-[cubic-bezier(.4,0,.2,1)]" />
           {activeProfileLabel && !iconOnly && (
-            <div className="mb-2 flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-primary-foreground shadow-sm">
-              <UserCircle2 className="h-4 w-4 shrink-0" />
+            <div className="mb-2 flex items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1 text-primary-foreground shadow-sm">
+              <UserCircle2 className="h-3.5 w-3.5 shrink-0" />
               <div className="min-w-0">
-                <div className="text-[9px] font-semibold uppercase tracking-wider opacity-80">
+                <div className="text-[8px] font-semibold uppercase tracking-wider opacity-80">
                   Perfil acessado
                 </div>
-                <div className="truncate text-xs font-semibold">{activeProfileLabel}</div>
+                <div className="truncate text-[11px] font-semibold">{activeProfileLabel}</div>
               </div>
             </div>
           )}
           {activeProfileLabel && iconOnly && (
-            <div className="mb-2 flex justify-center rounded-lg bg-primary p-2 text-primary-foreground" title={`Perfil: ${activeProfileLabel}`}>
-              <UserCircle2 className="h-4 w-4" />
+            <div className="mb-2 flex justify-center rounded-lg bg-primary p-1.5 text-primary-foreground" title={`Perfil: ${activeProfileLabel}`}>
+              <UserCircle2 className="h-3.5 w-3.5" />
             </div>
           )}
           {(() => {
@@ -239,12 +239,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               return (
                 <div key={item.to}>
                   {showHeader && !iconOnly && (
-                    <div className="mt-2 mb-0.5 px-3 text-[10px] uppercase tracking-wider text-sidebar-foreground/50 font-semibold">
+                    <div className="mt-2 mb-0.5 px-2.5 text-[9px] uppercase tracking-wider text-sidebar-foreground/50 font-semibold">
                       {item.section}
                     </div>
                   )}
                   {showHeader && iconOnly && (
-                    <div className="mx-2 my-1.5 border-t border-sidebar-border/60" />
+                    <div className="mx-1.5 my-1.5 border-t border-sidebar-border/60" />
                   )}
                   <Link
                     to={item.to}
@@ -253,21 +253,21 @@ export function AppShell({ children }: { children: ReactNode }) {
                     onClick={() => setOpen(false)}
                     title={iconOnly ? item.label : undefined}
                     className={cn(
-                      "flex items-center rounded-lg text-sm font-medium transition-colors",
-                      iconOnly ? "justify-center px-2 py-1.5" : "gap-2.5 px-3 py-1.5",
+                      "flex items-center rounded-lg text-xs font-medium transition-colors",
+                      iconOnly ? "justify-center px-1.5 py-1.5" : "gap-2 px-2.5 py-1.5",
                       active
                         ? "bg-primary text-primary-foreground font-semibold"
                         : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                     )}
                   >
-                    <Icon className="h-4 w-4 shrink-0" />
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
                     {!iconOnly && <span className="truncate">{item.label}</span>}
                   </Link>
                 </div>
               );
             });
           })()}
-          <div className="pt-2">
+          <div className="pt-1.5">
             <button
               type="button"
               onClick={() => {
@@ -276,17 +276,17 @@ export function AppShell({ children }: { children: ReactNode }) {
               }}
               title={iconOnly ? "Timer de Treino" : undefined}
               className={cn(
-                "flex w-full items-center rounded-lg text-sm font-semibold transition-colors text-orange-500 hover:bg-orange-500/10 border border-orange-500/20",
-                iconOnly ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
+                "flex w-full items-center rounded-lg text-xs font-semibold transition-colors text-orange-500 hover:bg-orange-500/10 border border-orange-500/20",
+                iconOnly ? "justify-center px-1.5 py-1.5" : "gap-2 px-2.5 py-1.5",
               )}
             >
-              <Timer className="h-4 w-4 shrink-0 text-orange-500" />
+              <Timer className="h-3.5 w-3.5 shrink-0 text-orange-500" />
               {!iconOnly && <span className="truncate">Timer de Treino</span>}
             </button>
           </div>
         </nav>
 
-        <div className={cn("border-t border-sidebar-border", iconOnly ? "p-2" : "p-3")}>
+        <div className={cn("border-t border-sidebar-border", iconOnly ? "p-1.5" : "p-2.5")}>
           {isSuperAdmin && !iconOnly && <TenantScopeSelector />}
           {isSuperAdmin && (
             <Link
@@ -295,14 +295,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               onClick={() => setOpen(false)}
               title={iconOnly ? "Treinadores" : undefined}
               className={cn(
-                "flex items-center rounded-lg text-sm font-medium transition-colors",
-                iconOnly ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
+                "flex items-center rounded-lg text-xs font-medium transition-colors",
+                iconOnly ? "justify-center px-1.5 py-1.5" : "gap-2 px-2.5 py-1.5",
                 pathname.startsWith("/admin")
                   ? "bg-primary text-primary-foreground"
                   : "text-sidebar-foreground/80 hover:bg-sidebar-accent",
               )}
             >
-              <Shield className="h-4 w-4 shrink-0" />
+              <Shield className="h-3.5 w-3.5 shrink-0" />
               {!iconOnly && "Treinadores"}
             </Link>
           )}
@@ -312,14 +312,14 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={() => setOpen(false)}
             title={iconOnly ? "Configurações" : undefined}
             className={cn(
-              "flex items-center rounded-lg text-sm font-medium transition-colors",
-              iconOnly ? "justify-center px-2 py-2" : "gap-3 px-3 py-2",
+              "flex items-center rounded-lg text-xs font-medium transition-colors",
+              iconOnly ? "justify-center px-1.5 py-1.5" : "gap-2 px-2.5 py-1.5",
               pathname === "/settings"
                 ? "bg-primary text-primary-foreground"
                 : "text-sidebar-foreground/80 hover:bg-sidebar-accent",
             )}
           >
-            <Settings className="h-4 w-4 shrink-0" />
+            <Settings className="h-3.5 w-3.5 shrink-0" />
             {!iconOnly && "Configurações"}
           </Link>
 
@@ -328,31 +328,31 @@ export function AppShell({ children }: { children: ReactNode }) {
             onClick={() => setHoverExpand(!hoverExpand)}
             title={hoverExpand ? "Fixar barra lateral" : "Expandir ao passar o mouse"}
             className={cn(
-              "mt-2 hidden md:flex w-full items-center rounded-lg text-xs text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent",
-              iconOnly ? "justify-center px-2 py-2" : "gap-2 px-3 py-2",
+              "mt-1 hidden md:flex w-full items-center rounded-lg text-[10px] text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent",
+              iconOnly ? "justify-center px-1.5 py-1" : "gap-1.5 px-2.5 py-1",
             )}
           >
-            {hoverExpand ? <Pin className="h-3.5 w-3.5" /> : <PinOff className="h-3.5 w-3.5" />}
+            {hoverExpand ? <Pin className="h-3 w-3" /> : <PinOff className="h-3 w-3" />}
             {!iconOnly && <span>{hoverExpand ? "Expandir ao passar mouse" : "Barra fixa"}</span>}
           </button>
 
           <div className={cn(
-            "mt-2 flex items-center gap-2 rounded-lg bg-sidebar-accent",
-            iconOnly ? "justify-center p-2" : "justify-between px-3 py-2",
+            "mt-1.5 flex items-center gap-1.5 rounded-lg bg-sidebar-accent",
+            iconOnly ? "justify-center p-1.5" : "justify-between px-2.5 py-1.5",
           )}>
             {!iconOnly && (
               <div className="min-w-0">
-                <div data-testid="user-email-display" className="truncate text-xs font-medium">{user?.email ?? "Usuário"}</div>
-                <div className="text-[10px] text-sidebar-foreground/60">Conectado</div>
+                <div data-testid="user-email-display" className="truncate text-[11px] font-medium leading-tight">{user?.email ?? "Usuário"}</div>
+                <div className="text-[9px] text-sidebar-foreground/60 leading-tight">Conectado</div>
               </div>
             )}
             <button
               onClick={signOut}
               data-testid="button-logout"
               title="Sair"
-              className="rounded-md p-1.5 text-sidebar-foreground/70 hover:bg-sidebar/40 hover:text-sidebar-foreground"
+              className="rounded-md p-1 text-sidebar-foreground/70 hover:bg-sidebar/40 hover:text-sidebar-foreground"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>

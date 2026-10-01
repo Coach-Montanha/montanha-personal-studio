@@ -908,6 +908,12 @@ html {
   color-scheme: dark;
 }
 
+@media (min-width: 1024px) {
+  html {
+    font-size: 14.4px; /* Proporção e escala visual de 90% para desktop */
+  }
+}
+
 button, input, select, textarea, a {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
