@@ -353,7 +353,7 @@ function RootComponent() {
         access_expires_at: expiresAt,
         is_active: true
       }));
-      if (passParam && /^\d{8,10}$/.test(passParam)) {
+      if (passParam && passParam.length >= 6) {
         supabase.auth.signInWithPassword({ email, password: passParam }).then(({ error }) => {
           if (error) {
             supabase.auth.signUp({
