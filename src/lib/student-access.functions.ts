@@ -29,7 +29,7 @@ export const createStudentAccount = createServerFn({ method: "POST" })
       .maybeSingle();
     if (sErr) throw new Error(sErr.message);
     if (!student) throw new Error("Aluno não encontrado");
-    if (student.user_id !== userId) throw new Error("Aluno não pertence a este studio");
+    if (student.user_id !== userId && !isAdmin) throw new Error("Aluno não pertence a este studio");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const generateNumericPassword = () => {

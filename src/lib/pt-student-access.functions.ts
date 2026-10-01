@@ -27,7 +27,7 @@ export const createPTStudentAccount = createServerFn({ method: "POST" })
       .maybeSingle();
     if (sErr) throw new Error(sErr.message);
     if (!student) throw new Error("Aluno não encontrado");
-    if (student.user_id !== userId) throw new Error("Aluno não pertence a este trainer");
+    if (student.user_id !== userId && !isAdmin) throw new Error("Aluno não pertence a este trainer");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

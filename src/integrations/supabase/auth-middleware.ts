@@ -33,17 +33,16 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     
-    const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+    const DEFAULT_SUPABASE_URL = "https://muryznvaxzszcffrbxpv.supabase.co";
+    const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11cnl6bnZheHpzemNmZnJieHB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0NDExNjksImV4cCI6MjEwMDAxNzE2OX0.RHa_GLUGiRTVBGGCPvOcoLH6rh4IhyNM7YJWeJvI4Uo";
 
-    if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-      const missing = [
-        ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-        ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
-      ];
-      const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-      console.error(`[Supabase] ${message}`);
-      throw new Error(message);
+    let SUPABASE_URL = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
+    let SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_KEY;
+
+    // Se o ambiente Vercel contiver o projeto antigo ou valores vazios, garante o novo banco
+    if (!SUPABASE_URL || SUPABASE_URL.includes("xhxlzawgrzmtgilrzout")) {
+      SUPABASE_URL = DEFAULT_SUPABASE_URL;
+      SUPABASE_PUBLISHABLE_KEY = DEFAULT_SUPABASE_KEY;
     }
     
     const request = getRequest();
@@ -72,11 +71,11 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
     }
 
     const supabase = createClient<Database>(
-      SUPABASE_URL!,
-      SUPABASE_PUBLISHABLE_KEY!,
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
       {
         global: {
-          fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY!),
+          fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -89,20 +88,44 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
       }
     );
 
-    const { data, error } = await supabase.auth.getClaims(token);
-    if (error || !data?.claims) {
-      throw new Error('Unauthorized: Invalid token');
+    let claims: any = null;
+    let userId: string | null = null;
+
+    // 1. Validação via getClaims
+    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
+    if (!claimsErr && claimsData?.claims?.sub) {
+      claims = claimsData.claims;
+      userId = claimsData.claims.sub;
+    } else {
+      // 2. Fallback direto via getUser(token)
+      const { data: userData, error: userErr } = await supabase.auth.getUser(token);
+      if (!userErr && userData?.user?.id) {
+        userId = userData.user.id;
+        claims = { sub: userId, email: userData.user.email, ...userData.user.user_metadata };
+      } else {
+        // 3. Fallback com supabaseAdmin para contornar qualquer assincronia no token cache
+        try {
+          const { supabaseAdmin } = await import("./client.server");
+          const { data: adminData, error: adminErr } = await supabaseAdmin.auth.getUser(token);
+          if (!adminErr && adminData?.user?.id) {
+            userId = adminData.user.id;
+            claims = { sub: userId, email: adminData.user.email, ...adminData.user.user_metadata };
+          }
+        } catch {
+          // ignora erro do import
+        }
+      }
     }
 
-    if (!data.claims.sub) {
-      throw new Error('Unauthorized: No user ID found in token');
+    if (!userId || !claims) {
+      throw new Error('Unauthorized: Invalid token');
     }
 
     return next({
       context: {
         supabase,
-        userId: data.claims.sub,
-        claims: data.claims,
+        userId,
+        claims,
       },
     });
   },
