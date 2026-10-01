@@ -45,6 +45,7 @@ type Row = {
   notes: string | null; status: string;
   created_at: string; birth_date: string | null;
   account_user_id: string | null;
+  bonus_checkins_balance?: number;
   payments: {
     id: string;
     amount: number;
@@ -84,7 +85,7 @@ function StudentsPage() {
     queryFn: async () => {
       let q = supabase
         .from("students")
-        .select("id,name,email,phone,notes,status,created_at,birth_date,account_user_id,attendance_offset,payments(id,amount,payment_date,status,checkin_quota_override,plans(checkin_quota_type,checkin_quota_amount,package_valid_days)),student_plan_history(is_current,plans(name))")
+        .select("id,name,email,phone,notes,status,created_at,birth_date,account_user_id,attendance_offset,bonus_checkins_balance,payments(id,amount,payment_date,status,checkin_quota_override,plans(checkin_quota_type,checkin_quota_amount,package_valid_days)),student_plan_history(is_current,plans(name))")
         .is("deleted_at", null)
         .order("name");
       if (scopeId) q = q.eq("user_id", scopeId);
@@ -187,17 +188,23 @@ function StudentsPage() {
 
   const rows = useMemo(() => {
     const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-    const q = norm(search);
     return students
-      .filter((s) => (status === "all" ? true : s.status === status))
+      .filter((s) => {
+        if (status === "all") return true;
+        // Alunos com check-in de bônus ativo (> 0) possuem crédito no sistema e permanecem ativos
+        const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : s.status;
+        return effectiveStatus === status;
+      })
       .filter((s) => !q || norm(s.name).includes(q) || norm(s.email ?? "").includes(q))
       .map((s) => {
         const paid = s.payments.filter((p) => p.amount);
         const total = paid.reduce((a, p) => a + Number(p.amount), 0);
         const dates = paid.map((p) => p.payment_date).sort();
         const current = s.student_plan_history.find((h) => h.is_current);
+        const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : s.status;
         return {
           ...s,
+          status: effectiveStatus,
           total,
           count: paid.length,
           first: dates[0],
@@ -491,6 +498,12 @@ function StudentsPage() {
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                     <StudentStatusBadge status={s.status} />
+                    {(s.bonus_checkins_balance ?? 0) > 0 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 ring-1 ring-inset ring-emerald-500/20">
+                        <Gift className="h-3 w-3" />
+                        {s.bonus_checkins_balance} bônus
+                      </span>
+                    )}
                     <PlanBadge name={s.plan} />
                     <CheckinChip data={checkinByStudent.get(s.id)} />
                     <span className="text-numeric ml-auto font-semibold">{formatBRL(s.total)}</span>
@@ -593,7 +606,17 @@ function StudentsPage() {
                           <CheckinChip data={checkinByStudent.get(s.id)} />
                         </div>
                       </TableCell>
-                      <TableCell><StudentStatusBadge status={s.status} /></TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <StudentStatusBadge status={s.status} />
+                          {(s.bonus_checkins_balance ?? 0) > 0 && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600 ring-1 ring-inset ring-emerald-500/20" title={`${s.bonus_checkins_balance} check-ins bônus disponíveis`}>
+                              <Gift className="h-3 w-3" />
+                              {s.bonus_checkins_balance}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-numeric text-right">{formatBRL(s.total)}</TableCell>
                       <TableCell className="font-mono text-xs">{s.last ? formatDateBR(s.last) : "—"}</TableCell>
                       <TableCell className="text-right">

@@ -113,6 +113,14 @@ export const adjustStudentBonus = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!result) throw new Error("Falha ao ajustar bônus: retorno vazio do banco de dados");
 
+    if (result.new_balance > 0) {
+      await supabase
+        .from("students")
+        .update({ status: "active" })
+        .eq("id", data.studentId)
+        .in("status", ["inactive", "churned"]);
+    }
+
     return result as AdminAdjustBonusResult;
   });
 
@@ -160,6 +168,14 @@ export const transferStudentBonus = createServerFn({ method: "POST" })
 
     if (error) throw new Error(error.message);
     if (!result) throw new Error("Falha ao transferir bônus: retorno vazio do banco de dados");
+
+    if (result.target_new_balance > 0) {
+      await supabase
+        .from("students")
+        .update({ status: "active" })
+        .eq("id", data.targetStudentId)
+        .in("status", ["inactive", "churned"]);
+    }
 
     return result as AdminTransferBonusResult;
   });

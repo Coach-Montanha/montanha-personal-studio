@@ -44,6 +44,7 @@ type Student = {
   phone: string | null;
   status: string;
   kind: "studio" | "pt";
+  bonus_checkins_balance?: number | null;
 };
 
 function CRMPage() {
@@ -55,13 +56,17 @@ function CRMPage() {
     queryFn: async () => {
       let q = supabase
         .from("students")
-        .select("id,name,email,phone,status")
+        .select("id,name,email,phone,status,bonus_checkins_balance")
         .is("deleted_at", null)
         .order("name");
       if (scopeId) q = q.eq("user_id", scopeId);
       const { data, error } = await q;
       if (error) throw error;
-      return ((data ?? []) as any[]).map((s) => ({ ...s, kind: "studio" as const }));
+      return ((data ?? []) as any[]).map((s) => ({
+        ...s,
+        status: (s.bonus_checkins_balance ?? 0) > 0 ? "active" : s.status,
+        kind: "studio" as const,
+      }));
     },
   });
 

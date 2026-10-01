@@ -531,12 +531,12 @@ function PortalHome() {
         bonusBalance={bonusBalance}
         onConfirm={handleBonusDecision}
         loading={!!pendingId}
-        hasPlanQuota={
-          !quota ||
-          quota.quota_type === "none" ||
-          !quota.quota_amount ||
-          (quota.used ?? 0) < quota.quota_amount
-        }
+        hasPlanQuota={Boolean(
+          quota?.plan_id &&
+          (quota.quota_type === "none" ||
+            !quota.quota_amount ||
+            (quota.used ?? 0) < quota.quota_amount)
+        )}
       />
     </div>
   );

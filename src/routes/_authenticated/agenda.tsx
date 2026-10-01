@@ -408,15 +408,15 @@ function SessionDetails({
   const { data: students = [] } = useQuery({
     queryKey: ["students-lookup-with-status"],
     queryFn: async () => {
-      const { data } = await supabase.from("students").select("id, name, status").order("name");
-      return (data ?? []) as { id: string; name: string; status: string | null }[];
+      const { data } = await supabase.from("students").select("id, name, status, bonus_checkins_balance").order("name");
+      return (data ?? []) as { id: string; name: string; status: string | null; bonus_checkins_balance?: number | null }[];
     },
   });
 
   const [showAllStudents, setShowAllStudents] = useState(false);
   const checkedInIds = new Set(checkedIn.map((c: any) => c.students?.id).filter(Boolean));
   const notCheckedIn = students.filter((s) => !checkedInIds.has(s.id));
-  const activeStudents = notCheckedIn.filter((s) => s.status === "active");
+  const activeStudents = notCheckedIn.filter((s) => s.status === "active" || (s.bonus_checkins_balance ?? 0) > 0);
   const availableStudents = showAllStudents ? notCheckedIn : activeStudents;
   const hiddenInactiveCount = notCheckedIn.length - activeStudents.length;
   const isFull = checkedIn.length >= session.capacity;
@@ -639,11 +639,18 @@ function SessionDetails({
                     }}
                   >
                     <span className="truncate">{s.name}</span>
-                    {showAllStudents && s.status && s.status !== "active" && (
-                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
-                        {s.status === "inactive" ? "inativo" : s.status === "churned" ? "cancelado" : s.status}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {(s.bonus_checkins_balance ?? 0) > 0 && (
+                        <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-[10px] font-medium">
+                          🎁 {s.bonus_checkins_balance} bônus
+                        </span>
+                      )}
+                      {showAllStudents && s.status && s.status !== "active" && !(s.bonus_checkins_balance ?? 0) && (
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
+                          {s.status === "inactive" ? "inativo" : s.status === "churned" ? "cancelado" : s.status}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 ))
             )}
