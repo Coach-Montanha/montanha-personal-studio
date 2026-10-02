@@ -76,7 +76,12 @@ function PortalHome() {
   const bonusBalance = bonusData?.balance ?? 0;
 
   const [attendeesFor, setAttendeesFor] = useState<{ id: string; label: string } | null>(null);
-  const { data: attendees = [], isFetching: attendeesLoading } = useQuery({
+  const {
+    data: attendees = [],
+    isFetching: attendeesLoading,
+    isError: attendeesError,
+    error: attendeesErr,
+  } = useQuery({
     queryKey: ["portal-attendees", attendeesFor?.id],
     enabled: !!attendeesFor?.id,
     queryFn: () => fetchAttendees({ data: { sessionId: attendeesFor!.id } }),
@@ -504,6 +509,10 @@ function PortalHome() {
           <div className="max-h-[50vh] overflow-y-auto">
             {attendeesLoading ? (
               <p className="text-sm text-muted-foreground text-center py-4">Carregando…</p>
+            ) : attendeesError ? (
+              <p className="text-sm text-destructive text-center py-4">
+                Não foi possível carregar os presentes ({(attendeesErr as Error)?.message || "Erro de conexão"}).
+              </p>
             ) : attendees.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">Ninguém ainda</p>
             ) : (

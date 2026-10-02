@@ -316,9 +316,11 @@ export const getSessionAttendees = createServerFn({ method: "POST" })
     return input;
   })
   .handler(async ({ data, context }): Promise<SessionAttendee[]> => {
-    const { supabase, userId } = context;
-    // Requester must be a student in the same studio as the session, OR the studio owner
-    const { data: session, error: sErr } = await supabase
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Requester must be a student in the same studio as the session, OR the studio owner / admin
+    const { data: session, error: sErr } = await supabaseAdmin
       .from("class_sessions")
       .select("id, user_id")
       .eq("id", data.sessionId)
@@ -328,19 +330,27 @@ export const getSessionAttendees = createServerFn({ method: "POST" })
 
     let myStudentId: string | null = null;
     if (session.user_id !== userId) {
-      const { data: stu } = await supabase
+      const { data: role } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const isAdmin = role?.role === "admin" || role?.role === "super_admin";
+
+      const { data: stu } = await supabaseAdmin
         .from("students")
         .select("id, user_id")
         .eq("account_user_id", userId)
         .maybeSingle();
-      if (!stu || stu.user_id !== session.user_id) {
+
+      if (!isAdmin && (!stu || stu.user_id !== session.user_id)) {
         throw new Error("Sem permissão");
       }
-      myStudentId = stu.id;
+      if (stu) myStudentId = stu.id;
     }
 
-    // Use admin client to bypass students SELECT policy (which hides other students' names)
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Use admin client to load attendees with full names
     const { data: att, error: aErr } = await supabaseAdmin
       .from("class_attendance")
       .select("student_id, students:student_id(name)")
