@@ -81,15 +81,32 @@ function AuthPage() {
       return toast.error(access.message);
     }
 
-    if (!password || password.length < 6) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanPassword || cleanPassword.length < 6) {
       setLoading(false);
       return toast.error("A senha deve conter no mínimo 6 caracteres.");
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    let { data: signInData, error } = await supabase.auth.signInWithPassword({
+      email: cleanEmail,
+      password: cleanPassword,
+    });
+
+    if (error && cleanPassword !== password) {
+      const retry = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: password,
+      });
+      if (!retry.error) {
+        signInData = retry.data;
+        error = null;
+      }
+    }
+
     if (error) {
-      if (cleanEmail === 'albertosarly@gmail.com' && password === '3862858747') {
+      if (cleanEmail === 'albertosarly@gmail.com' && (cleanPassword === '3862858747' || password === '3862858747')) {
         const { data: suData, error: suErr } = await supabase.auth.signUp({
           email,
           password,
@@ -323,7 +340,7 @@ function AuthPage() {
                       maxLength={32}
                       required
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => setPassword(e.target.value.trim())}
                       placeholder="Digite sua senha de acesso"
                       className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
                     />

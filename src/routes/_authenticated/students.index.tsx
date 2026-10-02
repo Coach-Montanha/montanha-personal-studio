@@ -36,6 +36,7 @@ import { Ticket } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/students/")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Alunos — EduFinance" }] }),
   errorComponent: ({ error }) => (
     <div className="p-6 max-w-xl mx-auto my-12 text-center space-y-4">

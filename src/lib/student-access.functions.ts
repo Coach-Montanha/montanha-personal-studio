@@ -49,28 +49,35 @@ export const createStudentAccount = createServerFn({ method: "POST" })
 
     let tempPassword = generateNumericPassword();
 
-    // Redefinição: aluno já tem conta — apenas atualiza a senha
+    // Redefinição: aluno já tem conta — tenta atualizar a senha
     if (student.account_user_id) {
       let lastErr: string | null = null;
+      let userUpdated = false;
       for (let attempt = 0; attempt < 5; attempt++) {
         const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(
           student.account_user_id,
           { password: tempPassword, email: data.email, email_confirm: true },
         );
-        if (!uErr) { lastErr = null; break; }
+        if (!uErr) { lastErr = null; userUpdated = true; break; }
         lastErr = uErr.message;
-        if (!isWeak(uErr.message)) throw new Error(uErr.message);
+        if (!isWeak(uErr.message)) break;
         tempPassword = generateNumericPassword();
       }
-      if (lastErr) throw new Error(lastErr);
 
-      const { error: sUpdErr } = await supabaseAdmin
-        .from("students")
-        .update({ temp_password: tempPassword, email: data.email })
-        .eq("id", data.studentId);
-      if (sUpdErr) throw new Error(sUpdErr.message);
+      if (userUpdated) {
+        await supabaseAdmin
+          .from("user_roles")
+          .upsert({ user_id: student.account_user_id, role: "student" }, { onConflict: "user_id,role" });
 
-      return { email: data.email, tempPassword, reset: true };
+        const { error: sUpdErr } = await supabaseAdmin
+          .from("students")
+          .update({ temp_password: tempPassword, email: data.email })
+          .eq("id", data.studentId);
+        if (sUpdErr) throw new Error(sUpdErr.message);
+
+        return { email: data.email, tempPassword, reset: true };
+      }
+      // Se não conseguiu atualizar (ex.: usuário foi deletado em auth), segue para criar/reassociar
     }
 
     // Primeiro acesso: cria usuário (ou reaproveita conta auth já existente com este e-mail)

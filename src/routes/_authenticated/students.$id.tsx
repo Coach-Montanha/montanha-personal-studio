@@ -59,6 +59,7 @@ const STUDENT_TABS = [
 type StudentTab = (typeof STUDENT_TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/students/$id")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Aluno — EduFinance" }] }),
   validateSearch: (search: Record<string, unknown>): { tab?: StudentTab } => ({
     tab: STUDENT_TABS.includes(search.tab as StudentTab)
