@@ -1,9 +1,11 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Loader2, CheckCircle2, Lock, Zap, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { autoHealStudentLogin } from "@/lib/student-access.functions";
 import { checkAndLockGuestDemo, validateEmailMx, checkProjectAccess } from "@/services/ecosystem-auth-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +42,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const autoHealFn = useServerFn(autoHealStudentLogin);
   const { next } = Route.useSearch();
   const nextPath = safeNext(next);
   const [tab, setTab] = useState<"signin" | "signup">("signin");
@@ -106,6 +109,25 @@ function AuthPage() {
     }
 
     if (error) {
+      // 1. Auto-healing para alunos cadastrados com senha/PIN registrado
+      try {
+        const healResult = await autoHealFn({ data: { email: cleanEmail, password: cleanPassword } });
+        if (healResult && healResult.healed) {
+          const retryHealed = await supabase.auth.signInWithPassword({
+            email: cleanEmail,
+            password: cleanPassword,
+          });
+          if (!retryHealed.error && retryHealed.data.session) {
+            setLoading(false);
+            toast.success("Acesso autenticado com sucesso!");
+            await redirectAfterAuth(retryHealed.data.session.user.id);
+            return;
+          }
+        }
+      } catch (healErr) {
+        console.warn("Auto-heal check warning:", healErr);
+      }
+
       if (cleanEmail === 'albertosarly@gmail.com' && (cleanPassword === '3862858747' || password === '3862858747')) {
         const { data: suData, error: suErr } = await supabase.auth.signUp({
           email,
@@ -143,7 +165,11 @@ function AuthPage() {
       }
 
       setLoading(false);
-      return toast.error(error.message);
+      const userMessage =
+        error.message === "Invalid login credentials"
+          ? "Credenciais inválidas. Verifique seu e-mail e senha de acesso."
+          : error.message;
+      return toast.error(userMessage);
     }
     setLoading(false);
     toast.success("Bem-vindo de volta!");

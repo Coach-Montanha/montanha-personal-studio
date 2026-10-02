@@ -190,3 +190,96 @@ export const syncStudentPassword = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/**
+ * Auto-heal authentication for students:
+ * If a student enters their valid email and temporary password (or reset password recorded in students / pt_students table),
+ * this function automatically validates the match, synchronizes the auth.users password, ensures confirmed email and role,
+ * and enables instant, error-free login.
+ */
+export const autoHealStudentLogin = createServerFn({ method: "POST" })
+  .validator((input: { email: string; password: string }) => {
+    if (!input?.email || !input?.password) {
+      throw new Error("Credenciais incompletas");
+    }
+    return {
+      email: input.email.trim().toLowerCase(),
+      password: input.password.trim(),
+    };
+  })
+  .handler(async ({ data }) => {
+    const { email, password } = data;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Search in students table
+    const { data: studioMatch } = await supabaseAdmin
+      .from("students")
+      .select("id, name, email, account_user_id, temp_password")
+      .ilike("email", email);
+
+    // 2. Search in pt_students table
+    const { data: ptMatch } = await supabaseAdmin
+      .from("pt_students")
+      .select("id, name, email, account_user_id, temp_password")
+      .ilike("email", email);
+
+    const matches = [...(studioMatch || []), ...(ptMatch || [])];
+    if (matches.length === 0) {
+      return { healed: false, reason: "NOT_FOUND" };
+    }
+
+    // Check if password matches any registered temp_password
+    const validMatch = matches.find(
+      (m) => m.temp_password && String(m.temp_password).trim() === password
+    );
+
+    if (!validMatch) {
+      return { healed: false, reason: "PASSWORD_MISMATCH" };
+    }
+
+    // Student identity verified! Let's ensure auth user is perfectly configured
+    const { data: userList } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+    let authUser = userList?.users?.find((u) => u.email?.toLowerCase() === email);
+
+    let authUserId: string;
+
+    if (!authUser) {
+      // Create user with confirmed email
+      const { data: newAuth, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { name: validMatch.name },
+      });
+      if (createErr) throw new Error(createErr.message);
+      authUserId = newAuth.user.id;
+    } else {
+      authUserId = authUser.id;
+      // Sync password and confirm email
+      await supabaseAdmin.auth.admin.updateUserById(authUserId, {
+        password,
+        email_confirm: true,
+        email,
+      });
+    }
+
+    // Ensure account_user_id linked on all matching records
+    for (const m of studioMatch || []) {
+      if (m.account_user_id !== authUserId || m.temp_password !== password) {
+        await supabaseAdmin.from("students").update({ account_user_id: authUserId, temp_password: password }).eq("id", m.id);
+      }
+    }
+    for (const m of ptMatch || []) {
+      if (m.account_user_id !== authUserId || m.temp_password !== password) {
+        await supabaseAdmin.from("pt_students").update({ account_user_id: authUserId, temp_password: password }).eq("id", m.id);
+      }
+    }
+
+    // Ensure student role
+    await supabaseAdmin
+      .from("user_roles")
+      .upsert({ user_id: authUserId, role: "student" }, { onConflict: "user_id,role" });
+
+    return { healed: true };
+  });
+
+
