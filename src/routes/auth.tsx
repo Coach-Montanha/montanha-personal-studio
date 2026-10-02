@@ -86,9 +86,10 @@ function AuthPage() {
       return toast.error("A senha deve conter no mínimo 6 caracteres.");
     }
 
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
+    const cleanEmail = email.trim().toLowerCase();
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     if (error) {
-      if (email.toLowerCase() === 'albertosarly@gmail.com' && password === '3862858747') {
+      if (cleanEmail === 'albertosarly@gmail.com' && password === '3862858747') {
         const { data: suData, error: suErr } = await supabase.auth.signUp({
           email,
           password,
@@ -104,9 +105,9 @@ function AuthPage() {
 
       // Auto-provision invited / trial client on first access
       const { data: suData, error: suErr } = await supabase.auth.signUp({
-        email,
+        email: cleanEmail,
         password,
-        options: { data: { name: email.split('@')[0] } }
+        options: { data: { name: cleanEmail.split('@')[0] } }
       });
       if (!suErr && suData.session) {
         setLoading(false);
@@ -145,8 +146,9 @@ function AuthPage() {
       return toast.error("A senha deve conter no mínimo 6 caracteres.");
     }
 
+    const cleanEmail = email.trim().toLowerCase();
     const { error } = await supabase.auth.signUp({
-      email,
+      email: cleanEmail,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}${nextPath}`,

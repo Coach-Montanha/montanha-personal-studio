@@ -11,7 +11,7 @@ export const createStudentAccount = createServerFn({ method: "POST" })
     (input: { studentId: string; email: string }) => {
       if (!input.studentId) throw new Error("studentId requerido");
       if (!input.email || !input.email.includes("@")) throw new Error("email inválido");
-      return input;
+      return { ...input, email: input.email.trim().toLowerCase() };
     },
   )
   .handler(async ({ data, context }) => {
@@ -55,7 +55,7 @@ export const createStudentAccount = createServerFn({ method: "POST" })
       for (let attempt = 0; attempt < 5; attempt++) {
         const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(
           student.account_user_id,
-          { password: tempPassword, email: data.email },
+          { password: tempPassword, email: data.email, email_confirm: true },
         );
         if (!uErr) { lastErr = null; break; }
         lastErr = uErr.message;
@@ -122,6 +122,7 @@ export const createStudentAccount = createServerFn({ method: "POST" })
         const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(authUserId, {
           password: tempPassword,
           email: data.email,
+          email_confirm: true,
         });
         if (!uErr) { lastErr = null; break; }
         lastErr = uErr.message;
