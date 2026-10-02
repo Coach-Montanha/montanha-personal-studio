@@ -85,8 +85,8 @@ export const statusLabel = {
   } as Record<string, string>,
 };
 
-export const initials = (name: string) =>
-  name
+export const initials = (name: string | null | undefined) =>
+  (name || "")
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)

@@ -156,29 +156,39 @@ function PTOverview() {
       const used = packageUsage.get(lastPkg.id) ?? 0;
       return contracted - used;
     };
-    const arr = [...students];
+
+    const effectiveStudents = students.map((s) => {
+      const rem = getPkgRemaining(s);
+      let effectiveStatus = s.status;
+      if (rem !== null && rem > 0 && effectiveStatus !== "paused") {
+        effectiveStatus = "active";
+      }
+      return { ...s, status: effectiveStatus };
+    });
+
+    const arr = [...effectiveStudents];
     arr.sort((a, b) => {
       switch (ptSortBy) {
-        case "name_desc": return b.name.localeCompare(a.name, "pt-BR");
-        case "status":    return (statusRank[a.status ?? ""] ?? 9) - (statusRank[b.status ?? ""] ?? 9) || a.name.localeCompare(b.name, "pt-BR");
+        case "name_desc": return (b.name || "").localeCompare(a.name || "", "pt-BR");
+        case "status":    return (statusRank[a.status ?? ""] ?? 9) - (statusRank[b.status ?? ""] ?? 9) || (a.name || "").localeCompare(b.name || "", "pt-BR");
         case "last_recent": return getLastDate(b).localeCompare(getLastDate(a));
         case "last_old":    return (getLastDate(a) || "9999").localeCompare(getLastDate(b) || "9999");
         case "pkg_desc": {
           const ra = getPkgRemaining(a); const rb = getPkgRemaining(b);
-          if (ra === null && rb === null) return a.name.localeCompare(b.name, "pt-BR");
+          if (ra === null && rb === null) return (a.name || "").localeCompare(b.name || "", "pt-BR");
           if (ra === null) return 1;
           if (rb === null) return -1;
           return rb - ra;
         }
         case "pkg_asc": {
           const ra = getPkgRemaining(a); const rb = getPkgRemaining(b);
-          if (ra === null && rb === null) return a.name.localeCompare(b.name, "pt-BR");
+          if (ra === null && rb === null) return (a.name || "").localeCompare(b.name || "", "pt-BR");
           if (ra === null) return 1;
           if (rb === null) return -1;
           return ra - rb;
         }
         case "name_asc":
-        default:          return a.name.localeCompare(b.name, "pt-BR");
+        default:          return (a.name || "").localeCompare(b.name || "", "pt-BR");
       }
     });
     return arr;
