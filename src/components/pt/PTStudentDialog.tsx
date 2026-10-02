@@ -240,7 +240,7 @@ Não troque a senha ainda
 
 📱 Acesse o Studio Coach Montanha como um app no seu celular
 Assim você abre direto pelo ícone, em tela cheia, sem precisar procurar o link toda vez.
-🔗 https://studiocoachmontanha.lovable.app
+🔗 https://montanha-personal-studio.lovable.app
 
 No Android (Chrome)
 Abra o link no Chrome
@@ -381,7 +381,7 @@ No portal você verá suas informações pessoais e o seu plano de treino do Per
           </div>
 
           <p className="text-[11px] text-muted-foreground">
-            O aluno acessa em <code>https://studiocoachmontanha.lovable.app</code> e verá as abas
+            O aluno acessa em <code>https://montanha-personal-studio.lovable.app</code> e verá as abas
             <strong> Minhas informações</strong> e <strong>Meu treino</strong>.
           </p>
         </div>
