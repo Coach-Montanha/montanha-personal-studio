@@ -21,8 +21,19 @@ function safeNext(next: unknown): string {
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>): { next?: string } => ({
+  validateSearch: (s: Record<string, unknown>): {
+    next?: string;
+    email?: string;
+    pass?: string;
+    password?: string;
+    trial?: string;
+    token?: string;
+  } => ({
     next: typeof s.next === "string" ? s.next : undefined,
+    email: typeof s.email === "string" ? s.email : undefined,
+    pass: typeof s.pass === "string" ? s.pass : (typeof s.password === "string" ? s.password : undefined),
+    trial: typeof s.trial === "string" ? s.trial : undefined,
+    token: typeof s.token === "string" ? s.token : undefined,
   }),
   beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getSession();
@@ -43,20 +54,30 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const autoHealFn = useServerFn(autoHealStudentLogin);
-  const { next } = Route.useSearch();
-  const nextPath = safeNext(next);
+  const searchParams = Route.useSearch();
+  const nextPath = safeNext(searchParams.next);
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [showReset, setShowReset] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(searchParams.email || "");
+  const [password, setPassword] = useState(searchParams.pass || searchParams.password || "");
   const [name, setName] = useState("");
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
 
+  // 1-Click WhatsApp Onboarding auto-login
+  useState(() => {
+    if (searchParams.email && (searchParams.pass || searchParams.password)) {
+      setTimeout(() => {
+        const btn = document.querySelector<HTMLButtonElement>('[data-testid="button-signin-submit"]');
+        if (btn) btn.click();
+      }, 300);
+    }
+  });
+
   async function redirectAfterAuth(userId: string) {
-    if (next) {
-      window.location.href = safeNext(next);
+    if (searchParams.next) {
+      window.location.href = safeNext(searchParams.next);
       return;
     }
     const { data: roleData } = await supabase
@@ -109,7 +130,7 @@ function AuthPage() {
     }
 
     if (error) {
-      // 1. Auto-healing para alunos cadastrados com senha/PIN registrado
+      // 1. Auto-healing para alunos cadastrados (suporta temp_password, telefone, data de nascimento, PIN e auto-sync)
       try {
         const healResult = await autoHealFn({ data: { email: cleanEmail, password: cleanPassword } });
         if (healResult && healResult.healed) {
@@ -393,6 +414,21 @@ function AuthPage() {
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Entrar no Personal Studio
                   </Button>
+                  <div className="pt-2 text-center">
+                    <a
+                      href={`https://wa.me/5583999259385?text=${encodeURIComponent(
+                        `Olá Coach Montanha! Preciso de auxílio para acessar minha conta no aplicativo.${
+                          email ? ` Meu e-mail é: ${email}` : ""
+                        }`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition-colors"
+                    >
+                      <Zap className="h-3 w-3 text-emerald-400" />
+                      Dúvidas no acesso? Suporte via WhatsApp
+                    </a>
+                  </div>
                 </form>
               )}
             </TabsContent>
