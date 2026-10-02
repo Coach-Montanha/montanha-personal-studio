@@ -187,7 +187,8 @@ function StudentsPage() {
   });
 
   const rows = useMemo(() => {
-    const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    const norm = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    const q = norm(search);
     return students
       .filter((s) => {
         if (status === "all") return true;
@@ -197,10 +198,10 @@ function StudentsPage() {
       })
       .filter((s) => !q || norm(s.name).includes(q) || norm(s.email ?? "").includes(q))
       .map((s) => {
-        const paid = s.payments.filter((p) => p.amount);
+        const paid = (s.payments || []).filter((p) => p.amount);
         const total = paid.reduce((a, p) => a + Number(p.amount), 0);
         const dates = paid.map((p) => p.payment_date).sort();
-        const current = s.student_plan_history.find((h) => h.is_current);
+        const current = (s.student_plan_history || []).find((h) => h.is_current);
         const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : s.status;
         return {
           ...s,
