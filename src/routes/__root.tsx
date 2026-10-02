@@ -149,6 +149,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             Tente novamente em alguns instantes. Se você entrou como outro treinador
             e ficou preso nesta tela, use o botão abaixo para sair e voltar ao login.
           </p>
+          {error?.message && (
+            <div className="mt-3 max-h-32 overflow-auto rounded border border-destructive/20 bg-destructive/10 p-2 text-left text-xs font-mono text-destructive break-all">
+              {error.message}
+            </div>
+          )}
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <button
               onClick={() => window.location.reload()}

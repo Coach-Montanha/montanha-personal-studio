@@ -37,6 +37,23 @@ import { Ticket } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/students/")({
   head: () => ({ meta: [{ title: "Alunos — EduFinance" }] }),
+  errorComponent: ({ error }) => (
+    <div className="p-6 max-w-xl mx-auto my-12 text-center space-y-4">
+      <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-6 text-destructive">
+        <h3 className="text-lg font-semibold">Erro ao carregar a página de alunos</h3>
+        <p className="text-sm mt-2 opacity-90 break-words font-mono">
+          {error?.message || "Ocorreu um erro ao renderizar os dados dos alunos."}
+        </p>
+        <Button
+          onClick={() => window.location.reload()}
+          className="mt-4"
+          variant="outline"
+        >
+          Tentar novamente
+        </Button>
+      </div>
+    </div>
+  ),
   component: StudentsPage,
 });
 
@@ -100,13 +117,15 @@ function StudentsPage() {
   // Alunos com plano por pacote — só para eles buscamos os check-ins.
   const packageStudentIds = useMemo(
     () =>
-      students
+      (students || [])
         .filter((s) =>
+          s &&
           (s.payments ?? []).some(
-            (p) => p.status === "paid" && p.plans?.checkin_quota_type === "package",
+            (p) => p && p.status === "paid" && p.plans?.checkin_quota_type === "package",
           ),
         )
-        .map((s) => s.id),
+        .map((s) => s.id)
+        .filter(Boolean),
     [students],
   );
 
@@ -121,8 +140,8 @@ function StudentsPage() {
         .in("student_id", packageStudentIds);
       const map: Record<string, string[]> = {};
       for (const r of (data ?? []) as any[]) {
-        const d = r.class_sessions?.session_date;
-        if (!d || !r.student_id) continue;
+        const d = r?.class_sessions?.session_date;
+        if (!d || !r?.student_id) continue;
         (map[r.student_id] ??= []).push(d);
       }
       return map;
@@ -131,25 +150,31 @@ function StudentsPage() {
 
   const checkinByStudent = useMemo(() => {
     const out = new Map<string, { remaining: number; quota: number }>();
+    if (!students || !packageStudentIds.length) return out;
     for (const id of packageStudentIds) {
-      const s = students.find((x) => x.id === id);
+      const s = students.find((x) => x && x.id === id);
       if (!s) continue;
-      const alloc = allocateCheckins(s.payments ?? [], checkinDates[id] ?? []);
-      const today = new Date().toISOString().slice(0, 10);
-      const entries = [...alloc.entries()]
-        .map(([pid, pkg]) => ({ pid, pkg }))
-        .sort((a, b) => (a.pkg.validUntil ?? "9999") < (b.pkg.validUntil ?? "9999") ? -1 : 1);
-      const active =
-        entries.find(
-          (e) =>
-            e.pkg.quota - e.pkg.used.length > 0 &&
-            (!e.pkg.validUntil || e.pkg.validUntil >= today),
-        ) ?? entries[entries.length - 1];
-      if (active) {
-        out.set(id, {
-          remaining: Math.max(0, active.pkg.quota - active.pkg.used.length),
-          quota: active.pkg.quota,
-        });
+      try {
+        const alloc = allocateCheckins(s.payments ?? [], checkinDates[id] ?? []);
+        const today = new Date().toISOString().slice(0, 10);
+        const entries = [...alloc.entries()]
+          .map(([pid, pkg]) => ({ pid, pkg }))
+          .sort((a, b) => ((a.pkg?.validUntil ?? "9999") < (b.pkg?.validUntil ?? "9999") ? -1 : 1));
+        const active =
+          entries.find(
+            (e) =>
+              e.pkg &&
+              e.pkg.quota - (e.pkg.used?.length || 0) > 0 &&
+              (!e.pkg.validUntil || e.pkg.validUntil >= today),
+          ) ?? entries[entries.length - 1];
+        if (active && active.pkg) {
+          out.set(id, {
+            remaining: Math.max(0, active.pkg.quota - (active.pkg.used?.length || 0)),
+            quota: active.pkg.quota || 0,
+          });
+        }
+      } catch (err) {
+        console.warn("Erro calculando checkins do aluno", id, err);
       }
     }
     return out;
@@ -189,27 +214,29 @@ function StudentsPage() {
   const rows = useMemo(() => {
     const norm = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
     const q = norm(search);
-    return students
+    return (students || [])
       .filter((s) => {
+        if (!s) return false;
         if (status === "all") return true;
         // Alunos com check-in de bônus ativo (> 0) possuem crédito no sistema e permanecem ativos
-        const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : s.status;
+        const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : (s.status ?? "inactive");
         return effectiveStatus === status;
       })
       .filter((s) => !q || norm(s.name).includes(q) || norm(s.email ?? "").includes(q))
       .map((s) => {
-        const paid = (s.payments || []).filter((p) => p.amount);
-        const total = paid.reduce((a, p) => a + Number(p.amount), 0);
-        const dates = paid.map((p) => p.payment_date).sort();
-        const current = (s.student_plan_history || []).find((h) => h.is_current);
-        const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : s.status;
+        const paid = (s.payments || []).filter((p) => p && p.amount);
+        const total = paid.reduce((a, p) => a + Number(p.amount || 0), 0);
+        const dates = paid.map((p) => p.payment_date).filter(Boolean).sort();
+        const current = (s.student_plan_history || []).find((h) => h && h.is_current);
+        const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : (s.status ?? "inactive");
         return {
           ...s,
+          name: s.name || "Aluno",
           status: effectiveStatus,
           total,
           count: paid.length,
-          first: dates[0],
-          last: dates[dates.length - 1],
+          first: dates[0] || null,
+          last: dates[dates.length - 1] || null,
           avg: paid.length ? total / paid.length : 0,
           plan: current?.plans?.name ?? null,
         };

@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export const BRL = new Intl.NumberFormat("pt-BR", {
@@ -21,19 +21,40 @@ export const formatPercent = (value: number) =>
 
 export const formatDateBR = (value: string | Date | null | undefined) => {
   if (!value) return "—";
-  const d = typeof value === "string" ? parseISO(value) : value;
-  return format(d, "dd/MM/yyyy", { locale: ptBR });
+  try {
+    const d = typeof value === "string" ? parseISO(value) : value;
+    if (!d || !isValid(d)) return "—";
+    return format(d, "dd/MM/yyyy", { locale: ptBR });
+  } catch {
+    return "—";
+  }
 };
 
 export const formatMonthLabel = (refMonth: string) => {
   // refMonth: YYYY-MM
-  const [y, m] = refMonth.split("-").map(Number);
-  return format(new Date(y, (m ?? 1) - 1, 1), "MMM/yy", { locale: ptBR });
+  if (!refMonth || typeof refMonth !== "string") return "—";
+  try {
+    const [y, m] = refMonth.split("-").map(Number);
+    if (!y || isNaN(y)) return "—";
+    const d = new Date(y, (m ?? 1) - 1, 1);
+    if (!isValid(d)) return "—";
+    return format(d, "MMM/yy", { locale: ptBR });
+  } catch {
+    return "—";
+  }
 };
 
 export const formatMonthLong = (refMonth: string) => {
-  const [y, m] = refMonth.split("-").map(Number);
-  return format(new Date(y, (m ?? 1) - 1, 1), "MMMM 'de' yyyy", { locale: ptBR });
+  if (!refMonth || typeof refMonth !== "string") return "—";
+  try {
+    const [y, m] = refMonth.split("-").map(Number);
+    if (!y || isNaN(y)) return "—";
+    const d = new Date(y, (m ?? 1) - 1, 1);
+    if (!isValid(d)) return "—";
+    return format(d, "MMMM 'de' yyyy", { locale: ptBR });
+  } catch {
+    return "—";
+  }
 };
 
 export const monthKey = (date: Date) =>

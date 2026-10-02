@@ -24,9 +24,15 @@ export type CheckinPaymentLike = {
 };
 
 export function addDays(iso: string, days: number) {
-  const d = new Date(`${iso}T00:00:00`);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  if (!iso) return "";
+  try {
+    const d = new Date(`${iso}T00:00:00`);
+    if (isNaN(d.getTime())) return iso;
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  } catch {
+    return iso;
+  }
 }
 
 /** Distribui os check-ins (FIFO) entre os pagamentos de planos do tipo pacote. */
@@ -36,20 +42,22 @@ export function allocateCheckins(
   freezes: { payment_id?: string | null; freeze_days?: number | null }[] = [],
 ): Map<string, CheckinPkg> {
   const result = new Map<string, CheckinPkg>();
+  if (!payments || !Array.isArray(payments)) return result;
 
   const packages = payments
-    .filter((p) => p.status === "paid" && p.plans?.checkin_quota_type === "package")
-    .sort((a, b) => (a.payment_date < b.payment_date ? -1 : 1))
+    .filter((p) => p && p.status === "paid" && p.plans?.checkin_quota_type === "package" && p.payment_date)
+    .sort((a, b) => ((a.payment_date || "") < (b.payment_date || "") ? -1 : 1))
     .map((p) => {
       const freezeDays = (freezes ?? [])
-        .filter((f) => f.payment_id === p.id)
-        .reduce((s, f) => s + Number(f.freeze_days ?? 0), 0);
+        .filter((f) => f && f.payment_id === p.id)
+        .reduce((s, f) => s + Number(f?.freeze_days ?? 0), 0);
       const quota = p.checkin_quota_override ?? p.plans?.checkin_quota_amount ?? 0;
       const validDays = p.plans?.package_valid_days ?? null;
+      const pDate = (p.payment_date || "").slice(0, 10);
       return {
         id: p.id,
-        start: p.payment_date.slice(0, 10),
-        validUntil: validDays != null ? addDays(p.payment_date.slice(0, 10), validDays + freezeDays) : null,
+        start: pDate,
+        validUntil: validDays != null && pDate ? addDays(pDate, validDays + freezeDays) : null,
         quota,
         isOverride: p.checkin_quota_override != null,
         freezeDays,
@@ -59,7 +67,11 @@ export function allocateCheckins(
 
   if (!packages.length) return result;
 
-  const dates = [...attendanceDates].map((d) => d.slice(0, 10)).sort();
+  const dates = [...(attendanceDates || [])]
+    .filter((d): d is string => typeof d === "string" && Boolean(d))
+    .map((d) => d.slice(0, 10))
+    .sort();
+
   for (const date of dates) {
     const target = packages.find(
       (pk) => pk.used.length < pk.quota && date >= pk.start && (!pk.validUntil || date <= pk.validUntil),
