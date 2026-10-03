@@ -227,23 +227,22 @@ function AuthPage() {
     <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans relative overflow-hidden">
       {/* Dynamic Background Mesh */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-[#6958e2]/25 blur-[160px]" />
-        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-[#8b5cf6]/20 blur-[160px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full bg-[#6958e2]/10 blur-[180px]" />
+        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-[#6958e2]/20 blur-[160px]" />
+        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-[#8b5cf6]/15 blur-[160px]" />
       </div>
 
       {/* Floating Hero Stage Card Container */}
-      <div className="w-full max-w-[920px] bg-slate-900/90 border border-[#6958e2]/30 rounded-3xl shadow-[0_0_60px_rgba(105,88,226,0.25)] backdrop-blur-2xl overflow-hidden flex flex-col md:flex-row min-h-[580px] my-auto">
+      <div className="w-full max-w-[900px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[560px] my-auto">
         
         {/* A) NAV RAIL */}
-        <nav className="w-full md:w-24 bg-slate-950/80 border-b md:border-b-0 md:border-r border-slate-800/80 p-4 flex md:flex-col items-center justify-between z-20 flex-shrink-0">
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#6958e2] to-[#8b5cf6] p-0.5 shadow-lg shadow-[#6958e2]/40 flex items-center justify-center">
+        <nav className="w-full md:w-24 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 p-4 flex md:flex-col items-center justify-between z-20 flex-shrink-0">
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-[#6958e2] to-[#8b5cf6] p-0.5 shadow-md flex items-center justify-center">
               <div className="h-full w-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <Lock className="h-6 w-6 text-[#6958e2]" />
+                <Sparkles className="h-5 w-5 text-[#6958e2]" />
               </div>
             </div>
-            <span className="text-[10px] font-black tracking-widest text-[#6958e2] uppercase">Studio</span>
+            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Studio</span>
           </div>
 
           <div className="flex md:flex-col items-center gap-3">
@@ -251,10 +250,10 @@ function AuthPage() {
               type="button"
               onClick={() => setView("signin")}
               aria-label="Entrar na conta"
-              className={`min-h-[44px] min-w-[44px] px-4 py-2 md:py-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-xs font-bold ${
+              className={`min-h-[44px] min-w-[44px] px-4 py-2.5 rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-xs font-bold ${
                 view === "signin"
-                  ? "bg-[#6958e2] text-white shadow-lg shadow-[#6958e2]/40"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
               <User className="h-5 w-5" />
@@ -265,10 +264,10 @@ function AuthPage() {
               type="button"
               onClick={() => setView("signup")}
               aria-label="Criar nova conta"
-              className={`min-h-[44px] min-w-[44px] px-4 py-2 md:py-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-xs font-bold ${
+              className={`min-h-[44px] min-w-[44px] px-4 py-2.5 rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-xs font-bold ${
                 view === "signup"
-                  ? "bg-[#6958e2] text-white shadow-lg shadow-[#6958e2]/40"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
               <Sparkles className="h-5 w-5" />
@@ -276,29 +275,24 @@ function AuthPage() {
             </button>
           </div>
 
-          <div className="hidden md:flex flex-col items-center text-[10px] text-slate-400">
-            <ShieldCheck className="h-4 w-4 text-[#6958e2] mb-1" />
+          <div className="hidden md:flex flex-col items-center text-[10px] text-slate-500">
+            <ShieldCheck className="h-4 w-4 text-[#6958e2] mb-0.5" />
             <span>SSL 256</span>
           </div>
         </nav>
 
         {/* B) FLOATING HERO CARD */}
-        <div className="w-full md:w-80 relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-[#6958e2]/30 p-6 md:p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800/80">
-          <div aria-hidden className="absolute -top-24 -left-24 w-64 h-64 bg-[#6958e2]/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="w-full md:w-80 relative overflow-hidden bg-slate-950/90 p-6 md:p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800">
+          <div aria-hidden className="absolute -top-24 -left-24 w-64 h-64 bg-[#6958e2]/20 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6958e2]/20 border border-[#6958e2]/40 text-[#6958e2] text-xs font-bold">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>MIDNIGHT VIOLET • PERSONAL</span>
-            </div>
-
             {view === "signin" ? (
               <div className="space-y-3 animate-in fade-in">
                 <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
                   Montanha Personal Studio
                 </h2>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Gestão Financeira & Inteligência Operacional de Alta Performance para Personal Trainers e Studios.
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  Gestão financeira e inteligência operacional de alta performance para personal trainers e studios.
                 </p>
               </div>
             ) : (
@@ -306,40 +300,32 @@ function AuthPage() {
                 <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
                   Eleve seu Studio ao Próximo Nível
                 </h2>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Automatize faturamentos, gerencie alunos e simplifique sua rotina com inteligência.
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  Automatize faturamentos, gerencie alunos e simplifique sua rotina operacional com inteligência.
                 </p>
               </div>
             )}
           </div>
 
           <div className="relative z-10 pt-6 border-t border-slate-800/80 space-y-3">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <CheckCircle2 className="h-4 w-4 text-[#6958e2]" />
-              <span>Autenticação Unificada por PIN</span>
+            <div className="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
+              <CheckCircle2 className="h-4 w-4 text-[#6958e2] flex-shrink-0" />
+              <span>Autenticação rápida e segura por PIN</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <CheckCircle2 className="h-4 w-4 text-[#6958e2]" />
-              <span>Criptografia de Ponta a Ponta</span>
+            <div className="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
+              <CheckCircle2 className="h-4 w-4 text-[#6958e2] flex-shrink-0" />
+              <span>Criptografia de ponta a ponta</span>
             </div>
-            <a
-              href="#terms"
-              onClick={(e) => { e.preventDefault(); toast.info("Montanha Personal Studio v2.4"); }}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6958e2] hover:underline pt-2"
-            >
-              <span>Termos &amp; Segurança do Ecossistema</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </a>
           </div>
         </div>
 
         {/* C) FORM PANEL */}
-        <div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-950/60">
+        <div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-900">
           {showReset ? (
             <div className="space-y-6 my-auto">
               <div>
-                <h3 className="text-xl font-bold text-white">Recuperar Senha</h3>
-                <p className="text-xs text-slate-400 mt-1">Informe seu e-mail cadastrado para receber o link de redefinição.</p>
+                <h3 className="text-2xl font-bold text-white tracking-tight">Recuperar Senha</h3>
+                <p className="text-sm text-slate-400 mt-1">Informe seu e-mail cadastrado para receber o link de redefinição.</p>
               </div>
 
               {resetSent ? (
@@ -348,19 +334,19 @@ function AuthPage() {
                     <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                     <span>E-mail de recuperação enviado!</span>
                   </div>
-                  <p className="text-xs text-slate-300">Confira sua caixa de entrada e a pasta de spam.</p>
+                  <p className="text-xs text-slate-300">Confira sua caixa de entrada e a pasta de spam do e-mail informado.</p>
                   <button
                     type="button"
                     onClick={() => { setShowReset(false); setResetSent(false); }}
                     className="text-xs font-bold text-[#6958e2] hover:underline block pt-2"
                   >
-                    ← Voltar ao login
+                    ← Voltar para o login
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleReset} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label htmlFor="reset-email-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">E-mail</label>
+                    <label htmlFor="reset-email-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">E-mail</label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                       <input
@@ -370,8 +356,8 @@ function AuthPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="seu.email@exemplo.com"
-                        style={{ fontSize: "16px" }}
-                        className="w-full h-11 pl-10 pr-4 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
+                        style={{ fontSize: "16px", color: "#ffffff" }}
+                        className="w-full h-11 pl-10 pr-4 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
                       />
                     </div>
                     {resetError && <p className="text-xs text-red-400 font-semibold">{resetError}</p>}
@@ -380,7 +366,7 @@ function AuthPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-11 rounded-xl bg-gradient-to-r from-[#6958e2] to-[#8b5cf6] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-[#6958e2]/30 hover:opacity-95 transition-all flex items-center justify-center gap-2 min-h-[44px]"
+                    className="w-full h-12 rounded-xl bg-[#6958e2] hover:bg-[#5b4bc4] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 min-h-[44px]"
                   >
                     {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                     <span>Enviar Link de Recuperação</span>
@@ -398,54 +384,22 @@ function AuthPage() {
             </div>
           ) : (
             <div className="space-y-6 my-auto">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-white">
-                    {view === "signin" ? "Acessar Plataforma" : "Criar sua Conta"}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {view === "signin"
-                      ? "Digite suas credenciais ou PIN de acesso."
-                      : "Preencha seus dados para solicitar ativação (PIN de no mínimo 6 dígitos numéricos)."}
-                  </p>
-                </div>
-
-                {/* Authentication Method Switcher */}
-                <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setAuthMethod("pin")}
-                    aria-label="Usar PIN de acesso"
-                    className={`min-h-[36px] px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                      authMethod === "pin"
-                        ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
-                        : "text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    <Smartphone className="h-3.5 w-3.5" />
-                    <span>PIN</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAuthMethod("email")}
-                    aria-label="Usar Senha Tradicional"
-                    className={`min-h-[36px] px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                      authMethod === "email"
-                        ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
-                        : "text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    <KeyRound className="h-3.5 w-3.5" />
-                    <span>Senha</span>
-                  </button>
-                </div>
+              <div>
+                <h3 className="text-2xl font-bold text-white tracking-tight">
+                  {view === "signin" ? "Acessar Plataforma" : "Criar sua Conta"}
+                </h3>
+                <p className="text-sm text-slate-400 mt-1">
+                  {view === "signin"
+                    ? "Informe suas credenciais ou PIN para acessar."
+                    : "Preencha os dados abaixo para cadastrar seu novo acesso."}
+                </p>
               </div>
 
               {/* Form */}
               <form onSubmit={view === "signin" ? handleSignIn : handleSignUp} className="space-y-4">
                 {view === "signup" && (
                   <div className="space-y-1.5">
-                    <label htmlFor="su-name-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">Nome Completo</label>
+                    <label htmlFor="su-name-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Nome Completo</label>
                     <div className="relative">
                       <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                       <input
@@ -455,15 +409,15 @@ function AuthPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Ex: Coach Silva"
-                        style={{ fontSize: "16px" }}
-                        className="w-full h-11 pl-10 pr-4 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
+                        style={{ fontSize: "16px", color: "#ffffff" }}
+                        className="w-full h-11 pl-10 pr-4 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
                       />
                     </div>
                   </div>
                 )}
 
                 <div className="space-y-1.5">
-                  <label htmlFor="si-email-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">E-mail de Acesso</label>
+                  <label htmlFor="si-email-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">E-mail de Acesso</label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <input
@@ -473,68 +427,40 @@ function AuthPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu.email@exemplo.com"
-                      style={{ fontSize: "16px" }}
-                      className="w-full h-11 pl-10 pr-4 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
+                      style={{ fontSize: "16px", color: "#ffffff" }}
+                      className="w-full h-11 pl-10 pr-4 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
                     />
                   </div>
                 </div>
 
-                {authMethod === "pin" ? (
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <label htmlFor="pin-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">PIN de Acesso</label>
-                    </div>
-                    <div className="relative">
-                      <Smartphone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                      <input
-                        id="pin-input"
-                        type="password"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        maxLength={12}
-                        required
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 12))}
-                        placeholder="••••••••"
-                        style={{ fontSize: "16px" }}
-                        className="w-full h-11 pl-10 pr-12 bg-slate-900 border border-slate-800 rounded-xl text-white tracking-widest font-mono placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPass(!showPass)}
-                        aria-label="Alternar visibilidade do PIN"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
-                      >
-                        {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="pin-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                      {view === "signup" ? "PIN ou Senha (no mínimo 6 dígitos)" : "PIN ou Senha de Acesso"}
+                    </label>
                   </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    <label htmlFor="password-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">Senha</label>
-                    <div className="relative">
-                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                      <input
-                        id="password-input"
-                        type={showPass ? "text" : "password"}
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        style={{ fontSize: "16px" }}
-                        className="w-full h-11 pl-10 pr-12 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPass(!showPass)}
-                        aria-label="Alternar visibilidade da senha"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
-                      >
-                        {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <input
+                      id="pin-input"
+                      type={showPass ? "text" : "password"}
+                      required
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value)}
+                      placeholder="••••••••"
+                      style={{ fontSize: "16px", color: "#ffffff" }}
+                      className="w-full h-11 pl-10 pr-12 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass(!showPass)}
+                      aria-label="Alternar visibilidade da senha"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
+                    >
+                      {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
-                )}
+                </div>
 
                 {view === "signin" && (
                   <div className="flex items-center justify-between pt-1">
@@ -543,9 +469,9 @@ function AuthPage() {
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="rounded border-slate-800 bg-slate-900 text-[#6958e2] focus:ring-[#6958e2]"
+                        className="rounded border-slate-800 bg-slate-950 text-[#6958e2] focus:ring-[#6958e2]"
                       />
-                      <span>Lembrar de mim neste dispositivo</span>
+                      <span>Lembrar neste dispositivo</span>
                     </label>
 
                     <button
@@ -562,7 +488,7 @@ function AuthPage() {
                   type="submit"
                   disabled={loading}
                   aria-label={view === "signin" ? "Entrar no Personal Studio" : "Cadastrar conta"}
-                  className="w-full h-11 rounded-xl bg-gradient-to-r from-[#6958e2] to-[#8b5cf6] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-[#6958e2]/30 hover:opacity-95 transition-all flex items-center justify-center gap-2 min-h-[44px]"
+                  className="w-full h-12 rounded-xl bg-[#6958e2] hover:bg-[#5b4bc4] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 min-h-[44px]"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>{view === "signin" ? "Entrar no Personal Studio" : "Criar Conta de Acesso"}</span>
@@ -570,7 +496,7 @@ function AuthPage() {
               </form>
 
               {/* Footer Switcher */}
-              <div className="text-center text-xs text-slate-400 pt-2 border-t border-slate-800/60">
+              <div className="text-center text-xs text-slate-400 pt-3 border-t border-slate-800/80">
                 {view === "signin" ? (
                   <span>
                     Ainda não possui uma conta?{" "}
@@ -593,7 +519,7 @@ function AuthPage() {
                       Fazer login
                     </button>
                   </span>
-                )}
+                ) }
               </div>
             </div>
           )}
