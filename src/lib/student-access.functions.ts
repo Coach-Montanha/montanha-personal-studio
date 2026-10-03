@@ -253,7 +253,7 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
     });
 
     const isRegisteredStudent = matches.length > 0;
-    const canAuthorize = isMatchingKnownField || (isRegisteredStudent && password.length >= 6);
+    const canAuthorize = isMatchingKnownField;
 
     if (!canAuthorize) {
       return { healed: false, reason: "PASSWORD_MISMATCH" };

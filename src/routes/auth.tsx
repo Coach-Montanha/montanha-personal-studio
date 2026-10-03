@@ -1,18 +1,12 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Loader2, CheckCircle2, Lock, Zap, ShieldCheck } from "lucide-react";
+import { Loader2, CheckCircle2, Lock, ShieldCheck, KeyRound, Mail, User, Eye, EyeOff, Sparkles, ArrowRight, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { autoHealStudentLogin } from "@/lib/student-access.functions";
-import { checkAndLockGuestDemo, validateEmailMx, checkProjectAccess } from "@/services/ecosystem-auth-service";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { validateEmailMx, checkProjectAccess } from "@/services/ecosystem-auth-service";
 
 function safeNext(next: unknown): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) return "/";
@@ -56,24 +50,24 @@ function AuthPage() {
   const autoHealFn = useServerFn(autoHealStudentLogin);
   const searchParams = Route.useSearch();
   const nextPath = safeNext(searchParams.next);
-  const [tab, setTab] = useState<"signin" | "signup">("signin");
-  const [showReset, setShowReset] = useState(false);
+
+  const [view, setView] = useState<"signin" | "signup">("signin");
+  const [authMethod, setAuthMethod] = useState<"pin" | "email">("pin");
+  const [showPass, setShowPass] = useState(false);
+  const [showSuPass, setShowSuPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+
+  // Form states
   const [email, setEmail] = useState(searchParams.email || "");
-  const [password, setPassword] = useState(searchParams.pass || searchParams.password || "");
+  const [pin, setPin] = useState(searchParams.pass || searchParams.password || "");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [showReset, setShowReset] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
 
-  // 1-Click WhatsApp Onboarding auto-login
-  useState(() => {
-    if (searchParams.email && (searchParams.pass || searchParams.password)) {
-      setTimeout(() => {
-        const btn = document.querySelector<HTMLButtonElement>('[data-testid="button-signin-submit"]');
-        if (btn) btn.click();
-      }, 300);
-    }
-  });
+  // Brand Color: #6958e2 (Midnight Violet)
 
   async function redirectAfterAuth(userId: string) {
     if (searchParams.next) {
@@ -93,50 +87,51 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
 
-    const mx = await validateEmailMx(email);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCredential = authMethod === "pin" ? pin.trim() : password.trim();
+
+    if (!cleanEmail) {
+      setLoading(false);
+      return toast.error("Por favor, digite seu e-mail de acesso.");
+    }
+
+    if (authMethod === "pin") {
+      if (!/^\d{6,}$/.test(cleanCredential)) {
+        setLoading(false);
+        return toast.error("O PIN de acesso deve conter no mínimo 6 dígitos numéricos.");
+      }
+    } else {
+      if (!cleanCredential || cleanCredential.length < 6) {
+        setLoading(false);
+        return toast.error("A senha deve conter no mínimo 6 caracteres.");
+      }
+    }
+
+    const mx = await validateEmailMx(cleanEmail);
     if (!mx.valid) {
       setLoading(false);
       return toast.error(mx.reason || "E-mail inválido.");
     }
 
-    const access = await checkProjectAccess(null, 'eduflow-finance', email);
+    const access = await checkProjectAccess(null, 'eduflow-finance', cleanEmail);
     if (!access.hasAccess) {
       setLoading(false);
       return toast.error(access.message);
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
-
-    if (!cleanPassword || cleanPassword.length < 6) {
-      setLoading(false);
-      return toast.error("A senha deve conter no mínimo 6 caracteres.");
-    }
-
     let { data: signInData, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
-      password: cleanPassword,
+      password: cleanCredential,
     });
 
-    if (error && cleanPassword !== password) {
-      const retry = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password: password,
-      });
-      if (!retry.error) {
-        signInData = retry.data;
-        error = null;
-      }
-    }
-
     if (error) {
-      // 1. Auto-healing para alunos cadastrados (suporta temp_password, telefone, data de nascimento, PIN e auto-sync)
+      // Auto-healing for registered students
       try {
-        const healResult = await autoHealFn({ data: { email: cleanEmail, password: cleanPassword } });
+        const healResult = await autoHealFn({ data: { email: cleanEmail, password: cleanCredential } });
         if (healResult && healResult.healed) {
           const retryHealed = await supabase.auth.signInWithPassword({
             email: cleanEmail,
-            password: cleanPassword,
+            password: cleanCredential,
           });
           if (!retryHealed.error && retryHealed.data.session) {
             setLoading(false);
@@ -149,35 +144,8 @@ function AuthPage() {
         console.warn("Auto-heal check warning:", healErr);
       }
 
-      if (cleanEmail === 'albertosarly@gmail.com' && (cleanPassword === '3862858747' || password === '3862858747')) {
-        const { data: suData, error: suErr } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { name: 'Alberto Sarly' } }
-        });
-        if (!suErr && suData.session) {
-          setLoading(false);
-          toast.success("Bem-vindo, Alberto Sarly!");
-          await redirectAfterAuth(suData.session.user.id);
-          return;
-        }
-      }
-
-      // Auto-provision invited / trial client on first access
-      const { data: suData, error: suErr } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password,
-        options: { data: { name: cleanEmail.split('@')[0] } }
-      });
-      if (!suErr && suData.session) {
-        setLoading(false);
-        toast.success("Conta ativada com sucesso! Bem-vindo!");
-        await redirectAfterAuth(suData.session.user.id);
-        return;
-      }
-
-      // If user has local trial/impersonate active
-      const localTrial = localStorage.getItem(`ecosystem_sub_eduflow-finance_${email}`);
+      // Provision trial or check local access
+      const localTrial = localStorage.getItem(`ecosystem_sub_eduflow-finance_${cleanEmail}`);
       if (localTrial) {
         setLoading(false);
         toast.success("Acesso em período de avaliação liberado!");
@@ -188,10 +156,11 @@ function AuthPage() {
       setLoading(false);
       const userMessage =
         error.message === "Invalid login credentials"
-          ? "Credenciais inválidas. Verifique seu e-mail e senha de acesso."
+          ? "Credenciais inválidas. Verifique seu e-mail e PIN de 10 dígitos."
           : error.message;
       return toast.error(userMessage);
     }
+
     setLoading(false);
     toast.success("Bem-vindo de volta!");
     if (signInData?.user) {
@@ -205,15 +174,22 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
 
-    if (!password || password.length < 6) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCredential = authMethod === "pin" ? pin.trim() : password.trim();
+
+    if (authMethod === "pin" && !/^\d{10}$/.test(cleanCredential)) {
+      setLoading(false);
+      return toast.error("O PIN de acesso deve conter exatamente 10 dígitos numéricos.");
+    }
+
+    if (authMethod === "email" && cleanCredential.length < 6) {
       setLoading(false);
       return toast.error("A senha deve conter no mínimo 6 caracteres.");
     }
 
-    const cleanEmail = email.trim().toLowerCase();
     const { error } = await supabase.auth.signUp({
       email: cleanEmail,
-      password,
+      password: cleanCredential,
       options: {
         emailRedirectTo: `${window.location.origin}${nextPath}`,
         data: { name },
@@ -221,10 +197,10 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Conta criada! Verifique seu email se necessário.");
+    toast.success("Conta criada! Verifique seu email para confirmar o acesso.");
     const sess = (await supabase.auth.getSession()).data.session;
     if (sess) await redirectAfterAuth(sess.user.id);
-    else navigate({ to: "/auth" });
+    else setView("signin");
   }
 
   async function handleReset(e: React.FormEvent) {
@@ -247,257 +223,382 @@ function AuthPage() {
     }
   }
 
-  function openReset() {
-    setResetSent(false);
-    setResetError(null);
-    setShowReset(true);
-  }
-
-  function backToSignIn() {
-    setResetSent(false);
-    setResetError(null);
-    setShowReset(false);
-  }
-
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-950 text-slate-100 font-sans">
-      {/* Aurora Mesh Dark Glass background */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -left-32 -top-32 h-[520px] w-[520px] rounded-full bg-emerald-500/20 blur-[130px]" />
-        <div className="absolute -bottom-40 -right-32 h-[560px] w-[560px] rounded-full bg-emerald-600/15 blur-[150px]" />
-        <div className="absolute left-1/2 top-1/2 h-[640px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/10 blur-[160px]" />
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans relative overflow-hidden">
+      {/* Dynamic Background Mesh */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-[#6958e2]/25 blur-[160px]" />
+        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-[#8b5cf6]/20 blur-[160px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[700px] w-[700px] rounded-full bg-[#6958e2]/10 blur-[180px]" />
       </div>
 
-      <header className="relative z-10 w-full border-b border-slate-800/60 bg-slate-950/40 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-md">
-              <Lock className="h-5 w-5" />
+      {/* Floating Hero Stage Card Container */}
+      <div className="w-full max-w-[920px] bg-slate-900/90 border border-[#6958e2]/30 rounded-3xl shadow-[0_0_60px_rgba(105,88,226,0.25)] backdrop-blur-2xl overflow-hidden flex flex-col md:flex-row min-h-[580px] my-auto">
+        
+        {/* A) NAV RAIL */}
+        <nav className="w-full md:w-24 bg-slate-950/80 border-b md:border-b-0 md:border-r border-slate-800/80 p-4 flex md:flex-col items-center justify-between z-20 flex-shrink-0">
+          <div className="flex flex-col items-center gap-2">
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#6958e2] to-[#8b5cf6] p-0.5 shadow-lg shadow-[#6958e2]/40 flex items-center justify-center">
+              <div className="h-full w-full bg-slate-950 rounded-[14px] flex items-center justify-center">
+                <Lock className="h-6 w-6 text-[#6958e2]" />
+              </div>
             </div>
-            <div>
-              <span className="text-base font-black tracking-tight text-white block">Montanha Personal Studio</span>
-              <span className="text-[10px] text-slate-400">Gestão Financeira &amp; Inteligência Operacional</span>
+            <span className="text-[10px] font-black tracking-widest text-[#6958e2] uppercase">Studio</span>
+          </div>
+
+          <div className="flex md:flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setView("signin")}
+              aria-label="Entrar na conta"
+              className={`min-h-[44px] min-w-[44px] px-4 py-2 md:py-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-xs font-bold ${
+                view === "signin"
+                  ? "bg-[#6958e2] text-white shadow-lg shadow-[#6958e2]/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
+            >
+              <User className="h-5 w-5" />
+              <span>Entrar</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setView("signup")}
+              aria-label="Criar nova conta"
+              className={`min-h-[44px] min-w-[44px] px-4 py-2 md:py-3 rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-xs font-bold ${
+                view === "signup"
+                  ? "bg-[#6958e2] text-white shadow-lg shadow-[#6958e2]/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
+            >
+              <Sparkles className="h-5 w-5" />
+              <span>Cadastrar</span>
+            </button>
+          </div>
+
+          <div className="hidden md:flex flex-col items-center text-[10px] text-slate-400">
+            <ShieldCheck className="h-4 w-4 text-[#6958e2] mb-1" />
+            <span>SSL 256</span>
+          </div>
+        </nav>
+
+        {/* B) FLOATING HERO CARD */}
+        <div className="w-full md:w-80 relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-[#6958e2]/30 p-6 md:p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800/80">
+          <div aria-hidden className="absolute -top-24 -left-24 w-64 h-64 bg-[#6958e2]/30 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6958e2]/20 border border-[#6958e2]/40 text-[#6958e2] text-xs font-bold">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>MIDNIGHT VIOLET • PERSONAL</span>
             </div>
+
+            {view === "signin" ? (
+              <div className="space-y-3 animate-in fade-in">
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                  Montanha Personal Studio
+                </h2>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Gestão Financeira & Inteligência Operacional de Alta Performance para Personal Trainers e Studios.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 animate-in fade-in">
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                  Eleve seu Studio ao Próximo Nível
+                </h2>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Automatize faturamentos, gerencie alunos e simplifique sua rotina com inteligência.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="relative z-10 pt-6 border-t border-slate-800/80 space-y-3">
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <CheckCircle2 className="h-4 w-4 text-[#6958e2]" />
+              <span>Autenticação Unificada por PIN</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <CheckCircle2 className="h-4 w-4 text-[#6958e2]" />
+              <span>Criptografia de Ponta a Ponta</span>
+            </div>
+            <a
+              href="#terms"
+              onClick={(e) => { e.preventDefault(); toast.info("Montanha Personal Studio v2.4"); }}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6958e2] hover:underline pt-2"
+            >
+              <span>Termos &amp; Segurança do Ecossistema</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
           </div>
         </div>
-      </header>
 
-      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-8 sm:py-12">
-        <Card
-          className="w-full max-w-sm border border-emerald-500/30 bg-slate-950/90 p-6 shadow-[0_0_50px_rgba(16,185,129,0.15)] backdrop-blur-2xl sm:max-w-md sm:p-8 rounded-2xl"
-        >
-          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-            <TabsList className="grid w-full grid-cols-2 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
-              <TabsTrigger value="signin" data-testid="tab-signin" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold transition-all text-xs py-2 rounded-lg">Entrar</TabsTrigger>
-              <TabsTrigger value="signup" data-testid="tab-signup" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-slate-950 font-bold transition-all text-xs py-2 rounded-lg">Criar conta</TabsTrigger>
-            </TabsList>
+        {/* C) FORM PANEL */}
+        <div className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-slate-950/60">
+          {showReset ? (
+            <div className="space-y-6 my-auto">
+              <div>
+                <h3 className="text-xl font-bold text-white">Recuperar Senha</h3>
+                <p className="text-xs text-slate-400 mt-1">Informe seu e-mail cadastrado para receber o link de redefinição.</p>
+              </div>
 
-            <TabsContent value="signin" className="mt-6">
-              {showReset ? (
-                resetSent ? (
-                  <div className="space-y-5 text-center" data-testid="reset-success-container">
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400">
-                      <CheckCircle2 className="h-7 w-7 text-emerald-400" />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-semibold leading-tight tracking-tight text-white">Instruções enviadas!</h3>
-                      <p className="text-xs leading-relaxed text-slate-400">
-                        Verifique sua caixa de entrada e a pasta de <strong>Spam / Lixo Eletrônico</strong> para criar sua nova senha.
-                      </p>
-                      <p className="text-[11px] text-amber-300/90 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed text-left">
-                        💡 Se não receber em alguns minutos ou se tiver uma senha temporária concedida pelo studio, contate seu coach para confirmação de acesso.
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full text-xs font-semibold text-slate-300 border-slate-700 hover:bg-slate-800"
-                      onClick={backToSignIn}
-                    >
-                      Voltar para o login
-                    </Button>
+              {resetSent ? (
+                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 space-y-3">
+                  <div className="flex items-center gap-2 font-bold text-sm">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                    <span>E-mail de recuperação enviado!</span>
                   </div>
-                ) : (
-                  <form onSubmit={handleReset} className="space-y-5" data-testid="form-reset-password">
-                    <div className="space-y-1.5">
-                      <h3 className="text-lg font-semibold leading-tight tracking-tight text-white">Recuperar senha</h3>
-                      <p className="text-sm leading-relaxed text-slate-400">
-                        Digite seu e-mail cadastrado e enviaremos o link para criar uma nova senha.
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email-r" className="text-slate-300">E-mail</Label>
-                      <Input
-                        id="email-r"
-                        data-testid="input-reset-email"
+                  <p className="text-xs text-slate-300">Confira sua caixa de entrada e a pasta de spam.</p>
+                  <button
+                    type="button"
+                    onClick={() => { setShowReset(false); setResetSent(false); }}
+                    className="text-xs font-bold text-[#6958e2] hover:underline block pt-2"
+                  >
+                    ← Voltar ao login
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleReset} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="reset-email-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">E-mail</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                      <input
+                        id="reset-email-input"
                         type="email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
+                        placeholder="seu.email@exemplo.com"
+                        style={{ fontSize: "16px" }}
+                        className="w-full h-11 pl-10 pr-4 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
                       />
-                      {resetError && (
-                        <p data-testid="reset-error-message" className="text-sm text-red-400 font-semibold">{resetError}</p>
-                      )}
                     </div>
-                    <Button
-                      type="submit"
-                      data-testid="button-reset-submit"
-                      className="h-10 w-full font-bold bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl transition-all"
-                      disabled={loading}
-                    >
-                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Enviar link de recuperação
-                    </Button>
-                    <button
-                      type="button"
-                      data-testid="button-back-to-signin"
-                      className="block w-full text-center text-sm text-slate-400 hover:text-white transition-ui focus-ring rounded-md"
-                      onClick={backToSignIn}
-                    >
-                      ← Voltar para o login
-                    </button>
-                  </form>
-                )
-              ) : (
-                <form onSubmit={handleSignIn} className="space-y-4" data-testid="form-signin">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-300">Email</Label>
-                    <Input
-                      id="email"
-                      data-testid="input-signin-email"
+                    {resetError && <p className="text-xs text-red-400 font-semibold">{resetError}</p>}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-11 rounded-xl bg-gradient-to-r from-[#6958e2] to-[#8b5cf6] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-[#6958e2]/30 hover:opacity-95 transition-all flex items-center justify-center gap-2 min-h-[44px]"
+                  >
+                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                    <span>Enviar Link de Recuperação</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowReset(false)}
+                    className="w-full text-center text-xs text-slate-400 hover:text-white pt-2"
+                  >
+                    ← Voltar para o login
+                  </button>
+                </form>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-6 my-auto">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-white">
+                    {view === "signin" ? "Acessar Plataforma" : "Criar sua Conta"}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {view === "signin"
+                      ? "Digite suas credenciais ou PIN de acesso."
+                      : "Preencha seus dados para solicitar ativação (PIN de no mínimo 6 dígitos numéricos)."}
+                  </p>
+                </div>
+
+                {/* Authentication Method Switcher */}
+                <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setAuthMethod("pin")}
+                    aria-label="Usar PIN de acesso"
+                    className={`min-h-[36px] px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      authMethod === "pin"
+                        ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <Smartphone className="h-3.5 w-3.5" />
+                    <span>PIN</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAuthMethod("email")}
+                    aria-label="Usar Senha Tradicional"
+                    className={`min-h-[36px] px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      authMethod === "email"
+                        ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
+                        : "text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    <KeyRound className="h-3.5 w-3.5" />
+                    <span>Senha</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={view === "signin" ? handleSignIn : handleSignUp} className="space-y-4">
+                {view === "signup" && (
+                  <div className="space-y-1.5">
+                    <label htmlFor="su-name-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">Nome Completo</label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                      <input
+                        id="su-name-input"
+                        type="text"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Ex: Coach Silva"
+                        style={{ fontSize: "16px" }}
+                        className="w-full h-11 pl-10 pr-4 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label htmlFor="si-email-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">E-mail de Acesso</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <input
+                      id="si-email-input"
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu.email@exemplo.com"
-                      className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
+                      style={{ fontSize: "16px" }}
+                      className="w-full h-11 pl-10 pr-4 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
                     />
                   </div>
-                  <div className="space-y-2">
+                </div>
+
+                {authMethod === "pin" ? (
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-300">Senha</Label>
-                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">senha de acesso</span>
+                      <label htmlFor="pin-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">PIN de Acesso</label>
                     </div>
-                    <Input
-                      id="password"
-                      data-testid="input-signin-password"
-                      type="password"
-                      minLength={6}
-                      maxLength={32}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value.trim())}
-                      placeholder="Digite sua senha de acesso"
-                      className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
-                    />
+                    <div className="relative">
+                      <Smartphone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                      <input
+                        id="pin-input"
+                        type="password"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={12}
+                        required
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 12))}
+                        placeholder="••••••••"
+                        style={{ fontSize: "16px" }}
+                        className="w-full h-11 pl-10 pr-12 bg-slate-900 border border-slate-800 rounded-xl text-white tracking-widest font-mono placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPass(!showPass)}
+                        aria-label="Alternar visibilidade do PIN"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
+                      >
+                        {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between gap-3 pt-1">
-                    <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-400 hover:text-slate-200">
-                      <Checkbox defaultChecked data-testid="checkbox-remember-me" /> Lembrar de mim
+                ) : (
+                  <div className="space-y-1.5">
+                    <label htmlFor="password-input" className="text-xs font-bold text-slate-300 uppercase tracking-wider">Senha</label>
+                    <div className="relative">
+                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                      <input
+                        id="password-input"
+                        type={showPass ? "text" : "password"}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        style={{ fontSize: "16px" }}
+                        className="w-full h-11 pl-10 pr-12 bg-slate-900 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-[#6958e2] text-base md:text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPass(!showPass)}
+                        aria-label="Alternar visibilidade da senha"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-white"
+                      >
+                        {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {view === "signin" && (
+                  <div className="flex items-center justify-between pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400 hover:text-slate-200">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="rounded border-slate-800 bg-slate-900 text-[#6958e2] focus:ring-[#6958e2]"
+                      />
+                      <span>Lembrar de mim neste dispositivo</span>
                     </label>
+
                     <button
                       type="button"
-                      data-testid="button-forgot-password"
-                      className="text-sm text-emerald-400 hover:underline rounded-md font-medium"
-                      onClick={openReset}
+                      onClick={() => setShowReset(true)}
+                      className="text-xs font-bold text-[#6958e2] hover:underline"
                     >
                       Esqueci a senha
                     </button>
                   </div>
-                  <Button
-                    type="submit"
-                    data-testid="button-signin-submit"
-                    className="h-10 w-full font-black text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 rounded-xl shadow-lg transition-all"
-                    disabled={loading}
-                  >
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Entrar no Personal Studio
-                  </Button>
-                  <div className="pt-2 text-center">
-                    <a
-                      href={`https://wa.me/5583999259385?text=${encodeURIComponent(
-                        `Olá Coach Montanha! Preciso de auxílio para acessar minha conta no aplicativo.${
-                          email ? ` Meu e-mail é: ${email}` : ""
-                        }`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-emerald-400 transition-colors"
-                    >
-                      <Zap className="h-3 w-3 text-emerald-400" />
-                      Dúvidas no acesso? Suporte via WhatsApp
-                    </a>
-                  </div>
-                </form>
-              )}
-            </TabsContent>
+                )}
 
-            <TabsContent value="signup" className="mt-6">
-              <form onSubmit={handleSignUp} className="space-y-4" data-testid="form-signup">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-slate-300">Nome</Label>
-                  <Input
-                    id="name"
-                    data-testid="input-signup-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Ex: Coach Silva"
-                    className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email-s" className="text-xs font-bold uppercase tracking-wider text-slate-300">Email</Label>
-                  <Input
-                    id="email-s"
-                    data-testid="input-signup-email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu.email@exemplo.com"
-                    className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="pwd-s" className="text-xs font-bold uppercase tracking-wider text-slate-300">Senha</Label>
-                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">mínimo 6 caracteres</span>
-                  </div>
-                  <Input
-                    id="pwd-s"
-                    data-testid="input-signup-password"
-                    type="password"
-                    minLength={6}
-                    maxLength={32}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="•••••••• (mínimo 6 caracteres)"
-                    className="h-10 bg-slate-900/90 border-slate-800 text-white rounded-xl focus:border-emerald-500"
-                  />
-                  <p className="text-xs leading-relaxed text-slate-400">No mínimo 6 dígitos numéricos ou caracteres.</p>
-                </div>
-                <Button
+                <button
                   type="submit"
-                  data-testid="button-signup-submit"
-                  className="h-10 w-full font-black text-xs uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 rounded-xl shadow-lg transition-all"
                   disabled={loading}
+                  aria-label={view === "signin" ? "Entrar no Personal Studio" : "Cadastrar conta"}
+                  className="w-full h-11 rounded-xl bg-gradient-to-r from-[#6958e2] to-[#8b5cf6] text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-[#6958e2]/30 hover:opacity-95 transition-all flex items-center justify-center gap-2 min-h-[44px]"
                 >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Criar conta
-                </Button>
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  <span>{view === "signin" ? "Entrar no Personal Studio" : "Criar Conta de Acesso"}</span>
+                </button>
               </form>
-            </TabsContent>
-          </Tabs>
-        </Card>
-      </main>
 
-      <footer className="relative z-10 w-full border-t border-slate-800/60 bg-slate-950/50 backdrop-blur-sm py-4">
-        <div className="mx-auto max-w-6xl px-4 text-center text-xs font-medium text-slate-400 sm:px-6">
-          © {new Date().getFullYear()} Montanha Personal Studio
+              {/* Footer Switcher */}
+              <div className="text-center text-xs text-slate-400 pt-2 border-t border-slate-800/60">
+                {view === "signin" ? (
+                  <span>
+                    Ainda não possui uma conta?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setView("signup")}
+                      className="font-bold text-[#6958e2] hover:underline ml-1"
+                    >
+                      Cadastre-se aqui
+                    </button>
+                  </span>
+                ) : (
+                  <span>
+                    Já é cadastrado?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setView("signin")}
+                      className="font-bold text-[#6958e2] hover:underline ml-1"
+                    >
+                      Fazer login
+                    </button>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
