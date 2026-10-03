@@ -660,30 +660,14 @@
   box-shadow: 0 0 0 1px #6958e2, 0 0 16px rgba(105, 88, 226, 0.25);
 }
 
-/* Tipografia: títulos */
-[data-tema="midnight"]:not(.dark) h1,
-[data-tema="midnight"]:not(.dark) h2,
-[data-tema="midnight"]:not(.dark) h3,
-[data-tema="midnight"]:not(.dark) h4,
-[data-tema="midnight"]:not(.dark) .text-display,
-[data-tema="midnight"]:not(.dark) .text-title {
+/* Tipografia: títulos com :where() para não sobrescrever utilitários como text-white */
+:where([data-tema="midnight"]:not(.dark)) :where(h1, h2, h3, h4, .text-display, .text-title) {
   letter-spacing: -0.02em;
   font-weight: 700;
   color: #0A0F1D;
 }
 
-.dark[data-tema="midnight"] h1,
-.dark[data-tema="midnight"] h2,
-.dark[data-tema="midnight"] h3,
-.dark[data-tema="midnight"] h4,
-.dark[data-tema="midnight"] .text-display,
-.dark[data-tema="midnight"] .text-title,
-[data-tema="midnight"].dark h1,
-[data-tema="midnight"].dark h2,
-[data-tema="midnight"].dark h3,
-[data-tema="midnight"].dark h4,
-[data-tema="midnight"].dark .text-display,
-[data-tema="midnight"].dark .text-title {
+:where(.dark[data-tema="midnight"], [data-tema="midnight"].dark) :where(h1, h2, h3, h4, .text-display, .text-title) {
   letter-spacing: -0.02em;
   font-weight: 700;
   color: #eaeaea;
