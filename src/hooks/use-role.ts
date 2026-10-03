@@ -21,7 +21,7 @@ export function useRole() {
   });
   const roles = data ?? [];
   const isSuperAdmin = roles.includes("super_admin");
-  const isAdmin = roles.includes("admin") || isSuperAdmin;
-  const isStudent = !isAdmin;
+  const isStudent = roles.includes("student");
+  const isAdmin = roles.includes("admin") || isSuperAdmin || !isStudent;
   return { roles, isAdmin, isSuperAdmin, isStudent, loading: authLoading || isLoading };
 }

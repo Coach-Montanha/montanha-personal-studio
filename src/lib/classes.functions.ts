@@ -610,24 +610,23 @@ export const studentCancelCheckIn = createServerFn({ method: "POST" })
     if (!stu) throw new Error("Perfil de aluno não encontrado");
 
     // Invoca RPC atômica cancel_class_checkin com fallback resiliente
-    const { data: res, error } = await supabase.rpc("cancel_class_checkin", {
-      p_session_id: data.sessionId,
-      p_student_id: stu.id,
-    });
+    try {
+      const { data: res, error } = await supabase.rpc("cancel_class_checkin", {
+        p_session_id: data.sessionId,
+        p_student_id: stu.id,
+      });
 
-    if (!error) {
-      return {
-        ok: true,
-        refunded: Boolean((res as any)?.refunded),
-        wasBonus: Boolean((res as any)?.was_bonus),
-        newBalance: (res as any)?.new_balance,
-        refundTransactionId: (res as any)?.refund_transaction_id ?? (res as any)?.transaction_id ?? null,
-      };
-    }
-
-    const isMissingRpc = error.message?.includes("schema cache") || error.message?.includes("not find") || (error as any)?.code === "42883";
-    if (!isMissingRpc) {
-      throw new Error(error.message);
+      if (!error && res) {
+        return {
+          ok: true,
+          refunded: Boolean((res as any)?.refunded),
+          wasBonus: Boolean((res as any)?.was_bonus),
+          newBalance: (res as any)?.new_balance,
+          refundTransactionId: (res as any)?.refund_transaction_id ?? (res as any)?.transaction_id ?? null,
+        };
+      }
+    } catch (rpcErr) {
+      console.warn("[cancelCheckIn] RPC fallback triggered:", rpcErr);
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

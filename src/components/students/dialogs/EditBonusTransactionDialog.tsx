@@ -17,6 +17,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { StudentBonusTransaction } from "@/integrations/supabase/types";
 
+import { useServerFn } from "@tanstack/react-start";
+import { editBonusTransaction } from "@/lib/bonus.functions";
+
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -37,6 +40,7 @@ export function EditBonusTransactionDialog({
   onSuccess,
 }: Props) {
   const qc = useQueryClient();
+  const editBonusFn = useServerFn(editBonusTransaction);
   const [amount, setAmount] = useState<string>("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,30 +70,16 @@ export function EditBonusTransactionDialog({
 
     setLoading(true);
     try {
-      // 1. Atualiza a transação
-      const { error: txErr } = await supabase
-        .from("student_bonus_transactions")
-        .update({
-          amount: parsed,
-          reason: reason || null,
-        })
-        .eq("id", transaction.id);
+      const res = await editBonusFn({
+        data: {
+          transactionId: transaction.id,
+          studentId,
+          newAmount: parsed,
+          reason: reason || undefined,
+        },
+      });
 
-      if (txErr) throw txErr;
-
-      // 2. Atualiza o saldo do aluno caso tenha havido alteração no valor
-      if (delta !== 0) {
-        const { error: stErr } = await supabase
-          .from("students")
-          .update({
-            bonus_checkins_balance: previewBalance,
-          })
-          .eq("id", studentId);
-
-        if (stErr) throw stErr;
-      }
-
-      toast.success(`Transação atualizada com sucesso! Novo saldo: ${previewBalance}`);
+      toast.success(`Transação atualizada com sucesso! Novo saldo: ${res.newBalance}`);
       onOpenChange(false);
       qc.invalidateQueries({ queryKey: ["bonus-transactions", studentId] });
       qc.invalidateQueries({ queryKey: ["student", studentId] });

@@ -281,3 +281,143 @@ export const bulkAdjustStudentBonus = createServerFn({ method: "POST" })
 
     return { successCount, errors };
   });
+
+// ------------------------------------------------------------------
+// 6. editBonusTransaction (Studio Coach / Admin)
+// ------------------------------------------------------------------
+
+export const editBonusTransaction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: { transactionId: string; studentId: string; newAmount: number; reason?: string }) => {
+    if (!input?.transactionId) throw new Error("transactionId requerido");
+    if (!input?.studentId) throw new Error("studentId requerido");
+    if (typeof input.newAmount !== "number" || isNaN(input.newAmount) || input.newAmount === 0) {
+      throw new Error("O novo valor deve ser um número inteiro diferente de zero");
+    }
+    return input;
+  })
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Fetch current transaction and student
+    const { data: tx, error: txErr } = await supabaseAdmin
+      .from("student_bonus_transactions")
+      .select("*")
+      .eq("id", data.transactionId)
+      .maybeSingle();
+
+    if (txErr || !tx) throw new Error("Transação não encontrada");
+
+    const { data: stu, error: stuErr } = await supabaseAdmin
+      .from("students")
+      .select("id, bonus_checkins_balance, user_id")
+      .eq("id", data.studentId)
+      .maybeSingle();
+
+    if (stuErr || !stu) throw new Error("Aluno não encontrado");
+    if (stu.user_id !== userId) {
+      const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: userId, _role: "admin" });
+      if (!isAdmin) throw new Error("Sem permissão para alterar este aluno");
+    }
+
+    const currentBalance = stu.bonus_checkins_balance ?? 0;
+    const delta = data.newAmount - tx.amount;
+    const targetBalance = currentBalance + delta;
+
+    if (targetBalance < 0) {
+      throw new Error(`O saldo do aluno não pode ficar negativo (ficaria: ${targetBalance}).`);
+    }
+
+    // 2. Update transaction
+    const { error: updTxErr } = await supabaseAdmin
+      .from("student_bonus_transactions")
+      .update({
+        amount: data.newAmount,
+        reason: data.reason || tx.reason,
+      })
+      .eq("id", data.transactionId);
+
+    if (updTxErr) throw new Error(updTxErr.message);
+
+    // 3. Update student balance
+    if (delta !== 0) {
+      const { error: updStuErr } = await supabaseAdmin
+        .from("students")
+        .update({
+          bonus_checkins_balance: targetBalance,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", data.studentId);
+
+      if (updStuErr) throw new Error(updStuErr.message);
+    }
+
+    return { ok: true, newBalance: targetBalance };
+  });
+
+// ------------------------------------------------------------------
+// 7. deleteBonusTransaction (Studio Coach / Admin)
+// ------------------------------------------------------------------
+
+export const deleteBonusTransaction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: { transactionId: string; studentId: string }) => {
+    if (!input?.transactionId) throw new Error("transactionId requerido");
+    if (!input?.studentId) throw new Error("studentId requerido");
+    return input;
+  })
+  .handler(async ({ data, context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Fetch current transaction and student
+    const { data: tx, error: txErr } = await supabaseAdmin
+      .from("student_bonus_transactions")
+      .select("*")
+      .eq("id", data.transactionId)
+      .maybeSingle();
+
+    if (txErr || !tx) throw new Error("Transação não encontrada");
+
+    const { data: stu, error: stuErr } = await supabaseAdmin
+      .from("students")
+      .select("id, bonus_checkins_balance, user_id")
+      .eq("id", data.studentId)
+      .maybeSingle();
+
+    if (stuErr || !stu) throw new Error("Aluno não encontrado");
+    if (stu.user_id !== userId) {
+      const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: userId, _role: "admin" });
+      if (!isAdmin) throw new Error("Sem permissão para alterar este aluno");
+    }
+
+    const currentBalance = stu.bonus_checkins_balance ?? 0;
+    const targetBalance = currentBalance - tx.amount;
+
+    if (targetBalance < 0) {
+      throw new Error(`Não é possível excluir: o aluno já utilizou esses créditos (saldo atual: ${currentBalance}).`);
+    }
+
+    // 2. Delete transaction
+    const { error: delErr } = await supabaseAdmin
+      .from("student_bonus_transactions")
+      .delete()
+      .eq("id", data.transactionId);
+
+    if (delErr) throw new Error(delErr.message);
+
+    // 3. Update student balance
+    const { error: updStuErr } = await supabaseAdmin
+      .from("students")
+      .update({
+        bonus_checkins_balance: targetBalance,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.studentId);
+
+    if (updStuErr) throw new Error(updStuErr.message);
+
+    return { ok: true, newBalance: targetBalance };
+  });
+

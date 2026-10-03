@@ -19,6 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { GrantBonusDialog } from "@/components/students/dialogs/GrantBonusDialog";
 import { TransferBonusDialog } from "@/components/students/dialogs/TransferBonusDialog";
 import { EditBonusTransactionDialog } from "@/components/students/dialogs/EditBonusTransactionDialog";
+import { useServerFn } from "@tanstack/react-start";
+import { deleteBonusTransaction } from "@/lib/bonus.functions";
 import { cn } from "@/lib/utils";
 import type { StudentBonusTransaction } from "@/integrations/supabase/types";
 
@@ -51,6 +53,7 @@ const TX_LABELS: Record<string, string> = {
 
 export function BonusBalancePanel({ studentId, studentName, bonusBalance }: Props) {
   const qc = useQueryClient();
+  const deleteBonusFn = useServerFn(deleteBonusTransaction);
   const [grantOpen, setGrantOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [editingTx, setEditingTx] = useState<StudentBonusTransaction | null>(null);
@@ -91,21 +94,12 @@ export function BonusBalancePanel({ studentId, studentName, bonusBalance }: Prop
 
     setDeletingLoading(true);
     try {
-      // 1. Deleta a transação do extrato
-      const { error: delErr } = await supabase
-        .from("student_bonus_transactions")
-        .delete()
-        .eq("id", deletingTx.id);
-
-      if (delErr) throw delErr;
-
-      // 2. Atualiza o saldo do aluno
-      const { error: stErr } = await supabase
-        .from("students")
-        .update({ bonus_checkins_balance: targetBalance })
-        .eq("id", studentId);
-
-      if (stErr) throw stErr;
+      await deleteBonusFn({
+        data: {
+          transactionId: deletingTx.id,
+          studentId,
+        },
+      });
 
       toast.success("Transação excluída e saldo ajustado com sucesso!");
       setDeletingTx(null);
