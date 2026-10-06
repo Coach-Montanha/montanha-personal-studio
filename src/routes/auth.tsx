@@ -356,8 +356,8 @@ function AuthPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="seu.email@exemplo.com"
-                        style={{ fontSize: "16px", color: "#0f172a", WebkitTextFillColor: "#0f172a" }}
-                        className="w-full h-11 pl-10 pr-4 bg-white border border-slate-300 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                        style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a" }}
+                        className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                       />
                     </div>
                     {resetError && <p className="text-xs text-red-400 font-semibold">{resetError}</p>}
@@ -409,8 +409,8 @@ function AuthPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Ex: Coach Silva"
-                        style={{ fontSize: "16px", color: "#0f172a", WebkitTextFillColor: "#0f172a" }}
-                        className="w-full h-11 pl-10 pr-4 bg-white border border-slate-300 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                        style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a" }}
+                        className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                       />
                     </div>
                   </div>
@@ -427,8 +427,8 @@ function AuthPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu.email@exemplo.com"
-                      style={{ fontSize: "16px", color: "#0f172a", WebkitTextFillColor: "#0f172a" }}
-                      className="w-full h-11 pl-10 pr-4 bg-white border border-slate-300 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                      style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a" }}
+                      className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                     />
                   </div>
                 </div>
@@ -448,8 +448,8 @@ function AuthPage() {
                       value={pin}
                       onChange={(e) => setPin(e.target.value)}
                       placeholder="••••••••"
-                      style={{ fontSize: "16px", color: "#0f172a", WebkitTextFillColor: "#0f172a" }}
-                      className="w-full h-11 pl-10 pr-12 bg-white border border-slate-300 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                      style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a" }}
+                      className="w-full h-11 pl-10 pr-12 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                     />
                     <button
                       type="button"
