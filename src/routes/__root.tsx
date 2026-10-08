@@ -19,31 +19,57 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { setImpersonate } from "@/hooks/use-impersonate";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
-
-
+import { Capacitor } from "@capacitor/core";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais" },
+      {
+        title:
+          "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais",
+      },
       {
         name: "description",
-        content:
-          "Gestão Financeira & Inteligência Operacional para Studios e Personais.",
+        content: "Gestão Financeira & Inteligência Operacional para Studios e Personais.",
       },
-      { property: "og:title", content: "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais" },
-      { property: "og:description", content: "Gestão Financeira & Inteligência Operacional para Studios e Personais." },
+      {
+        property: "og:title",
+        content:
+          "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais",
+      },
+      {
+        property: "og:description",
+        content: "Gestão Financeira & Inteligência Operacional para Studios e Personais.",
+      },
       { property: "og:url", content: "https://montanha-personal-studio.vercel.app/" },
       { property: "og:site_name", content: "Montanha Personal Studio" },
-      { name: "twitter:title", content: "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais" },
-      { name: "twitter:description", content: "Gestão Financeira & Inteligência Operacional para Studios e Personais." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a1e6323a-33d0-41ff-b98a-0744e285697c/id-preview-899e1b68--69e8a911-c73d-4b50-a7e4-fcc5a1be4536.lovable.app-1782521708855.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a1e6323a-33d0-41ff-b98a-0744e285697c/id-preview-899e1b68--69e8a911-c73d-4b50-a7e4-fcc5a1be4536.lovable.app-1782521708855.png" },
+      {
+        name: "twitter:title",
+        content:
+          "Montanha Personal Studio — Gestão Financeira & Inteligência Operacional para Studios e Personais",
+      },
+      {
+        name: "twitter:description",
+        content: "Gestão Financeira & Inteligência Operacional para Studios e Personais.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a1e6323a-33d0-41ff-b98a-0744e285697c/id-preview-899e1b68--69e8a911-c73d-4b50-a7e4-fcc5a1be4536.lovable.app-1782521708855.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a1e6323a-33d0-41ff-b98a-0744e285697c/id-preview-899e1b68--69e8a911-c73d-4b50-a7e4-fcc5a1be4536.lovable.app-1782521708855.png",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
-      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+      {
+        name: "robots",
+        content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      },
       { name: "google-site-verification", content: "GSC_VERIFICATION_PLACEHOLDER" },
       { name: "theme-color", content: "#F8F9FE", media: "(prefers-color-scheme: light)" },
       { name: "theme-color", content: "#050a14", media: "(prefers-color-scheme: dark)" },
@@ -118,7 +144,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   ),
   errorComponent: ({ error }) => {
     if (typeof window !== "undefined") {
-       
       console.error("Root errorComponent:", error);
     }
     const recover = async () => {
@@ -146,8 +171,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         <div className="max-w-md text-center">
           <h1 className="text-xl font-semibold">Algo deu errado</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Tente novamente em alguns instantes. Se você entrou como outro treinador
-            e ficou preso nesta tela, use o botão abaixo para sair e voltar ao login.
+            Tente novamente em alguns instantes. Se você entrou como outro treinador e ficou preso
+            nesta tela, use o botão abaixo para sair e voltar ao login.
           </p>
           {error?.message && (
             <div className="mt-3 max-h-32 overflow-auto rounded border border-destructive/20 bg-destructive/10 p-2 text-left text-xs font-mono text-destructive break-all">
@@ -172,7 +197,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       </div>
     );
   },
-
 });
 
 function RootShell({ children }: { children: ReactNode }) {
@@ -288,12 +312,25 @@ function RootShell({ children }: { children: ReactNode }) {
         <div id="app-preloader" aria-label="Carregando Montanha Personal Studio...">
           <div className="preloader-emblem-wrap">
             <div className="preloader-aura-ring"></div>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#10b981"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
             </svg>
           </div>
-          <div className="preloader-title">Montanha <span>Personal Studio</span></div>
-          <div className="preloader-subtitle">Gestão Financeira & Inteligência Operacional para Studios e Personais</div>
+          <div className="preloader-title">
+            Montanha <span>Personal Studio</span>
+          </div>
+          <div className="preloader-subtitle">
+            Gestão Financeira & Inteligência Operacional para Studios e Personais
+          </div>
           <div className="preloader-spinner"></div>
           <div className="preloader-progress-track">
             <div className="preloader-progress-bar"></div>
@@ -327,6 +364,21 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+type CapacitorWindow = Window & {
+  Capacitor?: {
+    isNativePlatform?: () => boolean;
+    isNative?: boolean;
+  };
+};
+
+function isCapacitorNative(): boolean {
+  if (typeof window === "undefined") return false;
+  const win = window as unknown as CapacitorWindow;
+  return Boolean(
+    Capacitor.isNativePlatform() || win.Capacitor?.isNativePlatform?.() || win.Capacitor?.isNative,
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
@@ -336,6 +388,8 @@ function RootComponent() {
   // Kill-switch: /qualquer-rota?reset=1 limpa impersonação/tenant/sessão e volta ao login.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const isNativeCapacitor = isCapacitorNative();
+
     const params = new URLSearchParams(window.location.search);
     const impersonateParam = params.get("impersonate");
     const trialParam = params.get("trial");
@@ -343,7 +397,30 @@ function RootComponent() {
     const nameParam = params.get("name");
     const passParam = params.get("pass");
 
-    if (trialParam === "1" && emailParam) {
+    // Feature 13: Sanitize dangerous parameters in native Capacitor wrapper or unauthorized contexts
+    if (isNativeCapacitor) {
+      let dirty = false;
+      if (params.has("impersonate")) {
+        params.delete("impersonate");
+        dirty = true;
+      }
+      if (params.has("access_token")) {
+        params.delete("access_token");
+        dirty = true;
+      }
+      if (params.has("refresh_token")) {
+        params.delete("refresh_token");
+        dirty = true;
+      }
+      if (dirty) {
+        const cleanSearch = params.toString() ? `?${params.toString()}` : "";
+        window.history.replaceState(
+          {},
+          "",
+          window.location.pathname + cleanSearch + window.location.hash,
+        );
+      }
+    } else if (trialParam === "1" && emailParam) {
       const email = emailParam.trim().toLowerCase();
       const name = nameParam ? decodeURIComponent(nameParam) : email.split("@")[0];
       setImpersonate({
@@ -353,29 +430,45 @@ function RootComponent() {
         startedAt: Date.now(),
       });
       const expiresAt = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
-      localStorage.setItem(`ecosystem_sub_eduflow-finance_${email}`, JSON.stringify({
-        payment_status: 'AVALIAÇÃO',
-        access_expires_at: expiresAt,
-        is_active: true
-      }));
+      localStorage.setItem(
+        `ecosystem_sub_eduflow-finance_${email}`,
+        JSON.stringify({
+          payment_status: "AVALIAÇÃO",
+          access_expires_at: expiresAt,
+          is_active: true,
+        }),
+      );
       if (passParam && passParam.length >= 6) {
         supabase.auth.signInWithPassword({ email, password: passParam }).then(({ error }) => {
           if (error) {
             supabase.auth.signUp({
               email,
               password: passParam,
-              options: { data: { name } }
+              options: { data: { name } },
             });
           }
         });
       }
     } else if (impersonateParam && impersonateParam.trim()) {
-      const email = impersonateParam.trim().toLowerCase();
-      setImpersonate({
-        targetEmail: email,
-        targetUserId: `support_${email}`,
-        superAdminEmail: "admin@montanha.app",
-        startedAt: Date.now(),
+      // Feature 13: Sanitize/strip ?impersonate= when unauthorized
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session?.user?.email) {
+          params.delete("impersonate");
+          const cleanSearch = params.toString() ? `?${params.toString()}` : "";
+          window.history.replaceState(
+            {},
+            "",
+            window.location.pathname + cleanSearch + window.location.hash,
+          );
+          return;
+        }
+        const email = impersonateParam.trim().toLowerCase();
+        setImpersonate({
+          targetEmail: email,
+          targetUserId: `support_${email}`,
+          superAdminEmail: session.user.email,
+          startedAt: Date.now(),
+        });
       });
     }
 
@@ -398,7 +491,11 @@ function RootComponent() {
         Object.keys(localStorage)
           .filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
           .forEach((k) => localStorage.removeItem(k));
-        try { await supabase.auth.signOut(); } catch { /* ignore */ }
+        try {
+          await supabase.auth.signOut();
+        } catch {
+          /* ignore */
+        }
       } finally {
         window.location.replace("/auth");
       }
@@ -426,15 +523,35 @@ function RootComponent() {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
     if (process.env.NODE_ENV !== "production") return;
 
+    // Feature 12 (Service Worker Native Guard):
+    // No WebView nativo do Capacitor (Android/iOS), o Service Worker é desativado para evitar
+    // loops de recarregamento, cache stale e incompatibilidade com o shell estático local.
+    const isNativePlatform = isCapacitorNative();
+
+    if (isNativePlatform) {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister().catch(() => {});
+          }
+        })
+        .catch(() => {});
+      return;
+    }
+
     // URL fixa para o Service Worker (sem query params dinâmicos para evitar loop de recarregamento).
     // updateViaCache: "none" força o navegador a verificar o /sw.js no servidor ignorando cache HTTP.
     navigator.serviceWorker
       .register("/sw.js", { updateViaCache: "none" })
       .then((reg) => {
         // Checagem periódica silenciosa em segundo plano a cada 15 minutos
-        const intervalId = setInterval(() => {
-          reg.update().catch(() => {});
-        }, 15 * 60 * 1000);
+        const intervalId = setInterval(
+          () => {
+            reg.update().catch(() => {});
+          },
+          15 * 60 * 1000,
+        );
         return () => clearInterval(intervalId);
       })
       .catch((err) => {
@@ -459,13 +576,16 @@ function RootComponent() {
 
     // Limpeza preventiva de qualquer cache antigo no dispositivo do aluno
     if ("caches" in window) {
-      caches.keys().then((names) => {
-        names.forEach((name) => {
-          if (name !== "coach-montanha-pwa-v5") {
-            caches.delete(name);
-          }
-        });
-      }).catch(() => {});
+      caches
+        .keys()
+        .then((names) => {
+          names.forEach((name) => {
+            if (name !== "coach-montanha-pwa-v5") {
+              caches.delete(name);
+            }
+          });
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -483,5 +603,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-
-

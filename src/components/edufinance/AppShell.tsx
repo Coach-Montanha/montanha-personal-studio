@@ -24,9 +24,9 @@ import {
   Pin,
   PinOff,
   Library,
-  Timer, Trophy, } from "lucide-react";
-
-
+  Timer,
+  Trophy,
+} from "lucide-react";
 
 import { useTheme } from "@/hooks/use-theme";
 
@@ -66,15 +66,33 @@ const nav: NavItem[] = [
   { to: "/agenda", label: "Turmas & Agenda", icon: Calendar, section: "Aulas", module: "studio" },
   { to: "/programs", label: "Programas", icon: ClipboardList, section: "Aulas", module: "studio" },
 
-  { to: "/personal-trainer", label: "Personal Trainer", icon: Dumbbell, exact: true, section: "Personal Trainer", module: "pt" },
-  { to: "/personal-trainer/checkin", label: "⚡ Check-in Rápido", icon: Zap, section: "Personal Trainer", module: "pt" },
-  { to: "/personal-trainer/biblioteca", label: "Biblioteca", icon: Library, section: "Personal Trainer", module: "pt" },
+  {
+    to: "/personal-trainer",
+    label: "Personal Trainer",
+    icon: Dumbbell,
+    exact: true,
+    section: "Personal Trainer",
+    module: "pt",
+  },
+  {
+    to: "/personal-trainer/checkin",
+    label: "⚡ Check-in Rápido",
+    icon: Zap,
+    section: "Personal Trainer",
+    module: "pt",
+  },
+  {
+    to: "/personal-trainer/biblioteca",
+    label: "Biblioteca",
+    icon: Library,
+    section: "Personal Trainer",
+    module: "pt",
+  },
 
   { to: "/financeiro", label: "Financeiro", icon: Wallet, section: "Gestão", module: "financeiro" },
   { to: "/crm", label: "CRM", icon: Megaphone, section: "Gestão", module: "crm" },
   { to: "/desafios", label: "Desafios", icon: Trophy, section: "Gestão" },
 ];
-
 
 const LS_COLLAPSED = "edufinance:sidebar-collapsed";
 const LS_HOVER = "edufinance:sidebar-hover-expand";
@@ -90,15 +108,25 @@ export function AppShell({ children }: { children: ReactNode }) {
     try {
       setCollapsedState(localStorage.getItem(LS_COLLAPSED) === "1");
       setHoverExpandState(localStorage.getItem(LS_HOVER) === "1");
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
   const setCollapsed = (v: boolean) => {
     setCollapsedState(v);
-    try { localStorage.setItem(LS_COLLAPSED, v ? "1" : "0"); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(LS_COLLAPSED, v ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
   };
   const setHoverExpand = (v: boolean) => {
     setHoverExpandState(v);
-    try { localStorage.setItem(LS_HOVER, v ? "1" : "0"); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(LS_HOVER, v ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
   };
 
   // Desktop: show as icon-strip when collapsed AND not hovering (if hoverExpand on)
@@ -166,6 +194,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   async function signOut() {
     await qc.cancelQueries();
     qc.clear();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("edufinance.impersonate");
+      localStorage.removeItem("edufinance.tenantScope");
+      localStorage.removeItem("edufinance.profileMode");
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
+        .forEach((k) => localStorage.removeItem(k));
+    }
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
@@ -174,6 +210,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     setImpersonate(null);
     await qc.cancelQueries();
     qc.clear();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("edufinance.impersonate");
+      localStorage.removeItem("edufinance.tenantScope");
+    }
     await supabase.auth.signOut();
     window.location.assign("/auth");
   }
@@ -197,22 +237,41 @@ export function AppShell({ children }: { children: ReactNode }) {
           collapsed && hoverExpand && hovering && "md:shadow-2xl",
         )}
       >
-        <div className={cn("flex min-h-12 items-center gap-2 border-b border-sidebar-border py-2", iconOnly ? "justify-center px-1.5" : "px-3")}>
+        <div
+          className={cn(
+            "flex min-h-12 items-center gap-2 border-b border-sidebar-border py-2 pt-[calc(0.5rem+env(safe-area-inset-top,0px))]",
+            iconOnly ? "justify-center px-1.5" : "px-3",
+          )}
+        >
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary">
             <GraduationCap className="h-4 w-4 text-primary-foreground" />
           </div>
           {!iconOnly && (
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold leading-tight truncate">Montanha Personal Studio</div>
-              <div className="text-[9px] font-medium uppercase tracking-wider text-sidebar-foreground/60 truncate" title="Gestão Financeira & Inteligência Operacional para Studios e Personais">
+              <div className="text-xs font-bold leading-tight truncate">
+                Montanha Personal Studio
+              </div>
+              <div
+                className="text-[9px] font-medium uppercase tracking-wider text-sidebar-foreground/60 truncate"
+                title="Gestão Financeira & Inteligência Operacional para Studios e Personais"
+              >
                 Gestão & Inteligência
               </div>
             </div>
           )}
         </div>
 
-        <nav ref={spotlightNavRef} className={cn("relative flex-1 space-y-0.5 overflow-y-auto py-2", iconOnly ? "px-1.5" : "px-2.5")}>
-          <span ref={spotlightBarRef} className="pointer-events-none absolute left-1 w-1 rounded-sm bg-primary shadow-[2px_0_5px_rgba(249,115,22,.8),4px_0_11px_rgba(249,115,22,.45)] transition-[top,height] duration-300 ease-[cubic-bezier(.4,0,.2,1)]" />
+        <nav
+          ref={spotlightNavRef}
+          className={cn(
+            "relative flex-1 space-y-0.5 overflow-y-auto py-2",
+            iconOnly ? "px-1.5" : "px-2.5",
+          )}
+        >
+          <span
+            ref={spotlightBarRef}
+            className="pointer-events-none absolute left-1 w-1 rounded-sm bg-primary shadow-[2px_0_5px_rgba(249,115,22,.8),4px_0_11px_rgba(249,115,22,.45)] transition-[top,height] duration-300 ease-[cubic-bezier(.4,0,.2,1)]"
+          />
           {activeProfileLabel && !iconOnly && (
             <div className="mb-2 flex items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1 text-primary-foreground shadow-sm">
               <UserCircle2 className="h-3.5 w-3.5 shrink-0" />
@@ -225,7 +284,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           )}
           {activeProfileLabel && iconOnly && (
-            <div className="mb-2 flex justify-center rounded-lg bg-primary p-1.5 text-primary-foreground" title={`Perfil: ${activeProfileLabel}`}>
+            <div
+              className="mb-2 flex justify-center rounded-lg bg-primary p-1.5 text-primary-foreground"
+              title={`Perfil: ${activeProfileLabel}`}
+            >
               <UserCircle2 className="h-3.5 w-3.5" />
             </div>
           )}
@@ -286,7 +348,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </nav>
 
-        <div className={cn("border-t border-sidebar-border", iconOnly ? "p-1.5" : "p-2.5")}>
+        <div
+          className={cn(
+            "border-t border-sidebar-border pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]",
+            iconOnly ? "p-1.5" : "p-2.5",
+          )}
+        >
           {isSuperAdmin && !iconOnly && <TenantScopeSelector />}
           {isSuperAdmin && (
             <Link
@@ -336,13 +403,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             {!iconOnly && <span>{hoverExpand ? "Expandir ao passar mouse" : "Barra fixa"}</span>}
           </button>
 
-          <div className={cn(
-            "mt-1.5 flex items-center gap-1.5 rounded-lg bg-sidebar-accent",
-            iconOnly ? "justify-center p-1.5" : "justify-between px-2.5 py-1.5",
-          )}>
+          <div
+            className={cn(
+              "mt-1.5 flex items-center gap-1.5 rounded-lg bg-sidebar-accent",
+              iconOnly ? "justify-center p-1.5" : "justify-between px-2.5 py-1.5",
+            )}
+          >
             {!iconOnly && (
               <div className="min-w-0">
-                <div data-testid="user-email-display" className="truncate text-[11px] font-medium leading-tight">{user?.email ?? "Usuário"}</div>
+                <div
+                  data-testid="user-email-display"
+                  className="truncate text-[11px] font-medium leading-tight"
+                >
+                  {user?.email ?? "Usuário"}
+                </div>
                 <div className="text-[9px] text-sidebar-foreground/60 leading-tight">Conectado</div>
               </div>
             )}
@@ -366,8 +440,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       {/* Main */}
-      <div className={cn("flex min-h-screen flex-1 min-w-0 max-w-full flex-col overflow-x-clip transition-[padding] duration-200", mainPad)}>
-        <header className="sticky top-0 z-20 flex h-14 w-full max-w-full min-w-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur md:px-6">
+      <div
+        className={cn(
+          "flex min-h-screen flex-1 min-w-0 max-w-full flex-col overflow-x-clip transition-[padding] duration-200",
+          mainPad,
+        )}
+      >
+        <header className="sticky top-0 z-20 flex min-h-14 h-[calc(3.5rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] w-full max-w-full min-w-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur md:px-6">
           <Button
             variant="ghost"
             size="icon"
@@ -385,14 +464,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             title={collapsed ? "Expandir barra lateral" : "Recolher barra lateral"}
             aria-label={collapsed ? "Expandir barra lateral" : "Recolher barra lateral"}
           >
-            {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+            {collapsed ? (
+              <PanelLeftOpen className="h-5 w-5" />
+            ) : (
+              <PanelLeftClose className="h-5 w-5" />
+            )}
           </Button>
           <h1 className="truncate text-sm font-semibold text-foreground">
             {nav.find((n) => isActive(n.to, n.exact))?.label ??
               (pathname === "/settings" ? "Configurações" : "Montanha Personal Studio")}
           </h1>
           <div className="ml-auto flex items-center gap-1.5">
-            <GlobalSearch items={visibleNav.map((n) => ({ to: n.to, label: n.label, section: n.section }))} />
+            <GlobalSearch
+              items={visibleNav.map((n) => ({ to: n.to, label: n.label, section: n.section }))}
+            />
             <NotificationCenter />
             <button
               onClick={toggleTheme}
@@ -411,11 +496,18 @@ export function AppShell({ children }: { children: ReactNode }) {
         {viewingOtherTenant && (
           <div className="flex flex-wrap items-center gap-2 border-b border-primary/30 bg-primary/10 px-4 py-2 text-xs text-primary md:px-6">
             <Eye className="h-3.5 w-3.5" />
-            <span className="font-semibold">Modo suporte (Super_Admin):</span> você está agindo sobre os dados de{" "}
-            <span className="font-mono">{scope === "all" ? "TODOS os treinadores" : scope.slice(0, 8) + "…"}</span>. Edições e exclusões são aplicadas nesta conta — volte para "Super_Admin" para gerir seus próprios registros.
+            <span className="font-semibold">Modo suporte (Super_Admin):</span> você está agindo
+            sobre os dados de{" "}
+            <span className="font-mono">
+              {scope === "all" ? "TODOS os treinadores" : scope.slice(0, 8) + "…"}
+            </span>
+            . Edições e exclusões são aplicadas nesta conta — volte para "Super_Admin" para gerir
+            seus próprios registros.
           </div>
         )}
-        <main className="flex-1 min-w-0 max-w-full p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-clip">{children}</main>
+        <main className="flex-1 min-w-0 max-w-full p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:p-4 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:p-6 lg:p-8 overflow-x-clip">
+          {children}
+        </main>
       </div>
 
       <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />

@@ -63,10 +63,10 @@ export function PortalShell({ children }: { children: ReactNode }) {
     loadingTypes || !userTypes
       ? "studio"
       : userTypes.studio && userTypes.pt
-      ? "both"
-      : userTypes.pt
-      ? "pt"
-      : "studio";
+        ? "both"
+        : userTypes.pt
+          ? "pt"
+          : "studio";
 
   const nav = mode === "both" ? bothNav : mode === "pt" ? ptNav : studioNav;
   const areaLabel =
@@ -87,7 +87,11 @@ export function PortalShell({ children }: { children: ReactNode }) {
 
   const setCollapsed = (v: boolean) => {
     setCollapsedState(v);
-    try { localStorage.setItem(LS_COLLAPSED, v ? "1" : "0"); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(LS_COLLAPSED, v ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
   };
 
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -103,6 +107,14 @@ export function PortalShell({ children }: { children: ReactNode }) {
     await qc.cancelQueries();
     qc.clear();
     clearPortalCache(user?.id);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("edufinance.impersonate");
+      localStorage.removeItem("edufinance.tenantScope");
+      localStorage.removeItem("edufinance.profileMode");
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
+        .forEach((k) => localStorage.removeItem(k));
+    }
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
@@ -130,7 +142,9 @@ export function PortalShell({ children }: { children: ReactNode }) {
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <div className="truncate text-[0.9375rem] font-bold leading-none tracking-tight">Meu Studio</div>
+              <div className="truncate text-[0.9375rem] font-bold leading-none tracking-tight">
+                Meu Studio
+              </div>
               <div className="text-overline mt-1.5 text-sidebar-foreground/55">{areaLabel}</div>
             </div>
           )}
@@ -155,9 +169,19 @@ export function PortalShell({ children }: { children: ReactNode }) {
                 )}
               >
                 {active && !collapsed && (
-                  <span aria-hidden className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary"
+                  />
                 )}
-                <Icon className={cn("h-[1.125rem] w-[1.125rem] shrink-0 transition-ui", active ? "text-primary" : "text-sidebar-foreground/55 group-hover:text-sidebar-foreground")} />
+                <Icon
+                  className={cn(
+                    "h-[1.125rem] w-[1.125rem] shrink-0 transition-ui",
+                    active
+                      ? "text-primary"
+                      : "text-sidebar-foreground/55 group-hover:text-sidebar-foreground",
+                  )}
+                />
                 {!collapsed && <span className="truncate">{item.label}</span>}
                 {collapsed && <span className="sr-only">{item.label}</span>}
               </Link>
@@ -171,7 +195,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
               className={cn(
                 "group relative flex w-full items-center rounded-xl text-sm font-bold outline-hidden transition-all duration-200 active:scale-[0.98]",
                 "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/25 border border-orange-400/40",
-                collapsed ? "h-11 justify-center px-2" : "min-h-11 gap-3 px-3 py-2.5"
+                collapsed ? "h-11 justify-center px-2" : "min-h-11 gap-3 px-3 py-2.5",
               )}
             >
               <Timer className="h-[1.125rem] w-[1.125rem] shrink-0 group-hover:rotate-12 transition-transform" />
@@ -210,14 +234,18 @@ export function PortalShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-x-clip">
-        <header className="sticky top-0 z-20 flex h-16 w-full max-w-full min-w-0 items-center gap-2 border-b border-border bg-background/85 px-3 backdrop-blur-md md:px-6">
+        <header className="sticky top-0 z-20 flex min-h-16 h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] w-full max-w-full min-w-0 items-center gap-2 border-b border-border bg-background/85 px-3 backdrop-blur-md md:px-6">
           <button
             onClick={() => setCollapsed(!collapsed)}
             title={collapsed ? "Expandir barra lateral" : "Recolher barra lateral"}
             aria-label={collapsed ? "Expandir barra lateral" : "Recolher barra lateral"}
             className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-muted-foreground outline-hidden transition-ui hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95"
           >
-            {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+            {collapsed ? (
+              <PanelLeftOpen className="h-5 w-5" />
+            ) : (
+              <PanelLeftClose className="h-5 w-5" />
+            )}
           </button>
           <h1 className="min-w-0 truncate text-[0.9375rem] font-bold tracking-tight text-foreground">
             {nav.find((n) => isActive(n.to, n.exact))?.label ?? "Portal"}
@@ -249,7 +277,9 @@ export function PortalShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </header>
-        <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 lg:p-8 overflow-x-clip">{children}</main>
+        <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:p-6 lg:p-8 overflow-x-clip">
+          {children}
+        </main>
       </div>
 
       <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />

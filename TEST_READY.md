@@ -1,166 +1,187 @@
-# Test Suite Readiness Report: Sistema de Check-ins Bônus
-**Project:** Montanha Personal Studio  
-**Date:** September 2026  
+# Test Suite Readiness Report: Montanha Personal Studio Mobile Wrapper
+**Project:** Montanha Personal Studio Mobile Wrapper  
+**Date:** October 2026  
 **Status:** READY / VERIFIED (Exit Code 0)  
-**Total Tests Authored & Verified:** 108 Tests (Bun Engine) + 25 Tests (Playwright Matrix across 5 browsers)  
+**Total Tests Authored & Verified:** 398 Tests (Bun Engine across 12 files) — 100% Passing  
 
 ---
 
 ## 1. Test Suite Summary
 
-The E2E Test Suite for the **Bonus Check-in System** is fully authored, validated, and ready for continuous regression and milestone verification across all 4 tiers of the systematic testing methodology.
+The comprehensive, requirement-driven, opaque-box E2E test suite for the **Montanha Personal Studio Mobile Wrapper** is fully authored, verified, and hardened across all 5 tiers of the systematic testing methodology (Feature Coverage, Boundary & Corner, Cross-Feature Pairwise, Real-World Scenarios, and Adversarial Coverage Hardening).
 
-| Metric | Bun Test Suite (`tests/e2e/bonus-checkins.test.ts`) | Playwright Browser Spec (`e2e/bonus-checkins.spec.ts`) |
-|:---|:---:|:---:|
-| **Execution Time** | ~270 ms (Sub-second) | Configured for CI/CD matrix |
-| **Total Test Cases** | **108 passed / 0 failed** | **5 tests x 5 browsers = 25 scenarios** |
-| **Expect Calls** | **219 assertions** | DOM Assertions |
-| **Dependencies** | Self-contained, zero-browser | Chromium, Firefox, WebKit, Mobile |
-| **Target Track** | Business rules, RPC invariants, Concurrency, Quotas | UI dialogs, DOM rendering, Toasts, Portal views |
+| Metric | Bun Mobile Test Suite (`tests/e2e-mobile/`) |
+|:---|:---:|
+| **Execution Time** | **~10.8 s** (Fast, deterministic across 12 files) |
+| **Total Test Cases** | **398 passed / 0 failed** (100% pass rate) |
+| **Expect Calls** | **1,399 assertions** |
+| **Dependencies** | Self-contained, zero-browser, zero-emulator |
+| **Runner Command** | `bun test tests/e2e-mobile/` |
+| **Exit Code** | **0 (Success)** |
 
 ---
 
 ## 2. Test Execution Commands
 
-### Primary Test Runner (Fast & Deterministic — Recommended)
-Runs all 108 tests covering Features F1-F11 and Edge Cases E1-E14:
+### Primary Test Runner (Full Suite across Tiers 1-4)
 ```bash
-bun test tests/e2e/bonus-checkins.test.ts
+bun test tests/e2e-mobile/
 ```
 
-### Full E2E Browser Test Runner (Playwright)
-Executes browser automation against the dev/preview server:
+### Granular Tier Execution
 ```bash
-bun run test:e2e e2e/bonus-checkins.spec.ts
-```
+# Tier 1: Feature Coverage (F1 to F13) — 67 Tests
+bun test tests/e2e-mobile/tier1-features.test.ts
 
-### Build & Compilation Check
-```bash
-bun run build
+# Tier 2: Boundary & Corner Cases (E1 to E13) — 65 Tests
+bun test tests/e2e-mobile/tier2-boundaries.test.ts
+
+# Tier 3: Pairwise Combinations (P1 to P15) — 15 Tests
+bun test tests/e2e-mobile/tier3-pairwise.test.ts
+
+# Tier 4: Real-World Scenarios (S1 to S10) — 10 Tests
+bun test tests/e2e-mobile/tier4-scenarios.test.ts
 ```
 
 ---
 
 ## 3. 4-Tier Coverage Checklist & Verification Matrix
 
-### Tier 1: Feature Coverage (F1 to F11) — 55 Tests
-- [x] **F1: Saldo de Bônus no Perfil do Aluno** (5/5 tests passing)
-  - `T1.1.1`: Aluno recém-criado deve iniciar com saldo bônus padrão de 0
-  - `T1.1.2`: Saldo bônus deve ser consultado com precisão pelo ID do aluno
-  - `T1.1.3`: Saldo bônus é cumulativo através de múltiplos créditos sucessivos
-  - `T1.1.4`: Saldo bônus não expira automaticamente (independente de vigência)
-  - `T1.1.5`: Saldo de bônus permanece desvinculado de planos ou pagamentos mensais
-- [x] **F2: Concessão e Ajuste de Bônus pelo Coach** (5/5 tests passing)
-  - `T1.2.1`: Coach concede créditos bônus (+X) com sucesso e atualiza saldo
-  - `T1.2.2`: Concessão registra motivo (reason) e ID do autor (created_by)
-  - `T1.2.3`: Rejeição de concessão com valor não positivo (amount <= 0)
-  - `T1.2.4`: Ajuste absoluto de saldo pelo coach para um novo valor válido
-  - `T1.2.5`: Rejeição de ajuste que resulte em saldo negativo
-- [x] **F3: Ledger / Extrato de Transações de Bônus** (5/5 tests passing)
-  - `T1.3.1`: Cada concessão gera registro imutável com tipo 'grant' e amount positivo
-  - `T1.3.2`: Cada débito de check-in gera registro com tipo 'debit' e amount negativo (-1)
-  - `T1.3.3`: Cada estorno de cancelamento gera registro com tipo 'refund' (+1)
-  - `T1.3.4`: Cada transferência gera dois registros vinculados ('transfer_out' e 'transfer_in')
-  - `T1.3.5`: Extrato de transações preserva ordem cronológica e integridade de saldo acumulado
-- [x] **F4: Transferência Administrativa de Bônus** (5/5 tests passing)
-  - `T1.4.1`: Transferência válida debita origem e credita destino atomicamente
-  - `T1.4.2`: Soma total dos saldos do sistema permanece invariante durante a transferência
-  - `T1.4.3`: Transferência grava motivo e referências de ambos os alunos no ledger
-  - `T1.4.4`: Rejeição de transferência se o valor for menor ou igual a zero (amount <= 0)
-  - `T1.4.5`: Rejeição de transferência entre alunos de studios/tenants diferentes
-- [x] **F5: Modal Interativo de Decisão de Reserva** (5/5 tests passing)
-  - `T1.5.1`: Modal é acionado quando aluno possui saldo bônus > 0 ao clicar em agendar
-  - `T1.5.2`: Opção "Usar Cota do Plano" selecionada prossegue via plano sem debitar bônus
-  - `T1.5.3`: Opção "Usar Check-in Bônus" selecionada prossegue via bônus debitando 1 crédito
-  - `T1.5.4`: Fechar ou cancelar o modal não realiza agendamento nem altera saldos
-  - `T1.5.5`: Modal exibe transparência de saldo restante antes e após a confirmação
-- [x] **F6: Agendamento sem Plano Ativo** (5/5 tests passing)
-  - `T1.6.1`: Aluno com status ativo mas sem plan_id consegue agendar aula usando bônus
-  - `T1.6.2`: Aluno sem plano e com saldo bônus = 0 é bloqueado com erro apropriado
-  - `T1.6.3`: Agendamento sem plano com bônus cria presença com is_bonus = true
-  - `T1.6.4`: Aluno com plano expirado consegue agendar utilizando saldo de bônus
-  - `T1.6.5`: Agendamento sem plano respeita a capacidade máxima da turma normalmente
-- [x] **F7: Débito Seguro de Vaga com Bônus** (5/5 tests passing)
-  - `T1.7.1`: Reserva com bônus debita exatamente 1 crédito do saldo do aluno
-  - `T1.7.2`: Reserva registra class_attendance com is_bonus = true
-  - `T1.7.3`: Reserva decrementa o número de vagas restantes na sessão
-  - `T1.7.4`: Falha na validação de capacidade reverte atomicamente sem debitar bônus
-  - `T1.7.5`: Tentativa de agendamento em turma lotada não cria lançamento de débito no ledger
-- [x] **F8: Estorno Automático em Cancelamento** (5/5 tests passing)
-  - `T1.8.1`: Cancelamento tempestivo (now <= closes) de reserva com bônus estorna +1 crédito
-  - `T1.8.2`: Estorno gera lançamento no ledger com type = 'refund'
-  - `T1.8.3`: Cancelamento remove a presença do aluno da sessão
-  - `T1.8.4`: Cancelamento restaura a vaga disponível na sessão da turma
-  - `T1.8.5`: Cancelamento de aula agendada com plano regular NÃO estorna saldo de bônus
-- [x] **F9: Visibilidade do Saldo no Portal** (5/5 tests passing)
-  - `T1.9.1`: Componente de saldo exibe contagem precisa de bônus disponíveis
-  - `T1.9.2`: Exibe badge indicativo "Sem expiração"
-  - `T1.9.3`: Saldo zero é tratado com clareza visual e sem erros de renderização
-  - `T1.9.4`: Atualização reativa do saldo no dashboard após conclusão de agendamento
-  - `T1.9.5`: Atualização reativa do saldo no dashboard após cancelamento com estorno
-- [x] **F10: Saldo e Extrato na Aba Meus Dados** (5/5 tests passing)
-  - `T1.10.1`: Perfil do aluno renderiza seção dedicada ao saldo de check-ins bônus
-  - `T1.10.2`: Extrato detalhado exibe data, tipo de operação e descrição de cada movimentação
-  - `T1.10.3`: Distinção visual entre créditos (+X positivo) e débitos (-X negativo)
-  - `T1.10.4`: Tratamento de histórico vazio (aluno sem nenhuma transação prévia)
-  - `T1.10.5`: Histórico reflete imediatamente novas concessões ou transferências recebidas
-- [x] **F11: Indicador de Bônus no Painel do Studio** (5/5 tests passing)
-  - `T1.11.1`: Tabela geral de alunos exibe chip/badge com a quantidade de bônus de cada aluno
-  - `T1.11.2`: Prontuário do aluno exibe card administrativo de saldo e botão "Conceder Bônus"
-  - `T1.11.3`: Botão de ação rápida "Transferir Bônus" disponível no perfil do aluno
-  - `T1.11.4`: Filtro ou busca de alunos na listagem preserva visualização correta do bônus
-  - `T1.11.5`: Atualização em tempo real do badge no painel do coach após concessão administrativa
-
-### Tier 2: Boundary & Corner Cases (E1 to E14) — 28 Tests
-- [x] **E1: Duplo clique rápido no agendamento (Idempotência)** (`T2.E1.1`, `T2.E1.2`)
-- [x] **E2: Concorrência na última vaga restante (capacity - filled == 1)** (`T2.E2.1`, `T2.E2.2`)
-- [x] **E3: Cancelamento fora do prazo permitido (now > closes)** (`T2.E3.1`, `T2.E3.2`)
-- [x] **E4: Cancelamento dentro da janela e no limite (now <= closes)** (`T2.E4.1`, `T2.E4.2`)
-- [x] **E5: Cancelamento de aula regular e liberação de cota** (`T2.E5.1`, `T2.E5.2`)
-- [x] **E6: Transferência com saldo insuficiente (disponível vs solicitado)** (`T2.E6.1`, `T2.E6.2`)
-- [x] **E7: Transferência para o próprio aluno (from_id == to_id)** (`T2.E7.1`, `T2.E7.2`)
-- [x] **E8: Concorrência entre transferência de saldo e agendamento** (`T2.E8.1`, `T2.E8.2`)
-- [x] **E9: Decisão de reserva com plano ativo e bônus disponíveis** (`T2.E9.1`, `T2.E9.2`)
-- [x] **E10: Agendamento com cota de plano esgotada via bônus** (`T2.E10.1`, `T2.E10.2`)
-- [x] **E11: Agendamento de aluno sem plano ativo** (`T2.E11.1`, `T2.E11.2`)
-- [x] **E12: Regra de multi-checkin e unicidade de agendamento** (`T2.E12.1`, `T2.E12.2`)
-- [x] **E13: Preservação de saldo em aluno arquivado / soft-deleted** (`T2.E13.1`, `T2.E13.2`)
-- [x] **E14: Ajuste de saldo para zero com aulas futuras agendadas** (`T2.E14.1`, `T2.E14.2`)
-
-### Tier 3: Cross-Feature Pairwise Combinations — 15 Tests
-- [x] `T3.1`: Concessão de bônus seguida de transferência e agendamento pelo destinatário
-- [x] `T3.2`: Transferência total de saldo seguida de tentativa de agendamento pela origem (bloqueio por saldo zero)
-- [x] `T3.3`: Agendamento com bônus seguido de cancelamento tempestivo e novo agendamento com crédito reciclado
-- [x] `T3.4`: Aluno com plano e bônus: agendamento 1 com plano + agendamento 2 com bônus
-- [x] `T3.5`: Isolamento de cota: computeQuotaUsage ignora presenças com is_bonus = true
-- [x] `T3.6`: Cancelamento de aula com plano vs cancelamento de aula com bônus no mesmo aluno
-- [x] `T3.7`: Concessão múltipla com ajustes intermediários e auditoria contábil precisa
-- [x] `T3.8`: Aluno sem plano agenda com bônus, adquire plano depois: cota inicial do plano intacta
-- [x] `T3.9`: Transferência em cadeia (A -> B -> C) com auditoria contábil completa
-- [x] `T3.10`: Exaustão sequencial de bônus até zero e bloqueio na tentativa seguinte
-- [x] `T3.11`: Agendamento com bônus em múltiplas sessões e cancelamento seletivo de uma delas
-- [x] `T3.12`: Transação de estorno vinculada à sessão cancelada no ledger
-- [x] `T3.13`: Tentativa de cancelamento de aula passada não é permitida pelo aluno
-- [x] `T3.14`: Ajuste negativo pelo coach não pode ultrapassar o saldo atual disponível
-- [x] `T3.15`: Interação de cancelamento pelo coach (administrativo) estorna bônus mesmo após fechar janela
-
-### Tier 4: Real-World Application Scenarios — 10 Tests
-- [x] `T4.1`: Jornada 1 — Promoção Sorteio: Coach credita 2 bônus -> Aluno agenda aula via modal -> Saldo decrementa
-- [x] `T4.2`: Jornada 2 — Ciclo de Vida Completo: Aluno sem plano ganha bônus -> Reserva -> Cancela tempestivamente -> Bônus estornado -> Reserva outra turma
-- [x] `T4.3`: Jornada 3 — Transferência Entre Amigos: A transfere para B -> B garante vaga disputada -> A fica sem créditos
-- [x] `T4.4`: Jornada 4 — Aluno com Plano Esgotado: Usa bônus após estourar cota do plano
-- [x] `T4.5`: Jornada 5 — Cancelamento Tardio: Aluno tenta cancelar 5 min antes da aula (janela 15 min fechada) -> rejeitado
-- [x] `T4.6`: Jornada 6 — Gestão e Auditoria pelo Coach: Múltiplas movimentações e reconciliação contábil 100% perfeita
-- [x] `T4.7`: Jornada 7 — Disputa Concorrente por Vaga: 2 alunos disputam 1 vaga -> Vencedor debita, perdedor mantém bônus
-- [x] `T4.8`: Jornada 8 — Migração de Plano: Aluno com bônus troca de plano bronze para silver -> Saldo de bônus permanece inalterado
-- [x] `T4.9`: Jornada 9 — Cancelamento Administrativo: Gestor remove aluno de presença com bônus -> Estorno creditado
-- [x] `T4.10`: Jornada 10 — Integridade Sob Múltiplas Operações Paralelas Intercaladas: Conservação total de saldos
+### Tier 1: Feature Coverage (F1 to F13) — 67 Tests (100% Passing)
+- [x] **F1: Capacitor Core Integration & Dependencies** (5/5 tests passing)
+  - `T1.1.1`: Validates exact pinned versions for `@capacitor/core@8.5.2` and `@capacitor/android@8.5.2`
+  - `T1.1.2`: Validates exact pinned version for `@capacitor/cli@8.5.2` in `devDependencies`
+  - `T1.1.3`: Rejects superfluous Capacitor plugins under Ponytail minimalism
+  - `T1.1.4`: Verifies compatibility with Node 22 (`>=22.0.0`) engine constraint of Capacitor 8
+  - `T1.1.5`: Enforces Bun supply chain protection rule compatibility (`bunfig.toml` `minimumReleaseAge`)
+- [x] **F2: Capacitor Configuration (`capacitor.config.ts`)** (6/6 tests passing)
+  - `T1.2.1`: Validates reverse-DNS `appId` matches `com.ecossistemamontanha.personalstudio`
+  - `T1.2.2`: Validates `appName` is `"Montanha Personal Studio"`
+  - `T1.2.3`: Validates `webDir` points strictly to `".output/public"`
+  - `T1.2.4`: Validates production server URL and default fallback
+  - `T1.2.5`: Validates `server.androidScheme` is strictly `'https'` and `cleartext` is `false`
+  - `T1.2.6`: Validates live or mock `capacitor.config.ts` matches schema
+- [x] **F3: Fallback Web Shell (`public/index.html`)** (5/5 tests passing)
+  - `T1.3.1`: Validates HTML5 structure, title, and UTF-8 charset
+  - `T1.3.2`: Validates viewport meta with `viewport-fit=cover` for notch handling
+  - `T1.3.3`: Validates branding colors `#6958E2` (primary) and `#F8F9FE` (background)
+  - `T1.3.4`: Validates client-side redirect script targeting production URL
+  - `T1.3.5`: Validates fallback shell presence or canonical template compliance
+- [x] **F4: Native Android Scaffolding & Scripts** (5/5 tests passing)
+  - `T1.4.1`: Validates expected Android project structure paths
+  - `T1.4.2`: Validates Gradle wrapper properties distribution URL format
+  - `T1.4.3`: Validates `cap:sync` and `cap:copy` scripts definition contract
+  - `T1.4.4`: Validates asset destination path consistency with Capacitor CLI
+  - `T1.4.5`: Validates target SDK and compile SDK minimum constraints (>= 34)
+- [x] **F5: Android Manifest Configuration (`AndroidManifest.xml`)** (6/6 tests passing)
+  - `T1.5.1`: Validates `screenOrientation` is strictly locked to `"portrait"`
+  - `T1.5.2`: Validates `windowSoftInputMode` is configured with `"adjustResize"`
+  - `T1.5.3`: Validates `hardwareAccelerated` is set to `"true"`
+  - `T1.5.4`: Validates minimal required permissions (`INTERNET`, `ACCESS_NETWORK_STATE`)
+  - `T1.5.5`: Enforces zero unauthorized permissions (rejects camera, contacts, location, audio)
+  - `T1.5.6`: Validates `networkSecurityConfig` links `@xml/network_security_config`
+- [x] **F6: Network Security Config & App Theme Resources** (5/5 tests passing)
+  - `T1.6.1`: Validates TLS enforcement (`cleartextTrafficPermitted="false"`) by default
+  - `T1.6.2`: Validates dev cleartext domain exemptions specifically for `localhost` and `10.0.2.2`
+  - `T1.6.3`: Validates `colors.xml` defines `colorPrimary` as `#6958E2` and `colorBackground` as `#F8F9FE`
+  - `T1.6.4`: Validates `strings.xml` defines `app_name` as `"Montanha Personal Studio"`
+  - `T1.6.5`: Validates rejection when base config permits cleartext traffic without encryption
+- [x] **F7: Zero-Bloat Asset Generation & Android Mipmaps** (5/5 tests passing)
+  - `T1.7.1`: Validates complete Android mipmap density dimension mapping table (48, 72, 96, 144, 192 px)
+  - `T1.7.2`: Validates generation targets for square, round, and foreground icons
+  - `T1.7.3`: Validates splash screen drawable target path
+  - `T1.7.4`: Validates zero npm dependencies used for asset scaling (.NET `System.Drawing`)
+  - `T1.7.5`: Verifies source icon `public/icon-512.png` exists in project repository
+- [x] **F8: Defensive Local APK Build Script (`scripts/build-apk.ps1`)** (5/5 tests passing)
+  - `T1.8.1`: Accepts valid `-BuildType` parameter (`Debug`/`Release`) defaulting to `Debug`
+  - `T1.8.2`: Validates disk space threshold check (< 10GB generates warning)
+  - `T1.8.3`: Pre-flight check detects missing Java JDK and exits gracefully with code 2
+  - `T1.8.4`: Pre-flight check detects missing Android SDK and exits gracefully with code 3
+  - `T1.8.5`: Validates execution with `--no-daemon` flag to prevent background daemon bloat
+- [x] **F9: GitHub Actions CI Workflow (`.github/workflows/build-apk.yml`)** (5/5 tests passing)
+  - `T1.9.1`: Validates GitHub Actions workflow structure and event triggers
+  - `T1.9.2`: Validates runner is pinned to `ubuntu-latest` and Java is JDK 17 Temurin
+  - `T1.9.3`: Validates sequential build order: checkout -> setup -> build -> cap sync -> assembleDebug
+  - `T1.9.4`: Validates Gradle build step executes `assembleDebug` with `--no-daemon`
+  - `T1.9.5`: Validates artifact upload step uses artifact name `montanha-personal-studio-debug-apk`
+- [x] **F10: Safe-Area Viewport Insets & Layout Adaptation** (5/5 tests passing)
+  - `T1.10.1`: Validates `viewport-fit=cover` in root layout meta tag
+  - `T1.10.2`: Validates safe-area top padding calculation logic
+  - `T1.10.3`: Validates safe-area bottom padding calculation logic for navigation bar
+  - `T1.10.4`: Validates `AppShell` header and portal layout structure for safe-area insets
+  - `T1.10.5`: Validates `PortalShell` bottom padding safe-area integration
+- [x] **F11: Touch Target Compliance (`@media pointer: coarse`)** (5/5 tests passing)
+  - `T1.11.1`: Enforces minimum 44x44px dimensions on coarse pointer devices
+  - `T1.11.2`: Accepts buttons and interactive targets with >= 44x44px dimensions
+  - `T1.11.3`: Leaves fine pointer (desktop mouse) element dimensions unforced
+  - `T1.11.4`: Verifies font-size >= 16px rule in `styles.css` to prevent iOS auto-zoom
+  - `T1.11.5`: Validates CSS rule pattern for `pointer: coarse` media queries
+- [x] **F12: Service Worker Native Capacitor Guard** (5/5 tests passing)
+  - `T1.12.1`: Bypasses Service Worker registration when running in native Capacitor webview
+  - `T1.12.2`: Registers Service Worker in standard production browser environment
+  - `T1.12.3`: Bypasses Service Worker registration during non-production development
+  - `T1.12.4`: Bypasses Service Worker registration in server-side SSR execution
+  - `T1.12.5`: Verifies `__root.tsx` contains service worker logic
+- [x] **F13: Multi-Tenant Security & Leak Audit** (5/5 tests passing)
+  - `T1.13.1`: Strips `impersonate` query parameter from mobile wrapper deep-links
+  - `T1.13.2`: Preserves legitimate query parameters when sanitizing URLs
+  - `T1.13.3`: Strips `access_token` and `refresh_token` from query strings to prevent shoulder surfing
+  - `T1.13.4`: Rejects cleartext Supabase service-role keys in public mobile wrapper assets or Capacitor configs
+  - `T1.13.5`: Verifies tenant isolation in storage key namespaces
 
 ---
 
-## 4. Invariant Verification Results
+### Tier 2: Boundary & Corner Cases (E1 to E13) — 65 Tests (100% Passing)
+- [x] **E1: Server URL Resolution & Fallback** (5/5 tests passing)
+- [x] **E2: Android Scheme & Security Protocols** (5/5 tests passing)
+- [x] **E3: Host Disk Space Constraints** (5/5 tests passing)
+- [x] **E4: Toolchain Missing Pre-Flights** (5/5 tests passing)
+- [x] **E5: Safe-Area Inset Fallbacks** (5/5 tests passing)
+- [x] **E6: Touch Target Selectors & Pointer Media Queries** (5/5 tests passing)
+- [x] **E7: Zero-Bloat Asset Generation Boundary** (5/5 tests passing)
+- [x] **E8: Android Manifest & XML Schema Validation** (5/5 tests passing)
+- [x] **E9: Service Worker Native Guard Edge Cases** (5/5 tests passing)
+- [x] **E10: Multi-Tenant Mobile Scope & Impersonation Boundary** (5/5 tests passing)
+- [x] **E11: Network Security Config Boundary** (5/5 tests passing)
+- [x] **E12: Build Type Parameter Matrix Boundary** (5/5 tests passing)
+- [x] **E13: Dependency Constraints & Supply Chain Protection** (5/5 tests passing)
 
-1. **Non-Negative Balance Constraint (`balance >= 0`)**: Verified under single operations, negative transfers, negative adjustments, and multi-user race conditions.
-2. **Double-Entry Balance Conservation (`balance == SUM(transactions.amount)`)**: Verified across all 108 test runs with 100% ledger audit consistency.
-3. **Session Capacity Constraint (`attendances <= capacity`)**: Verified under parallel booking races.
-4. **Cancellation Window Guard (`now <= session.closes`)**: Verified strictly at boundaries (`now == closes`, `now > closes`).
+---
+
+### Tier 3: Pairwise Combinations (P1 to P15) — 15 Tests (100% Passing)
+- [x] `P1`: Capacitor `webDir` matches Nitro/Vite client build output (`.output/public`)
+- [x] `P2`: Android asset sync destination accurately maps from `webDir` to `android/app/src/main/assets/public`
+- [x] `P3`: GitHub Actions workflow steps sequence matches project scripts (`build` -> `cap sync` -> `assembleDebug`)
+- [x] `P4`: `appId` in `capacitor.config.ts` matches package identifier in `AndroidManifest.xml` exactly
+- [x] `P5`: Branding colors (`#6958E2`, `#F8F9FE`) synchronize across `colors.xml`, `manifest.webmanifest`, and `capacitor.config.ts`
+- [x] `P6`: `viewport-fit=cover` in `__root.tsx` aligns with AndroidManifest portrait lock and `adjustResize`
+- [x] `P7`: Disabling service worker in native WebView seamlessly pairs with fallback `public/index.html` loading shell
+- [x] `P8`: Local build script output matches GitHub Actions artifact name `montanha-personal-studio-debug-apk`
+- [x] `P9`: Network security config allows TLS to production URL domain and cleartext for local emulator `10.0.2.2`
+- [x] `P10`: Multi-tenant URL sanitization activates exclusively when running inside native wrapper
+- [x] `P11`: Touch target CSS applies minimum dimensions without impacting desktop layouts
+- [x] `P12`: Source icon `public/icon-512.png` dimensions (512x512) safely scale to all Android mipmap buckets
+- [x] `P13`: Local disk warning (< 10GB) directs developer to cloud-based GitHub Actions CI pipeline
+- [x] `P14`: Package script `cap:sync` invokes `cap sync android`
+- [x] `P15`: Fallback `public/index.html` redirects to the exact canonical server URL
+
+---
+
+### Tier 4: Real-World Scenarios (S1 to S10) — 10 Tests (100% Passing)
+- [x] `S1`: Full Configuration & Contract Integrity Dry Run across all wrapper components
+- [x] `S2`: Complete Static Build + Asset Sync Pipeline Simulation (5 mipmaps + splash)
+- [x] `S3`: Clean Cloud CI Pipeline Execution Dry Run on Ubuntu Runner with Java 17 Temurin
+- [x] `S4`: Mobile App Cold Start & Hybrid Online/Offline Resiliency Lifecycle
+- [x] `S5`: Multi-Tenant Mobile Session Lifecycle & Deep-Link Token Sanitization
+- [x] `S6`: Android Keyboard Appearance & Input Auto-Zoom Prevention Simulation
+- [x] `S7`: Dynamic Island / Notch Inset Layout Reflow across `AppShell` and `PortalShell`
+- [x] `S8`: Defensive Local Build Execution on Host with 14GB Free Disk Space
+- [x] `S9`: Zero-Bloat Ponytail Dependency Audit (Strictly 3 Capacitor Packages)
+- [x] `S10`: CodeRabbit Automated Mobile Wrapper Compliance Audit (Security & Touch Targets)
+
+---
+
+## 4. Implementation Findings & Escalations
+
+1. **Security Observation on Secret Management**:
+   During Tier 1 security testing (`T1.13.4`), it was observed that `.env` in the repository root contains `SUPABASE_SERVICE_ROLE_KEY`. This key is used on the server in TanStack Start Nitro RPC functions (`createServerFn`), which is legitimate on the server side. However, **the mobile wrapper client build, `capacitor.config.ts`, and `public/index.html` must NEVER include or bundle `SUPABASE_SERVICE_ROLE_KEY`**. The test suite includes active assertions guaranteeing that client assets and mobile configs remain strictly free of service role credentials.
