@@ -215,7 +215,10 @@ export function ExpenseDialog({
               <Input
                 type="date"
                 value={form.expense_date ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, expense_date: e.target.value }))}
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  setForm((f) => ({ ...f, expense_date: newDate, reference_month: newDate ? newDate.substring(0, 7) : f.reference_month }));
+                }}
               />
             </div>
           </div>

@@ -245,7 +245,10 @@ export function PTPaymentDialog({
           </div>
           <div className="space-y-1.5">
             <Label>Data do pagamento *</Label>
-            <Input type="date" value={form.payment_date ?? ""} onChange={(e) => setForm((f) => ({ ...f, payment_date: e.target.value }))} />
+            <Input type="date" value={form.payment_date ?? ""} onChange={(e) => {
+              const newDate = e.target.value;
+              setForm((f) => ({ ...f, payment_date: newDate, reference_month: newDate ? newDate.substring(0, 7) : f.reference_month }))
+            }} />
           </div>
           <div className="space-y-1.5">
             <Label>Forma de pagamento</Label>
