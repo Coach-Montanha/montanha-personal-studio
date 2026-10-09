@@ -283,21 +283,21 @@ function FinanceiroPage() {
     queryKey: ["payments-financeiro", scopeKey],
     enabled: ready,
     queryFn: async () => {
-      let all: { amount: number; reference_month: string }[] = [];
+      let all: { amount: number; reference_month: string | null; payment_date: string | null }[] = [];
       let from = 0;
       let pages = 0;
       while (pages < 20) {
         pages++;
         let q = supabase
           .from("payments")
-          .select("amount,reference_month,status")
+          .select("amount,reference_month,payment_date,status")
           .is("deleted_at", null)
           .eq("status", "paid")
           .range(from, from + 999);
         if (scopeId) q = q.eq("user_id", scopeId);
         const { data, error } = await q;
         if (error) throw error;
-        all = all.concat((data ?? []) as { amount: number; reference_month: string }[]);
+        all = all.concat((data ?? []) as any[]);
         if (!data || data.length < 1000) break;
         from += 1000;
       }
@@ -309,23 +309,21 @@ function FinanceiroPage() {
     queryKey: ["pt-payments-financeiro", scopeKey],
     enabled: ready,
     queryFn: async () => {
-      let all: { amount: number; reference_month: string | null }[] = [];
+      let all: { amount: number; reference_month: string | null; payment_date: string | null }[] = [];
       let from = 0;
       let pages = 0;
       while (pages < 20) {
         pages++;
         let q = supabase
           .from("pt_payments")
-          .select("amount,reference_month,status")
+          .select("amount,reference_month,payment_date,status")
           .eq("status", "paid")
           .is("deleted_at", null)
           .range(from, from + 999);
         if (scopeId) q = q.eq("user_id", scopeId);
         const { data, error } = await q;
         if (error) throw error;
-        all = all.concat(
-          (data ?? []) as { amount: number; reference_month: string | null }[],
-        );
+        all = all.concat((data ?? []) as any[]);
         if (!data || data.length < 1000) break;
         from += 1000;
       }
@@ -344,12 +342,14 @@ function FinanceiroPage() {
     [allExpenses, month, segment],
   );
 
+  const getRefMonth = (p: any) => p.reference_month || (p.payment_date ? p.payment_date.slice(0, 7) : null);
+
   const monthRevenue = useMemo(() => {
     const studio = allPayments
-      .filter((p) => p.reference_month === month)
+      .filter((p) => getRefMonth(p) === month)
       .reduce((s, p) => s + Number(p.amount), 0);
     const pt = allPtPayments
-      .filter((p) => p.reference_month === month)
+      .filter((p) => getRefMonth(p) === month)
       .reduce((s, p) => s + Number(p.amount), 0);
     return { studio, pt, total: studio + pt };
   }, [allPayments, allPtPayments, month]);
@@ -386,7 +386,7 @@ function FinanceiroPage() {
             ? allPayments
             : [...allPayments, ...allPtPayments];
       const revenue = revenueSource
-        .filter((p) => p.reference_month === m)
+        .filter((p) => getRefMonth(p) === m)
         .reduce((s, p) => s + Number(p.amount), 0);
       const expenses = allExpenses
         .filter(
@@ -422,10 +422,10 @@ function FinanceiroPage() {
     return Array.from({ length: 12 }, (_, i) => {
       const m = addMonths(month, i - 11);
       const studioRev = allPayments
-        .filter((p) => p.reference_month === m)
+        .filter((p) => getRefMonth(p) === m)
         .reduce((s, p) => s + Number(p.amount), 0);
       const ptRev = allPtPayments
-        .filter((p) => p.reference_month === m)
+        .filter((p) => getRefMonth(p) === m)
         .reduce((s, p) => s + Number(p.amount), 0);
       const totalRev = studioRev + ptRev;
       const fixedExp = allExpenses
