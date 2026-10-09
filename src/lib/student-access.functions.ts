@@ -211,16 +211,25 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
     const { email, password } = data;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // 1. Search in students table
+    // 1. Validar rigorosamente formato do PIN (exatamente 10 dígitos numéricos)
+    if (!/^\d{10}$/.test(password)) {
+      return { 
+        healed: false, 
+        reason: "INVALID_PIN_FORMAT", 
+        message: "O PIN de acesso deve conter exatamente 10 dígitos numéricos." 
+      };
+    }
+
+    // 2. Search in students table
     const { data: studioMatch } = await supabaseAdmin
       .from("students")
-      .select("id, name, email, phone, birth_date, account_user_id, temp_password")
+      .select("id, name, email, phone, birth_date, account_user_id, access_pin, tenant_id")
       .ilike("email", email);
 
-    // 2. Search in pt_students table
+    // 3. Search in pt_students table
     const { data: ptMatch } = await supabaseAdmin
       .from("pt_students")
-      .select("id, name, email, phone, account_user_id, temp_password")
+      .select("id, name, email, phone, account_user_id, access_pin, tenant_id")
       .ilike("email", email);
 
     const matches = [...(studioMatch || []), ...(ptMatch || [])];
@@ -228,31 +237,9 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
       return { healed: false, reason: "NOT_FOUND" };
     }
 
-    // Check if password matches any recognized student field (temp_password, phone, birthdate, PIN)
-    const isMatchingKnownField = matches.some((m) => {
-      if (m.temp_password && String(m.temp_password).trim() === password) return true;
-      if (m.phone) {
-        const digits = m.phone.replace(/\D/g, "");
-        if (digits && digits === password) return true;
-        if (digits.length >= 8 && digits.slice(-8) === password) return true;
-        if (digits.length >= 9 && digits.slice(-9) === password) return true;
-      }
-      if (m.birth_date) {
-        const parts = String(m.birth_date).split("-");
-        if (parts.length === 3) {
-          const [y, mo, d] = parts;
-          const ddmmyyyy = `${d}${mo}${y}`;
-          const ddmmyy = `${d}${mo}${y.slice(-2)}`;
-          const yyyymmdd = `${y}${mo}${d}`;
-          const slash = `${d}/${mo}/${y}`;
-          const dash = `${d}-${mo}-${y}`;
-          if ([ddmmyyyy, ddmmyy, yyyymmdd, slash, dash].includes(password)) return true;
-        }
-      }
-      return false;
-    });
+    // 4. O auto-heal só é autorizado se o PIN fornecido bater exatamente com o PIN registrado pelo personal
+    const isMatchingKnownField = matches.some((m) => m.access_pin === password);
 
-    const isRegisteredStudent = matches.length > 0;
     const canAuthorize = isMatchingKnownField;
 
     if (!canAuthorize) {

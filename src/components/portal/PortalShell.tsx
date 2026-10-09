@@ -133,7 +133,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
       >
         <div
           className={cn(
-            "flex h-16 items-center gap-2 border-b border-sidebar-border transition-[padding] duration-200",
+            "flex items-center gap-2 border-b border-sidebar-border transition-[padding] duration-200",
+            "min-h-16 h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)]",
             collapsed ? "justify-center px-2" : "px-5",
           )}
         >
