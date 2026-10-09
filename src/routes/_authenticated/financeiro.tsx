@@ -342,14 +342,17 @@ function FinanceiroPage() {
     [allExpenses, month, segment],
   );
 
-  const getRefMonth = (p: any) => p.reference_month || (p.payment_date ? p.payment_date.slice(0, 7) : null);
+  // Para pagamentos do Studio, priorizamos reference_month.
+  // Para PT, usamos estritamente payment_date para bater 100% com o Dashboard PT.
+  const getStudioMonth = (p: any) => p.reference_month || (p.payment_date ? p.payment_date.slice(0, 7) : null);
+  const getPtMonth = (p: any) => (p.payment_date ? p.payment_date.slice(0, 7) : p.reference_month);
 
   const monthRevenue = useMemo(() => {
     const studio = allPayments
-      .filter((p) => getRefMonth(p) === month)
+      .filter((p) => getStudioMonth(p) === month)
       .reduce((s, p) => s + Number(p.amount), 0);
     const pt = allPtPayments
-      .filter((p) => getRefMonth(p) === month)
+      .filter((p) => getPtMonth(p) === month)
       .reduce((s, p) => s + Number(p.amount), 0);
     return { studio, pt, total: studio + pt };
   }, [allPayments, allPtPayments, month]);
@@ -379,15 +382,19 @@ function FinanceiroPage() {
   const monthlySeries = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
       const m = addMonths(month, i - 11);
-      const revenueSource =
-        segment === "pt"
-          ? allPtPayments
-          : segment === "studio"
-            ? allPayments
-            : [...allPayments, ...allPtPayments];
-      const revenue = revenueSource
-        .filter((p) => getRefMonth(p) === m)
-        .reduce((s, p) => s + Number(p.amount), 0);
+      
+      let revenue = 0;
+      if (segment === "pt" || segment === "all") {
+        revenue += allPtPayments
+          .filter((p) => getPtMonth(p) === m)
+          .reduce((s, p) => s + Number(p.amount), 0);
+      }
+      if (segment === "studio" || segment === "all") {
+        revenue += allPayments
+          .filter((p) => getStudioMonth(p) === m)
+          .reduce((s, p) => s + Number(p.amount), 0);
+      }
+      
       const expenses = allExpenses
         .filter(
           (e) => e.reference_month === m && (segment === "all" || e.segment === segment),
@@ -422,10 +429,10 @@ function FinanceiroPage() {
     return Array.from({ length: 12 }, (_, i) => {
       const m = addMonths(month, i - 11);
       const studioRev = allPayments
-        .filter((p) => getRefMonth(p) === m)
+        .filter((p) => getStudioMonth(p) === m)
         .reduce((s, p) => s + Number(p.amount), 0);
       const ptRev = allPtPayments
-        .filter((p) => getRefMonth(p) === m)
+        .filter((p) => getPtMonth(p) === m)
         .reduce((s, p) => s + Number(p.amount), 0);
       const totalRev = studioRev + ptRev;
       const fixedExp = allExpenses
