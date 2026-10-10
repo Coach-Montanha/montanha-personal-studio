@@ -77,9 +77,8 @@ export async function renewPayment(payment: MinimalPayment): Promise<boolean> {
   }
   const nextRemaining = remaining != null ? remaining - 1 : null;
 
-  const months = cycleMonths(cycle);
-  const nextRef = bumpMonths(payment.reference_month, months);
   const today = format(new Date(), "yyyy-MM-dd");
+  const currentMonth = today.slice(0, 7);
 
   const insertPayload: any = {
     user_id: userId,
@@ -88,7 +87,7 @@ export async function renewPayment(payment: MinimalPayment): Promise<boolean> {
     amount: Number(payment.amount),
     payment_date: today,
     due_date: bumpDueDate(today, cycle),
-    reference_month: nextRef,
+    reference_month: currentMonth,
     payment_method: payment.payment_method,
     status: "paid",
     notes: payment.notes,
@@ -103,8 +102,8 @@ export async function renewPayment(payment: MinimalPayment): Promise<boolean> {
     return false;
   }
   const msg = nextRemaining != null
-    ? `Pagamento renovado para ${nextRef} (${nextRemaining} renovação(ões) restante(s))`
-    : `Pagamento renovado para ${nextRef}`;
+    ? `Pagamento renovado e referenciado para ${currentMonth} (${nextRemaining} renovação(ões) restante(s))`
+    : `Pagamento renovado e referenciado para ${currentMonth}`;
   toast.success(msg);
   return true;
 }
@@ -130,9 +129,8 @@ export async function renewPtPayment(payment: MinimalPtPayment): Promise<boolean
     return false;
   }
 
-  const baseRef = payment.reference_month ?? payment.payment_date.slice(0, 7);
-  const nextRef = bumpMonths(baseRef, 1);
   const today = format(new Date(), "yyyy-MM-dd");
+  const currentMonth = today.slice(0, 7);
 
   const insertPayload = {
     user_id: userId,
@@ -141,7 +139,7 @@ export async function renewPtPayment(payment: MinimalPtPayment): Promise<boolean
     amount: Number(payment.amount),
     payment_date: today,
     due_date: bumpDueDate(today, "monthly"),
-    reference_month: nextRef,
+    reference_month: currentMonth,
     payment_method: payment.payment_method,
     status: "paid",
     notes: payment.notes,
@@ -153,7 +151,7 @@ export async function renewPtPayment(payment: MinimalPtPayment): Promise<boolean
     toast.error(error.message);
     return false;
   }
-  toast.success(`Pagamento PT renovado para ${nextRef}`);
+  toast.success(`Pagamento PT renovado e referenciado para ${currentMonth}`);
   return true;
 }
 
