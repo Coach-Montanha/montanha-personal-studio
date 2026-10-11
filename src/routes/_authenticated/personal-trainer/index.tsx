@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import {
   Users, DollarSign, Activity, TrendingUp, Percent, Plus, Eye,
   CalendarPlus, CreditCard, Pencil, Trash2, Timer, MessageCircle, ShieldAlert, BookOpen,
+  Book, Dumbbell, ClipboardCheck, Video, Calendar,
 } from "lucide-react";
 import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
 import { addDays, format, startOfMonth, endOfMonth, startOfWeek, addWeeks, isSameDay, isSameMonth, subMonths, addMonths } from "date-fns";
@@ -431,6 +432,88 @@ function PTOverview() {
               </span>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Hub de Ações Rápidas & Gestão de Treinos (Padrão MFIT Dashboard) */}
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Central de Treinos & Ações Rápidas
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Link
+            to="/biblioteca"
+            className="group flex flex-col justify-between rounded-xl border bg-card p-4 transition-all duration-150 hover:border-primary/40 hover:shadow-2xs active:scale-[0.99]"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <Book className="h-5 w-5" />
+            </div>
+            <div className="mt-3">
+              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                Biblioteca de treinos
+              </span>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Modelos & rotinas salvas
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            to="/treino"
+            className="group flex flex-col justify-between rounded-xl border bg-card p-4 transition-all duration-150 hover:border-primary/40 hover:shadow-2xs active:scale-[0.99]"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <Video className="h-5 w-5" />
+            </div>
+            <div className="mt-3">
+              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                Exercícios & Vídeos
+              </span>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Catálogo com execuções
+              </p>
+            </div>
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.querySelector('[data-state="inactive"][value="calendar"]') as HTMLElement;
+              if (el) el.click();
+            }}
+            className="group flex flex-col justify-between rounded-xl border bg-card p-4 text-left transition-all duration-150 hover:border-primary/40 hover:shadow-2xs active:scale-[0.99]"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <ClipboardCheck className="h-5 w-5" />
+            </div>
+            <div className="mt-3">
+              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                Frequência de Aulas
+              </span>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                {kpis.completed} aulas no mês
+              </p>
+            </div>
+          </button>
+
+          <Link
+            to="/crm"
+            className="group flex flex-col justify-between rounded-xl border bg-card p-4 transition-all duration-150 hover:border-primary/40 hover:shadow-2xs active:scale-[0.99]"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <MessageCircle className="h-5 w-5" />
+            </div>
+            <div className="mt-3">
+              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                Feedbacks & Push
+              </span>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Comunicação com alunos
+              </p>
+            </div>
+          </Link>
         </div>
       </div>
 
