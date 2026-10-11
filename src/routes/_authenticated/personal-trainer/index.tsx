@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Users, DollarSign, Activity, TrendingUp, Percent, Plus, Eye,
-  CalendarPlus, CreditCard, Pencil, Trash2, Timer,
+  CalendarPlus, CreditCard, Pencil, Trash2, Timer, MessageCircle, ShieldAlert, BookOpen,
 } from "lucide-react";
 import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
 import { addDays, format, startOfMonth, endOfMonth, startOfWeek, addWeeks, isSameDay, isSameMonth, subMonths, addMonths } from "date-fns";
@@ -54,6 +54,7 @@ function PTOverview() {
   const [ptSortBy, setPtSortBy] = useState<
     "name_asc" | "name_desc" | "status" | "last_recent" | "last_old" | "pkg_desc" | "pkg_asc"
   >("status");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive" | "paused">("all");
 
   const [dayDetailOpen, setDayDetailOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string>("");
@@ -78,7 +79,7 @@ function PTOverview() {
     queryFn: async () => {
       let q = supabase
         .from("pt_students")
-        .select("id,name,status,notes,pt_payments!pt_payments_pt_student_id_fkey(id,amount,payment_date,status,pt_plan_id,sessions_paid,reference_month,pt_plans(name,sessions_per_month,package_sessions,billing_type))")
+        .select("id,name,phone,status,notes,pt_payments!pt_payments_pt_student_id_fkey(id,amount,payment_date,status,pt_plan_id,sessions_paid,reference_month,pt_plans(name,sessions_per_month,package_sessions,billing_type))")
         .is("deleted_at", null)
         .order("name");
       if (scopeId) q = q.eq("user_id", scopeId);
@@ -166,7 +167,12 @@ function PTOverview() {
       return { ...s, status: effectiveStatus };
     });
 
-    const arr = [...effectiveStudents];
+    const filtered = effectiveStudents.filter((s) => {
+      if (statusFilter === "all") return true;
+      return s.status === statusFilter;
+    });
+
+    const arr = [...filtered];
     arr.sort((a, b) => {
       switch (ptSortBy) {
         case "name_desc": return (b.name || "").localeCompare(a.name || "", "pt-BR");
@@ -192,7 +198,7 @@ function PTOverview() {
       }
     });
     return arr;
-  }, [students, ptSortBy, packageUsage]);
+  }, [students, ptSortBy, statusFilter, packageUsage]);
 
   const { data: monthPayments = [] } = useQuery({
     queryKey: ["pt-month-payments", calendarMonthKey, scopeKey],
@@ -282,8 +288,24 @@ function PTOverview() {
       }
     }
 
+    const inactiveCount = students.filter((s) => s.status === "inactive").length;
+    const pausedCount = students.filter((s) => s.status === "paused").length;
+
+    // Retenção: alunos ativos que tiveram pelo menos 1 aula realizada no mês
+    const activeStudentIds = new Set(students.filter((s) => s.status === "active").map((s) => s.id));
+    const attendedActiveStudents = new Set(
+      monthSessions
+        .filter((s) => s.status === "completed" && activeStudentIds.has(s.pt_student_id))
+        .map((s) => s.pt_student_id)
+    );
+    const retentionRate = active > 0 ? (attendedActiveStudents.size / active) * 100 : 0;
+
     return {
       active,
+      inactiveCount,
+      pausedCount,
+      retentionRate,
+      attendedCount: attendedActiveStudents.size,
       revenue,
       completed,
       attendanceRate,
@@ -378,6 +400,40 @@ function PTOverview() {
         <KPICard label="Taxa de presença" value={`${kpis.attendanceRate.toFixed(1).replace(".", ",")}%`} icon={<Percent className="h-4 w-4" />} />
       </div>
 
+      {/* Card de Retenção & Engajamento Ativo (Estilo MFIT polido) */}
+      <div className="rounded-xl border bg-card p-4 shadow-2xs transition-colors hover:border-primary/40">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <TrendingUp className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground text-sm">Retenção de Alunos PT</span>
+                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  {kpis.retentionRate.toFixed(1).replace(".", ",")}% engajados no mês
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {kpis.attendedCount} de {kpis.active} alunos ativos já realizaram pelo menos 1 aula neste mês.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            {kpis.active - kpis.attendedCount > 0 ? (
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 font-medium text-amber-700 dark:text-amber-400">
+                <ShieldAlert className="h-3.5 w-3.5" />
+                {kpis.active - kpis.attendedCount} sem treino no mês
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 font-medium text-emerald-700 dark:text-emerald-400">
+                100% dos alunos ativos treinando!
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
       <Tabs defaultValue="students" className="space-y-4">
         <TabsList>
           <TabsTrigger value="students">Alunos</TabsTrigger>
@@ -385,21 +441,74 @@ function PTOverview() {
         </TabsList>
 
         <TabsContent value="students">
-          <Card className="p-5 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs text-muted-foreground">{students.length} aluno(s) PT</span>
-              <Select value={ptSortBy} onValueChange={(v) => setPtSortBy(v as typeof ptSortBy)}>
-                <SelectTrigger className="h-9 w-full sm:w-[240px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
-                  <SelectItem value="name_desc">Nome (Z-A)</SelectItem>
-                  <SelectItem value="status">Status (ativos primeiro)</SelectItem>
-                  <SelectItem value="last_recent">Último pagto (recente)</SelectItem>
-                  <SelectItem value="last_old">Último pagto (antigo)</SelectItem>
-                  <SelectItem value="pkg_desc">Saldo pacote (maior)</SelectItem>
-                  <SelectItem value="pkg_asc">Saldo pacote (menor)</SelectItem>
-                </SelectContent>
-              </Select>
+          <Card className="p-5 space-y-4">
+            {/* Filtros de Status em Pílulas (Padrão MFIT ClientsList) */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-3.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter("all")}
+                  className={cn(
+                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
+                    statusFilter === "all"
+                      ? "bg-primary text-primary-foreground shadow-2xs"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  Todos <span className="ml-1 opacity-70 tabular-nums">({students.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter("active")}
+                  className={cn(
+                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
+                    statusFilter === "active"
+                      ? "bg-emerald-600 text-white shadow-2xs"
+                      : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20"
+                  )}
+                >
+                  Ativos <span className="ml-1 opacity-80 tabular-nums">({kpis.active})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter("inactive")}
+                  className={cn(
+                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
+                    statusFilter === "inactive"
+                      ? "bg-amber-600 text-white shadow-2xs"
+                      : "bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20"
+                  )}
+                >
+                  Inativos <span className="ml-1 opacity-80 tabular-nums">({kpis.inactiveCount})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter("paused")}
+                  className={cn(
+                    "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
+                    statusFilter === "paused"
+                      ? "bg-sky-600 text-white shadow-2xs"
+                      : "bg-sky-500/10 text-sky-700 dark:text-sky-400 hover:bg-sky-500/20"
+                  )}
+                >
+                  Pausados <span className="ml-1 opacity-80 tabular-nums">({kpis.pausedCount})</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Select value={ptSortBy} onValueChange={(v) => setPtSortBy(v as typeof ptSortBy)}>
+                  <SelectTrigger className="h-8 w-[200px] text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name_asc">Nome (A-Z)</SelectItem>
+                    <SelectItem value="name_desc">Nome (Z-A)</SelectItem>
+                    <SelectItem value="status">Status (ativos primeiro)</SelectItem>
+                    <SelectItem value="last_recent">Último pagto (recente)</SelectItem>
+                    <SelectItem value="last_old">Último pagto (antigo)</SelectItem>
+                    <SelectItem value="pkg_desc">Saldo pacote (maior)</SelectItem>
+                    <SelectItem value="pkg_asc">Saldo pacote (menor)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             {selected.size > 0 && (
               <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 p-3">
@@ -488,6 +597,17 @@ function PTOverview() {
                           </div>
                         </div>
                         <div className="mt-2 flex justify-end gap-1 border-t pt-2">
+                          {s.phone && (
+                            <a
+                              href={`https://wa.me/55${s.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${s.name}, passando para alinhar seus treinos e acompanhar sua rotina!`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex h-11 w-11 items-center justify-center rounded-md text-emerald-600 hover:bg-emerald-500/10 transition-colors"
+                              title="Conversar no WhatsApp"
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </a>
+                          )}
                           <Link to="/personal-trainer/students/$id" params={{ id: s.id }}>
                             <Button size="icon" variant="ghost" className="h-11 w-11" title="Ver detalhes"><Eye className="h-4 w-4" /></Button>
                           </Link>
@@ -593,6 +713,17 @@ function PTOverview() {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-1">
+                                {s.phone && (
+                                  <a
+                                    href={`https://wa.me/55${s.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${s.name}, passando para alinhar seus treinos e acompanhar sua rotina!`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-md text-emerald-600 hover:bg-emerald-500/10 transition-colors"
+                                    title="Conversar no WhatsApp"
+                                  >
+                                    <MessageCircle className="h-4 w-4" />
+                                  </a>
+                                )}
                                 <Link to="/personal-trainer/students/$id" params={{ id: s.id }}>
                                   <Button size="icon" variant="ghost" title="Ver detalhes"><Eye className="h-4 w-4" /></Button>
                                 </Link>

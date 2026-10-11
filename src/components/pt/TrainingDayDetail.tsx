@@ -84,25 +84,33 @@ export function TrainingDayDetail({ dayId }: { dayId: string }) {
 
   return (
     <div className="space-y-3 border-t pt-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/30 p-2.5">
         <div className="flex min-w-0 items-center gap-2">
-          <h4 className="text-sm font-semibold leading-tight">Exercícios</h4>
+          <h4 className="text-sm font-semibold leading-tight">Exercícios prescritos</h4>
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
+            {exercises.length}
+          </span>
           {saving && (
             <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
-              <Loader2 className="h-3 w-3 animate-spin" /> salvando ordem
+              <Loader2 className="h-3 w-3 animate-spin" /> salvando ordem…
             </span>
           )}
         </div>
-        {exercises.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setAllExpanded((v) => !v)}
-            className="flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs font-medium text-primary outline-none transition-colors duration-150 hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-card"
-          >
-            {allExpanded ? "Recolher todos" : "Expandir todos"}
-            {allExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {exercises.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setAllExpanded((v) => !v)}
+              className="flex shrink-0 items-center gap-1 rounded-md border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {allExpanded ? "Recolher todos" : "Expandir todos"}
+              {allExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </button>
+          )}
+          <Button size="sm" onClick={() => setAddOpen(true)} className="h-7 text-xs">
+            <Plus className="mr-1 h-3.5 w-3.5" /> Adicionar exercício
+          </Button>
+        </div>
       </div>
 
       {exercises.length === 0 ? (

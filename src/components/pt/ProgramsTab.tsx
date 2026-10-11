@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Plus, Pencil, Trash2, MoreVertical, Archive, ArchiveRestore,
   CalendarDays, Target, Dumbbell, MessageSquare, CheckCircle2, RotateCcw, Eye,
-  ArrowRightLeft,
+  ArrowRightLeft, ChevronDown, ChevronRight, HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -107,6 +107,7 @@ export function ProgramsTab({ studentId }: { studentId: string }) {
   const [aiOpen, setAiOpen] = useState(false);
   const [migrateOpen, setMigrateOpen] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [guidanceOpen, setGuidanceOpen] = useState(false);
 
   const { data: studentInfo } = useQuery({
     queryKey: ["pt-student-name", studentId],
@@ -485,20 +486,41 @@ export function ProgramsTab({ studentId }: { studentId: string }) {
           </div>
 
 
-          {/* Goals */}
-          {activeProgram.goals && (
-            <div className="rounded-lg border bg-muted/30 p-3">
-              <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                <Target className="h-3.5 w-3.5" /> Objetivos
-              </div>
-              <p className="text-sm whitespace-pre-wrap">{activeProgram.goals}</p>
+          {/* Orientações Gerais / Goals (Estilo MFIT polido) */}
+          {activeProgram.goals ? (
+            <div className="rounded-xl border bg-card/60 transition-colors">
+              <button
+                type="button"
+                onClick={() => setGuidanceOpen((prev) => !prev)}
+                className="flex w-full items-center justify-between p-3.5 text-left text-xs font-semibold text-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-xl"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <Target className="h-3.5 w-3.5" />
+                  </div>
+                  <span className="text-sm font-semibold tracking-tight">Orientações gerais & Objetivos</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground font-normal">
+                  <span>{guidanceOpen ? "Ocultar" : "Ver orientações"}</span>
+                  {guidanceOpen ? (
+                    <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 transition-transform duration-200" />
+                  )}
+                </div>
+              </button>
+              {guidanceOpen && (
+                <div className="border-t px-4 py-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                  <p className="whitespace-pre-wrap">{activeProgram.goals}</p>
+                </div>
+              )}
             </div>
-          )}
+          ) : null}
 
-          {/* Meta */}
-          <div className="grid gap-3 rounded-lg border bg-muted/30 p-3 sm:grid-cols-3 text-xs">
+          {/* Meta Grid (Estilo MFIT com tipografia tabular) */}
+          <div className="grid gap-3 rounded-xl border bg-muted/20 p-3.5 sm:grid-cols-3 text-xs">
             <MetaCell label="Tipo de treino" value={activeProgram.training_type === "numeric" ? "Numérico" : "Alfabético"} />
-            <MetaCell label="Mostrar para o aluno" value={activeProgram.show_to_student ? "Sim" : "Não"} />
+            <MetaCell label="Mostrar para o aluno" value={activeProgram.show_to_student ? "Sempre visível" : "Oculto"} />
             <MetaCell label="Arquivar automaticamente" value={activeProgram.auto_archive ? "Sim" : "Não"} />
           </div>
 
@@ -551,11 +573,17 @@ export function ProgramsTab({ studentId }: { studentId: string }) {
                         {day.description && (
                           <p className="mt-1 text-sm text-muted-foreground">{day.description}</p>
                         )}
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {execs.length === 0
-                            ? "Ainda não executado"
-                            : `Executado ${execs.length}x · última em ${formatDateBR(last.executed_at)}`}
-                        </p>
+                        <div className="mt-2 flex items-center">
+                          {execs.length === 0 ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                              <span>⚠️</span> Aluno ainda não executou este treino
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                              <span>✅</span> Executado <strong className="tabular-nums font-bold">{execs.length}x</strong> (último em {formatDateBR(last.executed_at)})
+                            </span>
+                          )}
+                        </div>
                       </button>
                       <div className="flex items-center gap-1">
                         <Button size="sm" variant="ghost" onClick={() => markExecuted(day)}>
