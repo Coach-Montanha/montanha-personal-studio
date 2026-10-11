@@ -47,14 +47,54 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
   const { data: userTypes, isLoading: loadingTypes } = useQuery({
-    queryKey: ["portal-user-types", user?.id],
+    queryKey: ["portal-user-types-with-workouts", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
       const [studio, pt] = await Promise.all([
         supabase.from("students").select("id").eq("account_user_id", user!.id).maybeSingle(),
-        supabase.from("pt_students").select("id").eq("account_user_id", user!.id).maybeSingle(),
+        supabase.from("pt_students").select("id,training_plan").eq("account_user_id", user!.id).maybeSingle(),
       ]);
-      return { studio: !!studio.data, pt: !!pt.data };
+
+      let hasWorkouts = false;
+      const ptStudentId = pt.data?.id;
+
+      if (ptStudentId) {
+        if (pt.data?.training_plan && pt.data.training_plan.trim() !== "") {
+          hasWorkouts = true;
+        } else {
+          const { count } = await supabase
+            .from("pt_programs" as never)
+            .select("id", { count: "exact", head: true })
+            .eq("pt_student_id", ptStudentId)
+            .eq("is_deleted", false);
+          hasWorkouts = (count ?? 0) > 0;
+        }
+      }
+
+      // Se for aluno somente Studio, verificar se existe aluno de PT vinculado ao mesmo usuário ou e-mail com treinos
+      if (!hasWorkouts && studio.data?.id) {
+        const { data: ptLinked } = await supabase
+          .from("pt_students")
+          .select("id,training_plan")
+          .eq("account_user_id", user!.id)
+          .maybeSingle();
+        if (ptLinked?.training_plan) {
+          hasWorkouts = true;
+        } else if (ptLinked?.id) {
+          const { count } = await supabase
+            .from("pt_programs" as never)
+            .select("id", { count: "exact", head: true })
+            .eq("pt_student_id", ptLinked.id)
+            .eq("is_deleted", false);
+          hasWorkouts = (count ?? 0) > 0;
+        }
+      }
+
+      return {
+        studio: !!studio.data,
+        pt: !!pt.data,
+        hasWorkouts,
+      };
     },
     staleTime: 60_000,
   });
@@ -68,7 +108,33 @@ export function PortalShell({ children }: { children: ReactNode }) {
           ? "pt"
           : "studio";
 
-  const nav = mode === "both" ? bothNav : mode === "pt" ? ptNav : studioNav;
+  // Só exibe links de treino se o aluno tiver treinos cadastrados!
+  const hasWorkouts = !!userTypes?.hasWorkouts;
+
+  const dynamicStudioNav = hasWorkouts
+    ? [
+        { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
+        { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
+        { to: "/portal/perfil", label: "Meus dados", icon: User },
+      ]
+    : studioNav;
+
+  const dynamicPtNav = hasWorkouts
+    ? ptNav
+    : [
+        { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
+        { to: "/portal/perfil", label: "Meus dados", icon: User },
+      ];
+
+  const dynamicBothNav = hasWorkouts
+    ? bothNav
+    : [
+        { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
+        { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
+        { to: "/portal/perfil", label: "Meus dados", icon: User },
+      ];
+
+  const nav = mode === "both" ? dynamicBothNav : mode === "pt" ? dynamicPtNav : dynamicStudioNav;
   const areaLabel =
     mode === "both" ? "Portal Híbrido" : mode === "pt" ? "Personal Trainer" : "Área do aluno";
 

@@ -24,7 +24,7 @@ function PTPortalHome() {
     queryFn: async () => {
       const { data } = await supabase
         .from("pt_students")
-        .select("id,name,email,phone,birth_date,start_date,goal,health_notes,status")
+        .select("id,name,email,phone,birth_date,start_date,goal,health_notes,status,training_plan")
         .eq("account_user_id", user!.id)
         .maybeSingle();
       return data;
@@ -57,7 +57,22 @@ function PTPortalHome() {
     },
   });
 
+  const { data: hasPrograms = false } = useQuery({
+    queryKey: ["pt-portal-has-programs", student?.id],
+    enabled: !!student?.id,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("pt_programs")
+        .select("id", { count: "exact", head: true })
+        .eq("pt_student_id", student!.id)
+        .eq("is_deleted", false);
+      return (count ?? 0) > 0;
+    },
+  });
+
   if (!student) return <div className="text-sm text-muted-foreground">Carregando…</div>;
+
+  const hasWorkouts = !!(student.training_plan?.trim() || hasPrograms);
 
   const latestPaid = payments.find((p) => p.status === "paid");
   const plan = latestPaid?.pt_plans;
@@ -90,12 +105,14 @@ function PTPortalHome() {
             <TrendingUp className="h-4 w-4 text-primary" />
             Evolução de Cargas
           </Button>
-          <Button asChild size="sm" className="gap-1.5">
-            <Link to="/portal/pt/treino">
-              <Dumbbell className="h-4 w-4" />
-              Ver Treinos
-            </Link>
-          </Button>
+          {hasWorkouts && (
+            <Button asChild size="sm" className="gap-1.5">
+              <Link to="/portal/pt/treino">
+                <Dumbbell className="h-4 w-4" />
+                Ver Treinos
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 

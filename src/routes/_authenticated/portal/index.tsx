@@ -240,26 +240,61 @@ function PortalHome() {
         </p>
       </header>
 
-      {/* Link rápido para treino se for aluno híbrido */}
+      {/* Link rápido para treino se o aluno tiver treinos cadastrados (Studio, PT ou Híbrido) */}
       {(() => {
         const { user } = useAuth();
         const { data: userTypes } = useQuery({
-          queryKey: ["portal-user-types", user?.id],
+          queryKey: ["portal-user-types-with-workouts", user?.id],
           enabled: !!user?.id,
           queryFn: async () => {
             const [studio, pt] = await Promise.all([
               supabase.from("students").select("id").eq("account_user_id", user!.id).maybeSingle(),
-              supabase.from("pt_students").select("id").eq("account_user_id", user!.id).maybeSingle(),
+              supabase.from("pt_students").select("id,training_plan").eq("account_user_id", user!.id).maybeSingle(),
             ]);
-            return { studio: !!studio.data, pt: !!pt.data };
+
+            let hasWorkouts = false;
+            const ptStudentId = pt.data?.id;
+
+            if (ptStudentId) {
+              if (pt.data?.training_plan && pt.data.training_plan.trim() !== "") {
+                hasWorkouts = true;
+              } else {
+                const { count } = await supabase
+                  .from("pt_programs" as never)
+                  .select("id", { count: "exact", head: true })
+                  .eq("pt_student_id", ptStudentId)
+                  .eq("is_deleted", false);
+                hasWorkouts = (count ?? 0) > 0;
+              }
+            }
+
+            if (!hasWorkouts && studio.data?.id) {
+              const { data: ptLinked } = await supabase
+                .from("pt_students")
+                .select("id,training_plan")
+                .eq("account_user_id", user!.id)
+                .maybeSingle();
+              if (ptLinked?.training_plan) {
+                hasWorkouts = true;
+              } else if (ptLinked?.id) {
+                const { count } = await supabase
+                  .from("pt_programs" as never)
+                  .select("id", { count: "exact", head: true })
+                  .eq("pt_student_id", ptLinked.id)
+                  .eq("is_deleted", false);
+                hasWorkouts = (count ?? 0) > 0;
+              }
+            }
+
+            return { hasWorkouts };
           },
         });
-        if (!userTypes?.pt) return null;
+        if (!userTypes?.hasWorkouts) return null;
         return (
           <Button asChild variant="secondary" className="w-full gap-2 py-6 border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary">
             <Link to="/portal/pt/treino">
               <Dumbbell className="h-5 w-5" />
-              Acessar meu Treino Personal
+              Acessar meu Treino
             </Link>
           </Button>
         );
