@@ -1,121 +1,16 @@
--- Migração para adicionar e mesclar os exercícios extraídos da rotina e acervo MFIT
--- Tabela: public.pt_exercises_library (is_global = true para disponibilização no catálogo geral)
+-- Migração com 100% dos exercícios reais extraídos do MFIT Personal
+-- Inserção idempotente com mesclagem de metadados e vídeos na public.pt_exercises_library
 
 DO $$
 DECLARE
   ex record;
-  exercises_data jsonb := '[
-    {
-      "name": "Abdominal Canivete",
-      "muscle_group": "Core",
-      "description": "Abdominal Canivete no solo para fortalecimento de retos e flexores do quadril. Tags: Abdômen, Musculação.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Abdominal Canivete Alternado",
-      "muscle_group": "Core",
-      "description": "Variação unilateral alternada do abdominal canivete com foco em oblíquos e controle lombo-pélvico. Tags: Abdômen, Musculação.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Abdominal com Rodinha Solo com Apoio",
-      "muscle_group": "Core",
-      "description": "Abdominal com roda de exercícios no solo com apoio de joelhos. Ênfase em anti-extensão lombar. Tags: Abdômen, Musculação.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Mobilidade Torácica IV",
-      "muscle_group": "Mobilidade",
-      "description": "Trabalho de rotação e extensão torácica para liberação articular da cintura escapular e coluna torácica.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Barra Horizontal no Smith",
-      "muscle_group": "Costas",
-      "description": "Puxada horizontal invertida na barra do Smith com apoio dos calcanhares no solo.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Agachamento Livre",
-      "muscle_group": "Pernas",
-      "description": "Padrão fundamental de agachamento joelho-dominante com peso corporal ou sobrecarga livre.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Agachamento Goblet com Kettlebell",
-      "muscle_group": "Pernas",
-      "description": "Agachamento frontal segurando kettlebell junto ao peito, promovendo alinhamento vertical do tronco.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Elevação de Pernas (S)",
-      "muscle_group": "Core",
-      "description": "Elevação de pernas suspensa ou no solo para ativação infra-abdominal e controle de pelve.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Carregamento Unilateral de Kettlebell",
-      "muscle_group": "Core",
-      "description": "Suitcase carry / caminhada unilateral com kettlebell para força de pegada e anti-flexão lateral do core.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Agachamento Frontal Smith",
-      "muscle_group": "Pernas",
-      "description": "Agachamento frontal guiado no Smith. Séries de referência: Pirâmide 1x12 (leve) + 1x10 (moderada) + 1x8 (pesada), intervalo 60s.",
-      "media_url": "https://vd.mfitpersonal.com.br/331/mp4/331.mp4",
-      "media_type": "video"
-    },
-    {
-      "name": "Cardio (Bicicleta/Esteira/Escada/Elíptico)",
-      "muscle_group": "Cardio",
-      "description": "7 a 10 minutos de deslocamento contínuo em ergômetros (Escada, Bicicleta, Esteira ou Elíptico).",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Cadeira Flexora",
-      "muscle_group": "Pernas",
-      "description": "Flexão de joelhos na máquina com ênfase em isquiotibiais. Prescrição de referência: 2x15 pesadas, carga ~50kg, intervalo 60s.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Abdução de Quadril Máquina",
-      "muscle_group": "Glúteos",
-      "description": "Afastamento de pernas na cadeira abdutora com foco no glúteo médio. Prescrição de referência: 2x35 pesadas, carga ~100kg, intervalo 60s.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Peck Deck",
-      "muscle_group": "Peito",
-      "description": "Voador peitoral na máquina para isolamento de peitoral maior. Prescrição de referência: 2x12, carga ~35kg, intervalo 60s.",
-      "media_url": null,
-      "media_type": "image"
-    },
-    {
-      "name": "Remada Baixa Supinada",
-      "muscle_group": "Costas",
-      "description": "Puxada no cabo baixo com pegada supinada para latíssimo do dorso e romboides. Prescrição de referência: 2x12, carga ~6 placas, intervalo 60s.",
-      "media_url": null,
-      "media_type": "image"
-    }
-  ]'::jsonb;
+  exercises_data jsonb := '[{"name":"Swing Vai-e-Vem com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/1qpjxq7t4up_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/1qpjxq7t4up_md.0000000.jpg","media_type":"video"},{"name":"Abdominal Crunch","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/apmrl6w3g9o_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/apmrl6w3g9o_md.0000000.jpg","media_type":"video"},{"name":"Abdominal Crunch Inferior","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/tk3ik0xdk48_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/tk3ik0xdk48_md.0000000.jpg","media_type":"video"},{"name":"Abdominal Crunch Invertido","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/j3gt32ai5ld_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/j3gt32ai5ld_md.0000000.jpg","media_type":"video"},{"name":"Abdominal Crunch Lateral","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/cu3k552yo5q_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/cu3k552yo5q_md.0000000.jpg","media_type":"video"},{"name":"Adição: Explicação","muscle_group":"Outro","description":"MFIT Personal · Grupo: Outros · Categoria: functional","media_url":"https://secureupload.mfitpersonal.com.br/407643/exercicios/wz9t39zbc1.png","thumbnail_url":null,"media_type":"image"},{"name":"Agachamento com Lunges","muscle_group":"Pernas","description":"MFIT Personal · Grupo: Inferiores · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/3ce1ddefwoo_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/3ce1ddefwoo_md.0000000.jpg","media_type":"video"},{"name":"Agachamento Goblet com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/i9pjamj3wt8_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/i9pjamj3wt8_md.0000000.jpg","media_type":"video"},{"name":"Arranco com Dois Halteres","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/ipcs7zscjri_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/ipcs7zscjri_md.0000000.jpg","media_type":"video"},{"name":"Arranco Goblet com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/thlrxsv8uvn_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/thlrxsv8uvn_md.0000000.jpg","media_type":"video"},{"name":"Arranco Morto com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/g7bozgdv88v_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/g7bozgdv88v_md.0000000.jpg","media_type":"video"},{"name":"Arremesso Goblet com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/xgul9i8qscm_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/xgul9i8qscm_md.0000000.jpg","media_type":"video"},{"name":"Arremesso Morto com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/fcrpd1pydj6_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/fcrpd1pydj6_md.0000000.jpg","media_type":"video"},{"name":"Arremesso seguido de Agachamento Costas","muscle_group":"Pernas","description":"MFIT Personal · Grupo: Inferiores · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/87mcycmkmyl_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/87mcycmkmyl_md.0000000.jpg","media_type":"video"},{"name":"Barra Escapular","muscle_group":"Costas","description":"MFIT Personal · Grupo: Dorsal · Categoria: functional","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/qvgi2gy6px_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/qvgi2gy6px_md.0000000.jpg","media_type":"video"},{"name":"Borboleta","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/c6ywvl1i20w_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/c6ywvl1i20w_md.0000000.jpg","media_type":"video"},{"name":"Bottoms Up Carry Kettlebell","muscle_group":"Ombros","description":"MFIT Personal · Grupo: Ombro · Categoria: functional","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/wuyr1ste4y_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/wuyr1ste4y_md.0000000.jpg","media_type":"video"},{"name":"Boxe Sit-Up","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/yoop7pzirxe_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/yoop7pzirxe_md.0000000.jpg","media_type":"video"},{"name":"Cardio (Bicicleta/Esteira/Escada/Elíptico)","muscle_group":"Cardio","description":"MFIT Personal · Grupo: Aeróbio · Categoria: weightlifting","media_url":"https://mfitusersecure.s3.amazonaws.com/407643/exercicios/9299353.jpeg","thumbnail_url":null,"media_type":"image"},{"name":"Carioca","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: functional","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/kj9ia4q28rs_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/kj9ia4q28rs_md.0000000.jpg","media_type":"video"},{"name":"Carregamento Unilateral de Kettlebell","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: functional","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/nzk4lawrewq_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/nzk4lawrewq_md.0000000.jpg","media_type":"video"},{"name":"Ciclismo Outdoor","muscle_group":"Cardio","description":"MFIT Personal · Grupo: Aeróbio · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/cwx7k9gj2i_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/cwx7k9gj2i_md.0000000.jpg","media_type":"video"},{"name":"Cruz de Ferro","muscle_group":"Mobilidade","description":"MFIT Personal · Grupo: Mobilidade · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/jbl9341abmk_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/jbl9341abmk_md.0000000.jpg","media_type":"video"},{"name":"Cruz de Ferro (Variação 2)","muscle_group":"Mobilidade","description":"MFIT Personal · Grupo: Mobilidade · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/17b2iqni63v_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/17b2iqni63v_md.0000000.jpg","media_type":"video"},{"name":"Desenvolvimento Goblet com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/uigp0frmhp_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/uigp0frmhp_md.0000000.jpg","media_type":"video"},{"name":"Elevação de Pernas (D)","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/2q21dcvlm0l_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/2q21dcvlm0l_md.0000000.jpg","media_type":"video"},{"name":"Elevação de Pernas (S)","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/3k2a1gq9bim_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/3k2a1gq9bim_md.0000000.jpg","media_type":"video"},{"name":"Escorpião","muscle_group":"Mobilidade","description":"MFIT Personal · Grupo: Mobilidade · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/mzlmex3v6v_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/mzlmex3v6v_md.0000000.jpg","media_type":"video"},{"name":"Figura 8 + Arremesso com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/8v2txzwn09v_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/8v2txzwn09v_md.0000000.jpg","media_type":"video"},{"name":"Figura 8 com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/iaxlbj2v1ff_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/iaxlbj2v1ff_md.0000000.jpg","media_type":"video"},{"name":"Flexão Bombardeiro","muscle_group":"Peito","description":"MFIT Personal · Grupo: Peitoral · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/87jhdvwfuv_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/87jhdvwfuv_md.0000000.jpg","media_type":"video"},{"name":"Flexão Cobra","muscle_group":"Peito","description":"MFIT Personal · Grupo: Peitoral · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/7eyg1r0vdxy_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/7eyg1r0vdxy_md.0000000.jpg","media_type":"video"},{"name":"Flexão com Rotação de Tronco","muscle_group":"Peito","description":"MFIT Personal · Grupo: Peitoral · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/xj42xkj2ws_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/xj42xkj2ws_md.0000000.jpg","media_type":"video"},{"name":"Flutter Kicks (D)","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/40zr4zczzmt_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/40zr4zczzmt_md.0000000.jpg","media_type":"video"},{"name":"Flutter Kicks (S)","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/i5y76vvgyr_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/i5y76vvgyr_md.0000000.jpg","media_type":"video"},{"name":"Groiner","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/qgg3b3lh18k_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/qgg3b3lh18k_md.0000000.jpg","media_type":"video"},{"name":"Half V-Up","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/w32h9jlfyzc_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/w32h9jlfyzc_md.0000000.jpg","media_type":"video"},{"name":"Half V-Up (Variação 2)","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/6epi8o70xyv_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/6epi8o70xyv_md.0000000.jpg","media_type":"video"},{"name":"Half V-Up (Variação 3)","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/vjqrcd1f2jm_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/vjqrcd1f2jm_md.0000000.jpg","media_type":"video"},{"name":"Halo com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/072er0a8wxia_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/072er0a8wxia_md.0000000.jpg","media_type":"video"},{"name":"Lenhador Ajoelhado com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/zhhhz6k0lr_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/zhhhz6k0lr_md.0000000.jpg","media_type":"video"},{"name":"Lenhador com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/osjcr58fcep_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/osjcr58fcep_md.0000000.jpg","media_type":"video"},{"name":"Lenhador Semi-Ajoelhado com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/pdmlsnja2k9_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/pdmlsnja2k9_md.0000000.jpg","media_type":"video"},{"name":"Levantamento Terra Romeno com Kettlebell Unilateral (Uma Perna)","muscle_group":"Pernas","description":"MFIT Personal · Grupo: Inferiores · Categoria: functional","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/n9d1oq0kkmj_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/n9d1oq0kkmj_md.0000000.jpg","media_type":"video"},{"name":"Limpador de Para-brisas","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/in0oonclpvl_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/in0oonclpvl_md.0000000.jpg","media_type":"video"},{"name":"Mobilidade de Quadril 90/90","muscle_group":"Mobilidade","description":"MFIT Personal · Grupo: Mobilidade · Categoria: mobility","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/9fwlx6bikmv_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/9fwlx6bikmv_md.0000000.jpg","media_type":"video"},{"name":"Mobilidade de Quadril Quadrúpede","muscle_group":"Mobilidade","description":"MFIT Personal · Grupo: Mobilidade · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/g5msfzmaze9_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/g5msfzmaze9_md.0000000.jpg","media_type":"video"},{"name":"Nurpees","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/bxaodepn4bl_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/bxaodepn4bl_md.0000000.jpg","media_type":"video"},{"name":"Observações e Explicações","muscle_group":"Outro","description":"MFIT Personal · Grupo: Outros · Categoria: functional","media_url":"https://s3.sa-east-1.amazonaws.com/secureupload.mfitpersonal.com.br/407643/exercicios/3t4c5jat3n3.png","thumbnail_url":null,"media_type":"image"},{"name":"Passada Invertida","muscle_group":"Pernas","description":"MFIT Personal · Grupo: Inferiores · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/4hp7klr9lyy_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/4hp7klr9lyy_md.0000000.jpg","media_type":"video"},{"name":"Passada Vai-e-Vem","muscle_group":"Pernas","description":"MFIT Personal · Grupo: Inferiores · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/xdel0xy4uu_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/xdel0xy4uu_md.0000000.jpg","media_type":"video"},{"name":"Puxada Alta com Halteres","muscle_group":"Ombros","description":"MFIT Personal · Grupo: Ombro · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/w1gilylkbk_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/w1gilylkbk_md.0000000.jpg","media_type":"video"},{"name":"Remada Renegada com Halteres","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/c3nqqtlfhwv_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/c3nqqtlfhwv_md.0000000.jpg","media_type":"video"},{"name":"Remada Renegada Ginástica","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/4epf4g2z2j7_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/4epf4g2z2j7_md.0000000.jpg","media_type":"video"},{"name":"Rotação de Tronco Quadrúpede","muscle_group":"Mobilidade","description":"MFIT Personal · Grupo: Mobilidade · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/sysw4m9jj8b_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/sysw4m9jj8b_md.0000000.jpg","media_type":"video"},{"name":"Rotações Russas","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/3jqs22m83bj_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/3jqs22m83bj_md.0000000.jpg","media_type":"video"},{"name":"Superman","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/bbd0ogtgqb5_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/bbd0ogtgqb5_md.0000000.jpg","media_type":"video"},{"name":"Superman Superior","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/jg69hq800cg_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/jg69hq800cg_md.0000000.jpg","media_type":"video"},{"name":"Swing Base 4 com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/gsig2h1cpyl_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/gsig2h1cpyl_md.0000000.jpg","media_type":"video"},{"name":"Swing Base 5 com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/l1eipseg81n_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/l1eipseg81n_md.0000000.jpg","media_type":"video"},{"name":"Tesoura (S)","muscle_group":"Core","description":"MFIT Personal · Grupo: Abdômen · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/b9c4d8lf0mu_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/b9c4d8lf0mu_md.0000000.jpg","media_type":"video"},{"name":"Thruster Goblet com Kettlebell","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/k33fbtr27nj_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/k33fbtr27nj_md.0000000.jpg","media_type":"video"},{"name":"Toque Cruzado nos Pés","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/knkaoulsp6_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/knkaoulsp6_md.0000000.jpg","media_type":"video"},{"name":"Toque nos Pés","muscle_group":"Mobilidade","description":"MFIT Personal · Grupo: Mobilidade · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/fzcqio0yfhp_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/fzcqio0yfhp_md.0000000.jpg","media_type":"video"},{"name":"Treino Presencial","muscle_group":"Corpo inteiro","description":"MFIT Personal · Grupo: Funcional · Categoria: functional","media_url":null,"thumbnail_url":null,"media_type":null},{"name":"Tríceps Coice com Halteres","muscle_group":"Braços","description":"MFIT Personal · Grupo: Tríceps · Categoria: weightlifting","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/urbs4p73nv_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/urbs4p73nv_md.0000000.jpg","media_type":"video"},{"name":"World Greatest Stretch","muscle_group":"Mobilidade","description":"MFIT Personal · Grupo: Alongamento · Categoria: stretching","media_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/mp4/s2f54kpbhw_opt.mp4","thumbnail_url":"https://d2vfutiy2j6sqj.cloudfront.net/407643/jpg/md/s2f54kpbhw_md.0000000.jpg","media_type":"video"}]'::jsonb;
   existing_id uuid;
   item_name text;
   item_group text;
   item_desc text;
   item_media text;
+  item_thumb text;
   item_type text;
 BEGIN
   FOR ex IN SELECT * FROM jsonb_to_recordset(exercises_data) AS x(
@@ -123,6 +18,7 @@ BEGIN
     muscle_group text,
     description text,
     media_url text,
+    thumbnail_url text,
     media_type text
   )
   LOOP
@@ -130,16 +26,17 @@ BEGIN
     item_group := ex.muscle_group;
     item_desc := ex.description;
     item_media := ex.media_url;
+    item_thumb := ex.thumbnail_url;
     item_type := ex.media_type;
 
-    -- Verifica se já existe exercício com nome semelhante ou idêntico
+    -- Busca se já existe por nome semelhante ou idêntico
     SELECT id INTO existing_id
     FROM public.pt_exercises_library
     WHERE LOWER(TRIM(name)) = LOWER(item_name)
     LIMIT 1;
 
     IF existing_id IS NOT NULL THEN
-      -- Mescla dados faltantes no registro existente
+      -- Atualiza/Mescla informações faltantes sem sobrescrever customizações
       UPDATE public.pt_exercises_library
       SET
         muscle_group = COALESCE(muscle_group, item_group),
@@ -148,18 +45,20 @@ BEGIN
           ELSE description 
         END,
         media_url = COALESCE(media_url, item_media),
+        thumbnail_url = COALESCE(thumbnail_url, item_thumb),
         media_type = CASE 
           WHEN media_url IS NULL AND item_media IS NOT NULL THEN item_type 
           ELSE media_type 
         END
       WHERE id = existing_id;
     ELSE
-      -- Insere como novo movimento global no catálogo
+      -- Insere como movimento global da biblioteca
       INSERT INTO public.pt_exercises_library (
         name,
         muscle_group,
         description,
         media_url,
+        thumbnail_url,
         media_type,
         is_global
       ) VALUES (
@@ -167,6 +66,7 @@ BEGIN
         item_group,
         item_desc,
         item_media,
+        item_thumb,
         item_type,
         true
       );
