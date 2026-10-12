@@ -12,6 +12,7 @@ import {
   PanelLeftOpen,
   RefreshCw,
   Timer,
+  Menu,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -139,14 +140,16 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const areaLabel =
     mode === "both" ? "Portal Híbrido" : mode === "pt" ? "Personal Trainer" : "Área do aluno";
 
-  // Init lazy: lê preferência salva (ou breakpoint) já na 1ª render — sem flash de layout.
+  const [open, setOpen] = useState(false);
+
+  // Init lazy: lê preferência salva no desktop
   const [collapsed, setCollapsedState] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
     try {
       const saved = localStorage.getItem(LS_COLLAPSED);
       if (saved === "1") return true;
       if (saved === "0") return false;
-      return window.matchMedia("(max-width: 767px)").matches;
+      return false;
     } catch {
       return false;
     }
@@ -191,34 +194,43 @@ export function PortalShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh w-full max-w-full overflow-x-clip bg-background">
       <PortalPersistGate />
+
+      {/* Mobile Drawer Backdrop */}
+      {open && (
+        <div
+          className="fixed inset-0 z-30 bg-overlay backdrop-blur-[2px] md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Drawer on Mobile / Sticky on Desktop */}
       <aside
         aria-label="Navegação principal"
         className={cn(
-          "sticky top-0 z-30 flex h-dvh shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-out",
-          collapsed ? "w-14" : "w-60",
+          "fixed inset-y-0 left-0 z-40 flex w-60 max-h-dvh flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 ease-out md:sticky md:top-0 md:h-dvh md:translate-x-0",
+          collapsed ? "md:w-14" : "md:w-60",
+          open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
       >
         <div
           className={cn(
             "flex items-center gap-2 border-b border-sidebar-border transition-[padding] duration-200",
             "min-h-16 h-[calc(4rem+var(--safe-area-inset-top,0px))] pt-[var(--safe-area-inset-top,0px)]",
-            collapsed ? "justify-center px-2" : "px-5",
+            collapsed ? "md:justify-center md:px-2 px-5" : "px-5",
           )}
         >
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary shadow-card ring-1 ring-inset ring-primary-foreground/15">
             <Dumbbell className="h-5 w-5 text-primary-foreground" />
           </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <div className="truncate text-[0.9375rem] font-bold leading-none tracking-tight">
-                Meu Studio
-              </div>
-              <div className="text-overline mt-1.5 text-sidebar-foreground/55">{areaLabel}</div>
+          <div className={cn("min-w-0 flex-1", collapsed && "md:hidden")}>
+            <div className="truncate text-[0.9375rem] font-bold leading-none tracking-tight">
+              Meu Studio
             </div>
-          )}
+            <div className="text-overline mt-1.5 text-sidebar-foreground/55">{areaLabel}</div>
+          </div>
         </div>
 
-        <nav className={cn("flex-1 space-y-1 overflow-y-auto py-4", collapsed ? "px-2" : "px-3")}>
+        <nav className={cn("flex-1 space-y-1 overflow-y-auto py-4", collapsed ? "md:px-2 px-3" : "px-3")}>
           {nav.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.to, item.exact);
@@ -226,20 +238,24 @@ export function PortalShell({ children }: { children: ReactNode }) {
               <Link
                 key={item.to}
                 to={item.to}
+                onClick={() => setOpen(false)}
                 preload="intent"
                 title={collapsed ? item.label : undefined}
                 className={cn(
                   "group relative flex items-center rounded-xl text-sm font-semibold outline-hidden transition-ui focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar active:scale-[0.99]",
-                  collapsed ? "h-11 justify-center px-2" : "min-h-11 gap-3 px-3 py-2.5",
+                  collapsed ? "md:h-11 md:justify-center md:px-2 min-h-11 gap-3 px-3 py-2.5" : "min-h-11 gap-3 px-3 py-2.5",
                   active
                     ? "bg-primary/12 text-primary"
                     : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                 )}
               >
-                {active && !collapsed && (
+                {active && (
                   <span
                     aria-hidden
-                    className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary"
+                    className={cn(
+                      "absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary",
+                      collapsed && "md:hidden"
+                    )}
                   />
                 )}
                 <Icon
@@ -250,45 +266,46 @@ export function PortalShell({ children }: { children: ReactNode }) {
                       : "text-sidebar-foreground/55 group-hover:text-sidebar-foreground",
                   )}
                 />
-                {!collapsed && <span className="truncate">{item.label}</span>}
-                {collapsed && <span className="sr-only">{item.label}</span>}
+                <span className={cn("truncate", collapsed && "md:hidden")}>{item.label}</span>
+                {collapsed && <span className="sr-only md:not-sr-only md:hidden">{item.label}</span>}
               </Link>
             );
           })}
           <div className="pt-2">
             <button
               type="button"
-              onClick={() => openTrainingTimer()}
+              onClick={() => {
+                setOpen(false);
+                openTrainingTimer();
+              }}
               title="Timer de Treino"
               className={cn(
                 "group relative flex w-full items-center rounded-xl text-sm font-bold outline-hidden transition-all duration-200 active:scale-[0.98]",
                 "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/25 border border-orange-400/40",
-                collapsed ? "h-11 justify-center px-2" : "min-h-11 gap-3 px-3 py-2.5",
+                collapsed ? "md:h-11 md:justify-center md:px-2 min-h-11 gap-3 px-3 py-2.5" : "min-h-11 gap-3 px-3 py-2.5",
               )}
             >
               <Timer className="h-[1.125rem] w-[1.125rem] shrink-0 group-hover:rotate-12 transition-transform" />
-              {!collapsed && <span className="truncate">Timer de Treino</span>}
-              {collapsed && <span className="sr-only">Timer de Treino</span>}
+              <span className={cn("truncate", collapsed && "md:hidden")}>Timer de Treino</span>
+              {collapsed && <span className="sr-only md:not-sr-only md:hidden">Timer de Treino</span>}
             </button>
           </div>
         </nav>
 
-        <div className={cn("border-t border-sidebar-border pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]", collapsed ? "p-2" : "p-3")}>
+        <div className={cn("border-t border-sidebar-border pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]", collapsed ? "md:p-2 p-3" : "p-3")}>
           <div
             className={cn(
               "flex items-center gap-2 rounded-lg bg-sidebar-accent transition-[padding] duration-200",
-              collapsed ? "justify-center p-2" : "justify-between px-3 py-2",
+              collapsed ? "md:justify-center md:p-2 justify-between px-3 py-2" : "justify-between px-3 py-2",
             )}
           >
-            {!collapsed && (
-              <div className="min-w-0">
-                <div className="truncate text-xs font-semibold">{user?.email ?? "Aluno"}</div>
-                <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-sidebar-foreground/60">
-                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-state-paid" />
-                  Conectado
-                </div>
+            <div className={cn("min-w-0", collapsed && "md:hidden")}>
+              <div className="truncate text-xs font-semibold">{user?.email ?? "Aluno"}</div>
+              <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-sidebar-foreground/60">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-state-paid" />
+                Conectado
               </div>
-            )}
+            </div>
             <button
               onClick={signOut}
               title="Sair"
@@ -303,11 +320,22 @@ export function PortalShell({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-x-clip">
         <header className="sticky top-0 z-20 flex min-h-16 h-[calc(4rem+var(--safe-area-inset-top,0px))] pt-[var(--safe-area-inset-top,0px)] w-full max-w-full min-w-0 items-center gap-2 border-b border-border bg-background/85 px-3 backdrop-blur-md md:px-6">
+          {/* Mobile menu trigger */}
+          <button
+            onClick={() => setOpen(!open)}
+            title="Menu de navegação"
+            aria-label="Menu de navegação"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-muted-foreground outline-hidden transition-ui hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95 md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+
+          {/* Desktop collapse trigger */}
           <button
             onClick={() => setCollapsed(!collapsed)}
             title={collapsed ? "Expandir barra lateral" : "Recolher barra lateral"}
             aria-label={collapsed ? "Expandir barra lateral" : "Recolher barra lateral"}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-muted-foreground outline-hidden transition-ui hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95"
+            className="hidden md:grid h-10 w-10 shrink-0 place-items-center rounded-xl text-muted-foreground outline-hidden transition-ui hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-95"
           >
             {collapsed ? (
               <PanelLeftOpen className="h-5 w-5" />
@@ -342,6 +370,15 @@ export function PortalShell({ children }: { children: ReactNode }) {
               ) : (
                 <Moon className="h-5 w-5" />
               )}
+            </button>
+            {/* Mobile direct logout button */}
+            <button
+              onClick={signOut}
+              title="Sair"
+              aria-label="Sair"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-destructive hover:bg-destructive/10 active:scale-95 transition-colors md:hidden"
+            >
+              <LogOut className="h-5 w-5" />
             </button>
           </div>
         </header>
