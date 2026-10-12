@@ -410,6 +410,26 @@ export function ExerciseCard({
                   placeholder="4x12"
                   className="h-9"
                 />
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {["3x10-12", "4x8-10", "4x12-15", "3x Falha"].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        setForm((f) => ({ ...f, sets_reps: preset }));
+                        autoSave({ sets_reps: preset });
+                      }}
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                        form.sets_reps === preset
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             {(form.series_type === "reps_load" || form.series_type === "reps_load_time") && (
@@ -500,6 +520,26 @@ export function ExerciseCard({
                 placeholder="60"
                 className="h-9"
               />
+              <div className="flex flex-wrap gap-1 pt-1">
+                {["30", "45", "60", "90", "120"].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => {
+                      setForm((f) => ({ ...f, rest_seconds: preset }));
+                      autoSave({ rest_seconds: preset });
+                    }}
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                      form.rest_seconds === preset
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    {preset}s
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

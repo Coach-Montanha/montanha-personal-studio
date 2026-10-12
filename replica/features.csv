@@ -1,0 +1,14 @@
+feature,area,priority,original,clone,notes
+1135 official exercise video catalog,library,must,yes,yes,Normalized with CDN mp4 and jpg posters
+Muscle group filters in library,library,must,yes,yes,Core Peito Costas Pernas Ombros Bracos Cardio Mobilidade
+Multi-select batch addition to workout day,builder,must,yes,in-progress,Select 5+ exercises and add in one click
+Search exercises in builder with instant local fallback,builder,must,yes,in-progress,Instant search across all 1135 exercises
+Quick set and rep presets chips,builder,should,yes,in-progress,1-click 3x10-12 4x8-10 4x12-15 3xFail
+Quick rest time presets chips,builder,should,yes,in-progress,1-click 30s 45s 60s 90s 120s
+Drag-and-drop exercise reordering,builder,must,yes,yes,SortableList with optimistic order saving
+Exercise substitutes assignment,builder,should,yes,yes,Direct linked replacement exercises
+Auto-save on all input fields,builder,must,yes,yes,Real-time Supabase update without explicit save button
+Training methods support (drop-set cadence incline),builder,should,yes,yes,Selectable series types
+AI training prescription copilot,builder,could,no,yes,Studio exclusive AI Copilot assistant
+Student video workout player with timer,student-portal,must,yes,yes,Looping mp4 and rest countdown sound
+Export PDF workout sheet,builder,should,yes,yes,Downloadable formatted PDF
