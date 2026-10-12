@@ -181,11 +181,14 @@ export function ImportTrainingPanel() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => programsQ.refetch()}
-              disabled={programsQ.isFetching}
+              onClick={() => {
+                statusQ.refetch();
+                programsQ.refetch();
+              }}
+              disabled={programsQ.isFetching || statusQ.isFetching}
               className="transition-ui"
             >
-              <RefreshCw className={cn("mr-2 h-4 w-4", programsQ.isFetching && "animate-spin")} />
+              <RefreshCw className={cn("mr-2 h-4 w-4", (programsQ.isFetching || statusQ.isFetching) && "animate-spin")} />
               Atualizar
             </Button>
           )}
