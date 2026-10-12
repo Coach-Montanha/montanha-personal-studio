@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import {
   Users, DollarSign, Activity, TrendingUp, Percent, Plus, Eye,
   CalendarPlus, CreditCard, Pencil, Trash2, Timer, MessageCircle, ShieldAlert, BookOpen,
-  Book, Dumbbell, ClipboardCheck, Video, Calendar,
+  Book, Dumbbell, ClipboardCheck, Video, Calendar, ChevronRight,
 } from "lucide-react";
 import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
 import { addDays, format, startOfMonth, endOfMonth, startOfWeek, addWeeks, isSameDay, isSameMonth, subMonths, addMonths } from "date-fns";
@@ -69,6 +69,8 @@ function PTOverview() {
   const [rangeEnd, setRangeEnd] = useState("");
   const [revenueOpen, setRevenueOpen] = useState(false);
   const [timerOpen, setTimerOpen] = useState(false);
+  const [mainTab, setMainTab] = useState<string>("students");
+  const [unengagedOpen, setUnengagedOpen] = useState(false);
 
   const calendarMonthKey = format(calendarMonth, "yyyy-MM");
   const monthStart = startOfMonth(calendarMonth);
@@ -293,12 +295,14 @@ function PTOverview() {
     const pausedCount = students.filter((s) => s.status === "paused").length;
 
     // Retenção: alunos ativos que tiveram pelo menos 1 aula realizada no mês
-    const activeStudentIds = new Set(students.filter((s) => s.status === "active").map((s) => s.id));
+    const activeStudentsList = students.filter((s) => s.status === "active");
+    const activeStudentIds = new Set(activeStudentsList.map((s) => s.id));
     const attendedActiveStudents = new Set(
       monthSessions
         .filter((s) => s.status === "completed" && activeStudentIds.has(s.pt_student_id))
         .map((s) => s.pt_student_id)
     );
+    const unengagedStudents = activeStudentsList.filter((s) => !attendedActiveStudents.has(s.id));
     const retentionRate = active > 0 ? (attendedActiveStudents.size / active) * 100 : 0;
 
     return {
@@ -307,6 +311,7 @@ function PTOverview() {
       pausedCount,
       retentionRate,
       attendedCount: attendedActiveStudents.size,
+      unengagedStudents,
       revenue,
       completed,
       attendanceRate,
@@ -422,10 +427,16 @@ function PTOverview() {
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {kpis.active - kpis.attendedCount > 0 ? (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 font-medium text-amber-700 dark:text-amber-400">
+              <button
+                type="button"
+                onClick={() => setUnengagedOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 font-medium text-amber-700 hover:bg-amber-500/20 transition-colors dark:text-amber-400 cursor-pointer"
+                title="Clique para ver os alunos sem treino"
+              >
                 <ShieldAlert className="h-3.5 w-3.5" />
-                {kpis.active - kpis.attendedCount} sem treino no mês
-              </span>
+                <span>{kpis.active - kpis.attendedCount} sem treino no mês</span>
+                <ChevronRight className="h-3 w-3 opacity-60" />
+              </button>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 font-medium text-emerald-700 dark:text-emerald-400">
                 100% dos alunos ativos treinando!
@@ -444,7 +455,8 @@ function PTOverview() {
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Link
-            to="/biblioteca"
+            to="/personal-trainer/biblioteca"
+            search={{ tab: "importar" }}
             className="group flex flex-col justify-between rounded-xl border bg-card p-4 transition-all duration-150 hover:border-primary/40 hover:shadow-2xs active:scale-[0.99]"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
@@ -461,7 +473,8 @@ function PTOverview() {
           </Link>
 
           <Link
-            to="/treino"
+            to="/personal-trainer/biblioteca"
+            search={{ tab: "movimentos" }}
             className="group flex flex-col justify-between rounded-xl border bg-card p-4 transition-all duration-150 hover:border-primary/40 hover:shadow-2xs active:scale-[0.99]"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
@@ -480,10 +493,11 @@ function PTOverview() {
           <button
             type="button"
             onClick={() => {
-              const el = document.querySelector('[data-state="inactive"][value="calendar"]') as HTMLElement;
-              if (el) el.click();
+              setMainTab("calendar");
+              const el = document.getElementById("pt-main-tabs");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
             }}
-            className="group flex flex-col justify-between rounded-xl border bg-card p-4 text-left transition-all duration-150 hover:border-primary/40 hover:shadow-2xs active:scale-[0.99]"
+            className="group flex flex-col justify-between rounded-xl border bg-card p-4 text-left transition-all duration-150 hover:border-primary/40 hover:shadow-2xs active:scale-[0.99] cursor-pointer"
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
               <ClipboardCheck className="h-5 w-5" />
@@ -517,7 +531,7 @@ function PTOverview() {
         </div>
       </div>
 
-      <Tabs defaultValue="students" className="space-y-4">
+      <Tabs id="pt-main-tabs" value={mainTab} onValueChange={setMainTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="students">Alunos</TabsTrigger>
           <TabsTrigger value="calendar">Aulas do Mês</TabsTrigger>
@@ -950,7 +964,129 @@ function PTOverview() {
         </DialogContent>
       </Dialog>
       <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
+      <UnengagedStudentsDialog
+        open={unengagedOpen}
+        onOpenChange={setUnengagedOpen}
+        students={kpis.unengagedStudents}
+        monthName={format(calendarMonth, "MMMM 'de' yyyy", { locale: ptBR })}
+        onSchedule={(studentId) => {
+          setPresetStudentId(studentId);
+          setPresetDate(undefined);
+          setSessionOpen(true);
+        }}
+      />
     </div>
+  );
+}
+
+function UnengagedStudentsDialog({
+  open,
+  onOpenChange,
+  students = [],
+  monthName,
+  onSchedule,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  students: any[];
+  monthName: string;
+  onSchedule: (studentId: string) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
+              <ShieldAlert className="h-5 w-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-base font-semibold">
+                Alunos sem Treino no Mês
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground capitalize">
+                {monthName} • {students.length} {students.length === 1 ? "aluno ativo" : "alunos ativos"} sem registros de aula
+              </p>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">
+          {students.length === 0 ? (
+            <div className="p-6 text-center text-sm text-muted-foreground">
+              Parabéns! Todos os alunos ativos já realizaram ao menos 1 treino neste mês.
+            </div>
+          ) : (
+            students.map((st) => {
+              const cleanPhone = (st.phone || "").replace(/\D/g, "");
+              const waUrl = cleanPhone
+                ? `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(`Olá ${st.name}, passando para agendarmos o seu próximo treino!`)}`
+                : null;
+
+              return (
+                <div
+                  key={st.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 transition-colors hover:border-primary/30"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to="/personal-trainer/students/$id"
+                        params={{ id: st.id }}
+                        className="truncate text-sm font-semibold hover:text-primary transition-colors"
+                        onClick={() => onOpenChange(false)}
+                      >
+                        {st.name}
+                      </Link>
+                      <PTStudentStatusBadge status={st.status} />
+                    </div>
+                    {st.phone && (
+                      <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                        {st.phone}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {waUrl && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 gap-1.5 px-2.5 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                        asChild
+                      >
+                        <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">WhatsApp</span>
+                        </a>
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="h-8 gap-1 px-2.5 text-xs"
+                      onClick={() => {
+                        onOpenChange(false);
+                        onSchedule(st.id);
+                      }}
+                    >
+                      <CalendarPlus className="h-3.5 w-3.5" />
+                      <span>Agendar</span>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <DialogFooter className="pt-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Fechar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
