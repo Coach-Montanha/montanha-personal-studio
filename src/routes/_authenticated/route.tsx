@@ -38,6 +38,7 @@ function AuthenticatedLayout() {
   const navigate = useNavigate();
   const isPortalPath = pathname === "/portal" || pathname.startsWith("/portal/");
   const isPTPortalPath = pathname === "/portal/pt" || pathname.startsWith("/portal/pt/");
+  const { isOpen: timerOpen, defaultMode: timerMode, setOpen: setTimerOpen } = useTrainingTimer();
 
   useEffect(() => {
     if (loading) return;
@@ -87,8 +88,6 @@ function AuthenticatedLayout() {
       </div>
     );
   }
-
-  const { isOpen: timerOpen, defaultMode: timerMode, setOpen: setTimerOpen } = useTrainingTimer();
 
   return (
     <>
