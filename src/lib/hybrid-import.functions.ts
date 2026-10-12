@@ -70,29 +70,58 @@ export type HybridProgramSummary = {
 };
 
 function originConfig() {
-  const url = (process.env.HYBRID_API_URL || "https://sistemahibridodetreinamento.lovable.app").replace(/\/+$/, "");
-  const token = process.env.HYBRID_API_TOKEN || "chm_sk_64f944daa5b3154fbe821e56e1d16e7ccb0afd6a7c753432451022b948974fe1"; // Chave validada para integração
+  const envUrl = process.env.HYBRID_API_URL?.trim();
+  const defaultUrl = "https://montanha-hybrid-training.vercel.app";
+  // Evita apontar para o subdomínio antigo do Lovable que retorna 404
+  const url = (envUrl && !envUrl.includes("sistemahibridodetreinamento.lovable.app") ? envUrl : defaultUrl).replace(/\/+$/, "");
+  const token = process.env.HYBRID_API_TOKEN || "chm_sk_64f944daa5b3154fbe821e56e1d16e7ccb0afd6a7c753432451022b948974fe1";
   return { url, token, configured: Boolean(url && token) };
 }
 
 async function originFetch(path: string) {
   const { url, token } = originConfig();
-  const res = await fetch(`${url}${path}`, {
-    headers: {
-      "x-api-key": token ?? "",
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-    },
-  });
+  const primaryUrl = `${url}${path}`;
+  const fallbackUrl = `https://montanha-hybrid-training.vercel.app${path}`;
 
-  if (!res.ok) {
-    throw new Error(
-      res.status === 401 || res.status === 403
-        ? "Token de integração recusado pela origem."
-        : res.status === 404
-          ? "Endpoint não encontrado na origem (a API pública ainda não foi criada lá)."
-          : `Origem respondeu ${res.status}.`,
-    );
+  let res: Response | null = null;
+  try {
+    res = await fetch(primaryUrl, {
+      headers: {
+        "x-api-key": token ?? "",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+  } catch {
+    // Tenta fallback
+  }
+
+  if (!res || !res.ok) {
+    if (primaryUrl !== fallbackUrl) {
+      try {
+        const fbRes = await fetch(fallbackUrl, {
+          headers: {
+            "x-api-key": token ?? "",
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+        if (fbRes.ok) return fbRes.json();
+      } catch {
+        // Ignora e cai no tratamento de erro padrão
+      }
+    }
+
+    if (res) {
+      throw new Error(
+        res.status === 401 || res.status === 403
+          ? "Token de integração recusado pela origem."
+          : res.status === 404
+            ? "Endpoint não encontrado na origem (a API pública ainda não foi criada lá)."
+            : `Origem respondeu ${res.status}.`,
+      );
+    }
+    throw new Error("Falha de conexão com o Sistema Híbrido de Treinamento.");
   }
   return res.json();
 }
@@ -346,11 +375,19 @@ function normalizeExercise(raw: any): HybridExercise | null {
 export const listHybridExercises = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async (): Promise<{ ok: boolean; error?: string; exercises: HybridExercise[] }> => {
-    if (!originConfig().configured) return { ok: false, error: "not_configured", exercises: [] };
     try {
       const json = (await originFetch("/api/public/exercises")) as any;
       const raw = Array.isArray(json) ? json : (json?.data ?? json?.exercises ?? []);
       const exercises = (raw as any[]).map(normalizeExercise).filter(Boolean) as HybridExercise[];
+      if (exercises.length > 0) return { ok: true, exercises };
+    } catch {
+      // Fallback gracioso para acervo embutido
+    }
+
+    try {
+      const localModule = await import("@/data/mfit-exercises-normalized.json");
+      const localData = localModule.default || localModule;
+      const exercises = (localData as any[]).map(normalizeExercise).filter(Boolean) as HybridExercise[];
       return { ok: true, exercises };
     } catch (e: any) {
       return { ok: false, error: e?.message ?? "Falha ao consultar a origem", exercises: [] };
@@ -365,8 +402,14 @@ export const importHybridExercises = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const json = (await originFetch("/api/public/exercises")) as any;
-    const raw = Array.isArray(json) ? json : (json?.data ?? json?.exercises ?? []);
+    let raw: any = null;
+    try {
+      const json = (await originFetch("/api/public/exercises")) as any;
+      raw = Array.isArray(json) ? json : (json?.data ?? json?.exercises ?? []);
+    } catch {
+      const localModule = await import("@/data/mfit-exercises-normalized.json");
+      raw = localModule.default || localModule;
+    }
     let list = (raw as any[]).map(normalizeExercise).filter(Boolean) as HybridExercise[];
     if (data.ids?.length) {
       const set = new Set(data.ids);
