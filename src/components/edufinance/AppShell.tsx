@@ -46,7 +46,7 @@ import { listTenants } from "@/lib/tenants.functions";
 import { Shield, Eye, UserCircle2 } from "lucide-react";
 import { GlobalSearch } from "@/components/edufinance/GlobalSearch";
 import { NotificationCenter } from "@/components/edufinance/NotificationCenter";
-import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
+import { openTrainingTimer } from "@/hooks/use-training-timer";
 
 type NavItem = {
   to: string;
@@ -102,7 +102,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsedState] = useState(false);
   const [hoverExpand, setHoverExpandState] = useState(false);
   const [hovering, setHovering] = useState(false);
-  const [timerOpen, setTimerOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -334,7 +333,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => {
                 setOpen(false);
-                setTimerOpen(true);
+                openTrainingTimer();
               }}
               title={iconOnly ? "Timer de Treino" : undefined}
               className={cn(
@@ -509,8 +508,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
-
-      <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
     </div>
   );
 }

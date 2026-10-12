@@ -5,27 +5,17 @@ import { AppShell } from "@/components/edufinance/AppShell";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { useRole } from "@/hooks/use-role";
 import { usePortalMode } from "@/hooks/use-portal-mode";
+import { getImpersonateUser } from "@/lib/impersonate-helper";
+import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
+import { useTrainingTimer } from "@/hooks/use-training-timer";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
     try {
-      if (typeof window !== "undefined") {
-        const rawImpersonate = localStorage.getItem("edufinance.impersonate");
-        if (rawImpersonate) {
-          try {
-            const parsed = JSON.parse(rawImpersonate);
-            if (parsed && parsed.targetEmail) {
-              return {
-                user: {
-                  id: parsed.targetUserId || `usr_${parsed.targetEmail}`,
-                  email: parsed.targetEmail,
-                  user_metadata: { name: parsed.targetEmail.split("@")[0] }
-                } as any
-              };
-            }
-          } catch {}
-        }
+      const impersonated = getImpersonateUser();
+      if (impersonated) {
+        return { user: impersonated as any };
       }
 
       const { data, error } = await supabase.auth.getSession();
@@ -98,16 +88,24 @@ function AuthenticatedLayout() {
     );
   }
 
-  if (isStudent || isPortalPath) {
-    return (
-      <PortalShell>
-        <Outlet />
-      </PortalShell>
-    );
-  }
+  const { isOpen: timerOpen, defaultMode: timerMode, setOpen: setTimerOpen } = useTrainingTimer();
+
   return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <>
+      {isStudent || isPortalPath ? (
+        <PortalShell>
+          <Outlet />
+        </PortalShell>
+      ) : (
+        <AppShell>
+          <Outlet />
+        </AppShell>
+      )}
+      <TrainingTimerDialog
+        open={timerOpen}
+        onOpenChange={setTimerOpen}
+        defaultMode={timerMode}
+      />
+    </>
   );
 }

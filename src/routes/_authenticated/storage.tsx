@@ -23,7 +23,7 @@ import {
 import { confirmDialog } from "@/lib/confirm-dialog";
 
 export const Route = createFileRoute("/_authenticated/storage")({
-  head: () => ({ meta: [{ title: "Armazenamento — EduFinance" }] }),
+  head: () => ({ meta: [{ title: "Armazenamento — Montanha Personal Studio" }] }),
   component: StoragePage,
 });
 

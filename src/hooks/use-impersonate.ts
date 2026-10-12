@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 
+export const PRIMARY_IMPERSONATE_STORAGE_KEY = "montanha.impersonate";
 export const IMPERSONATE_STORAGE_KEY = "edufinance.impersonate";
 
 export type ImpersonateMeta = {
@@ -12,7 +13,7 @@ export type ImpersonateMeta = {
 function read(): ImpersonateMeta | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = localStorage.getItem(IMPERSONATE_STORAGE_KEY);
+    const raw = localStorage.getItem(PRIMARY_IMPERSONATE_STORAGE_KEY) || localStorage.getItem(IMPERSONATE_STORAGE_KEY);
     return raw ? (JSON.parse(raw) as ImpersonateMeta) : null;
   } catch {
     return null;
@@ -26,8 +27,14 @@ function emit() {
 
 export function setImpersonate(meta: ImpersonateMeta | null) {
   if (typeof window === "undefined") return;
-  if (meta) localStorage.setItem(IMPERSONATE_STORAGE_KEY, JSON.stringify(meta));
-  else localStorage.removeItem(IMPERSONATE_STORAGE_KEY);
+  if (meta) {
+    const str = JSON.stringify(meta);
+    localStorage.setItem(PRIMARY_IMPERSONATE_STORAGE_KEY, str);
+    localStorage.setItem(IMPERSONATE_STORAGE_KEY, str);
+  } else {
+    localStorage.removeItem(PRIMARY_IMPERSONATE_STORAGE_KEY);
+    localStorage.removeItem(IMPERSONATE_STORAGE_KEY);
+  }
   // Cache do portal é escopado por usuário; ao trocar de contexto, descarta tudo.
   try {
     const toRemove: string[] = [];

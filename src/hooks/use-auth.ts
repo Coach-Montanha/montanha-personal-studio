@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { getImpersonateUser } from "@/lib/impersonate-helper";
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -16,19 +17,10 @@ export function useAuth() {
       setSession(data.session);
       if (data.session?.user) {
         setUser(data.session.user);
-      } else if (typeof window !== "undefined") {
-        const rawImp = localStorage.getItem("edufinance.impersonate");
-        if (rawImp) {
-          try {
-            const imp = JSON.parse(rawImp);
-            if (imp?.targetEmail) {
-              setUser({
-                id: imp.targetUserId || `usr_${imp.targetEmail}`,
-                email: imp.targetEmail,
-                user_metadata: { name: imp.targetEmail.split("@")[0] }
-              } as any);
-            }
-          } catch {}
+      } else {
+        const impersonated = getImpersonateUser();
+        if (impersonated) {
+          setUser(impersonated as any);
         }
       }
       setLoading(false);

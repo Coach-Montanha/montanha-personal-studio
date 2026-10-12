@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
 import { PortalAnnouncementPopup } from "@/components/portal/PortalAnnouncementPopup";
 import { PortalPersistGate, clearPortalCache } from "@/components/portal/PortalPersistGate";
-import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
+import { openTrainingTimer } from "@/hooks/use-training-timer";
 
 type PortalMode = "studio" | "pt" | "both";
 
@@ -49,6 +49,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const { data: userTypes, isLoading: loadingTypes } = useQuery({
     queryKey: ["portal-user-types-with-workouts", user?.id],
     enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
     queryFn: async () => {
       const [studio, pt] = await Promise.all([
         supabase.from("students").select("id").eq("account_user_id", user!.id).maybeSingle(),
@@ -164,7 +165,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { theme, toggleTheme } = useTheme();
-  const [timerOpen, setTimerOpen] = useState(false);
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
@@ -174,6 +174,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     qc.clear();
     clearPortalCache(user?.id);
     if (typeof window !== "undefined") {
+      localStorage.removeItem("montanha.impersonate");
       localStorage.removeItem("edufinance.impersonate");
       localStorage.removeItem("edufinance.tenantScope");
       localStorage.removeItem("edufinance.profileMode");
@@ -257,7 +258,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           <div className="pt-2">
             <button
               type="button"
-              onClick={() => setTimerOpen(true)}
+              onClick={() => openTrainingTimer()}
               title="Timer de Treino"
               className={cn(
                 "group relative flex w-full items-center rounded-xl text-sm font-bold outline-hidden transition-all duration-200 active:scale-[0.98]",
@@ -349,7 +350,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
       <PortalAnnouncementPopup />
     </div>
   );

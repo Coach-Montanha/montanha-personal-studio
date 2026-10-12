@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabase as defaultSupabase } from '@/integrations/supabase/client';
 
 export interface EcosystemUser {
   id: string;
@@ -63,6 +64,9 @@ const DISPOSABLE_EMAIL_DOMAINS = new Set([
 ]);
 
 function getSupabaseClient(): SupabaseClient | null {
+  if (defaultSupabase) {
+    return defaultSupabase as unknown as SupabaseClient;
+  }
   try {
     const url =
       (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) ||
