@@ -344,11 +344,11 @@ function SortableKPICard({ id, onHide, ...props }: any) {
 }
 
 type Payment = {
-  id: string; amount: number; payment_date: string; reference_month: string;
+  id: string; amount: number; payment_date: string; due_date?: string | null; reference_month: string;
   payment_method: string; status: string;
   student_id: string; plan_id: string | null;
-  students: { name: string } | null;
-  plans: { name: string } | null;
+  students: { name: string; status?: string } | null;
+  plans: { name: string; billing_cycle?: string } | null;
 };
 
 function Dashboard() {
@@ -453,7 +453,7 @@ function Dashboard() {
         pages++;
         let q = supabase
           .from("payments")
-          .select("id,amount,payment_date,reference_month,payment_method,status,student_id,plan_id,students(name),plans(name)")
+          .select("id,amount,payment_date,due_date,reference_month,payment_method,status,student_id,plan_id,students(name,status),plans(name,billing_cycle)")
           .is("deleted_at", null)
           .order("payment_date", { ascending: false })
           .range(from, from + PAGE - 1);
@@ -485,6 +485,21 @@ function Dashboard() {
     },
   });
   const studentCount = activeStudents.length;
+
+  const { data: studentsWithActivePlans = new Set<string>() } = useQuery({
+    queryKey: ["students-with-active-plans", scopeKey],
+    enabled: ready,
+    queryFn: async () => {
+      let q = supabase
+        .from("student_plan_history")
+        .select("student_id")
+        .eq("is_current", true);
+      if (scopeId) q = q.eq("user_id", scopeId);
+      const { data, error } = await q;
+      if (error) throw error;
+      return new Set((data ?? []).map((r) => r.student_id));
+    },
+  });
 
 
   const { data: birthdayStudents = [] } = useQuery({
@@ -560,12 +575,25 @@ function Dashboard() {
     const ticket = paidThis.length ? revThis / paidThis.length : 0;
     const ticketPrev = paidPrev.length ? revPrev / paidPrev.length : 0;
 
+    const activeStudentIds = new Set(activeStudents.map((s) => s.id));
     const studentsThis = new Set(paidThis.map((p) => p.student_id));
     const studentsPrev = new Set(paidPrev.map((p) => p.student_id));
     const churnedList = (allMonths || useRange)
       ? []
       : [...studentsPrev]
-          .filter((s) => !studentsThis.has(s))
+          .filter((s) => {
+            if (studentsThis.has(s)) return false;
+            // Alunos com status ativo no Studio NUNCA são considerados churn
+            if (activeStudentIds.has(s)) return false;
+            // Alunos com plano ativo vigente NUNCA entram em churn automático
+            if (studentsWithActivePlans.has(s)) return false;
+            // Alunos com pagamento válido com vencimento futuro cobrindo o mês
+            const hasFutureDueDate = payments.some(
+              (p) => p.student_id === s && p.status === "paid" && p.due_date && p.due_date.slice(0, 7) >= month
+            );
+            if (hasFutureDueDate) return false;
+            return true;
+          })
           .map((studentId) => {
             const rows = paidPrev.filter((p) => p.student_id === studentId);
             const last = rows.reduce((a, b) => (a.payment_date >= b.payment_date ? a : b));
@@ -584,7 +612,7 @@ function Dashboard() {
     const ticketTrend = (allMonths || useRange) ? 0 : (ticketPrev ? ((ticket - ticketPrev) / ticketPrev) * 100 : 0);
 
     return { revThis, revTrend, ticket, ticketTrend, churned, churnedList, paidThis };
-  }, [payments, month, prevMonth, allMonths, useRange, rangeStart, rangeEnd]);
+  }, [payments, month, prevMonth, allMonths, useRange, rangeStart, rangeEnd, activeStudents, studentsWithActivePlans]);
 
   const [churnOpen, setChurnOpen] = useState(false);
   const [attentionView, setAttentionView] = useState<"late" | "pending" | "missing" | null>(null);

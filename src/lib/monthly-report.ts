@@ -40,9 +40,21 @@ export async function generateMonthlyReport(referenceMonth: string): Promise<str
     .eq("reference_month", referenceMonth)
     .eq("status", "paid");
 
+  const { data: activeStudentsList } = await supabase
+    .from("students")
+    .select("id")
+    .eq("status", "active");
+  const activeSet = new Set((activeStudentsList ?? []).map((s: any) => s.id));
+
+  const { data: activePlansList } = await supabase
+    .from("student_plan_history")
+    .select("student_id")
+    .eq("is_current", true);
+  const activePlansSet = new Set((activePlansList ?? []).map((p: any) => p.student_id));
+
   const thisMonthSet = new Set((paidThisMonth ?? []).map((p: any) => p.student_id));
   const churnCount = (paidLastMonth ?? []).filter(
-    (p: any) => !thisMonthSet.has(p.student_id)
+    (p: any) => !thisMonthSet.has(p.student_id) && !activeSet.has(p.student_id) && !activePlansSet.has(p.student_id)
   ).length;
 
   const fmt = (v: number) =>
