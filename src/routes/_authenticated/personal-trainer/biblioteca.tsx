@@ -133,12 +133,22 @@ function BibliotecaPage() {
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["pt-library"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("pt_exercises_library" as never)
-        .select("id,name,muscle_group,description,media_url,media_type,thumbnail_url,user_id,is_global,created_at")
-        .order("name");
-      if (error) throw error;
-      return (data ?? []) as unknown as LibraryItem[];
+      let all: LibraryItem[] = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from("pt_exercises_library" as never)
+          .select("id,name,muscle_group,description,media_url,media_type,thumbnail_url,user_id,is_global,created_at")
+          .order("name")
+          .range(from, from + step - 1);
+        if (error) throw error;
+        const rows = (data ?? []) as unknown as LibraryItem[];
+        all = all.concat(rows);
+        if (rows.length < step) break;
+        from += step;
+      }
+      return all;
     },
   });
 
@@ -334,6 +344,12 @@ function BibliotecaPage() {
   );
 }
 
+function formatCleanDescription(desc?: string | null): string | null {
+  if (!desc) return null;
+  const parts = Array.from(new Set(desc.split(/\s*·\s*|\n+/).map((s) => s.trim()).filter(Boolean)));
+  return parts.join(" · ");
+}
+
 function ExerciseTile({
   item,
   onView,
@@ -401,7 +417,7 @@ function ExerciseTile({
           <h3 className="truncate text-base font-semibold leading-tight">{item.name}</h3>
           {item.description && (
             <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-              {item.description}
+              {formatCleanDescription(item.description)}
             </p>
           )}
         </div>
