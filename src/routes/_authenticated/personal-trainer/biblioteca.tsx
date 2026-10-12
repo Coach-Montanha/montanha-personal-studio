@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
@@ -17,7 +17,8 @@ import {
   Link2,
   ArrowLeftRight,
   DownloadCloud,
-
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -117,6 +118,19 @@ function youtubeEmbed(url: string): string | null {
   return yt ? `https://www.youtube.com/embed/${yt}` : null;
 }
 
+function generatePaginationRange(current: number, total: number): (number | string)[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, "...", total];
+  }
+  if (current >= total - 3) {
+    return [1, "...", total - 4, total - 3, total - 2, total - 1, total];
+  }
+  return [1, "...", current - 1, current, current + 1, "...", total];
+}
+
 function BibliotecaPage() {
   const qc = useQueryClient();
   const navigate = Route.useNavigate();
@@ -129,6 +143,9 @@ function BibliotecaPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<LibraryItem | null>(null);
   const [viewing, setViewing] = useState<LibraryItem | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 24;
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["pt-library"],
@@ -170,6 +187,24 @@ function BibliotecaPage() {
       );
     });
   }, [items, search, groupFilter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, groupFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const validPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const paginatedItems = useMemo(() => {
+    const start = (validPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, validPage, pageSize]);
+
+  const handlePageChange = (p: number) => {
+    setCurrentPage(p);
+    const el = document.getElementById("movimentos-grid-top");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   async function handleDelete(item: LibraryItem) {
     const ok = await confirmDialog({
@@ -274,14 +309,23 @@ function BibliotecaPage() {
         </div>
 
         {/* Meta count */}
-        <div className="text-xs text-muted-foreground">
-          {isLoading
-            ? "Carregando…"
-            : `${filtered.length} ${filtered.length === 1 ? "movimento" : "movimentos"}${
-                items.length !== filtered.length ? ` de ${items.length}` : ""
-              }`}
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+          <span>
+            {isLoading
+              ? "Carregando…"
+              : `${filtered.length} ${filtered.length === 1 ? "movimento" : "movimentos"}${
+                  items.length !== filtered.length ? ` de ${items.length}` : ""
+                }`}
+          </span>
+          {!isLoading && totalPages > 1 && (
+            <span className="font-medium text-foreground">
+              Página {validPage} de {totalPages}
+            </span>
+          )}
         </div>
       </header>
+
+      <div id="movimentos-grid-top" className="scroll-mt-6" />
 
       {/* Grid */}
       {isLoading ? (
@@ -310,19 +354,69 @@ function BibliotecaPage() {
           }}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((item) => (
-            <ExerciseTile
-              key={item.id}
-              item={item}
-              onView={() => setViewing(item)}
-              onEdit={() => {
-                setEditing(item);
-                setFormOpen(true);
-              }}
-              onDelete={() => handleDelete(item)}
-            />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {paginatedItems.map((item) => (
+              <ExerciseTile
+                key={item.id}
+                item={item}
+                onView={() => setViewing(item)}
+                onEdit={() => {
+                  setEditing(item);
+                  setFormOpen(true);
+                }}
+                onDelete={() => handleDelete(item)}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex flex-col items-center justify-between gap-4 border-t border-border/50 pt-4 sm:flex-row">
+              <span className="text-xs text-muted-foreground">
+                Mostrando {(validPage - 1) * pageSize + 1}–{Math.min(validPage * pageSize, filtered.length)} de {filtered.length} movimentos
+              </span>
+              <nav aria-label="Paginação da biblioteca" className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handlePageChange(Math.max(1, validPage - 1))}
+                  disabled={validPage <= 1}
+                  aria-label="Página anterior"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {generatePaginationRange(validPage, totalPages).map((p, idx) =>
+                  p === "…" ? (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-xs text-muted-foreground select-none">
+                      …
+                    </span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={p === validPage ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 min-w-8 px-2 text-xs"
+                      onClick={() => handlePageChange(Number(p))}
+                      aria-current={p === validPage ? "page" : undefined}
+                    >
+                      {p}
+                    </Button>
+                  )
+                )}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handlePageChange(Math.min(totalPages, validPage + 1))}
+                  disabled={validPage >= totalPages}
+                  aria-label="Próxima página"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </nav>
+            </div>
+          )}
         </div>
       )}
         </TabsContent>
