@@ -201,7 +201,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
         <div
           className={cn(
             "flex items-center gap-2 border-b border-sidebar-border transition-[padding] duration-200",
-            "min-h-16 h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)]",
+            "min-h-16 h-[calc(4rem+var(--safe-area-inset-top,0px))] pt-[var(--safe-area-inset-top,0px)]",
             collapsed ? "justify-center px-2" : "px-5",
           )}
         >
@@ -273,7 +273,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           </div>
         </nav>
 
-        <div className={cn("border-t border-sidebar-border", collapsed ? "p-2" : "p-3")}>
+        <div className={cn("border-t border-sidebar-border pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]", collapsed ? "p-2" : "p-3")}>
           <div
             className={cn(
               "flex items-center gap-2 rounded-lg bg-sidebar-accent transition-[padding] duration-200",
@@ -302,7 +302,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-x-clip">
-        <header className="sticky top-0 z-20 flex min-h-16 h-[calc(4rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] w-full max-w-full min-w-0 items-center gap-2 border-b border-border bg-background/85 px-3 backdrop-blur-md md:px-6">
+        <header className="sticky top-0 z-20 flex min-h-16 h-[calc(4rem+var(--safe-area-inset-top,0px))] pt-[var(--safe-area-inset-top,0px)] w-full max-w-full min-w-0 items-center gap-2 border-b border-border bg-background/85 px-3 backdrop-blur-md md:px-6">
           <button
             onClick={() => setCollapsed(!collapsed)}
             title={collapsed ? "Expandir barra lateral" : "Recolher barra lateral"}
@@ -345,7 +345,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </header>
-        <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:p-6 lg:p-8 overflow-x-clip">
+        <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(2.5rem+var(--safe-area-inset-bottom,0px))] sm:p-6 lg:p-8 overflow-x-clip">
           {children}
         </main>
       </div>

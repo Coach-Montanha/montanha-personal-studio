@@ -81,8 +81,14 @@ export function RestCountdownTimer({
   const [totalTime, setTotalTime] = useState<number>(safeInit);
   const [remaining, setRemaining] = useState<number>(safeInit);
   const [isRunning, setIsRunning] = useState(true);
+
   const hasFinishedRef = useRef(false);
   const lastTriggerKeyRef = useRef<string>("");
+  const targetEndTimeRef = useRef<number | null>(null);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+  const onDismissRef = useRef(onDismiss);
+  onDismissRef.current = onDismiss;
 
   // Chave única para identificar se um novo descanso começou de verdade
   const triggerKey = `${active ? "1" : "0"}_${exerciseName || ""}_${currentSet ?? 0}_${safeInit}`;
@@ -97,37 +103,48 @@ export function RestCountdownTimer({
         setRemaining(sec);
         setIsRunning(true);
         hasFinishedRef.current = false;
+        targetEndTimeRef.current = Date.now() + sec * 1000;
       }
     } else {
       lastTriggerKeyRef.current = "";
+      targetEndTimeRef.current = null;
     }
   }, [active, triggerKey, initialSeconds]);
 
-  // Contagem regressiva de segundo em segundo
+  // Contagem regressiva imune a re-renders e baseada em timestamp real
   useEffect(() => {
-    if (!active || !isRunning) return;
-
-    if (remaining <= 0) {
-      if (!hasFinishedRef.current) {
-        hasFinishedRef.current = true;
-        playCompletionChime();
-        toast.success("Descanso concluído! Bora para a próxima série 💪", {
-          icon: "⏰",
-        });
-        onComplete?.();
-      }
+    if (!active || !isRunning) {
+      targetEndTimeRef.current = null;
       return;
     }
 
-    const timer = setInterval(() => {
-      setRemaining((prev) => {
-        const curr = typeof prev === "number" && !isNaN(prev) ? prev : safeInit;
-        return Math.max(0, curr - 1);
-      });
-    }, 1000);
+    if (targetEndTimeRef.current === null) {
+      targetEndTimeRef.current = Date.now() + remaining * 1000;
+    }
 
-    return () => clearInterval(timer);
-  }, [active, isRunning, remaining, onComplete, safeInit]);
+    const interval = setInterval(() => {
+      if (!targetEndTimeRef.current) return;
+      const now = Date.now();
+      const diff = Math.max(0, Math.ceil((targetEndTimeRef.current - now) / 1000));
+
+      setRemaining(diff);
+
+      if (diff <= 0) {
+        clearInterval(interval);
+        targetEndTimeRef.current = null;
+        if (!hasFinishedRef.current) {
+          hasFinishedRef.current = true;
+          playCompletionChime();
+          toast.success("Descanso concluído! Bora para a próxima série 💪", {
+            icon: "⏰",
+          });
+          onCompleteRef.current?.();
+        }
+      }
+    }, 250);
+
+    return () => clearInterval(interval);
+  }, [active, isRunning]);
 
   if (!active) return null;
 
@@ -148,14 +165,28 @@ export function RestCountdownTimer({
         const validTot = typeof currTot === "number" && !isNaN(currTot) ? currTot : next;
         return Math.max(next, validTot);
       });
+      if (isRunning) {
+        targetEndTimeRef.current = Date.now() + next * 1000;
+      }
       return next;
     });
+  };
+
+  const toggleRunning = () => {
+    if (isRunning) {
+      setIsRunning(false);
+      targetEndTimeRef.current = null;
+    } else {
+      targetEndTimeRef.current = Date.now() + validRemaining * 1000;
+      setIsRunning(true);
+    }
   };
 
   const setPreset = (sec: number) => {
     const cleanSec = parseSafeSeconds(sec, 60);
     setTotalTime(cleanSec);
     setRemaining(cleanSec);
+    targetEndTimeRef.current = Date.now() + cleanSec * 1000;
     setIsRunning(true);
     hasFinishedRef.current = false;
   };
@@ -165,16 +196,16 @@ export function RestCountdownTimer({
   return (
     <div
       className={cn(
-        "fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-md",
+        "fixed bottom-[calc(1.25rem+var(--safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1.25rem)] max-w-md",
         "animate-in fade-in slide-in-from-bottom-5 duration-300",
         className,
       )}
     >
       <div
         className={cn(
-          "relative overflow-hidden rounded-3xl border shadow-2xl p-4 sm:p-5 backdrop-blur-xl transition-all",
+          "relative overflow-hidden rounded-2xl sm:rounded-3xl border shadow-2xl p-3.5 sm:p-5 backdrop-blur-xl transition-all",
           isCompleted
-            ? "border-emerald-500 bg-emerald-950/90 text-white shadow-emerald-500/30"
+            ? "border-emerald-500 bg-emerald-950/95 text-white shadow-emerald-500/30"
             : "border-primary/40 bg-zinc-950/95 text-white shadow-primary/20",
         )}
       >
@@ -182,19 +213,19 @@ export function RestCountdownTimer({
         <div className="absolute inset-x-0 top-0 h-1.5 bg-white/10">
           <div
             className={cn(
-              "h-full transition-all duration-1000 ease-linear",
+              "h-full transition-all duration-300 ease-linear",
               isCompleted ? "bg-emerald-400" : "bg-gradient-to-r from-amber-500 via-primary to-emerald-400",
             )}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
 
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-2">
           {/* Informações do exercício / série */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground/80">
               <Dumbbell className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span className="truncate max-w-[180px] sm:max-w-[220px] text-zinc-300">
+              <span className="truncate max-w-[150px] sm:max-w-[220px] text-zinc-300">
                 {exerciseName || "Descanso entre séries"}
               </span>
               {currentSet !== undefined && (
@@ -211,39 +242,39 @@ export function RestCountdownTimer({
           {/* Botão de Fechar */}
           <button
             type="button"
-            onClick={onDismiss}
+            onClick={() => onDismissRef.current?.()}
             aria-label="Fechar cronômetro de descanso"
-            className="rounded-full p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors"
+            className="rounded-full p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors shrink-0"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Display Central do Tempo */}
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <div className="flex items-baseline gap-2">
+        {/* Display Central do Tempo & Controles Compactos */}
+        <div className="mt-2.5 flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-baseline gap-1.5 min-w-0 shrink-0">
             <span
               className={cn(
-                "font-mono text-4xl sm:text-5xl font-black tabular-nums tracking-tight",
+                "font-mono text-3xl sm:text-4xl font-black tabular-nums tracking-tight",
                 isCompleted ? "text-emerald-400 animate-pulse" : "text-white",
               )}
             >
               {formattedTime}
             </span>
-            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+            <span className="text-[10px] sm:text-xs font-bold text-zinc-400 uppercase tracking-wider">
               {isCompleted ? "Fim" : "Restante"}
             </span>
           </div>
 
-          {/* Controles de Reprodução */}
-          <div className="flex items-center gap-1.5">
+          {/* Controles de Reprodução com flex shrink seguro */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <Button
               type="button"
               size="sm"
               variant="outline"
               onClick={() => adjustTime(-15)}
-              disabled={remaining <= 15}
-              className="h-9 w-9 p-0 rounded-xl border-white/10 bg-white/5 hover:bg-white/15 text-white"
+              disabled={validRemaining <= 15}
+              className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl border-white/10 bg-white/5 hover:bg-white/15 text-white shrink-0"
               title="-15 segundos"
             >
               <Minus className="h-3.5 w-3.5" />
@@ -253,7 +284,7 @@ export function RestCountdownTimer({
               size="sm"
               variant="outline"
               onClick={() => adjustTime(15)}
-              className="h-9 w-9 p-0 rounded-xl border-white/10 bg-white/5 hover:bg-white/15 text-white"
+              className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl border-white/10 bg-white/5 hover:bg-white/15 text-white shrink-0"
               title="+15 segundos"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -261,9 +292,9 @@ export function RestCountdownTimer({
             <Button
               type="button"
               size="sm"
-              onClick={() => setIsRunning(!isRunning)}
+              onClick={toggleRunning}
               className={cn(
-                "h-9 px-3.5 rounded-xl font-bold text-xs gap-1.5 transition-all shadow-md active:scale-95",
+                "h-8 px-2.5 sm:h-9 sm:px-3.5 rounded-xl font-bold text-xs gap-1 transition-all shadow-md active:scale-95 shrink-0 whitespace-nowrap",
                 isRunning
                   ? "bg-amber-500 hover:bg-amber-600 text-black"
                   : "bg-emerald-600 hover:bg-emerald-700 text-white",
@@ -271,7 +302,7 @@ export function RestCountdownTimer({
             >
               {isRunning ? (
                 <>
-                  <Pause className="h-3.5 w-3.5" /> Pausar
+                  <Pause className="h-3.5 w-3.5" /> Pausa
                 </>
               ) : (
                 <>
@@ -283,7 +314,7 @@ export function RestCountdownTimer({
         </div>
 
         {/* Presets Rápidos de Descanso */}
-        <div className="mt-3.5 flex items-center gap-1.5 overflow-x-auto pt-1 pb-0.5 scrollbar-none">
+        <div className="mt-3 flex items-center gap-1.5 overflow-x-auto pt-0.5 pb-0.5 scrollbar-none">
           {[30, 45, 60, 90, 120].map((sec) => (
             <button
               key={sec}
@@ -302,7 +333,7 @@ export function RestCountdownTimer({
           {isCompleted && (
             <button
               type="button"
-              onClick={onDismiss}
+              onClick={() => onDismissRef.current?.()}
               className="ml-auto rounded-lg bg-emerald-500/20 px-2.5 py-1 text-[11px] font-bold text-emerald-300 hover:bg-emerald-500/30 transition-all shrink-0"
             >
               Concluir ✕

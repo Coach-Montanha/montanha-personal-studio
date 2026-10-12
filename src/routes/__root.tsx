@@ -390,6 +390,14 @@ function RootComponent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isNativeCapacitor = isCapacitorNative();
+    const isMobileAndroid = /android/i.test(navigator.userAgent);
+    const isPwa = window.matchMedia("(display-mode: standalone)").matches || Boolean((navigator as any).standalone);
+
+    if (isNativeCapacitor || isPwa || isMobileAndroid) {
+      document.documentElement.setAttribute("data-native", "true");
+      document.documentElement.classList.add("native-capacitor");
+      document.body.classList.add("has-notch");
+    }
 
     const params = new URLSearchParams(window.location.search);
     const impersonateParam = params.get("impersonate");

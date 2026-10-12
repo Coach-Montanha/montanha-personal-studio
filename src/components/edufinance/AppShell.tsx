@@ -238,7 +238,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         <div
           className={cn(
-            "flex min-h-12 items-center gap-2 border-b border-sidebar-border py-2 pt-[calc(0.5rem+env(safe-area-inset-top,0px))]",
+            "flex min-h-12 items-center gap-2 border-b border-sidebar-border py-2 pt-[calc(0.5rem+var(--safe-area-inset-top,0px))]",
             iconOnly ? "justify-center px-1.5" : "px-3",
           )}
         >
@@ -349,7 +349,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div
           className={cn(
-            "border-t border-sidebar-border pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]",
+            "border-t border-sidebar-border pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]",
             iconOnly ? "p-1.5" : "p-2.5",
           )}
         >
@@ -445,7 +445,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           mainPad,
         )}
       >
-        <header className="sticky top-0 z-20 flex min-h-14 h-[calc(3.5rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] w-full max-w-full min-w-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-20 flex min-h-14 h-[calc(3.5rem+var(--safe-area-inset-top,0px))] pt-[var(--safe-area-inset-top,0px)] w-full max-w-full min-w-0 items-center gap-2 border-b bg-background/80 px-3 backdrop-blur md:px-6">
           <Button
             variant="ghost"
             size="icon"
@@ -504,7 +504,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             seus próprios registros.
           </div>
         )}
-        <main className="flex-1 min-w-0 max-w-full p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:p-4 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] md:p-6 lg:p-8 overflow-x-clip">
+        <main className="flex-1 min-w-0 max-w-full p-3 pb-[calc(2.5rem+var(--safe-area-inset-bottom,0px))] sm:p-4 sm:pb-[calc(2.5rem+var(--safe-area-inset-bottom,0px))] md:p-6 lg:p-8 overflow-x-clip">
           {children}
         </main>
       </div>

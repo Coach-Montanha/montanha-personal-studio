@@ -688,7 +688,7 @@ function FocusedDayView({
   return (
     <div className="space-y-4">
       {/* Sticky Header com Console do Treino e Cronômetro Gigante */}
-      <div className="sticky top-16 z-30 -mx-3 sm:-mx-6 lg:-mx-8 px-3 sm:px-6 lg:px-8 py-3 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/85 border-b border-border/80 shadow-xs space-y-2.5">
+      <div className="sticky top-[calc(4rem+var(--safe-area-inset-top,0px))] z-30 -mx-3 sm:-mx-6 lg:-mx-8 px-3 sm:px-6 lg:px-8 py-3 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/85 border-b border-border/80 shadow-xs space-y-2.5">
         {/* Linha 1: Voltar + Badges de Status */}
         <div className="flex items-center justify-between gap-2">
           <Button

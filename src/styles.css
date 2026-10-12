@@ -976,73 +976,83 @@ input:-webkit-autofill:active {
    MOBILE VIEWPORT & SAFE-AREA INSETS (Feature 10 - Mobile Compliance)
    ==================================================================== */
 :root {
-  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --app-safe-top: 0px;
+  --app-safe-bottom: 0px;
+  --safe-area-inset-top: max(env(safe-area-inset-top, 0px), var(--app-safe-top, 0px));
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
-  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), var(--app-safe-bottom, 0px));
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
 }
 
+[data-native="true"],
+.native-capacitor,
+html.has-notch,
+body.has-notch {
+  --app-safe-top: 36px;
+  --app-safe-bottom: 48px;
+}
+
 @utility pt-safe {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: var(--safe-area-inset-top);
 }
 
 @utility pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: var(--safe-area-inset-bottom);
 }
 
 @utility pl-safe {
-  padding-left: env(safe-area-inset-left, 0px);
+  padding-left: var(--safe-area-inset-left);
 }
 
 @utility pr-safe {
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-right: var(--safe-area-inset-right);
 }
 
 @utility p-safe {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
 }
 
 @utility mt-safe {
-  margin-top: env(safe-area-inset-top, 0px);
+  margin-top: var(--safe-area-inset-top);
 }
 
 @utility mb-safe {
-  margin-bottom: env(safe-area-inset-bottom, 0px);
+  margin-bottom: var(--safe-area-inset-bottom);
 }
 
 @utility top-safe {
-  top: env(safe-area-inset-top, 0px);
+  top: var(--safe-area-inset-top);
 }
 
 @utility bottom-safe {
-  bottom: env(safe-area-inset-bottom, 0px);
+  bottom: var(--safe-area-inset-bottom);
 }
 
 /* Fallback utility classes for non-Tailwind compilation scopes */
 .pt-safe {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: var(--safe-area-inset-top);
 }
 
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: var(--safe-area-inset-bottom);
 }
 
 .pl-safe {
-  padding-left: env(safe-area-inset-left, 0px);
+  padding-left: var(--safe-area-inset-left);
 }
 
 .pr-safe {
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-right: var(--safe-area-inset-right);
 }
 
 .p-safe {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
 }
 
 /* ====================================================================
