@@ -230,7 +230,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-52 flex-col bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-52 max-h-dvh overflow-y-auto md:overflow-visible flex-col bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 md:translate-x-0 scrollbar-none",
           asideWidth,
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           collapsed && hoverExpand && hovering && "md:shadow-2xl",
@@ -349,7 +349,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div
           className={cn(
-            "border-t border-sidebar-border pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]",
+            "border-t border-sidebar-border pb-[calc(3.5rem+var(--safe-area-inset-bottom,0px))] md:pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]",
             iconOnly ? "p-1.5" : "p-2.5",
           )}
         >
@@ -422,10 +422,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <button
               onClick={signOut}
               data-testid="button-logout"
-              title="Sair"
-              className="rounded-md p-1 text-sidebar-foreground/70 hover:bg-sidebar/40 hover:text-sidebar-foreground"
+              title="Sair da conta"
+              aria-label="Sair da conta"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive active:scale-95 transition-colors"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -489,6 +490,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               ) : (
                 <Moon className="h-[18px] w-[18px] text-muted-foreground" />
               )}
+            </button>
+            <button
+              onClick={signOut}
+              className="md:hidden focus-ring flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground transition-ui hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive active:scale-95"
+              title="Sair da conta"
+              aria-label="Sair da conta"
+            >
+              <LogOut className="h-[18px] w-[18px]" />
             </button>
           </div>
         </header>
