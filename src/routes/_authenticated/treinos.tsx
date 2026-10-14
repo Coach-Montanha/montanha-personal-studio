@@ -68,7 +68,7 @@ type ProgramRow = {
   created_at: string;
   // Joins
   students?: { id: string; name: string; email: string | null } | null;
-  pt_students?: { id: string; name: string; email: string | null } | null;
+  pt_students?: { id: string; name: string; email: string | null; notes?: string | null } | null;
 };
 
 const CATEGORIA_LABELS: Record<string, string> = {
@@ -112,8 +112,7 @@ export function TreinosPage() {
         .from("pt_programs" as never)
         .select(`
           *,
-          students:studio_student_id (id, name, email),
-          pt_students:pt_student_id (id, name, email)
+          pt_students:pt_student_id (id, name, email, notes)
         ` as never);
 
       if (statusFiltro === "ativos") {
@@ -123,7 +122,10 @@ export function TreinosPage() {
       }
 
       const { data, error } = await q.order("created_at" as never, { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error("[treinos.tsx] Erro ao carregar programas:", error);
+        throw error;
+      }
       return (data || []) as unknown as ProgramRow[];
     },
   });
