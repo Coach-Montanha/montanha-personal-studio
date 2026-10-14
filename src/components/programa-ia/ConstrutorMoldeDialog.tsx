@@ -1,0 +1,978 @@
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ChevronDown, Plus, Trash2, Sparkles, Hand, Wand2, X, Check } from "lucide-react";
+import { SortableList, SortableRow } from "@/components/dnd/sortable-list";
+import { ExercisePicker } from "@/components/session-builder/ExercisePicker";
+import type {
+  BlocoTemplate,
+  BlockFormatHibrido,
+  HibridoPayload,
+  ModalidadeHibrida,
+  ModoExecucao,
+  SelecaoExercicios,
+  SessaoTemplate,
+  SlotPreparacao,
+} from "@/lib/hibrido-ia.server";
+import { METHODOLOGY_LABEL, BLOCK_FORMAT_LABEL, type Methodology } from "@/lib/methodology";
+import { useFormatRegistry, type FormatPreset } from "@/lib/format-registry";
+import { useSetTypeRegistry } from "@/lib/set-type-registry";
+
+const EQUIPAMENTO_VALORES = [
+  "Kettlebell",
+  "Ginásticos",
+  "Dumbbell",
+  "Barbell",
+  "Mobilidade",
+  "Alternativos Musculação",
+  "Objetos Alternativos",
+] as const;
+
+type ExercicioPool = { metodologias: string[] | null; equipamento: string[] | null };
+
+function usePoolExercicios() {
+  return useQuery({
+    queryKey: ["pool-exercicios-molde"],
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<ExercicioPool[]> => {
+      const { data, error } = await supabase.from("exercises").select("metodologias, equipamento");
+      if (error) throw error;
+      return (data ?? []) as ExercicioPool[];
+    },
+  });
+}
+
+function contarCompativeis(
+  pool: ExercicioPool[],
+  metodologias: string[],
+  equipamento: string[],
+): number {
+  return pool.filter((e) => {
+    const okMet =
+      metodologias.length === 0 || (e.metodologias ?? []).some((m) => metodologias.includes(m));
+    const okEq =
+      equipamento.length === 0 || (e.equipamento ?? []).some((q) => equipamento.includes(q));
+    return okMet && okEq;
+  }).length;
+}
+
+function ContagemFiltro({
+  metodologias,
+  equipamento,
+  necessarios,
+}: {
+  metodologias: string[];
+  equipamento: string[];
+  necessarios: number;
+}) {
+  const { data: pool, isLoading } = usePoolExercicios();
+  if (isLoading || !pool) {
+    return (
+      <p className="col-span-full text-[11px] text-muted-foreground">
+        Conferindo a biblioteca de exercícios...
+      </p>
+    );
+  }
+  const total = contarCompativeis(pool, metodologias, equipamento);
+  const insuficiente = total < necessarios;
+  return (
+    <p
+      className={`col-span-full text-[11px] ${insuficiente ? "font-medium text-destructive" : "text-muted-foreground"}`}
+    >
+      {insuficiente
+        ? `Apenas ${total} exercício(s) da biblioteca batem com esses filtros, mas o bloco pede ${necessarios}. Ajuste os filtros ou cadastre mais exercícios antes de gerar.`
+        : `${total} exercício(s) da biblioteca batem com esses filtros. A IA escolherá ${necessarios}.`}
+    </p>
+  );
+}
+
+
+/** Formatos cujo bloco tem faixa/valor fixo de séries (rounds). */
+const USA_SERIES: string[] = [
+  "emom",
+  "e2mom",
+  "circuito",
+  "bodybuilding_sets",
+  "metcon",
+  "finalizador",
+];
+const USA_INTERVALO: string[] = ["emom", "e2mom"];
+const USA_DURACAO_TOTAL: string[] = ["amrap", "preparacao_movimento", "mobilidade"];
+const USA_PERCENTUAL: string[] = ["forca_tecnica_pct"];
+const USA_DESCANSO_ENTRE_SERIES: string[] = ["circuito", "bodybuilding_sets", "metcon", "finalizador"];
+const USA_SLOT: string[] = ["preparacao_movimento"];
+const USA_NUMERO_EXERCICIOS = (formato: string) => formato !== "kb_timed_sets" && !formato.includes("kb_timed_sets");
+
+function gerarChave(formatoBase: string, existentes: BlocoTemplate[]) {
+  const base = (formatoBase || "bloco").split("_")[0];
+  let n = 1;
+  let chave = `${base}_${n}`;
+  const usados = new Set(existentes.map((b) => b.chave));
+  
+  // Limite de segurança para evitar loop infinito
+  let safety = 0;
+  while (usados.has(chave) && safety < 1000) {
+    n += 1;
+    chave = `${base}_${n}`;
+    safety += 1;
+  }
+  return chave;
+}
+
+function novoBloco(presetOrFormat: any, existentes: BlocoTemplate[], presets: any[]): BlocoTemplate {
+  // Se for um objeto, é um preset. Se for string, é o formato base.
+  const preset = typeof presetOrFormat === 'object' ? presetOrFormat : presets.find(p => p.id === presetOrFormat || p.base === presetOrFormat);
+  const formatoBase = preset?.base || presetOrFormat as string;
+  
+  const chave = gerarChave(formatoBase, existentes);
+  const base: BlocoTemplate = {
+    chave,
+    formato: formatoBase,
+    presetId: preset?.id || null,
+    titulo: preset?.label || null,
+    duracaoMin: preset?.defaults?.duracaoMin ?? 9,
+    seriesMin: preset?.defaults?.seriesMin ?? 3,
+    seriesMax: preset?.defaults?.seriesMax ?? 3,
+    numeroExercicios: preset?.defaults?.numeroExercicios ?? 2,
+    repsPorExercicio: preset?.defaults?.repsPorExercicio ?? 12,
+    modoExecucao: (preset?.defaults?.modoExecucao as ModoExecucao) ?? "circuito",
+    descansoAposSeg: preset?.defaults?.descansoAposSeg ?? 0,
+    descansoEntreSeriesSeg: preset?.defaults?.descansoEntreSeriesSeg ?? null,
+    intervaloMin: preset?.defaults?.intervaloMin ?? null,
+    percentual1rm: preset?.defaults?.percentual1rm ?? null,
+    selecaoExercicios: (preset?.defaults?.selecaoExercicios as SelecaoExercicios) ?? "ia",
+    exerciciosFixos: preset?.defaults?.exerciciosFixos ?? [],
+    slot: (preset?.defaults?.slot as SlotPreparacao) ?? null,
+    fonteExercicios: preset?.defaults?.fonteExercicios ?? {},
+  };
+
+  // Ajustes específicos por formato base se não houver preset customizado definindo-os
+  if (!preset || preset.id.startsWith('builtin:')) {
+    switch (formatoBase) {
+      case "preparacao_movimento":
+        return { ...base, titulo: "Mobilidade", duracaoMin: 2, numeroExercicios: 1, seriesMin: 4, seriesMax: 4, slot: "mobilidade" };
+      case "forca_tecnica_pct":
+        return {
+          ...base,
+          duracaoMin: 8,
+          seriesMin: 6,
+          seriesMax: 6,
+          numeroExercicios: 1,
+          repsPorExercicio: 6,
+          percentual1rm: 70,
+        };
+      case "emom":
+        return { ...base, duracaoMin: 9, seriesMin: 9, seriesMax: 9, intervaloMin: 1, numeroExercicios: 2 };
+      case "e2mom":
+        return { ...base, duracaoMin: 16, seriesMin: 8, seriesMax: 8, intervaloMin: 2, numeroExercicios: 2 };
+      case "amrap":
+        return { ...base, duracaoMin: 12, seriesMin: null, seriesMax: null, numeroExercicios: 3 };
+      case "kb_timed_sets":
+        return {
+          ...base,
+          duracaoMin: 10,
+          seriesMin: null,
+          seriesMax: null,
+          numeroExercicios: 1,
+          selecaoExercicios: "manual",
+        };
+      case "finalizador":
+        return { ...base, duracaoMin: 2, seriesMin: 1, seriesMax: 1, numeroExercicios: 1 };
+    }
+  }
+
+  return base;
+}
+
+function novoAquecimento(existentes: BlocoTemplate[], modalidade: ModalidadeHibrida): BlocoTemplate {
+  const formato = "circuito";
+  const chave = gerarChave(formato, existentes);
+  return {
+    chave,
+    formato,
+    presetId: `builtin:${formato}`,
+    titulo: "Aquecimento",
+    duracaoMin: 5,
+    seriesMin: 4,
+    seriesMax: 4,
+    numeroExercicios: 2,
+    repsPorExercicio: 10,
+    modoExecucao: "circuito",
+    descansoAposSeg: 0,
+    descansoEntreSeriesSeg: 30,
+    selecaoExercicios: "ia",
+    exerciciosFixos: [],
+    fonteExercicios: { metodologias: [modalidade] },
+  };
+}
+
+function resumoBloco(b: BlocoTemplate): string {
+  const partes: string[] = [];
+  if (b.duracaoMin) partes.push(`${b.duracaoMin}'`);
+  if (USA_SERIES.includes(b.formato) && b.seriesMin != null) {
+    partes.push(b.seriesMin === b.seriesMax ? `${b.seriesMin} séries` : `${b.seriesMin}-${b.seriesMax} séries`);
+  }
+  if (USA_INTERVALO.includes(b.formato) && b.intervaloMin != null) {
+    partes.push(`a cada ${b.intervaloMin}'`);
+  }
+  if (USA_PERCENTUAL.includes(b.formato) && b.percentual1rm != null) {
+    partes.push(`${b.percentual1rm}% 1RM`);
+  }
+  if (USA_NUMERO_EXERCICIOS(b.formato)) {
+    partes.push(`${b.numeroExercicios} exerc.`);
+  }
+  if (b.repsPorExercicio) partes.push(`${b.repsPorExercicio} reps`);
+  partes.push(b.selecaoExercicios === "ia" ? "seleção IA" : "seleção manual");
+  if (b.descansoAposSeg > 0) partes.push(`descanso depois: ${b.descansoAposSeg}s`);
+  return partes.join(" · ");
+}
+
+
+function CampoNumero({
+  label,
+  value,
+  onChange,
+  suffix,
+  min = 0,
+}: {
+  label: string;
+  value: number | null | undefined;
+  onChange: (v: number | null) => void;
+  suffix?: string;
+  min?: number;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <div className="relative">
+        <Input
+          type="number"
+          min={min}
+          className="h-9 tabular-nums"
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+        />
+        {suffix && (
+          <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[11px] text-muted-foreground">
+            {suffix}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BlocoConfigForm({
+  bloco,
+  onChange,
+  formatLabel,
+  presets,
+}: {
+  bloco: BlocoTemplate;
+  onChange: (patch: Partial<BlocoTemplate>) => void;
+  formatLabel: (f: string) => string;
+  presets: FormatPreset[];
+}) {
+  const { presets: setTypes } = useSetTypeRegistry();
+  const activePreset = presets.find(p => p.id === bloco.presetId || p.id === `builtin:${bloco.formato}`);
+  const activeSetType = setTypes.find(t => t.id === activePreset?.set_type_id);
+
+  // Helper para rótulo e visibilidade
+  const getFieldMeta = (key: string) => {
+    const isEnabled = activePreset?.enabled_fields ? activePreset.enabled_fields.includes(key) : true;
+    const label = activePreset?.field_labels?.[key] || activeSetType?.fields.find(f => f.key === key)?.label || key;
+    return { isEnabled, label };
+  };
+  return (
+    <div className="space-y-4 border-t border-border/60 pt-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Formato</Label>
+          <Select 
+            value={bloco.presetId || (bloco.formato.startsWith('builtin:') ? bloco.formato : `builtin:${bloco.formato}`)} 
+            onValueChange={(v) => {
+              const p = presets.find((pr: any) => pr.id === v);
+              if (p) {
+                // Reset para padrão ao trocar
+                onChange({ 
+                  formato: p.base,
+                  presetId: p.id,
+                  titulo: p.label,
+                  // Aplicar defaults do preset
+                  duracaoMin: p.defaults?.duracaoMin ?? 10,
+                  seriesMin: p.defaults?.seriesMin ?? 3,
+                  seriesMax: p.defaults?.seriesMax ?? 3,
+                  numeroExercicios: p.defaults?.numeroExercicios ?? 2,
+                  repsPorExercicio: p.defaults?.repsPorExercicio ?? 12,
+                  descansoEntreSeriesSeg: p.defaults?.descansoEntreSeriesSeg ?? null,
+                  descansoAposSeg: p.defaults?.descansoAposSeg ?? 0,
+                  percentual1rm: p.defaults?.percentual1rm ?? null,
+                  intervaloMin: p.defaults?.intervaloMin ?? null,
+                });
+              }
+            }}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {presets.map((p: any) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Título do bloco — opcional</Label>
+          <Input
+            className="h-9"
+            placeholder={formatLabel(bloco.formato)}
+            value={bloco.titulo ?? ""}
+            onChange={(e) => onChange({ titulo: e.target.value || null })}
+          />
+        </div>
+
+        <CampoNumero
+          label={USA_DURACAO_TOTAL.includes(bloco.formato) ? "Duração total" : "Teto de tempo"}
+          value={bloco.duracaoMin}
+          onChange={(v) => onChange({ duracaoMin: v })}
+          suffix="min"
+        />
+
+        {activeSetType?.fields.filter(f => activePreset?.enabled_fields ? activePreset.enabled_fields.includes(f.key) : true).map(field => {
+          const meta = getFieldMeta(field.key);
+          
+          if (field.key === 'serie_rep') {
+             return (
+              <div key={field.key} className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">{meta.label}</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={1}
+                    className="h-9 w-16 tabular-nums"
+                    value={bloco.seriesMin ?? ""}
+                    onChange={(e) => onChange({ seriesMin: e.target.value ? Number(e.target.value) : null })}
+                  />
+                  <span className="text-xs text-muted-foreground">a</span>
+                  <Input
+                    type="number"
+                    min={1}
+                    className="h-9 w-16 tabular-nums"
+                    value={bloco.seriesMax ?? ""}
+                    onChange={(e) => onChange({ seriesMax: e.target.value ? Number(e.target.value) : null })}
+                  />
+                </div>
+              </div>
+            );
+          }
+
+          if (field.key === 'intervalo_seg' || field.key === 'tempo_seg' || field.key === 'ritmo') {
+            // Campos de tempo/ritmo
+             return (
+              <CampoNumero
+                key={field.key}
+                label={meta.label}
+                value={field.key === 'intervalo_seg' ? bloco.descansoEntreSeriesSeg : (bloco as any)[field.key]}
+                onChange={(v) => onChange({ [field.key === 'intervalo_seg' ? 'descansoEntreSeriesSeg' : field.key]: v })}
+                suffix={field.key === 'ritmo' ? "min/km" : "seg"}
+              />
+            );
+          }
+
+          return (
+             <div key={field.key} className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">{meta.label}</Label>
+                <Input
+                  className="h-9"
+                  value={(bloco as any)[field.key === 'carga' ? 'percentual1rm' : 'repsPorExercicio'] ?? ""}
+                  onChange={(e) => onChange({ [field.key === 'carga' ? 'percentual1rm' : 'repsPorExercicio']: e.target.value })}
+                />
+              </div>
+          );
+        })}
+
+        {USA_NUMERO_EXERCICIOS(bloco.formato) && (
+          <CampoNumero
+            label="Número de exercícios"
+            value={bloco.numeroExercicios}
+            onChange={(v) => onChange({ numeroExercicios: v ?? 1 })}
+            min={1}
+          />
+        )}
+
+        <CampoNumero
+          label="Descanso após este bloco"
+          value={bloco.descansoAposSeg}
+          onChange={(v) => onChange({ descansoAposSeg: v ?? 0 })}
+          suffix="seg"
+        />
+
+        {USA_SLOT.includes(bloco.formato) && (
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Slot</Label>
+            <Select value={bloco.slot ?? "mobilidade"} onValueChange={(v) => onChange({ slot: v as SlotPreparacao })}>
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mobilidade">Mobilidade</SelectItem>
+                <SelectItem value="aquecimento">Aquecimento</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Execução</Label>
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={bloco.modoExecucao}
+            onValueChange={(v) => v && onChange({ modoExecucao: v as ModoExecucao })}
+            className="rounded-md border border-border/60 bg-muted/30 p-0.5"
+          >
+            <ToggleGroupItem
+              value="circuito"
+              className="h-7 px-3 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            >
+              Circuito
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="series_fixas"
+              className="h-7 px-3 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+            >
+              Séries fixas
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border/60 bg-muted/10 p-3">
+        <Label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Seleção de exercícios
+        </Label>
+        <ToggleGroup
+          type="single"
+          size="sm"
+          value={bloco.selecaoExercicios}
+          onValueChange={(v) => v && onChange({ selecaoExercicios: v as SelecaoExercicios })}
+          className="mb-3 rounded-md border border-border/60 bg-background p-0.5"
+        >
+          <ToggleGroupItem
+            value="ia"
+            className="h-7 gap-1.5 px-3 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >
+            <Wand2 className="h-3 w-3" /> IA escolhe
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="manual"
+            className="h-7 gap-1.5 px-3 text-xs data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          >
+            <Hand className="h-3 w-3" /> Eu escolho
+          </ToggleGroupItem>
+        </ToggleGroup>
+
+        {bloco.selecaoExercicios === "ia" ? (
+          <div className="space-y-3.5 pt-1">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                  Metodologias de origem
+                </Label>
+                {(bloco.fonteExercicios.metodologias ?? []).length === 0 ? (
+                  <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/40">
+                    Padrão: usa modalidade da geração
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                      {(bloco.fonteExercicios.metodologias ?? []).length} selecionada{((bloco.fonteExercicios.metodologias ?? []).length > 1) ? "s" : ""}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onChange({ fonteExercicios: { ...bloco.fonteExercicios, metodologias: [] } })}
+                      className="text-[11px] text-muted-foreground hover:text-foreground underline cursor-pointer"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-1.5">
+                {(Object.keys(METHODOLOGY_LABEL) as Methodology[]).map((m) => {
+                  const ativo = (bloco.fonteExercicios.metodologias ?? []).includes(m);
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => {
+                        const atuais = bloco.fonteExercicios.metodologias ?? [];
+                        const proximo = ativo ? atuais.filter((x) => x !== m) : [...atuais, m];
+                        onChange({ fonteExercicios: { ...bloco.fonteExercicios, metodologias: proximo } });
+                      }}
+                      className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-all duration-150 text-left min-h-[38px] cursor-pointer ${
+                        ativo
+                          ? "border-primary bg-primary/15 text-primary shadow-xs font-semibold ring-1 ring-primary/40"
+                          : "border-border/70 bg-background/80 text-muted-foreground hover:border-primary/40 hover:bg-accent/40 hover:text-foreground"
+                      }`}
+                    >
+                      <span className="truncate">{METHODOLOGY_LABEL[m]}</span>
+                      <div
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                          ativo
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-muted-foreground/40 bg-background/50"
+                        }`}
+                      >
+                        {ativo && <Check className="h-3 w-3" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                  Equipamento
+                </Label>
+                {(bloco.fonteExercicios.equipamento ?? []).length === 0 ? (
+                  <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded border border-border/40">
+                    Padrão: qualquer equipamento
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                      {(bloco.fonteExercicios.equipamento ?? []).length} selecionado{((bloco.fonteExercicios.equipamento ?? []).length > 1) ? "s" : ""}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onChange({ fonteExercicios: { ...bloco.fonteExercicios, equipamento: [] } })}
+                      className="text-[11px] text-muted-foreground hover:text-foreground underline cursor-pointer"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-1.5">
+                {EQUIPAMENTO_VALORES.map((eq) => {
+                  const ativo = (bloco.fonteExercicios.equipamento ?? []).includes(eq);
+                  return (
+                    <button
+                      key={eq}
+                      type="button"
+                      onClick={() => {
+                        const atuais = bloco.fonteExercicios.equipamento ?? [];
+                        const proximo = ativo ? atuais.filter((x) => x !== eq) : [...atuais, eq];
+                        onChange({ fonteExercicios: { ...bloco.fonteExercicios, equipamento: proximo } });
+                      }}
+                      className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs capitalize transition-all duration-150 text-left min-h-[38px] cursor-pointer ${
+                        ativo
+                          ? "border-primary bg-primary/15 text-primary shadow-xs font-semibold ring-1 ring-primary/40"
+                          : "border-border/70 bg-background/80 text-muted-foreground hover:border-primary/40 hover:bg-accent/40 hover:text-foreground"
+                      }`}
+                    >
+                      <span className="truncate">{eq}</span>
+                      <div
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                          ativo
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-muted-foreground/40 bg-background/50"
+                        }`}
+                      >
+                        {ativo && <Check className="h-3 w-3" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <ContagemFiltro
+              metodologias={bloco.fonteExercicios.metodologias ?? []}
+              equipamento={bloco.fonteExercicios.equipamento ?? []}
+              necessarios={bloco.numeroExercicios}
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-1.5">
+              {(bloco.exerciciosFixos ?? []).map((id) => (
+                <Badge key={id} variant="secondary" className="gap-1 pr-1 text-[11px]">
+                  {id.slice(0, 8)}…
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onChange({
+                        exerciciosFixos: (bloco.exerciciosFixos ?? []).filter((x) => x !== id),
+                      })
+                    }
+                    className="rounded-full p-0.5 hover:bg-muted-foreground/20"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <ExercisePicker
+              onPick={(ex) =>
+                onChange({
+                  exerciciosFixos: [...(bloco.exerciciosFixos ?? []), ex.id],
+                })
+              }
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BlocoCard({
+  bloco,
+  aberto,
+  onToggle,
+  onChange,
+  onRemove,
+  formatLabel,
+  presets,
+}: {
+  bloco: BlocoTemplate;
+  aberto: boolean;
+  onToggle: () => void;
+  onChange: (patch: Partial<BlocoTemplate>) => void;
+  onRemove: () => void;
+  formatLabel: (f: string) => string;
+  presets: any[];
+}) {
+  return (
+    <div className="w-full">
+      <Collapsible open={aberto} onOpenChange={onToggle}>
+        <div className="flex items-center gap-2 p-3 pr-0">
+          <CollapsibleTrigger asChild>
+            <button type="button" className="flex flex-1 items-center gap-2 text-left">
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${aberto ? "rotate-180" : ""}`}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-semibold">{bloco.titulo || formatLabel(bloco.formato)}</span>
+                  <Badge variant="outline" className="text-[10px] uppercase tracking-wide">
+                    {formatLabel(bloco.formato)}
+                  </Badge>
+                </div>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">{resumoBloco(bloco)}</p>
+              </div>
+            </button>
+          </CollapsibleTrigger>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive mr-1"
+            onClick={onRemove}
+            aria-label="Remover bloco"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+        <CollapsibleContent className="px-3 pb-3">
+          <BlocoConfigForm bloco={bloco} onChange={onChange} formatLabel={formatLabel} presets={presets} />
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+}
+
+export interface ConstrutorMoldeDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  modalidade: ModalidadeHibrida;
+  tituloPrograma: string;
+  isGenerating?: boolean;
+  onGerar: (payload: HibridoPayload, instrucoes: string) => void;
+}
+
+const LABEL_MODALIDADE: Record<ModalidadeHibrida, string> = {
+  hibrido: "Treinamento Híbrido",
+  kettlebell_fitness: "Kettlebell Fitness",
+};
+
+export function ConstrutorMoldeDialog({
+  open,
+  onOpenChange,
+  modalidade,
+  tituloPrograma,
+  isGenerating = false,
+  onGerar,
+}: ConstrutorMoldeDialogProps) {
+  useEffect(() => {
+    if (open) {
+      console.log("[ConstrutorMoldeDialog] Opened", { modalidade, tituloPrograma });
+    }
+  }, [open, modalidade, tituloPrograma]);
+
+  const { presets } = useFormatRegistry();
+  const [numeroSessoes, setNumeroSessoes] = useState(1);
+  const [instrucoes, setInstrucoes] = useState("");
+  const [blocos, setBlocos] = useState<SessaoTemplate>([]);
+  const [abertoChave, setAbertoChave] = useState<string | null>(null);
+
+  function adicionarBloco(presetId: string) {
+    try {
+      console.log("[block:add:click]", { presetId });
+      const preset = presets.find(p => p.id === presetId);
+      if (!preset) {
+        console.error("[block:add:error] Preset not found", { presetId });
+        return;
+      }
+
+      console.log("[block:add:resolve]", { label: preset.label, base: preset.base });
+
+      if (preset.base === "preparacao_movimento") {
+        const mob = novoBloco(preset, blocos, presets);
+        const aq = novoAquecimento([...blocos, mob], modalidade);
+        mob.titulo = "Mobilidade";
+        aq.titulo = "Aquecimento";
+        console.log("[block:add:create:prep]", { mobKey: mob.chave, aqKey: aq.chave });
+        setBlocos((prev) => [...prev, mob, aq]);
+        setAbertoChave(mob.chave);
+      } else {
+        const b = novoBloco(preset, blocos, presets);
+        console.log("[block:add:create]", { key: b.chave, format: b.formato });
+        setBlocos((prev) => [...prev, b]);
+        setAbertoChave(b.chave);
+      }
+    } catch (err: any) {
+      console.error("[block:add:fatal]", err);
+      // Opcional: Toast ou alerta aqui se disponível
+    }
+  }
+
+  function atualizarBloco(chave: string, patch: Partial<BlocoTemplate>) {
+    setBlocos((prev) => prev.map((b) => (b.chave === chave ? { ...b, ...patch } : b)));
+  }
+
+  function removerBloco(chave: string) {
+    setBlocos((prev) => prev.filter((b) => b.chave !== chave));
+  }
+
+  function reordenar(activeId: string, overId: string) {
+    setBlocos((prev) => {
+      const from = prev.findIndex((b) => b.chave === activeId);
+      const to = prev.findIndex((b) => b.chave === overId);
+      if (from === -1 || to === -1 || from === to) return prev;
+      const next = [...prev];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  }
+
+  function limpar() {
+    setNumeroSessoes(1);
+    setInstrucoes("");
+    setBlocos([]);
+    setAbertoChave(null);
+  }
+
+  function handleGerar() {
+    onGerar(
+      {
+        modalidade,
+        tituloPrograma,
+        numeroSessoes,
+        sessaoTemplate: blocos,
+        diasPorSemana: 1, // Placeholder, app.gerar vai sobrescrever se necessário
+        dataInicio: new Date().toISOString(), // Placeholder
+      },
+      instrucoes,
+    );
+  }
+
+
+  // We no longer map to .id and filter, we use the presets directly to allow all formats
+  const formatosDisponiveis = presets;
+
+  const getFormatLabel = (f: string) => {
+    const p = presets.find((p: any) => p.id === f || p.base === f);
+    if (p?.label) return p.label;
+    if (typeof f === "string") {
+      if (f.startsWith("custom:")) return "Personalizado";
+      if (f.startsWith("builtin:")) {
+        const raw = f.replace("builtin:", "");
+        return BLOCK_FORMAT_LABEL[raw] ?? raw;
+      }
+      return BLOCK_FORMAT_LABEL[f] ?? f;
+    }
+    return f;
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) limpar();
+        onOpenChange(o);
+      }}
+    >
+      <DialogContent className="flex max-h-[90dvh] max-w-3xl flex-col gap-0 p-0">
+        <DialogHeader className="border-b border-border/60 px-5 py-4 text-left sm:px-6">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            Construtor de molde
+            <Badge variant="secondary" className="ml-1 text-[10px] uppercase tracking-wide">
+              {LABEL_MODALIDADE[modalidade]}
+            </Badge>
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            Monte a estrutura fixa de blocos da sessão. A IA só escolhe quais exercícios da sua biblioteca preenchem
+            cada bloco marcado como "IA escolhe" — a estrutura em si (formato, duração, séries, número de exercícios,
+            descanso) é definida por você.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Sessões a gerar nesta sequência</Label>
+              <Input
+                type="number"
+                min={1}
+                max={52}
+                className="h-9 tabular-nums"
+                value={numeroSessoes}
+                onChange={(e) => setNumeroSessoes(Math.max(1, Number(e.target.value)))}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Mesmo molde repetido, exercícios variando entre elas quando o pool permitir.
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Instruções adicionais — opcional</Label>
+              <Textarea
+                rows={2}
+                className="resize-y text-sm"
+                placeholder="Ex.: priorizar padrões de empurrar nesta semana."
+                value={instrucoes}
+                onChange={(e) => setInstrucoes(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Blocos da sessão ({blocos.length})
+              </Label>
+            </div>
+
+            {blocos.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border/70 p-6 text-center">
+                <p className="text-sm text-muted-foreground">Nenhum bloco adicionado ainda.</p>
+                <p className="mt-1 text-xs text-muted-foreground/80">
+                  Comece adicionando o primeiro bloco da sessão (ex.: Mobilidade / Preparação).
+                </p>
+              </div>
+            ) : (
+              <SortableList ids={blocos.map((b) => b.chave)} label="Bloco" onReorder={reordenar}>
+                <div className="space-y-2">
+                  {blocos.map((b) => (
+                    <SortableRow key={b.chave} id={b.chave} handleLabel={`Reordenar ${getFormatLabel(b.formato)}`}>
+                      <div className="flex-1 min-w-0 pr-3 py-1">
+                        <BlocoCard
+                          bloco={b}
+                          aberto={abertoChave === b.chave}
+                          onToggle={() => setAbertoChave((prev) => (prev === b.chave ? null : b.chave))}
+                          onChange={(patch) => atualizarBloco(b.chave, patch)}
+                          onRemove={() => removerBloco(b.chave)}
+                          formatLabel={getFormatLabel}
+                          presets={presets}
+                        />
+                      </div>
+                    </SortableRow>
+                  ))}
+                </div>
+              </SortableList>
+            )}
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" /> Adicionar bloco
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-64 p-1">
+                <div className="grid gap-0.5">
+                  {formatosDisponiveis.length === 0 && (
+                    <div className="p-2 text-xs text-muted-foreground">Nenhum formato disponível</div>
+                  )}
+                  {formatosDisponiveis.map((f: any) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => {
+                        console.log("[block:button:click]", f.id);
+                        adicionarBloco(f.id);
+                      }}
+                      className="rounded-md px-2.5 py-1.5 text-left text-sm transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
+                    >
+                      {getFormatLabel(f.id)}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2 border-t border-border/60 px-5 py-4 sm:px-6">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              limpar();
+              onOpenChange(false);
+            }}
+            disabled={isGenerating}
+            className="w-full sm:w-auto"
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleGerar}
+            disabled={blocos.length === 0 || isGenerating}
+            className="w-full gap-2 sm:w-auto"
+          >
+            {isGenerating ? "Gerando..." : `Gerar ${numeroSessoes} sessão(ões)`}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export default ConstrutorMoldeDialog;

@@ -16,6 +16,7 @@ export interface LLMRequestOptions {
   temperature?: number;
   maxTokens?: number;
   preferredProvider?: "gemini" | "groq" | "cerebras" | "sambanova" | "openrouter";
+  excludeProviders?: string[];
 }
 
 export interface LLMResponse {
@@ -72,11 +73,20 @@ export const ECOSYSTEM_PROVIDERS: ProviderConfig[] = [
 ];
 
 function getApiKey(envKey: string): string | null {
-  if (typeof process !== "undefined" && process.env && process.env[envKey]) {
-    return process.env[envKey] || null;
+  if (typeof process !== "undefined" && process.env) {
+    if (process.env[envKey]) return process.env[envKey];
+    if (envKey.startsWith("VITE_") && process.env[envKey.slice(5)]) {
+      return process.env[envKey.slice(5)];
+    }
+    if (!envKey.startsWith("VITE_") && process.env[`VITE_${envKey}`]) {
+      return process.env[`VITE_${envKey}`];
+    }
   }
-  if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env[envKey]) {
-    return (import.meta.env[envKey] as string) || null;
+  if (typeof import.meta !== "undefined" && import.meta.env) {
+    if (import.meta.env[envKey]) return import.meta.env[envKey] as string;
+    if (envKey.startsWith("VITE_") && (import.meta.env as any)[envKey.slice(5)]) {
+      return (import.meta.env as any)[envKey.slice(5)] as string;
+    }
   }
   if (typeof window !== "undefined" && (window as any)[envKey]) {
     return (window as any)[envKey] as string;
@@ -98,6 +108,9 @@ export async function generateEcosystemCompletion(
   }
 
   let providersToTry = [...ECOSYSTEM_PROVIDERS];
+  if (options.excludeProviders?.length) {
+    providersToTry = providersToTry.filter((p) => !options.excludeProviders!.includes(p.name));
+  }
   if (options.preferredProvider) {
     const prefIdx = providersToTry.findIndex((p) => p.name === options.preferredProvider);
     if (prefIdx > -1) {
@@ -109,8 +122,8 @@ export async function generateEcosystemCompletion(
   let lastError: Error | null = null;
 
   for (const provider of providersToTry) {
-    const apiKey = getApiKey(provider.envKey) || getApiKey("VITE_GEMINI_API_KEY");
-    if (!apiKey && provider.name !== "gemini") {
+    const apiKey = getApiKey(provider.envKey) || (provider.name === "gemini" ? getApiKey("GEMINI_API_KEY") : null);
+    if (!apiKey) {
       continue;
     }
 

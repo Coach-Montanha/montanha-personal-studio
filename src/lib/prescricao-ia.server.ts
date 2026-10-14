@@ -1,0 +1,278 @@
+/** Helpers puros da prescrição com IA (fora do módulo de server functions). */
+
+export type AiExercise = {
+  name: string;
+  sets_reps: string;
+  load: string;
+  rest_seconds: number | null;
+  observations: string;
+  /** Rótulo de agrupamento (ex.: "A1", "A2"). Vazio = exercício individual. */
+  group: string;
+  group_type: "individual" | "biset" | "triset" | "superset";
+};
+
+export type AiDay = {
+  name: string;
+  day_label: string;
+  description: string;
+  /** O número da semana a que este dia pertence (ex: 1, 2, 3...) */
+  week_number?: number;
+  exercises: AiExercise[];
+};
+
+export type AiPrescription = { days: AiDay[]; notes: string };
+
+export const SYSTEM_PROMPT = `Você é um Personal Trainer experiente em MUSCULAÇÃO (treinamento resistido com pesos), atendendo atletas, pessoas comuns e pessoas com necessidades especiais. Este motor é exclusivo de musculação: monte divisões de treino (A/B/C/D...), com foco muscular por dia, exercícios de sala de musculação, séries, repetições, carga e descanso.
+
+Sua tarefa é planejar a CONTINUIDADE e PERIODIZAÇÃO EM BLOCO da programação, respeitando estritamente o HISTÓRICO e as LIMITAÇÕES DO ALUNO.
+
+Se o treinador fornecer o "CONTEXTO DA PROGRAMAÇÃO ATUAL" ou "HISTÓRICO COMPLETO":
+1. Analise meticulosamente o que já foi executado (exercícios, séries, repetições, cargas).
+2. Identifique limitações físicas, lesões ou restrições mencionadas nos objetivos/resumo e NUNCA prescreva movimentos que as violem.
+3. Projete a progressão completa para o BLOCO solicitado (ex: 4 semanas):
+   - Utilize a estratégia de PERIODIZAÇÃO ONDULATÓRIA: alterne volume, intensidade e complexidade técnica de forma não linear entre as semanas para maximizar a adaptação e evitar o platô.
+   - Você tem LIBERDADE TOTAL para evoluir o programa: pode manter exercícios chave progredindo carga, substituir movimentos por variantes mais complexas ou introduzir novos estímulos (ex: troca de isoladores por compostos ou vice-versa).
+4. O objetivo é EXPANDIR o programa, criando sessões/semanas que são a continuação lógica e estratégica do que veio antes.
+5. OBRIGATÓRIO: Identifique corretamente o "week_number" (1, 2, 3...) para cada sessão gerada, garantindo que elas sejam agrupadas nas semanas corretas.
+6. ATENÇÃO AOS DETALHES: Siga rigorosamente as "INSTRUÇÕES DO TREINADOR" para esta fase. Se ele pedir foco em um músculo, ou mudança de objetivo, priorize isso acima da lógica padrão.
+
+PROIBIDO usar movimentos de kettlebell (swing, snatch, jerk, turkish get-up), levantamento de peso olímpico (clean, arranco, arremesso), ginásticos (muscle-up, handstand), CrossFit/MetCon (burpee, wall ball, box jump, thruster) ou qualquer condicionamento metabólico. Use apenas exercícios clássicos de sala de musculação com barra, halteres, polias, máquinas e peso corporal guiado.
+
+Você tem acesso ao pool de exercícios da biblioteca através do histórico fornecido. Se for solicitado um novo exercício não presente no histórico, escreva o nome por extenso em português.
+Exercícios podem ser individuais ou combinados. Para combinar, use o mesmo prefixo em "group" ("A1"/"A2" = par combinado) e defina "group_type" como "biset", "triset" ou "superset". Exercício isolado: "group" vazio e "group_type" igual a "individual".
+
+Gere a prescrição em português (Brasil). Responda APENAS com JSON válido, sem markdown, no formato:
+{
+  "days": [
+    { "name": "Treino 1",
+      "day_label": "Dia A",
+      "week_number": 1,
+      "description": "Foco muscular / observações gerais",
+      "exercises": [
+        { "name": "Supino reto", "sets_reps": "4x10", "load": "60kg",
+          "rest_seconds": 90, "observations": "Cadência 2:1",
+          "group": "", "group_type": "individual" }
+      ] }
+  ],
+  "notes": "RELATÓRIO DE EVOLUÇÃO: Descreva detalhadamente a ESTRATÉGIA DE PERIODIZAÇÃO ONDULATÓRIA usada para todo o bloco gerado (ex: Semana 1 adaptação, Semana 2 carga, Semana 3 pico, Semana 4 deload) e justifique a escolha/troca dos exercícios em relação ao histórico."
+}
+Regras: 4 a 8 exercícios por dia; 'load' e 'observations' podem ser vazios; 'day_label' segue o tipo de nomenclatura da rotina.
+ Se você for informado sobre 'TIPOS DE SÉRIES DISPONÍVEIS', utilize preferencialmente esses formatos e nomenclaturas no campo 'load' ou 'observations' conforme adequado ao contexto.
+ Se você for informado sobre 'FORMATOS DE BLOCO CUSTOMIZADOS DISPONÍVEIS', utilize-os para entender a estrutura dos blocos solicitados.
+ Cada formato de bloco customizado pode ter 'field_labels' específicos (ex: 'Rounds' em vez de 'Séries'). Ao preencher os campos técnicos, use a nomenclatura sugerida pelo treinador nos field_labels quando disponível.`;
+
+export type RotinaContexto = {
+  titulo: string;
+  metodologia: string;
+  escola?: string | null;
+  duracao_semanas: number;
+  data_inicio: string | null;
+  data_fim: string | null;
+  nomenclatura: "numerico" | "alfabetico";
+  sessoes_existentes: number;
+  objetivos: string | null;
+  dias_por_semana: number | null;
+  escopo_label: string | null;
+  resumo_anterior?: string | null;
+  continuation?: import("./continuation.server").ContinuationContext | null;
+  set_types?: any[];
+  custom_formats?: any[];
+  aluno_info?: string | null;
+  planilha_base?: string | null;
+  planilha_modo?: "ajustar" | "continuar" | null;
+};
+
+export function montarUserPrompt(ctx: RotinaContexto, instrucoes: string): string {
+  const exemplo =
+    ctx.nomenclatura === "alfabetico" ? "Dia A, Dia B, Dia C" : "Dia 1, Dia 2, Dia 3";
+  const dias = ctx.dias_por_semana && ctx.dias_por_semana > 0 ? ctx.dias_por_semana : null;
+  
+  const historySection = ctx.continuation 
+    ? [
+        "RESUMO ESTRUTURADO DO HISTÓRICO RECENTE (Análise para Progressão):",
+        `- Sessões analisadas: ${ctx.continuation.sourceSessionCount}`,
+        `- Exercícios recentes: ${ctx.continuation.recentSessions.flatMap(s => s.exerciseNames).join(", ")}`,
+        `- Grupos musculares trabalhados: ${Array.from(new Set(ctx.continuation.recentSessions.flatMap(s => s.muscleGroups))).join(", ")}`,
+        `- BLOQUEIO DE REPETIÇÃO (Soft Avoid): Evite usar estes IDs se possível: ${ctx.continuation.softAvoidIds.join(", ")}`,
+        `- Exercícios mais frequentes: ${ctx.continuation.usage.slice(0, 5).map(u => u.name).join(", ")}`,
+        `- Formatos de bloco recentes: ${ctx.continuation.recentFormats.join(", ")}`,
+        `- NOTAS DE PROGRESSÃO: ${ctx.continuation.progressionNotes}`,
+      ].join("\n")
+    : ctx.resumo_anterior;
+
+  const planilhaSection = ctx.planilha_base
+    ? [
+        "--- PLANILHA / HISTÓRICO DE TREINO SUBIDO PELO TREINADOR ---",
+        `OBJETIVO DO PROCESSAMENTO: ${
+          ctx.planilha_modo === "ajustar"
+            ? "REORGANIZAR E AJUSTAR A PLANILHA ATUAL (refatore os treinos fornecidos corrigindo volume, substituições de exercícios e adequando biomecanicamente aos novos requisitos)."
+            : "CONTINUAR PERIODIZAÇÃO (use esta planilha como histórico das semanas anteriores e projete as novas semanas subsequentes com sobrecarga progressiva estruturada)."
+        }`,
+        "DADOS DA PLANILHA DO ALUNO:",
+        ctx.planilha_base,
+        "----------------------------------------------------------",
+      ].join("\n")
+    : null;
+
+  return [
+    "CONTEXTO DA ROTINA (não repita, apenas use):",
+    `- Nome: ${ctx.titulo}`,
+    `- Modalidade: ${ctx.metodologia}`,
+    ctx.escola ? `- Escola Metodológica: ${ctx.escola}` : null,
+    `- Duração: ${ctx.duracao_semanas} semana(s)`,
+    ctx.escopo_label ? `- Escopo da prescrição: ${ctx.escopo_label}` : null,
+    dias ? `- Dias de treino por semana: ${dias}` : null,
+    `- Período: ${ctx.data_inicio ?? "não informado"} até ${ctx.data_fim ?? "não informado"}`,
+    `- Nomenclatura dos dias: ${ctx.nomenclatura} (ex.: ${exemplo})`,
+    `- Sessões já existentes: ${ctx.sessoes_existentes}`,
+    historySection ? `- CONTEXTO DA PROGRAMAÇÃO ATUAL:\n${historySection}` : null,
+    planilhaSection,
+    ctx.aluno_info ? `- LIMITAÇÕES E INFO DO ALUNO: ${ctx.aluno_info}` : null,
+    ctx.objetivos ? `- Objetivos: ${ctx.objetivos}` : null,
+    ctx.set_types ? `- TIPOS DE SÉRIES DISPONÍVEIS: ${ctx.set_types.map(t => `${t.label} (ID: ${t.id})`).join(", ")}` : null,
+    ctx.custom_formats ? `- FORMATOS DE BLOCO CUSTOMIZADOS: ${ctx.custom_formats.map(f => `${f.label} (Base: ${f.base}, SetType: ${f.set_type_id}, Rótulos: ${JSON.stringify(f.field_labels || {})})`).join("; ")}` : null,
+    "",
+    dias
+      ? `OBRIGATÓRIO: gere o programa completo conforme o escopo selecionado (${ctx.escopo_label ?? `${ctx.duracao_semanas} semanas`}). Se o escopo for de múltiplas semanas, gere exatamente ${dias} dia(s) distintos PARA CADA SEMANA, garantindo a evolução entre elas (ex: se gerar 2 semanas com 3 dias/sem, gere 6 dias no total, identificando "week_number" de 1 a 2). Use apenas o histórico compacto fornecido para evitar repetições.`
+      : "OBRIGATÓRIO: gere exatamente 1 dia de treino.",
+    "",
+    "INSTRUÇÕES DO TREINADOR:",
+    instrucoes.trim().length > 0
+      ? instrucoes.trim()
+      : "Sem instruções adicionais: monte uma division equilibrada de hipertrofia adequada ao escopo acima.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+export function calcularDataFim(inicio: string | null, semanas: number): string | null {
+  if (!inicio) return null;
+  const d = new Date(`${inicio}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setDate(d.getDate() + Math.max(1, semanas) * 7 - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Detecta se a rotina usa "Dia A/B/C" ou "Dia 1/2/3" pelos títulos já gravados. */
+export function detectarNomenclatura(
+  titulos: (string | null)[],
+): "numerico" | "alfabetico" {
+  const alfabeticos = titulos.filter((t) => t && /\b(dia|treino)\s*[a-h]\b/i.test(t));
+  return alfabeticos.length > 0 ? "alfabetico" : "numerico";
+}
+
+function texto(v: unknown, fallback = ""): string {
+  return typeof v === "string" ? v.trim() : fallback;
+}
+
+const GROUP_TYPES = ["individual", "biset", "triset", "superset"] as const;
+
+function tipoDeGrupo(v: unknown, grupo: string): AiExercise["group_type"] {
+  const t = texto(v).toLowerCase().replace(/[\s-]/g, "");
+  const achado = GROUP_TYPES.find((g) => g === t);
+  if (achado && achado !== "individual") return grupo ? achado : "individual";
+  return grupo ? "biset" : "individual";
+}
+
+/** JSON.parse defensivo + normalização do formato esperado. */
+export function normalizarPrescricao(bruto: string): AiPrescription {
+  let json: any;
+  try {
+    const limpo = bruto.trim();
+    // 1. Tenta parse direto
+    try {
+      json = JSON.parse(limpo);
+    } catch {
+      // 2. Extrai markdown fence ```json ... ```
+      const match = limpo.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      if (match && match[1]) {
+        json = JSON.parse(match[1].trim());
+      } else {
+        // 3. Extrai primeiro { até último }
+        const start = limpo.indexOf("{");
+        const end = limpo.lastIndexOf("}");
+        if (start !== -1 && end > start) {
+          json = JSON.parse(limpo.slice(start, end + 1));
+        } else {
+          throw new Error("Nenhum bloco JSON encontrado");
+        }
+      }
+    }
+  } catch (e: any) {
+    console.error("Erro ao fazer parse do JSON da IA:", e, "\nConteúdo bruto:", bruto);
+    throw new Error("A IA respondeu em um formato inesperado. Tente novamente.");
+  }
+
+  let daysRaw: any[] = [];
+  if (Array.isArray(json?.days)) {
+    daysRaw = json.days;
+  } else if (Array.isArray(json?.dias)) {
+    daysRaw = json.dias;
+  } else if (Array.isArray(json?.sessoes)) {
+    daysRaw = json.sessoes;
+  } else if (Array.isArray(json?.sessions)) {
+    daysRaw = json.sessions;
+  } else if (Array.isArray(json?.treinos)) {
+    daysRaw = json.treinos;
+  } else if (Array.isArray(json?.weeks) || Array.isArray(json?.semanas)) {
+    const weeksList = json.weeks || json.semanas;
+    daysRaw = weeksList.flatMap((w: any, wIdx: number) => {
+      const wNum = typeof w?.week_number === "number" ? w.week_number : (typeof w?.numero_semana === "number" ? w.numero_semana : wIdx + 1);
+      const wDays = Array.isArray(w?.days) ? w.days : (Array.isArray(w?.dias) ? w.dias : (Array.isArray(w?.sessoes) ? w.sessoes : []));
+      return wDays.map((d: any) => ({ ...d, week_number: d?.week_number ?? wNum }));
+    });
+  } else if (Array.isArray(json)) {
+    daysRaw = json;
+  }
+
+  const days: AiDay[] = daysRaw.map((d: any, i: number) => {
+    const exRaw = Array.isArray(d?.exercises)
+      ? d.exercises
+      : Array.isArray(d?.exercicios)
+        ? d.exercicios
+        : Array.isArray(d?.movements)
+          ? d.movements
+          : [];
+
+    return {
+      name: texto(d?.name || d?.nome || d?.titulo, `Treino ${i + 1}`),
+      day_label: texto(d?.day_label || d?.rotulo_dia || d?.label),
+      week_number: typeof d?.week_number === "number" ? d.week_number : (typeof d?.semana === "number" ? d.semana : undefined),
+      description: texto(d?.description || d?.descricao || d?.foco),
+      exercises: exRaw
+        .map((e: any) => {
+          const grupo = texto(e?.group || e?.grupo).toUpperCase().slice(0, 4);
+          const restVal = typeof e?.rest_seconds === "number" && Number.isFinite(e.rest_seconds)
+            ? Math.max(0, Math.round(e.rest_seconds))
+            : typeof e?.descanso_segundos === "number"
+              ? Math.max(0, Math.round(e.descanso_segundos))
+              : typeof e?.descanso === "number"
+                ? Math.max(0, Math.round(e.descanso))
+                : null;
+
+          return {
+            name: texto(e?.name || e?.nome || e?.exercise || e?.exercicio),
+            sets_reps: texto(e?.sets_reps || e?.series_reps || e?.series || e?.reps),
+            load: texto(e?.load || e?.carga || e?.peso),
+            rest_seconds: restVal,
+            observations: texto(e?.observations || e?.observacoes || e?.obs),
+            group: grupo,
+            group_type: tipoDeGrupo(e?.group_type || e?.tipo_grupo, grupo),
+          };
+        })
+        .filter((e: AiExercise) => e.name.length > 0),
+    };
+  });
+
+  if (days.length === 0) {
+    throw new Error("A IA não retornou nenhum dia de treino. Refine as instruções.");
+  }
+
+  return { days, notes: texto(json?.notes || json?.notas || json?.relatorio || json?.observacoes) };
+}
+
+export function mensagemDeErroGateway(status: number): string {
+  if (status === 429) return "Limite de uso da IA atingido, tente em instantes";
+  if (status === 402) return "Créditos da IA esgotados";
+  return `Falha ao gerar a prescrição (erro ${status})`;
+}

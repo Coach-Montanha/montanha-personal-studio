@@ -34,6 +34,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
 import { Route as AuthenticatedTrashRouteImport } from './routes/_authenticated/trash'
 import { Route as AuthenticatedTreinoRouteImport } from './routes/_authenticated/treino'
+import { Route as AuthenticatedTreinosRouteImport } from './routes/_authenticated/treinos'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAdminTenantsRouteImport } from './routes/_authenticated/admin/tenants'
@@ -180,6 +181,11 @@ const AuthenticatedTreinoRoute = AuthenticatedTreinoRouteImport.update({
   path: '/treino',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTreinosRoute = AuthenticatedTreinosRouteImport.update({
+  id: '/treinos',
+  path: '/treinos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -306,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/storage': typeof AuthenticatedStorageRoute
   '/trash': typeof AuthenticatedTrashRoute
   '/treino': typeof AuthenticatedTreinoRoute
+  '/treinos': typeof AuthenticatedTreinosRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRoute
@@ -348,6 +355,7 @@ export interface FileRoutesByTo {
   '/storage': typeof AuthenticatedStorageRoute
   '/trash': typeof AuthenticatedTrashRoute
   '/treino': typeof AuthenticatedTreinoRoute
+  '/treinos': typeof AuthenticatedTreinosRoute
   '/': typeof AuthenticatedIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -393,6 +401,7 @@ export interface FileRoutesById {
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
   '/_authenticated/trash': typeof AuthenticatedTrashRoute
   '/_authenticated/treino': typeof AuthenticatedTreinoRoute
+  '/_authenticated/treinos': typeof AuthenticatedTreinosRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -439,6 +448,7 @@ export interface FileRouteTypes {
     | '/storage'
     | '/trash'
     | '/treino'
+    | '/treinos'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/tenants'
@@ -481,6 +491,7 @@ export interface FileRouteTypes {
     | '/storage'
     | '/trash'
     | '/treino'
+    | '/treinos'
     | '/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -525,6 +536,7 @@ export interface FileRouteTypes {
     | '/_authenticated/storage'
     | '/_authenticated/trash'
     | '/_authenticated/treino'
+    | '/_authenticated/treinos'
     | '/_authenticated/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -737,6 +749,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTreinoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/treinos': {
+      id: '/_authenticated/treinos'
+      path: '/treinos'
+      fullPath: '/treinos'
+      preLoaderRoute: typeof AuthenticatedTreinosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -874,6 +893,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
   AuthenticatedTrashRoute: typeof AuthenticatedTrashRoute
   AuthenticatedTreinoRoute: typeof AuthenticatedTreinoRoute
+  AuthenticatedTreinosRoute: typeof AuthenticatedTreinosRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAdminTenantsRoute: typeof AuthenticatedAdminTenantsRoute
   AuthenticatedPersonalTrainerAnalyticsRoute: typeof AuthenticatedPersonalTrainerAnalyticsRoute
@@ -907,6 +927,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
   AuthenticatedTrashRoute: AuthenticatedTrashRoute,
   AuthenticatedTreinoRoute: AuthenticatedTreinoRoute,
+  AuthenticatedTreinosRoute: AuthenticatedTreinosRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAdminTenantsRoute: AuthenticatedAdminTenantsRoute,
   AuthenticatedPersonalTrainerAnalyticsRoute:

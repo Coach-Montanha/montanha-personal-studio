@@ -36,6 +36,7 @@ import { ProgramLayoutEditor } from "./ProgramLayoutEditor";
 import { DragHandle, SortableList } from "@/components/ui-kit/SortableList";
 import { downloadProgramPdf } from "@/lib/pt-program-pdf";
 import { Download, TrendingUp, Sparkles, LayoutGrid } from "lucide-react";
+import { PrescreverIaDialog } from "@/components/programa-ia/PrescreverIaDialog";
 import { Stepper, StepperFooter, type StepItem } from "@/components/ui/stepper";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -108,6 +109,7 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
   const [studentViewOpen, setStudentViewOpen] = useState(false);
   const [progressionOpen, setProgressionOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
+  const [iaProOpen, setIaProOpen] = useState(false);
   const [migrateOpen, setMigrateOpen] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [guidanceOpen, setGuidanceOpen] = useState(false);
@@ -285,6 +287,14 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
             onClick={() => { setEditingProgram(null); setProgramOpen(true); }}
           >
             <Plus className="h-4 w-4" /> Criar rotina
+          </Button>
+          <Button
+            size="sm"
+            variant="default"
+            className="gap-2 font-semibold shadow-sm"
+            onClick={() => setIaProOpen(true)}
+          >
+            <Sparkles className="h-4 w-4" /> Prescrever com IA & Planilha
           </Button>
           <Button
             size="sm"
@@ -678,6 +688,14 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
         open={aiOpen}
         onOpenChange={setAiOpen}
         programId={activeProgramId}
+      />
+      <PrescreverIaDialog
+        isOpen={iaProOpen}
+        programa={activeProgram ? { id: activeProgram.id, titulo: activeProgram.name, metodologia: (activeProgram as any).training_type } : null}
+        studentId={studentId}
+        studioStudentId={studioStudentId}
+        initialStudentType={studioStudentId ? "studio" : "pt"}
+        onOpenChange={setIaProOpen}
       />
       <MigrateProgramDialog
         open={migrateOpen}
