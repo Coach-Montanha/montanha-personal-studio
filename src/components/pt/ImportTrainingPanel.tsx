@@ -80,7 +80,23 @@ export function ImportTrainingPanel() {
   const [studentId, setStudentId] = useState<string>("");
   const [studentType, setStudentType] = useState<"pt" | "studio">("pt");
   const [showToStudent, setShowToStudent] = useState(true);
+  const [tab, setTab] = useState<string>("remote");
   const [importing, setImporting] = useState(false);
+
+  async function handlePasteFromClipboard() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text || !text.trim()) {
+        return toast.error("A área de transferência está vazia.");
+      }
+      parseManual(text);
+      setTab("manual");
+      toast.success("Treino carregado da Área de Transferência!");
+    } catch {
+      setTab("manual");
+      toast.info("Cole o JSON (Ctrl+V) no campo abaixo.");
+    }
+  }
 
   const statusQ = useQuery({ queryKey: ["hybrid-status"], queryFn: () => status(), staleTime: 5 * 60_000 });
   const configured = statusQ.data?.configured ?? false;
@@ -228,7 +244,7 @@ export function ImportTrainingPanel() {
             bodyClassName="p-0"
             padded={false}
           >
-            <Tabs defaultValue={configured ? "remote" : "manual"} className="w-full">
+            <Tabs value={tab} onValueChange={setTab} className="w-full">
               <div className="border-b border-border px-4 pt-3 sm:px-5">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="remote">Conectado</TabsTrigger>
@@ -271,9 +287,32 @@ export function ImportTrainingPanel() {
                   </div>
 
                 ) : (programsQ.data?.programs.length ?? 0) === 0 ? (
-                  <p className="text-caption rounded-lg border border-dashed border-border bg-muted/30 p-4 text-muted-foreground">
-                    Nenhum programa disponível na origem.
-                  </p>
+                  <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4 space-y-3">
+                    <p className="text-caption text-muted-foreground">
+                      Nenhum programa sincronizado via API direta.
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="default"
+                        className="w-full gap-2 font-semibold"
+                        onClick={handlePasteFromClipboard}
+                      >
+                        <ClipboardPaste className="h-4 w-4" />
+                        Colar Treino da Área de Transferência
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="w-full text-xs text-muted-foreground"
+                        onClick={() => setTab("manual")}
+                      >
+                        Abrir aba Colar JSON
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <ul className="space-y-2">
                     {programsQ.data!.programs.map((p) => (
@@ -293,9 +332,21 @@ export function ImportTrainingPanel() {
               </TabsContent>
 
               <TabsContent value="manual" className="m-0 space-y-3 p-4 sm:p-5">
-                <Label htmlFor="hybrid-json" className="text-caption text-muted-foreground">
-                  Cole o JSON do programa exportado no Sistema Híbrido
-                </Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="hybrid-json" className="text-caption text-muted-foreground">
+                    Cole o JSON do programa exportado no Sistema Híbrido
+                  </Label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={handlePasteFromClipboard}
+                  >
+                    <ClipboardPaste className="h-3.5 w-3.5" />
+                    Colar da Área de Transferência
+                  </Button>
+                </div>
                 <Textarea
                   id="hybrid-json"
                   value={manual}
