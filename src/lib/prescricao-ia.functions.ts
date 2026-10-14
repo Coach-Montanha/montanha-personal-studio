@@ -684,3 +684,39 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
     }
   });
 
+export const gerarUploadTreinoUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: { fileName: string; fileType?: string }) => input)
+  .handler(async ({ data }) => {
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabaseUrl = process.env.SUPABASE_URL || "https://muryznvaxzszcffrbxpv.supabase.co";
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRoleKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY ausente no servidor");
+    }
+
+    const adminSb = createClient(supabaseUrl, serviceRoleKey);
+    const cleanName = data.fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const filePath = `planilhas/${Date.now()}-${cleanName}`;
+
+    const { data: signData, error: signError } = await adminSb.storage
+      .from("treinos-anexos")
+      .createSignedUploadUrl(filePath);
+
+    if (signError || !signData) {
+      console.error("[gerarUploadTreinoUrl] Erro ao criar signed upload url:", signError);
+      throw new Error(`Falha ao preparar upload seguro: ${signError?.message || "erro de storage"}`);
+    }
+
+    const { data: publicData } = adminSb.storage
+      .from("treinos-anexos")
+      .getPublicUrl(filePath);
+
+    return {
+      filePath,
+      token: signData.token,
+      signedUrl: signData.signedUrl,
+      publicUrl: publicData.publicUrl,
+    };
+  });
+

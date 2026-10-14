@@ -283,33 +283,39 @@ async function callLovableGateway<T = any>(apiKey: string, args: CallAiJsonArgs)
  * process.env["KEY"] não é tree-shaken; process.env.KEY pode ser.
  */
 function getAiKey(): { geminiKey?: string; lovableKey?: string } {
-  const env: Record<string, string | undefined> =
-    typeof process !== "undefined" && process.env ? process.env : {};
+  let geminiKey =
+    (typeof process !== "undefined" && process.env
+      ? process.env.GEMINI_API_KEY ||
+        process.env.VITE_GEMINI_API_KEY ||
+        process.env["GEMINI_API_KEY"] ||
+        process.env["VITE_GEMINI_API_KEY"]
+      : undefined) ||
+    (typeof globalThis !== "undefined" && (globalThis as any).process?.env
+      ? (globalThis as any).process.env.GEMINI_API_KEY || (globalThis as any).process.env["GEMINI_API_KEY"]
+      : undefined);
 
-  // Acesso via computed key — evita substituição estática pelo Rollup/Nitro
-  const GEMINI_KEY = "GEMINI_API_KEY";
-  const VITE_GEMINI_KEY = "VITE_GEMINI_API_KEY";
-  const LOVABLE_KEY = "LOVABLE_API_KEY";
-  const VITE_LOVABLE_KEY = "VITE_LOVABLE_API_KEY";
-
-  let geminiKey: string | undefined =
-    env[GEMINI_KEY] || env[VITE_GEMINI_KEY];
-
-  // Fallback para import.meta.env (Vite client/SSR bundle)
   if (!geminiKey) {
     try {
       const metaEnv = (import.meta as any)?.env ?? {};
-      geminiKey = metaEnv[VITE_GEMINI_KEY] || metaEnv[GEMINI_KEY];
+      geminiKey = metaEnv.VITE_GEMINI_API_KEY || metaEnv.GEMINI_API_KEY;
     } catch {}
   }
 
-  let lovableKey: string | undefined =
-    env[LOVABLE_KEY] || env[VITE_LOVABLE_KEY];
+  let lovableKey =
+    (typeof process !== "undefined" && process.env
+      ? process.env.LOVABLE_API_KEY ||
+        process.env.VITE_LOVABLE_API_KEY ||
+        process.env["LOVABLE_API_KEY"] ||
+        process.env["VITE_LOVABLE_API_KEY"]
+      : undefined) ||
+    (typeof globalThis !== "undefined" && (globalThis as any).process?.env
+      ? (globalThis as any).process.env.LOVABLE_API_KEY || (globalThis as any).process.env["LOVABLE_API_KEY"]
+      : undefined);
 
   if (!lovableKey) {
     try {
       const metaEnv = (import.meta as any)?.env ?? {};
-      lovableKey = metaEnv[VITE_LOVABLE_KEY] || metaEnv[LOVABLE_KEY];
+      lovableKey = metaEnv.VITE_LOVABLE_API_KEY || metaEnv.LOVABLE_API_KEY;
     } catch {}
   }
 

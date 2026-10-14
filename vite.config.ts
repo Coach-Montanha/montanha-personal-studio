@@ -13,6 +13,12 @@ export default defineConfig({
     externals: {
       inline: ["tslib"],
     },
+    // Impede que o Rollup/esbuild substitua process.env por {} no bundle server.
+    // Sem isso, `process.env.GEMINI_API_KEY` pode ser substituído por `undefined`
+    // no build, mesmo que a variável exista no runtime da Vercel.
+    replace: {
+      "process.env": "process.env",
+    },
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -20,6 +26,7 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    envPrefix: ["VITE_", "GEMINI_", "LOVABLE_", "GROQ_", "OPENROUTER_", "SUPABASE_"],
     plugins: [mcpPlugin()],
   },
 });

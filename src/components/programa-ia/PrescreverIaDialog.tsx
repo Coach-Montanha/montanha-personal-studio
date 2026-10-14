@@ -46,7 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { prescribeTrainingWithAi } from "@/lib/prescricao-ia.functions";
+import { prescribeTrainingWithAi, gerarUploadTreinoUrl } from "@/lib/prescricao-ia.functions";
 import { useSetTypeRegistry } from "@/lib/set-type-registry";
 import { useFormatRegistry } from "@/lib/format-registry";
 import { METHODOLOGY_LABEL, type Methodology } from "@/lib/methodology";
@@ -430,6 +430,7 @@ export function PrescreverIaDialog({
 }) {
   const qc = useQueryClient();
   const gerar = useServerFn(prescribeTrainingWithAi);
+  const prepararUpload = useServerFn(gerarUploadTreinoUrl);
 
   // Estados para criação avulsa / sem programa prévio
   const [nomePrograma, setNomePrograma] = useState(programa?.titulo || (programa as any)?.name || "Nova Rotina de Treino");
@@ -791,47 +792,48 @@ export function PrescreverIaDialog({
         return;
       }
 
-      // 4. PDFs -> Upload direto no Supabase Storage para evitar limite 4.5MB da Vercel (Erro 413)
+      // 4. PDFs -> Upload via Signed Upload URL no bucket treinos-anexos (contorna RLS e evita limite da Vercel)
       if (file.type === "application/pdf" || fileNameLower.endsWith(".pdf")) {
-        const filePath = `planilhas-temp/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-        const { error: uploadError } = await supabase.storage
-          .from("contracts")
-          .upload(filePath, file, { upsert: true });
+        try {
+          const { filePath, token, publicUrl } = await prepararUpload({
+            data: { fileName: file.name, fileType: file.type || "application/pdf" },
+          });
 
-        if (!uploadError) {
-          const { data: signedData } = await supabase.storage
-            .from("contracts")
-            .createSignedUrl(filePath, 7200);
+          const { error: upError } = await supabase.storage
+            .from("treinos-anexos")
+            .uploadToSignedUrl(filePath, token, file, {
+              contentType: file.type || "application/pdf",
+            });
 
-          if (signedData?.signedUrl) {
-            setPlanilhaFileUrl(signedData.signedUrl);
-            setPlanilhaImagem(null);
-            setPlanilhaTexto(`[Documento PDF anexo: ${file.name}]\nA IA processará o PDF via armazenamento seguro.`);
-            setShowPlanilhaPreview(true);
-            toast.success(`PDF ${file.name} carregado com sucesso!`);
-            setIsExtractingPlanilha(false);
+          if (upError) throw upError;
+
+          setPlanilhaFileUrl(publicUrl);
+          setPlanilhaImagem(null);
+          setPlanilhaTexto(`[Documento PDF anexo: ${file.name}]\nA IA interpretará o conteúdo estruturado deste PDF.`);
+          setShowPlanilhaPreview(true);
+          toast.success(`PDF ${file.name} carregado com sucesso!`);
+          setIsExtractingPlanilha(false);
+          return;
+        } catch (uploadErr: any) {
+          console.warn("[handleFileUpload] Falha no upload assinado do PDF, tentando fallback:", uploadErr);
+          // Se for menor que 1.5MB, fallback em base64
+          if (file.size < 1.5 * 1024 * 1024) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = reader.result as string;
+              const base64Data = result.split(",")[1];
+              setPlanilhaImagem({ mimeType: "application/pdf", data: base64Data });
+              setPlanilhaFileUrl(null);
+              setPlanilhaTexto(`[Documento PDF anexo: ${file.name}]\nA IA interpretará o conteúdo deste PDF.`);
+              setShowPlanilhaPreview(true);
+              toast.success(`PDF ${file.name} anexado para análise!`);
+              setIsExtractingPlanilha(false);
+            };
+            reader.readAsDataURL(file);
             return;
           }
+          throw new Error(`Erro ao enviar PDF: ${uploadErr?.message || "falha no upload seguro"}`);
         }
-
-        // Se upload no storage falhar e for arquivo leve (< 1.5MB), fallback base64
-        if (file.size < 1.5 * 1024 * 1024) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            const base64Data = result.split(",")[1];
-            setPlanilhaImagem({ mimeType: "application/pdf", data: base64Data });
-            setPlanilhaFileUrl(null);
-            setPlanilhaTexto(`[Documento PDF anexo: ${file.name}]\nA IA interpretará o conteúdo deste PDF.`);
-            setShowPlanilhaPreview(true);
-            toast.success(`PDF ${file.name} anexado para análise!`);
-            setIsExtractingPlanilha(false);
-          };
-          reader.readAsDataURL(file);
-          return;
-        }
-
-        throw new Error("Não foi possível enviar o PDF para armazenamento seguro.");
       }
 
       // Fallback: tenta ler como texto
