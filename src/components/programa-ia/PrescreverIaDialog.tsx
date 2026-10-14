@@ -525,7 +525,11 @@ export function PrescreverIaDialog({
   // Chave local do Google Gemini (BYOK - Bring Your Own Key para casos sem chave no servidor)
   const [geminiApiKey, setGeminiApiKey] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("montanha_gemini_api_key") || "";
+      return (
+        localStorage.getItem("montanha_gemini_api_key") ||
+        (import.meta as any)?.env?.VITE_GEMINI_API_KEY ||
+        ""
+      );
     }
     return "";
   });

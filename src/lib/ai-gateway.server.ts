@@ -163,57 +163,75 @@ export type CallAiJsonResult<T = any> = {
 
 /** Chamada direta à API oficial do Google Gemini com responseMimeType: "application/json" */
 async function callGeminiDirect<T = any>(apiKey: string, args: CallAiJsonArgs): Promise<CallAiJsonResult<T>> {
-  const modelName = (process.env.GEMINI_MODEL || "gemini-2.5-flash").replace(/^google\//, "");
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+  const primaryModel = (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite").replace(/^google\//, "");
+  const candidateModels = Array.from(new Set([primaryModel, "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]));
 
-  const userParts: any[] = [];
-  if (args.inlineData) {
-    userParts.push({
-      inlineData: {
-        mimeType: args.inlineData.mimeType,
-        data: args.inlineData.data,
+  let lastError: any = null;
+
+  for (const modelName of candidateModels) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+    const userParts: any[] = [];
+    if (args.inlineData) {
+      userParts.push({
+        inlineData: {
+          mimeType: args.inlineData.mimeType,
+          data: args.inlineData.data,
+        },
+      });
+    }
+    userParts.push({ text: args.prompt });
+
+    const body: any = {
+      contents: [{ role: "user", parts: userParts }],
+      generationConfig: {
+        temperature: args.temperature ?? 0.7,
+        responseMimeType: "application/json",
       },
-    });
+    };
+
+    if (args.system) {
+      body.systemInstruction = { parts: [{ text: args.system }] };
+    }
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        // Se der 404 (modelo descontinuado) ou 503 (sobrecarregado), tenta próximo modelo
+        if (res.status === 404 || res.status === 503) {
+          console.warn(`[callGeminiDirect] Modelo ${modelName} retornou ${res.status}, tentando próximo candidato...`);
+          lastError = classify(res.status, errText);
+          continue;
+        }
+        throw classify(res.status, errText);
+      }
+
+      const data: any = await res.json();
+      const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!raw || typeof raw !== "string" || raw.trim().length === 0) {
+        throw new AiGatewayError("AI_EMPTY_CONTENT", "A IA não retornou conteúdo.", 200);
+      }
+
+      const json = parseJsonDefensive<T>(raw);
+      return {
+        json,
+        raw,
+        model: `gemini/${modelName}`,
+        finishReason: data?.candidates?.[0]?.finishReason ?? "STOP",
+        requestId: null,
+      };
+    } catch (err) {
+      lastError = err;
+    }
   }
-  userParts.push({ text: args.prompt });
 
-  const body: any = {
-    contents: [{ role: "user", parts: userParts }],
-    generationConfig: {
-      temperature: args.temperature ?? 0.7,
-      responseMimeType: "application/json",
-    },
-  };
-
-  if (args.system) {
-    body.systemInstruction = { parts: [{ text: args.system }] };
-  }
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    throw classify(res.status, errText);
-  }
-
-  const data: any = await res.json();
-  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!raw || typeof raw !== "string" || raw.trim().length === 0) {
-    throw new AiGatewayError("AI_EMPTY_CONTENT", "A IA não retornou conteúdo.", 200);
-  }
-
-  const json = parseJsonDefensive<T>(raw);
-  return {
-    json,
-    raw,
-    model: `gemini/${modelName}`,
-    finishReason: data?.candidates?.[0]?.finishReason ?? "STOP",
-    requestId: null,
-  };
+  throw lastError;
 }
 
 /** Chamada ao Lovable AI Gateway */
@@ -329,7 +347,7 @@ function getAiKey(): { geminiKey?: string; lovableKey?: string } {
 /**
  * Chamada única de JSON estruturado ao ecossistema de IA.
  * Tenta automaticamente:
- *  1. Google Gemini API direto (GEMINI_API_KEY ou VITE_GEMINI_API_KEY)
+ *  1. Google Gemini API direto (GEMINI_API_KEY ou VITE_GEMINI_API_KEY ou args.apiKey)
  *  2. Lovable AI Gateway (LOVABLE_API_KEY)
  *  3. Ecosystem Fallback Router (Groq, Cerebras, OpenRouter, SambaNova)
  */
