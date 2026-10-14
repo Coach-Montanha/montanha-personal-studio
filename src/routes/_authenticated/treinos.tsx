@@ -152,10 +152,17 @@ export function TreinosPage() {
         alunoNome.toLowerCase().includes(busca.toLowerCase());
       if (!matchesSearch) return false;
 
+      const isTemplate =
+        p.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
+        (!p.studio_student_id && !p.pt_student_id);
+      const isStudio =
+        !isTemplate && (!!p.studio_student_id || (p.pt_students as any)?.notes?.includes("[Studio]"));
+      const isPt = !isTemplate && !isStudio;
+
       // Filtro por tipo de aluno
-      if (tipoAlunoFiltro === "studio" && !p.studio_student_id) return false;
-      if (tipoAlunoFiltro === "pt" && !p.pt_student_id) return false;
-      if (tipoAlunoFiltro === "modelo" && (p.studio_student_id || p.pt_student_id)) return false;
+      if (tipoAlunoFiltro === "studio" && !isStudio) return false;
+      if (tipoAlunoFiltro === "pt" && !isPt) return false;
+      if (tipoAlunoFiltro === "modelo" && !isTemplate) return false;
 
       // Filtro por modalidade
       if (modalidadeFiltro !== "todas") {
@@ -167,9 +174,22 @@ export function TreinosPage() {
   }, [programs, busca, tipoAlunoFiltro, modalidadeFiltro]);
 
   // Contadores
-  const totalStudio = programs.filter((p) => !!p.studio_student_id).length;
-  const totalPt = programs.filter((p) => !!p.pt_student_id).length;
-  const totalModelos = programs.filter((p) => !p.studio_student_id && !p.pt_student_id).length;
+  const totalStudio = programs.filter(
+    (p) =>
+      p.pt_student_id !== "00000000-0000-0000-0000-000000000001" &&
+      (!!p.studio_student_id || (p.pt_students as any)?.notes?.includes("[Studio]"))
+  ).length;
+  const totalPt = programs.filter(
+    (p) =>
+      p.pt_student_id !== "00000000-0000-0000-0000-000000000001" &&
+      !p.studio_student_id &&
+      !(p.pt_students as any)?.notes?.includes("[Studio]")
+  ).length;
+  const totalModelos = programs.filter(
+    (p) =>
+      p.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
+      (!p.studio_student_id && !p.pt_student_id)
+  ).length;
 
   async function handleDelete(id: string) {
     const ok = await confirmDialog({
@@ -384,9 +404,13 @@ export function TreinosPage() {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {programasFiltrados.map((prog) => {
-                const aluno = prog.students || prog.pt_students;
-                const isStudio = !!prog.studio_student_id;
-                const isPt = !!prog.pt_student_id;
+                const isTemplate =
+                  prog.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
+                  (!prog.studio_student_id && !prog.pt_student_id);
+                const isStudio =
+                  !isTemplate && (!!prog.studio_student_id || (prog.pt_students as any)?.notes?.includes("[Studio]"));
+                const isPt = !isTemplate && !isStudio;
+                const aluno = isTemplate ? null : (prog.students || prog.pt_students);
                 const isExpanded = expandedProgramId === prog.id;
 
                 return (
@@ -404,21 +428,21 @@ export function TreinosPage() {
                               <span className="font-medium text-foreground">{aluno.name}</span>
                             </p>
                           ) : (
-                            <p className="text-xs text-muted-foreground italic">Modelo / Template Geral</p>
+                            <p className="text-xs text-muted-foreground italic font-medium">Modelo / Acervo Geral</p>
                           )}
                         </div>
 
-                        {isStudio ? (
+                        {isTemplate ? (
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground font-semibold">
+                            Modelo
+                          </Badge>
+                        ) : isStudio ? (
                           <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-0 font-semibold">
                             Studio
                           </Badge>
-                        ) : isPt ? (
+                        ) : (
                           <Badge variant="outline" className="text-[10px] font-semibold">
                             Personal
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px] text-muted-foreground">
-                            Modelo
                           </Badge>
                         )}
                       </div>

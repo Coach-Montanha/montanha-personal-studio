@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   Settings2,
   Key,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -1020,9 +1021,32 @@ export function PrescreverIaDialog({
 
       // Se não há programa existente, cria um novo em pt_programs
       if (!targetProgramId) {
-        const progTitle = nomePrograma.trim() || planilhaArquivoNome?.replace(/\.[^/.]+$/, "") || `Treino IA - ${METHODOLOGY_LABEL[metodologia as Methodology] || "Musculação"}`;
+        const TEMPLATE_STUDENT_ID = "00000000-0000-0000-0000-000000000001";
+        const finalStudentId = selectedStudentId || TEMPLATE_STUDENT_ID;
+
+        // Se for aluno do Studio, garante upsert preventivo em pt_students para respeitar a foreign key
+        if (selectedStudentId) {
+          const st = studioStudents.find((s) => s.id === selectedStudentId);
+          if (st) {
+            await supabase.from("pt_students" as never).upsert({
+              id: st.id,
+              user_id: userId,
+              name: st.name,
+              email: st.email,
+              status: "active",
+              notes: "[Aluno Studio]",
+            } as never, { onConflict: "id" } as never);
+          }
+        }
+
+        const progTitle =
+          nomePrograma.trim() ||
+          planilhaArquivoNome?.replace(/\.[^/.]+$/, "") ||
+          `Treino IA - ${METHODOLOGY_LABEL[metodologia as Methodology] || "Musculação"}`;
+
         const newProgPayload: any = {
           user_id: userId,
+          pt_student_id: finalStudentId,
           name: progTitle,
           category: "hypertrophy",
           level: "intermediate",
@@ -1032,14 +1056,6 @@ export function PrescreverIaDialog({
           ai_prompt: prompt.trim() || (planilhaTexto ? `Planilha: ${planilhaArquivoNome}` : null),
           ai_generated_at: new Date().toISOString(),
         };
-
-        if (alunoTipo === "studio" && selectedStudentId) {
-          newProgPayload.studio_student_id = selectedStudentId;
-          newProgPayload.pt_student_id = null;
-        } else if (alunoTipo === "pt" && selectedStudentId) {
-          newProgPayload.pt_student_id = selectedStudentId;
-          newProgPayload.studio_student_id = null;
-        }
 
         const { data: createdProg, error: errProg } = await supabase
           .from("pt_programs" as never)
@@ -1924,6 +1940,68 @@ export function PrescreverIaDialog({
 
           {previa ? (
             <div className="space-y-4">
+              {!programa?.id && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3.5 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <Users className="h-4 w-4 text-primary" />
+                      Destino do Treino ao Salvar:
+                    </span>
+                    <div className="flex gap-1.5">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={alunoTipo === "studio" ? "default" : "outline"}
+                        className="text-xs h-7 px-2.5"
+                        onClick={() => { setAlunoTipo("studio"); setSelectedStudentId(null); }}
+                      >
+                        Aluno Studio
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={alunoTipo === "pt" ? "default" : "outline"}
+                        className="text-xs h-7 px-2.5"
+                        onClick={() => { setAlunoTipo("pt"); setSelectedStudentId(null); }}
+                      >
+                        Aluno Personal
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={alunoTipo === "none" ? "default" : "outline"}
+                        className="text-xs h-7 px-2.5"
+                        onClick={() => { setAlunoTipo("none"); setSelectedStudentId(null); }}
+                      >
+                        Modelo / Acervo
+                      </Button>
+                    </div>
+                  </div>
+
+                  {alunoTipo !== "none" ? (
+                    <Select
+                      value={selectedStudentId || "none"}
+                      onValueChange={(v) => setSelectedStudentId(v === "none" ? null : v)}
+                    >
+                      <SelectTrigger className="h-8 w-full bg-background text-xs">
+                        <SelectValue placeholder={alunoTipo === "studio" ? "Selecione o aluno do Studio..." : "Selecione o aluno de Personal..."} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Salvar como Modelo Geral (Sem aluno vinculado)</SelectItem>
+                        {(alunoTipo === "studio" ? studioStudents : ptStudents).map((st) => (
+                          <SelectItem key={st.id} value={st.id}>
+                            {st.name} {st.email ? `(${st.email})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground italic">
+                      O treino será salvo no Acervo Geral como Modelo para ser atribuído a alunos posteriormente.
+                    </p>
+                  )}
+                </div>
+              )}
               {previa.notes && (
                 <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
                   <h5 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
