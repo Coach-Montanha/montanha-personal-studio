@@ -393,6 +393,8 @@ function StudentDetail() {
 
           <TabsContent value="overview">
             <StudentOverviewTab
+              studentId={id}
+              studentNotes={student.notes}
               kpis={kpis}
               currentPlan={currentPlan}
               attendanceCount={attendanceCount}

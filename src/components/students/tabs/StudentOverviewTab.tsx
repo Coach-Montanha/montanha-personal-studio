@@ -1,4 +1,4 @@
-import { Wallet, CalendarDays, TrendingUp, Receipt, Clock, Layers } from "lucide-react";
+import { Wallet, CalendarDays, TrendingUp, Receipt, Layers } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,16 +6,19 @@ import { KPICard } from "@/components/edufinance/KPICard";
 import { EmptyState } from "@/components/edufinance/EmptyState";
 import { chartTooltip } from "@/lib/chart-theme";
 import { formatBRL, formatDateBR } from "@/lib/format";
+import { StudentObservationsCard } from "@/components/students/StudentObservationsCard";
 
 type MonthlyPoint = { month: string; value: number };
 
 type StudentOverviewTabProps = {
+  studentId?: string;
+  studentNotes?: string | null;
   kpis: {
     total: number;
     months: number;
     avg: number;
     lastDate?: string;
-    gapMonths: number;
+    gapMonths?: number;
   };
   currentPlan?: {
     plans?: {
@@ -30,6 +33,8 @@ type StudentOverviewTabProps = {
 };
 
 export function StudentOverviewTab({
+  studentId,
+  studentNotes,
   kpis,
   currentPlan,
   attendanceCount,
@@ -59,11 +64,6 @@ export function StudentOverviewTab({
           label="🗓️ Último Pagamento"
           value={kpis.lastDate ? formatDateBR(kpis.lastDate) : "—"}
           icon={<Receipt className="h-5 w-5" />}
-        />
-        <KPICard
-          label="⏳ Meses sem pagamento"
-          value={kpis.gapMonths}
-          icon={<Clock className="h-5 w-5" />}
         />
         <KPICard
           label="🔁 Plano Atual"
@@ -113,6 +113,13 @@ export function StudentOverviewTab({
           </div>
         )}
       </Card>
+
+      {studentId && (
+        <StudentObservationsCard
+          studentId={studentId}
+          initialNotes={studentNotes}
+        />
+      )}
     </div>
   );
 }
