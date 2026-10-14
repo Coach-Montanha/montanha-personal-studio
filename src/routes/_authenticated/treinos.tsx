@@ -20,6 +20,7 @@ import {
   Filter,
   Image as ImageIcon,
   UserPlus,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { PrescreverIaDialog } from "@/components/programa-ia/PrescreverIaDialog";
 import { AtribuirTreinoDialog } from "@/components/pt/AtribuirTreinoDialog";
+import { ProgramEditorDialog } from "@/components/pt/ProgramEditorDialog";
 import { SessionBuilder } from "@/components/session-builder/SessionBuilder";
 import { downloadProgramPdf } from "@/lib/pt-program-pdf";
 import { formatDateBR } from "@/lib/format";
@@ -107,6 +109,9 @@ export function TreinosPage() {
   const [imageExportProgramId, setImageExportProgramId] = useState<string | null>(null);
   const [atribuirOpen, setAtribuirOpen] = useState(false);
   const [atribuirProgram, setAtribuirProgram] = useState<{ id: string; name: string } | null>(null);
+  const [programEditorOpen, setProgramEditorOpen] = useState(false);
+  const [selectedProgramIdForEdit, setSelectedProgramIdForEdit] = useState<string | null>(null);
+  const [initialDayIdForEdit, setInitialDayIdForEdit] = useState<string | null>(null);
 
   // Consulta de todos os programas com joins de alunos Studio e PT
   const { data: programs = [], isLoading } = useQuery({
@@ -478,16 +483,34 @@ export function TreinosPage() {
 
                     {/* Ações da Rotina */}
                     <div className="border-t border-border/50 pt-3 flex items-center justify-between gap-1 flex-wrap">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={isExpanded ? "secondary" : "outline"}
-                        className="h-8 text-xs gap-1.5 px-2.5"
-                        onClick={() => setExpandedProgramId(isExpanded ? null : prog.id)}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                        <span>{isExpanded ? "Ocultar" : "Ver Dias"}</span>
-                      </Button>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs gap-1.5 px-2.5 font-semibold text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/40 shadow-xs"
+                          title="Editar Rotina, Sessões e Exercícios"
+                          onClick={() => {
+                            setSelectedProgramIdForEdit(prog.id);
+                            setInitialDayIdForEdit(null);
+                            setProgramEditorOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-3.5 w-3.5 text-primary" />
+                          <span>Editar</span>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isExpanded ? "secondary" : "ghost"}
+                          className="h-8 text-xs gap-1 px-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => setExpandedProgramId(isExpanded ? null : prog.id)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span>{isExpanded ? "Ocultar" : "Dias"}</span>
+                        </Button>
+                      </div>
 
                       <div className="flex items-center gap-1">
                         <Button
@@ -564,15 +587,48 @@ export function TreinosPage() {
                     {/* Drawer/Gaveta expandida com dias de treino */}
                     {isExpanded && (
                       <div className="mt-2 pt-3 border-t border-border/60 space-y-2">
-                        <p className="text-xs font-semibold text-foreground">Sessões Programadas ({expandedDays.length})</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-semibold text-foreground">
+                            Sessões Programadas ({expandedDays.length})
+                          </p>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-[11px] gap-1 px-1.5 text-primary hover:bg-primary/10"
+                            onClick={() => {
+                              setSelectedProgramIdForEdit(prog.id);
+                              setInitialDayIdForEdit(null);
+                              setProgramEditorOpen(true);
+                            }}
+                          >
+                            <Plus className="h-3 w-3" /> Nova Sessão
+                          </Button>
+                        </div>
+
                         {expandedDays.length === 0 ? (
-                          <p className="text-xs text-muted-foreground italic">Nenhum dia cadastrado ainda.</p>
+                          <div className="p-3 text-center rounded-lg bg-muted/20 border border-dashed border-border text-xs text-muted-foreground space-y-1.5">
+                            <p className="italic">Nenhum dia cadastrado ainda.</p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs gap-1"
+                              onClick={() => {
+                                setSelectedProgramIdForEdit(prog.id);
+                                setInitialDayIdForEdit(null);
+                                setProgramEditorOpen(true);
+                              }}
+                            >
+                              <Plus className="h-3 w-3" /> Criar Primeira Sessão
+                            </Button>
+                          </div>
                         ) : (
                           <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
                             {expandedDays.map((d) => (
                               <div
                                 key={d.id}
-                                className="flex items-center justify-between p-2 rounded-md bg-muted/40 border border-border/50 text-xs"
+                                className="flex items-center justify-between p-2 rounded-md bg-muted/40 border border-border/50 text-xs hover:border-primary/40 transition-colors"
                               >
                                 <div className="space-y-0.5">
                                   <span className="font-semibold text-foreground">{d.name}</span>
@@ -582,8 +638,34 @@ export function TreinosPage() {
                                     </Badge>
                                   )}
                                 </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 text-[11px] gap-1 px-2 text-primary hover:bg-primary/10"
+                                  onClick={() => {
+                                    setSelectedProgramIdForEdit(prog.id);
+                                    setInitialDayIdForEdit(d.id);
+                                    setProgramEditorOpen(true);
+                                  }}
+                                >
+                                  <Pencil className="h-3 w-3" /> Editar
+                                </Button>
                               </div>
                             ))}
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              className="w-full text-xs h-7.5 mt-2 gap-1.5 font-semibold text-primary hover:bg-primary/10"
+                              onClick={() => {
+                                setSelectedProgramIdForEdit(prog.id);
+                                setInitialDayIdForEdit(null);
+                                setProgramEditorOpen(true);
+                              }}
+                            >
+                              <Pencil className="h-3.5 w-3.5" /> Abrir Editor Completo de Treino
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -654,6 +736,20 @@ export function TreinosPage() {
           }}
         />
       )}
+
+      {/* Dialog de Edição Completa da Rotina, Sessões e Exercícios */}
+      <ProgramEditorDialog
+        open={programEditorOpen}
+        onOpenChange={(open) => {
+          setProgramEditorOpen(open);
+          if (!open) {
+            setSelectedProgramIdForEdit(null);
+            setInitialDayIdForEdit(null);
+          }
+        }}
+        programId={selectedProgramIdForEdit}
+        initialDayId={initialDayIdForEdit}
+      />
     </div>
   );
 }
