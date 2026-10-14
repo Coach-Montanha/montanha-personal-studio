@@ -205,6 +205,7 @@ const CO = z
   .optional();
 
 const INPUT = z.object({
+  apiKey: z.string().optional().nullable(),
   programId: z.string().nullable().optional(),
   studentId: z.string().nullable().optional(),
   prompt: z.string().max(4000).default(""),
@@ -655,6 +656,7 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
         system: systemPrompt,
         prompt: userPrompt,
         inlineData: inlineData,
+        apiKey: data.apiKey?.trim() || undefined,
       });
       conteudo = resultadoIa.raw;
     } catch (err) {

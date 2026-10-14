@@ -150,6 +150,7 @@ export type CallAiJsonArgs = {
   prompt: string;
   inlineData?: { mimeType: string; data: string };
   temperature?: number;
+  apiKey?: string;
 };
 
 export type CallAiJsonResult<T = any> = {
@@ -334,6 +335,7 @@ function getAiKey(): { geminiKey?: string; lovableKey?: string } {
  */
 export async function callLovableAiJson<T = any>(args: CallAiJsonArgs): Promise<CallAiJsonResult<T>> {
   const { geminiKey, lovableKey } = getAiKey();
+  const effectiveGeminiKey = args.apiKey?.trim() || geminiKey;
 
   const promptChars = args.prompt.length + (args.system?.length ?? 0);
   if (promptChars > MAX_PROMPT_CHARS) {
@@ -345,10 +347,10 @@ export async function callLovableAiJson<T = any>(args: CallAiJsonArgs): Promise<
 
   let lastError: any = null;
 
-  // 1. Prioriza Gemini direto quando GEMINI_API_KEY está configurada (ex: produção Vercel)
-  if (geminiKey && geminiKey.length > 0) {
+  // 1. Prioriza Gemini direto quando GEMINI_API_KEY ou chave personalizada está configurada
+  if (effectiveGeminiKey && effectiveGeminiKey.length > 0) {
     try {
-      return await callGeminiDirect<T>(geminiKey, args);
+      return await callGeminiDirect<T>(effectiveGeminiKey, args);
     } catch (err) {
       console.warn("[ai-gateway] Gemini direto falhou, tentando fallback:", err);
       lastError = err;
@@ -372,7 +374,7 @@ export async function callLovableAiJson<T = any>(args: CallAiJsonArgs): Promise<
       prompt: args.prompt,
       systemInstruction: args.system,
       temperature: args.temperature ?? 0.7,
-      excludeProviders: geminiKey ? ["gemini"] : undefined,
+      excludeProviders: effectiveGeminiKey ? ["gemini"] : undefined,
     });
     const json = parseJsonDefensive<T>(ecoRes.text);
     return {
@@ -391,10 +393,10 @@ export async function callLovableAiJson<T = any>(args: CallAiJsonArgs): Promise<
     throw lastError;
   }
 
-  if (!geminiKey && !lovableKey) {
+  if (!effectiveGeminiKey && !lovableKey) {
     throw new AiGatewayError(
       "AI_NOT_CONFIGURED",
-      "Chave da IA não configurada no servidor (GEMINI_API_KEY ou LOVABLE_API_KEY). Adicione GEMINI_API_KEY no painel da Vercel.",
+      "Chave da IA não configurada no servidor (GEMINI_API_KEY ou LOVABLE_API_KEY). Adicione GEMINI_API_KEY no painel da Vercel ou insira sua chave do Google Gemini.",
     );
   }
 

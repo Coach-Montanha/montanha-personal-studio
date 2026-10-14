@@ -20,6 +20,7 @@ import {
   Trash2,
   CheckCircle2,
   Settings2,
+  Key,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -521,6 +522,31 @@ export function PrescreverIaDialog({
   const [isExtractingPlanilha, setIsExtractingPlanilha] = useState(false);
   const [showPlanilhaPreview, setShowPlanilhaPreview] = useState(false);
 
+  // Chave local do Google Gemini (BYOK - Bring Your Own Key para casos sem chave no servidor)
+  const [geminiApiKey, setGeminiApiKey] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("montanha_gemini_api_key") || "";
+    }
+    return "";
+  });
+  const [tempApiKey, setTempApiKey] = useState(geminiApiKey);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+
+  const salvarApiKey = (novaChave: string) => {
+    const limpa = novaChave.trim();
+    setGeminiApiKey(limpa);
+    if (typeof window !== "undefined") {
+      if (limpa) {
+        localStorage.setItem("montanha_gemini_api_key", limpa);
+        toast.success("Chave Gemini salva localmente com sucesso!");
+      } else {
+        localStorage.removeItem("montanha_gemini_api_key");
+        toast.info("Chave Gemini removida.");
+      }
+    }
+    setShowApiKeyInput(false);
+  };
+
   // Efeito para carregar as regras persistidas do programa E preferências globais
   useEffect(() => {
     async function carregarConfiguracoes() {
@@ -862,6 +888,7 @@ export function PrescreverIaDialog({
       try {
         const res = await gerar({
           data: {
+            apiKey: geminiApiKey.trim() || undefined,
             programId: programa?.id || "novo-programa",
             studentId: selectedStudentId || assignedStudent?.id || null,
             prompt: prompt.trim(),
@@ -952,9 +979,11 @@ export function PrescreverIaDialog({
       if (errorStr.includes("POOL_VAZIO")) {
         msg = "O pool de exercícios da biblioteca não atende aos filtros de equipamento/metodologia do molde.";
       } else if (errorStr.includes("AI_NOT_CONFIGURED")) {
-        msg = "Chave da IA não configurada no servidor (GEMINI_API_KEY).";
+        msg = "Chave da IA não configurada. Insira sua chave gratuita do Google Gemini no campo abaixo.";
+        setShowApiKeyInput(true);
       } else if (errorStr.includes("AI_UNAUTHORIZED")) {
-        msg = "Acesso à IA não autorizado. Verifique as credenciais da API.";
+        msg = "Chave da API não autorizada ou inválida. Por favor, confira sua chave do Google Gemini.";
+        setShowApiKeyInput(true);
       } else if (errorStr.includes("AI_NO_CREDITS")) {
         msg = "Créditos da IA esgotados no gateway.";
       } else if (errorStr.includes("AI_EMPTY_CONTENT") || errorStr.includes("AI_INVALID_JSON")) {
@@ -1529,10 +1558,79 @@ export function PrescreverIaDialog({
               >
                 Instruções & Orientações para a IA
               </label>
-              <span className="text-[11px] tabular-nums text-muted-foreground">
-                {prompt.trim().length}/4000
-              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline cursor-pointer"
+                >
+                  <Key className="h-3 w-3" />
+                  {geminiApiKey ? "Chave Gemini Ativa" : "Configurar Chave Gemini"}
+                </button>
+                <span className="text-[11px] tabular-nums text-muted-foreground">
+                  {prompt.trim().length}/4000
+                </span>
+              </div>
             </div>
+
+            {/* PAINEL DE CONFIGURAÇÃO DE CHAVE GEMINI BYOK */}
+            {showApiKeyInput && (
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-3.5 space-y-2.5 animate-in fade-in duration-150">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                      <Key className="h-3.5 w-3.5 text-primary" />
+                      <span>Chave do Google Gemini API (BYOK)</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Sua chave fica salva no seu navegador e permite prescrever treinos sem limites diretamente pelo Gemini 2.5 Flash oficial.
+                    </p>
+                  </div>
+                  <a
+                    href="https://aistudio.google.com/app/apikey"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-primary hover:underline font-medium shrink-0"
+                  >
+                    Obter Chave Grátis ↗
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="password"
+                    value={tempApiKey}
+                    onChange={(e) => setTempApiKey(e.target.value)}
+                    placeholder="Cole sua chave AIzaSy..."
+                    className="flex-1 h-8 rounded-lg border border-border bg-background px-2.5 text-xs font-mono"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="default"
+                    onClick={() => salvarApiKey(tempApiKey)}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Salvar
+                  </Button>
+                  {geminiApiKey && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setTempApiKey("");
+                        salvarApiKey("");
+                      }}
+                      className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
+                      title="Remover Chave"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="flex flex-wrap gap-1.5">
               {EXEMPLOS.map((ex) => (
                 <Button
