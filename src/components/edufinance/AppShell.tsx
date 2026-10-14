@@ -60,9 +60,16 @@ const nav: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
 
   { to: "/students", label: "Alunos", icon: Users, section: "Studio", module: "studio" },
-  { to: "/treinos", label: "Treinos & Fichas", icon: Dumbbell, section: "Studio", module: "studio" },
   { to: "/payments", label: "Pagamentos", icon: CreditCard, section: "Studio", module: "studio" },
   { to: "/plans", label: "Planos", icon: ClipboardList, section: "Studio", module: "studio" },
+
+  {
+    to: "/treinos",
+    label: "Central de Treinos",
+    icon: Dumbbell,
+    section: "Central de Treinos",
+    module: "studio",
+  },
 
   { to: "/agenda", label: "Turmas & Agenda", icon: Calendar, section: "Aulas", module: "studio" },
   { to: "/programs", label: "Programas", icon: ClipboardList, section: "Aulas", module: "studio" },
