@@ -68,27 +68,40 @@ Montanha Personal Studio/
 │   ├── lib/                 # Utilitários gerais (confirmações, validações, formatação)
 │   ├── routes/              # Árvore de rotas do TanStack Router
 │   │   ├── __root.tsx       # Rota raiz (Head, Metadados SEO, JSON-LD, ThemeScript)
-│   │   ├── auth.tsx         # Tela de Login / Primeiro Acesso
+│   │   ├── auth.tsx         # Tela de Login / Primeiro Acesso (PIN 10 dígitos / e-mail)
 │   │   ├── reset-password.tsx # Recuperação e redefinição de senha
 │   │   ├── boost.tsx        # Módulo Booster do ecossistema
 │   │   ├── create.tsx       # Módulo Creator com IA
 │   │   ├── eco.tsx          # Central do Ecossistema Montanha
 │   │   ├── master-admin.tsx # Redirecionamento para o Portal Master Admin
+│   │   ├── [.mcp]/          # Servidor MCP integrado (tools e endpoints)
 │   │   └── _authenticated/  # Rotas protegidas (exigem sessão ativa)
 │   │       ├── route.tsx    # Layout e guardião de autenticação
 │   │       ├── index.tsx    # Dashboard principal (KPIs, Faturamento, Alertas)
-│   │       ├── financeiro.tsx # Gestão de caixa, DRE e lançamentos
-│   │       ├── students.index.tsx # Lista de alunos matriculados
-│   │       ├── students.$id.tsx   # Prontuário e ficha detalhada do aluno
 │   │       ├── agenda.tsx   # Grade de horários e agendamento de aulas
+│   │       ├── analytics.tsx # Painel analítico de métricas do estúdio
+│   │       ├── biblioteca.tsx # Biblioteca de exercícios e rotinas
 │   │       ├── crm.tsx      # Funil de vendas, leads e conversão
+│   │       ├── financeiro.tsx # Gestão de caixa, DRE e lançamentos
+│   │       ├── import-export.tsx # Importação/exportação de dados
 │   │       ├── payments.tsx # Controle de mensalidades e cobranças
 │   │       ├── plans.tsx    # Gestão de planos e pacotes de aulas
-│   │       └── settings.tsx # Configurações da conta e personalização
+│   │       ├── programs.tsx # Programas de treino dos alunos
+│   │       ├── settings.tsx # Configurações da conta e personalização
+│   │       ├── storage.tsx  # Gestão de arquivos e mídias
+│   │       ├── students.index.tsx # Lista de alunos matriculados
+│   │       ├── students.$id.tsx   # Prontuário e ficha detalhada do aluno
+│   │       ├── trash.tsx    # Lixeira e recuperação de registros
+│   │       ├── treino.tsx / treinos.tsx # Gestão e execução de treinos
+│   │       ├── admin/tenants.tsx # Gestão multi-tenant
+│   │       ├── personal-trainer/ # Portal exclusivo do Personal Trainer
+│   │       └── portal/      # Portal do Aluno (aulas, treinos e perfil)
 │   ├── app.config.ts        # Configuração do TanStack Start / Nitro
 │   ├── router.tsx           # Criação da instância do TanStack Router
 │   └── styles.css           # Estilos globais Tailwind CSS
-├── DEV_GUIDE.md             # ESTE MANUAL TÉCNICO INTERNO
+├── supabase/                # Migrações locais do Supabase (supabase/migrations/)
+│   └── database/            # Esquema SQL compartilhado no repositório canônico: montanha-master-admin/database/ecosystem_schema.sql
+├── DEV_GUIDE.md             # ESTE MANUAL TÉCNICO INTERNO (Atualizado)
 ├── package.json             # Dependências e scripts de execução
 ├── tsconfig.json            # Configuração TypeScript
 └── vite.config.ts           # Configuração do bundler Vite e plugins
