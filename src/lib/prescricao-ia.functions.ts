@@ -224,6 +224,7 @@ const INPUT = z.object({
   formatRegistry: z.array(z.any()).optional(),
   planilhaBase: z.string().max(40000).optional(),
   planilhaModo: z.enum(["ajustar", "continuar"]).optional(),
+  fileUrl: z.string().optional(),
   planilhaImagem: z
     .object({
       mimeType: z.string(),
@@ -247,17 +248,52 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
     // exclusivamente do modelo, evitando mistura com outras modalidades.
     const supabase = context.supabase;
 
-    const { data: programa, error } = await supabase
-      .from("programs")
-      .select(
-        "id, titulo, metodologia, descricao, data_inicio, duracao_semanas, program_weeks(id, numero_semana)",
-      )
-      .eq("id", data.programId)
-      .maybeSingle();
+    let programa: any = null;
+    if (data.programId && data.programId !== "novo-programa") {
+      const { data: pData } = await supabase
+        .from("programs")
+        .select(
+          "id, titulo, metodologia, descricao, data_inicio, duracao_semanas, program_weeks(id, numero_semana)",
+        )
+        .eq("id", data.programId)
+        .maybeSingle();
 
-    if (error) throw new Error(error.message);
-    if (!programa) throw new Error("Programa não encontrado ou sem permissão de acesso");
-    const metodologiaEfetiva = data.metodologiaOverride || programa.metodologia;
+      if (pData) {
+        programa = pData;
+      } else {
+        const { data: ptData } = await supabase
+          .from("pt_programs" as never)
+          .select("id, name, training_type, goals, start_date")
+          .eq("id" as never, data.programId)
+          .maybeSingle();
+
+        if (ptData) {
+          programa = {
+            id: (ptData as any).id,
+            titulo: (ptData as any).name,
+            metodologia: (ptData as any).training_type,
+            descricao: (ptData as any).goals,
+            data_inicio: (ptData as any).start_date,
+            duracao_semanas: data.semanasNovas || 1,
+            program_weeks: [],
+          };
+        }
+      }
+    }
+
+    if (!programa) {
+      programa = {
+        id: data.programId || "novo-programa",
+        titulo: "Nova Rotina",
+        metodologia: data.metodologiaOverride || "musculacao",
+        descricao: null,
+        data_inicio: new Date().toISOString().slice(0, 10),
+        duracao_semanas: data.semanasNovas || 1,
+        program_weeks: [],
+      };
+    }
+
+    const metodologiaEfetiva = data.metodologiaOverride || programa.metodologia || "musculacao";
     const isKbSport = metodologiaEfetiva === "kettlebell_sport";
     const isWl = metodologiaEfetiva === "levantamento_peso";
     const isTf = metodologiaEfetiva === "treinamento_funcional";
@@ -579,13 +615,31 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
       promptChars: systemPrompt.length + userPrompt.length,
     });
 
+    let inlineData = data.planilhaImagem;
+    if (!inlineData && data.fileUrl) {
+      try {
+        const fileRes = await fetch(data.fileUrl);
+        if (fileRes.ok) {
+          const buffer = Buffer.from(await fileRes.arrayBuffer());
+          const mimeType = fileRes.headers.get("content-type") || (data.fileUrl.includes(".pdf") ? "application/pdf" : "image/jpeg");
+          inlineData = {
+            mimeType,
+            data: buffer.toString("base64"),
+          };
+          console.log(`[AI_REQUEST][${requestId}] Documento carregado via Storage URL: ${mimeType}, ${inlineData.data.length} chars base64`);
+        }
+      } catch (fErr) {
+        console.warn(`[AI_REQUEST][${requestId}] Falha ao baixar fileUrl:`, fErr);
+      }
+    }
+
     let conteudo: string;
     try {
       const resultadoIa = await callLovableAiJson({
         scope: "prescricao-ia",
         system: systemPrompt,
         prompt: userPrompt,
-        inlineData: data.planilhaImagem,
+        inlineData: inlineData,
       });
       conteudo = resultadoIa.raw;
     } catch (err) {

@@ -515,6 +515,7 @@ export function PrescreverIaDialog({
   const [planilhaTexto, setPlanilhaTexto] = useState("");
   const [planilhaArquivoNome, setPlanilhaArquivoNome] = useState<string | null>(null);
   const [planilhaImagem, setPlanilhaImagem] = useState<{ mimeType: string; data: string } | null>(null);
+  const [planilhaFileUrl, setPlanilhaFileUrl] = useState<string | null>(null);
   const [planilhaModo, setPlanilhaModo] = useState<"ajustar" | "continuar">("ajustar");
   const [isExtractingPlanilha, setIsExtractingPlanilha] = useState(false);
   const [showPlanilhaPreview, setShowPlanilhaPreview] = useState(false);
@@ -667,7 +668,47 @@ export function PrescreverIaDialog({
     setPlanilhaTexto("");
     setPlanilhaArquivoNome(null);
     setPlanilhaImagem(null);
+    setPlanilhaFileUrl(null);
     setShowPlanilhaPreview(false);
+  }, []);
+
+  // Helper para comprimir fotos client-side antes de enviar (evita limite 4.5MB da Vercel)
+  const comprimirImagem = useCallback(async (file: File, maxDim = 1280, quality = 0.75): Promise<{ mimeType: string; data: string }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Não foi possível processar a imagem"));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          const base64Data = dataUrl.split(",")[1];
+          resolve({ mimeType: "image/jpeg", data: base64Data });
+        };
+        img.onerror = () => reject(new Error("Erro ao carregar imagem para compressão"));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error("Erro ao ler arquivo"));
+      reader.readAsDataURL(file);
+    });
   }, []);
 
   // Extração inteligente de arquivos de treino (.txt, .csv, .xlsx, .pdf, imagens)
@@ -679,24 +720,31 @@ export function PrescreverIaDialog({
     try {
       const fileNameLower = file.name.toLowerCase();
 
-      // 1. Imagens (PNG, JPG, JPEG, WEBP) -> Envio multimodal direto ao Gemini
+      // 1. Imagens (PNG, JPG, JPEG, WEBP) -> Comprime client-side para evitar payload 413
       if (file.type.startsWith("image/") || /\.(png|jpe?g|webp)$/i.test(fileNameLower)) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          const base64Data = result.split(",")[1];
-          const mimeType = file.type || (fileNameLower.endsWith(".png") ? "image/png" : "image/jpeg");
-          setPlanilhaImagem({ mimeType, data: base64Data });
+        try {
+          const compressed = await comprimirImagem(file);
+          setPlanilhaImagem(compressed);
+          setPlanilhaFileUrl(null);
           setPlanilhaTexto(`[Arquivo de imagem anexo: ${file.name}]\nA IA analisará visualmente esta ficha de treino/planilha.`);
           setShowPlanilhaPreview(true);
-          toast.success(`Ficha em imagem carregada (${file.name})!`);
-          setIsExtractingPlanilha(false);
-        };
-        reader.onerror = () => {
-          toast.error("Falha ao ler o arquivo de imagem.");
-          setIsExtractingPlanilha(false);
-        };
-        reader.readAsDataURL(file);
+          toast.success(`Ficha em imagem otimizada (${file.name})!`);
+        } catch {
+          // Fallback simples se falhar o canvas
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            const base64Data = result.split(",")[1];
+            const mimeType = file.type || "image/jpeg";
+            setPlanilhaImagem({ mimeType, data: base64Data });
+            setPlanilhaFileUrl(null);
+            setPlanilhaTexto(`[Arquivo de imagem anexo: ${file.name}]\nA IA analisará visualmente esta ficha de treino/planilha.`);
+            setShowPlanilhaPreview(true);
+            toast.success(`Ficha em imagem carregada (${file.name})!`);
+          };
+          reader.readAsDataURL(file);
+        }
+        setIsExtractingPlanilha(false);
         return;
       }
 
@@ -721,6 +769,7 @@ export function PrescreverIaDialog({
 
         setPlanilhaTexto(extractedText.trim());
         setPlanilhaImagem(null);
+        setPlanilhaFileUrl(null);
         setShowPlanilhaPreview(true);
         toast.success(`Planilha ${file.name} processada com sucesso!`);
         setIsExtractingPlanilha(false);
@@ -735,32 +784,61 @@ export function PrescreverIaDialog({
         }
         setPlanilhaTexto(text.trim());
         setPlanilhaImagem(null);
+        setPlanilhaFileUrl(null);
         setShowPlanilhaPreview(true);
         toast.success(`Texto de ${file.name} carregado com sucesso!`);
         setIsExtractingPlanilha(false);
         return;
       }
 
-      // 4. PDFs ou outros formatos -> Leitura como texto bruto ou preparação de base64
+      // 4. PDFs -> Upload direto no Supabase Storage para evitar limite 4.5MB da Vercel (Erro 413)
       if (file.type === "application/pdf" || fileNameLower.endsWith(".pdf")) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          const base64Data = result.split(",")[1];
-          setPlanilhaImagem({ mimeType: "application/pdf", data: base64Data });
-          setPlanilhaTexto(`[Documento PDF anexo: ${file.name}]\nA IA interpretará o conteúdo estruturado deste PDF.`);
-          setShowPlanilhaPreview(true);
-          toast.success(`PDF ${file.name} anexado para análise da IA!`);
-          setIsExtractingPlanilha(false);
-        };
-        reader.readAsDataURL(file);
-        return;
+        const filePath = `planilhas-temp/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+        const { error: uploadError } = await supabase.storage
+          .from("contracts")
+          .upload(filePath, file, { upsert: true });
+
+        if (!uploadError) {
+          const { data: signedData } = await supabase.storage
+            .from("contracts")
+            .createSignedUrl(filePath, 7200);
+
+          if (signedData?.signedUrl) {
+            setPlanilhaFileUrl(signedData.signedUrl);
+            setPlanilhaImagem(null);
+            setPlanilhaTexto(`[Documento PDF anexo: ${file.name}]\nA IA processará o PDF via armazenamento seguro.`);
+            setShowPlanilhaPreview(true);
+            toast.success(`PDF ${file.name} carregado com sucesso!`);
+            setIsExtractingPlanilha(false);
+            return;
+          }
+        }
+
+        // Se upload no storage falhar e for arquivo leve (< 1.5MB), fallback base64
+        if (file.size < 1.5 * 1024 * 1024) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            const base64Data = result.split(",")[1];
+            setPlanilhaImagem({ mimeType: "application/pdf", data: base64Data });
+            setPlanilhaFileUrl(null);
+            setPlanilhaTexto(`[Documento PDF anexo: ${file.name}]\nA IA interpretará o conteúdo deste PDF.`);
+            setShowPlanilhaPreview(true);
+            toast.success(`PDF ${file.name} anexado para análise!`);
+            setIsExtractingPlanilha(false);
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        throw new Error("Não foi possível enviar o PDF para armazenamento seguro.");
       }
 
       // Fallback: tenta ler como texto
       const rawText = await file.text();
       setPlanilhaTexto(rawText.slice(0, 30000));
       setPlanilhaImagem(null);
+      setPlanilhaFileUrl(null);
       setShowPlanilhaPreview(true);
       toast.success(`Arquivo ${file.name} importado!`);
     } catch (err: any) {
@@ -769,7 +847,7 @@ export function PrescreverIaDialog({
     } finally {
       setIsExtractingPlanilha(false);
     }
-  }, []);
+  }, [comprimirImagem]);
 
   const gerarMut = useMutation({
     mutationFn: async () => {
@@ -795,6 +873,7 @@ export function PrescreverIaDialog({
             planilhaBase: planilhaTexto.trim() || undefined,
             planilhaModo: planilhaTexto.trim() ? planilhaModo : undefined,
             planilhaImagem: planilhaImagem || undefined,
+            fileUrl: planilhaFileUrl || undefined,
             setTypes: setTypes.map((t) => ({ id: t.id, label: t.label, fields: t.fields })),
             formatRegistry: customFormats.map((f) => ({
               id: f.id,
