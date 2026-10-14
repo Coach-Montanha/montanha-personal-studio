@@ -13,6 +13,7 @@ import {
   Ticket,
   UserRound,
   Gift,
+  Dumbbell,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -46,12 +47,14 @@ import { StudentPaymentsTab, type PaymentRow } from "@/components/students/tabs/
 import { StudentCheckinsTab, type CheckinEntry } from "@/components/students/tabs/StudentCheckinsTab";
 import { StudentAttendanceTab } from "@/components/students/tabs/StudentAttendanceTab";
 import { BonusBalancePanel } from "@/components/students/tabs/BonusBalancePanel";
+import { ProgramsTab } from "@/components/pt/ProgramsTab";
 
 const STUDENT_TABS = [
   "overview",
   "personal",
   "plan",
   "payments",
+  "programs",
   "checkins",
   "attendance",
   "bonus",
@@ -373,6 +376,9 @@ function StudentDetail() {
               <TabsTrigger value="payments" className="gap-1.5 transition-all duration-200">
                 <Receipt className="h-3.5 w-3.5" /> Pagamentos
               </TabsTrigger>
+              <TabsTrigger value="programs" className="gap-1.5 transition-all duration-200">
+                <Dumbbell className="h-3.5 w-3.5" /> Planilhas
+              </TabsTrigger>
               <TabsTrigger value="checkins" className="gap-1.5 transition-all duration-200">
                 <Ticket className="h-3.5 w-3.5" /> Check-ins
               </TabsTrigger>
@@ -458,6 +464,10 @@ function StudentDetail() {
               }}
               renewingId={renewingId}
             />
+          </TabsContent>
+
+          <TabsContent value="programs">
+            <ProgramsTab studentId={id} studioStudentId={id} />
           </TabsContent>
 
           <TabsContent value="checkins">
