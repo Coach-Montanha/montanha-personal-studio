@@ -78,6 +78,7 @@ export function ImportTrainingPanel() {
   const [manualProgram, setManualProgram] = useState<HybridProgram | null>(null);
   const [manualError, setManualError] = useState<string | null>(null);
   const [studentId, setStudentId] = useState<string>("");
+  const [studentType, setStudentType] = useState<"pt" | "studio">("pt");
   const [showToStudent, setShowToStudent] = useState(true);
   const [importing, setImporting] = useState(false);
 
@@ -103,6 +104,20 @@ export function ImportTrainingPanel() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pt_students")
+        .select("id,name,status")
+        .is("deleted_at", null)
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const studioStudentsQ = useQuery({
+    queryKey: ["studio-students-import"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("students")
         .select("id,name,status")
         .is("deleted_at", null)
         .order("name");
@@ -140,15 +155,21 @@ export function ImportTrainingPanel() {
     try {
       const res = await runImport({
         data: {
-          ptStudentId: studentId,
+          studentType,
+          ptStudentId: studentType === "pt" ? studentId : undefined,
+          studioStudentId: studentType === "studio" ? studentId : undefined,
           program,
           showToStudent,
         },
       });
-      toast.success(`Treino importado para ${res.studentName}`, {
+      toast.success(`Treino importado para ${res.studentName} (${studentType === "studio" ? "Studio" : "PT"})`, {
         description: `${res.days} dia(s) · ${res.exercises} exercício(s)`,
       });
-      navigate({ to: "/personal-trainer/students/$id", params: { id: studentId } }).catch(() => {});
+      if (studentType === "studio") {
+        navigate({ to: "/students/$id", params: { id: studentId }, search: { tab: "programs" as any } }).catch(() => {});
+      } else {
+        navigate({ to: "/personal-trainer/students/$id", params: { id: studentId } }).catch(() => {});
+      }
     } catch (e: any) {
       toast.error("Falha ao importar", { description: e?.message ?? "Erro desconhecido" });
     } finally {
@@ -362,32 +383,71 @@ export function ImportTrainingPanel() {
             )}
           </SectionCard>
 
-          <SectionCard icon={Users} title="Destino" description="Aluno de Personal Trainer que receberá a rotina">
-            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-              <div className="space-y-2">
-                <Label htmlFor="pt-student" className="text-caption text-muted-foreground">
-                  Aluno PT
-                </Label>
-                <Select value={studentId} onValueChange={setStudentId}>
-                  <SelectTrigger id="pt-student" className="transition-ui">
-                    <SelectValue
-                      placeholder={studentsQ.isLoading ? "Carregando alunos…" : "Selecione o aluno"}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(studentsQ.data ?? []).map((s: any) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <SectionCard icon={Users} title="Destino" description="Escolha o aluno de Personal Trainer ou do Studio que receberá a rotina">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={studentType === "pt" ? "default" : "outline"}
+                  onClick={() => {
+                    setStudentType("pt");
+                    setStudentId("");
+                  }}
+                  className="h-8 gap-1.5 text-xs font-semibold"
+                >
+                  Aluno Personal Trainer
+                  <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
+                    {studentsQ.data?.length ?? 0}
+                  </Badge>
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={studentType === "studio" ? "default" : "outline"}
+                  onClick={() => {
+                    setStudentType("studio");
+                    setStudentId("");
+                  }}
+                  className="h-8 gap-1.5 text-xs font-semibold"
+                >
+                  Aluno Studio
+                  <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px]">
+                    {studioStudentsQ.data?.length ?? 0}
+                  </Badge>
+                </Button>
               </div>
-              <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-sunken/60 px-3 py-2.5">
-                <Switch id="show-student" checked={showToStudent} onCheckedChange={setShowToStudent} />
-                <Label htmlFor="show-student" className="text-caption cursor-pointer text-foreground">
-                  Visível para o aluno
-                </Label>
+
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <div className="space-y-2">
+                  <Label htmlFor="dest-student" className="text-caption text-muted-foreground">
+                    {studentType === "pt" ? "Aluno de Personal Trainer" : "Aluno do Studio"}
+                  </Label>
+                  <Select value={studentId} onValueChange={setStudentId}>
+                    <SelectTrigger id="dest-student" className="transition-ui">
+                      <SelectValue
+                        placeholder={
+                          (studentType === "pt" ? studentsQ.isLoading : studioStudentsQ.isLoading)
+                            ? "Carregando alunos…"
+                            : `Selecione o aluno do ${studentType === "pt" ? "PT" : "Studio"}`
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {((studentType === "pt" ? studentsQ.data : studioStudentsQ.data) ?? []).map((s: any) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-sunken/60 px-3 py-2.5">
+                  <Switch id="show-student" checked={showToStudent} onCheckedChange={setShowToStudent} />
+                  <Label htmlFor="show-student" className="text-caption cursor-pointer text-foreground">
+                    Visível para o aluno
+                  </Label>
+                </div>
               </div>
             </div>
 

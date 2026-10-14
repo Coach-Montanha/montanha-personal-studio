@@ -229,7 +229,9 @@ export function flattenHybridProgram(program: HybridProgram): FlatDay[] {
 /* -------------------------------- import --------------------------------- */
 
 const ImportInput = z.object({
-  ptStudentId: z.string().uuid(),
+  ptStudentId: z.string().uuid().optional(),
+  studioStudentId: z.string().uuid().optional(),
+  studentType: z.enum(["pt", "studio"]).default("pt"),
   programId: z.string().min(1).optional(),
   program: HybridProgramSchema.optional(),
   showToStudent: z.boolean().default(true),
@@ -241,19 +243,37 @@ export const importHybridProgram = createServerFn({ method: "POST" })
     const parsed = ImportInput.parse(raw);
     if (!parsed.programId && !parsed.program)
       throw new Error("Informe um programa da origem ou cole o JSON");
+    if (!parsed.ptStudentId && !parsed.studioStudentId)
+      throw new Error("Selecione o aluno de destino");
     return parsed;
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    const { data: student, error: stErr } = await supabase
-      .from("pt_students")
-      .select("id,user_id,name")
-      .eq("id", data.ptStudentId)
-      .maybeSingle();
-    if (stErr) throw new Error(stErr.message);
-    if (!student) throw new Error("Aluno PT não encontrado");
-    if ((student as any).user_id !== userId) throw new Error("Sem permissão para este aluno");
+    const targetStudentId = (data.studioStudentId || data.ptStudentId)!;
+    let studentName = "";
+
+    if (data.studentType === "studio" || data.studioStudentId) {
+      const { data: student, error: stErr } = await supabase
+        .from("students")
+        .select("id,user_id,name")
+        .eq("id", targetStudentId)
+        .maybeSingle();
+      if (stErr) throw new Error(stErr.message);
+      if (!student) throw new Error("Aluno do Studio não encontrado");
+      if ((student as any).user_id !== userId) throw new Error("Sem permissão para este aluno");
+      studentName = student.name;
+    } else {
+      const { data: student, error: stErr } = await supabase
+        .from("pt_students")
+        .select("id,user_id,name")
+        .eq("id", targetStudentId)
+        .maybeSingle();
+      if (stErr) throw new Error(stErr.message);
+      if (!student) throw new Error("Aluno PT não encontrado");
+      if ((student as any).user_id !== userId) throw new Error("Sem permissão para este aluno");
+      studentName = student.name;
+    }
 
     const program: HybridProgram = data.program
       ? HybridProgramSchema.parse(data.program)
@@ -269,16 +289,24 @@ export const importHybridProgram = createServerFn({ method: "POST" })
         ? program.start_date
         : new Date().toISOString().slice(0, 10);
 
+    const programPayload: any = {
+      user_id: userId,
+      name: program.title,
+      start_date: startDate,
+      goals: program.methodology ? `Importado do Sistema Híbrido · ${program.methodology}` : null,
+      show_to_student: data.showToStudent,
+    };
+
+    if (data.studentType === "studio" || data.studioStudentId) {
+      programPayload.studio_student_id = targetStudentId;
+      programPayload.pt_student_id = null;
+    } else {
+      programPayload.pt_student_id = targetStudentId;
+    }
+
     const { data: created, error: cErr } = await supabase
       .from("pt_programs")
-      .insert({
-        user_id: userId,
-        pt_student_id: data.ptStudentId,
-        name: program.title,
-        start_date: startDate,
-        goals: program.methodology ? `Importado do Sistema Híbrido · ${program.methodology}` : null,
-        show_to_student: data.showToStudent,
-      } as never)
+      .insert(programPayload as never)
       .select("id")
       .single();
     if (cErr) throw new Error(`Falha ao criar programa: ${cErr.message}`);
