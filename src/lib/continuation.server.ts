@@ -21,12 +21,31 @@ export type ContinuationContext = {
   progressionNotes: string;
 };
 
+const isUUID = (str?: string | null): boolean =>
+  Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str));
+
 export async function buildContinuationContext(
   supabase: SupabaseClient<Database>,
   programId: string,
   nHistory: number,
   cooldown: number = 3
 ): Promise<ContinuationContext> {
+  if (!isUUID(programId) || nHistory === 0) {
+    return {
+      version: 1,
+      programId: programId || "novo-programa",
+      sourceSessionCount: 0,
+      lastWeekNumber: 0,
+      recentSessions: [],
+      usage: [],
+      hardExcludeIds: [],
+      softAvoidIds: [],
+      recentFormats: [],
+      lastSessionStructure: null,
+      progressionNotes: "Início de nova fase sem histórico prévio analisado."
+    };
+  }
+
   const { data: weeks } = await supabase
     .from("program_weeks")
     .select("id, numero_semana")

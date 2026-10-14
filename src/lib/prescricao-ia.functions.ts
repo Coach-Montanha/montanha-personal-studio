@@ -205,8 +205,8 @@ const CO = z
   .optional();
 
 const INPUT = z.object({
-  programId: z.string().uuid(),
-  studentId: z.string().uuid().nullable().optional(),
+  programId: z.string().nullable().optional(),
+  studentId: z.string().nullable().optional(),
   prompt: z.string().max(4000).default(""),
   diasPorSemana: z.number().int().min(1).max(7).nullable().optional(),
   escopoLabel: z.string().max(80).nullable().optional(),
@@ -248,8 +248,11 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
     // exclusivamente do modelo, evitando mistura com outras modalidades.
     const supabase = context.supabase;
 
+    const isUUID = (str?: string | null): boolean =>
+      Boolean(str && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str));
+
     let programa: any = null;
-    if (data.programId && data.programId !== "novo-programa") {
+    if (data.programId && isUUID(data.programId)) {
       const { data: pData } = await supabase
         .from("programs")
         .select(
@@ -348,14 +351,14 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
     const { buildContinuationContext } = await import("./continuation.server");
     const continuation = await buildContinuationContext(
       supabase,
-      data.programId,
+      data.programId || "novo-programa",
       nHistorico,
       cooldown
     );
 
     // Recuperação de Memória Persistente do Atleta (V3-Context Engine)
     let targetStudentId = data.studentId;
-    if (!targetStudentId) {
+    if (!targetStudentId && isUUID(data.programId)) {
       const { data: asg } = await supabase
         .from("assignments")
         .select("student_id")
@@ -368,15 +371,27 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
     }
 
     let memoriaAtletaPrompt: string | null = null;
-    if (targetStudentId) {
+    if (targetStudentId && isUUID(targetStudentId)) {
       const { data: student } = await supabase
-        .from("students")
-        .select("id, nome, observacoes")
-        .eq("id", targetStudentId)
+        .from("students" as never)
+        .select("id, name, notes" as never)
+        .eq("id" as never, targetStudentId)
         .maybeSingle();
-      if (student?.observacoes?.trim()) {
-        const parsedMemory = parseAthleteMemory(student.observacoes);
-        memoriaAtletaPrompt = formatMemoryForPrompt(student.nome, parsedMemory);
+      const st = student as any;
+      if (st?.notes?.trim()) {
+        const parsedMemory = parseAthleteMemory(st.notes);
+        memoriaAtletaPrompt = formatMemoryForPrompt(st.name, parsedMemory);
+      } else {
+        const { data: ptStudent } = await supabase
+          .from("pt_students" as never)
+          .select("id, name, notes" as never)
+          .eq("id" as never, targetStudentId)
+          .maybeSingle();
+        const pt = ptStudent as any;
+        if (pt?.notes?.trim()) {
+          const parsedMemory = parseAthleteMemory(pt.notes);
+          memoriaAtletaPrompt = formatMemoryForPrompt(pt.name, parsedMemory);
+        }
       }
     }
 
