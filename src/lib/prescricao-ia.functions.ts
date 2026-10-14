@@ -416,7 +416,35 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
       aluno_info: alunoInfoCombinado,
     };
 
-    const instrucoesCompletas = [data.prompt, memoriaAtletaPrompt].filter(Boolean).join("\n\n");
+    // Catálogo de Exercícios do Coach (com vídeos cadastrados na biblioteca)
+    let catalogoPrompt = "";
+    try {
+      const { data: exLib } = await supabase
+        .from("pt_exercises_library")
+        .select("name, muscle_group")
+        .not("media_url", "is", null)
+        .limit(250);
+
+      if (exLib && exLib.length > 0) {
+        const porGrupo = new Map<string, string[]>();
+        exLib.forEach((e: any) => {
+          const g = e.muscle_group || "Geral";
+          const arr = porGrupo.get(g) || [];
+          if (arr.length < 12) arr.push(e.name);
+          porGrupo.set(g, arr);
+        });
+
+        const linhas: string[] = [];
+        for (const [grupo, nomes] of porGrupo.entries()) {
+          linhas.push(`- ${grupo}: ${nomes.join(", ")}`);
+        }
+        catalogoPrompt = `CATÁLOGO OFICIAL DE EXERCÍCIOS COM VÍDEO DO COACH MONTANHA (PRIORIZE O USO DESTES NOMES EXATOS PARA VINCULAR OS VÍDEOS AUTOMATICAMENTE):\n${linhas.join("\n")}`;
+      }
+    } catch (e) {
+      console.warn("Falha ao carregar catálogo para prompt:", e);
+    }
+
+    const instrucoesCompletas = [data.prompt, memoriaAtletaPrompt, catalogoPrompt].filter(Boolean).join("\n\n");
 
     // Fallback de histórico legível para prompts que ainda não usam o objeto estruturado
     const resumoAnterior = ctx.continuation 

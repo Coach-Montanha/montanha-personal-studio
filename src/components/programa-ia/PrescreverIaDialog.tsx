@@ -1099,6 +1099,18 @@ export function PrescreverIaDialog({
         }
       }
 
+      // Carrega catálogo de exercícios da biblioteca para correlacionar vídeos e mídias
+      const { data: libraryExercises } = await supabase
+        .from("pt_exercises_library" as never)
+        .select("id, name, media_url, media_type, thumbnail_url");
+
+      const libraryMap = new Map<string, any>();
+      (libraryExercises || []).forEach((item: any) => {
+        if (!item?.name) return;
+        const key = item.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        libraryMap.set(key, item);
+      });
+
       for (const [i, item] of itensParaSalvar.entries()) {
         const dia = item.dia;
         const dayName = `${dia.name || `Treino ${i + 1}`}${item.labelSuffix}`;
@@ -1120,17 +1132,36 @@ export function PrescreverIaDialog({
         const dayId = (insertedDay as any).id as string;
 
         if (dia.exercises?.length) {
-          const rows = dia.exercises.map((ex, idx) => ({
-            user_id: userId,
-            training_day_id: dayId,
-            name: ex.name,
-            series_type: (ex as any).series_type ?? "reps_load",
-            sets_reps: ex.sets_reps ?? null,
-            load: ex.load ?? null,
-            rest_seconds: ex.rest_seconds ?? null,
-            observations: ex.observations ?? null,
-            sort_order: idx,
-          }));
+          const rows = dia.exercises.map((ex, idx) => {
+            const cleanExName = ex.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            let matched = libraryMap.get(cleanExName);
+
+            // Se não deu match exato, busca por correspondência de substring
+            if (!matched) {
+              for (const [libKey, libItem] of libraryMap.entries()) {
+                if (cleanExName.length > 3 && (libKey.includes(cleanExName) || cleanExName.includes(libKey))) {
+                  matched = libItem;
+                  break;
+                }
+              }
+            }
+
+            return {
+              user_id: userId,
+              training_day_id: dayId,
+              exercise_library_id: matched?.id ?? null,
+              media_url: matched?.media_url ?? null,
+              media_type: matched?.media_type ?? (matched?.media_url ? "video" : null),
+              thumbnail_url: matched?.thumbnail_url ?? null,
+              name: matched?.name ?? ex.name,
+              series_type: (ex as any).series_type ?? "reps_load",
+              sets_reps: ex.sets_reps ?? null,
+              load: ex.load ?? null,
+              rest_seconds: ex.rest_seconds ?? null,
+              observations: ex.observations ?? null,
+              sort_order: idx,
+            };
+          });
 
           const { error: exErr } = await supabase
             .from("pt_training_exercises" as never)
