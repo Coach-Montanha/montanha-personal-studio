@@ -19,6 +19,7 @@ import {
   FileText,
   Filter,
   Image as ImageIcon,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PrescreverIaDialog } from "@/components/programa-ia/PrescreverIaDialog";
+import { AtribuirTreinoDialog } from "@/components/pt/AtribuirTreinoDialog";
 import { SessionBuilder } from "@/components/session-builder/SessionBuilder";
 import { downloadProgramPdf } from "@/lib/pt-program-pdf";
 import { formatDateBR } from "@/lib/format";
@@ -103,6 +105,8 @@ export function TreinosPage() {
   const [expandedProgramId, setExpandedProgramId] = useState<string | null>(null);
   const [imageExportOpen, setImageExportOpen] = useState(false);
   const [imageExportProgramId, setImageExportProgramId] = useState<string | null>(null);
+  const [atribuirOpen, setAtribuirOpen] = useState(false);
+  const [atribuirProgram, setAtribuirProgram] = useState<{ id: string; name: string } | null>(null);
 
   // Consulta de todos os programas com joins de alunos Studio e PT
   const { data: programs = [], isLoading } = useQuery({
@@ -488,6 +492,25 @@ export function TreinosPage() {
                       <div className="flex items-center gap-1">
                         <Button
                           type="button"
+                          size={isTemplate ? "sm" : "icon"}
+                          variant={isTemplate ? "default" : "ghost"}
+                          className={
+                            isTemplate
+                              ? "h-8 text-xs gap-1.5 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 px-2.5 shadow-sm"
+                              : "h-8 w-8 text-primary hover:bg-primary/10"
+                          }
+                          title="Atribuir a Aluno Ativo"
+                          onClick={() => {
+                            setAtribuirProgram({ id: prog.id, name: prog.name });
+                            setAtribuirOpen(true);
+                          }}
+                        >
+                          <UserPlus className="h-3.5 w-3.5" />
+                          {isTemplate && <span>Atribuir</span>}
+                        </Button>
+
+                        <Button
+                          type="button"
                           size="icon"
                           variant="ghost"
                           className="h-8 w-8 text-muted-foreground hover:text-foreground"
@@ -607,6 +630,17 @@ export function TreinosPage() {
           setPrescreverIaOpen(open);
           if (!open) setSelectedProgramForIa(null);
         }}
+      />
+
+      {/* Dialog de Atalho: Atribuir Treino a Aluno Ativo */}
+      <AtribuirTreinoDialog
+        open={atribuirOpen}
+        onOpenChange={(v) => {
+          setAtribuirOpen(v);
+          if (!v) setAtribuirProgram(null);
+        }}
+        programId={atribuirProgram?.id || null}
+        programName={atribuirProgram?.name}
       />
 
       {/* Dialog de Exportação de Imagem A4/Instagram */}
