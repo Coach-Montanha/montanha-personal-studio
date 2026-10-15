@@ -23,11 +23,14 @@ import {
   Pencil,
   Link2,
   Archive,
+  ArchiveRestore,
+  Unlink,
   PenTool,
   ExternalLink,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -244,6 +247,52 @@ export function TreinosPage() {
     }
   }
 
+  async function handleToggleArchive(id: string, currentlyArchived: boolean, name: string) {
+    const novoStatus = !currentlyArchived;
+    const { error } = await supabase
+      .from("pt_programs" as never)
+      .update({ is_archived: novoStatus } as never)
+      .eq("id" as never, id);
+
+    if (error) {
+      toast.error(`Falha ao alterar status de arquivamento: ${error.message}`);
+    } else {
+      toast.success(
+        novoStatus
+          ? `"${name}" arquivado com sucesso! Você pode visualizá-lo selecionando o filtro "Arquivados".`
+          : `"${name}" desarquivado com sucesso! Ele voltou a aparecer nos treinos ativos.`
+      );
+      qc.invalidateQueries({ queryKey: ["pt-programs"] });
+    }
+  }
+
+  async function handleUnlinkStudent(programId: string, studentName?: string) {
+    const ok = await confirmDialog({
+      title: "Desvincular Aluno",
+      description: `Deseja desvincular este treino de ${studentName || "este aluno"}? A rotina será mantida intacta e passará a ser um Modelo no Acervo Geral.`,
+      confirmText: "Sim, Desvincular",
+      cancelText: "Cancelar",
+      variant: "default",
+    });
+    if (!ok) return;
+
+    const { error } = await supabase
+      .from("pt_programs" as never)
+      .update({
+        pt_student_id: "00000000-0000-0000-0000-000000000001",
+        studio_student_id: null,
+      } as never)
+      .eq("id" as never, programId);
+
+    if (error) {
+      toast.error(`Falha ao desvincular aluno: ${error.message}`);
+    } else {
+      toast.success("Treino desvinculado com sucesso! Agora ele é um Modelo no Acervo Geral.");
+      setAlunoPerfilOpen(false);
+      qc.invalidateQueries({ queryKey: ["pt-programs"] });
+    }
+  }
+
   async function handleDownloadPdf(programId: string, studentName?: string) {
     try {
       toast.loading("Gerando PDF oficial do treino...", { id: "pdf-toast" });
@@ -308,7 +357,7 @@ export function TreinosPage() {
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Alunos Studio</p>
           <div className="flex items-center gap-1.5">
             <Badge variant="secondary" className="text-xs font-bold bg-primary/10 text-primary border-0">
-              {totalStudio} ativas
+              {totalStudio} {statusFiltro === "arquivados" ? "arquivadas" : "ativas"}
             </Badge>
           </div>
         </Card>
@@ -316,7 +365,7 @@ export function TreinosPage() {
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Personal Trainer</p>
           <div className="flex items-center gap-1.5">
             <Badge variant="outline" className="text-xs font-bold text-foreground">
-              {totalPt} ativas
+              {totalPt} {statusFiltro === "arquivados" ? "arquivadas" : "ativas"}
             </Badge>
           </div>
         </Card>
@@ -417,23 +466,42 @@ export function TreinosPage() {
             <div className="py-12 text-center border rounded-xl border-dashed border-border/80 bg-muted/10 space-y-3">
               <Dumbbell className="h-10 w-10 text-muted-foreground/60 mx-auto" />
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-foreground">Nenhuma rotina de treino encontrada</p>
-                <p className="text-xs text-muted-foreground">
-                  Prescreva com IA, suba uma planilha do aluno ou monte uma nova sessão.
+                <p className="text-sm font-semibold text-foreground">
+                  {statusFiltro === "arquivados"
+                    ? "Nenhum treino arquivado encontrado"
+                    : "Nenhuma rotina de treino encontrada"}
+                </p>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                  {statusFiltro === "arquivados"
+                    ? "Para arquivar um treino, basta clicar no ícone de Arquivar (caixa) na barra de ações de qualquer card ativo."
+                    : "Prescreva com IA, suba uma planilha do aluno ou monte uma nova sessão."}
                 </p>
               </div>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  setSelectedProgramForIa(null);
-                  setPrescreverIaOpen(true);
-                }}
-                className="gap-2 text-xs"
-              >
-                <Sparkles className="h-4 w-4" />
-                Prescrever Primeiro Treino
-              </Button>
+              {statusFiltro === "arquivados" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setStatusFiltro("ativos")}
+                  className="gap-2 text-xs"
+                >
+                  <ArchiveRestore className="h-4 w-4 text-primary" />
+                  <span>Voltar aos Treinos Ativos</span>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedProgramForIa(null);
+                    setPrescreverIaOpen(true);
+                  }}
+                  className="gap-2 text-xs"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Prescrever Primeiro Treino
+                </Button>
+              )}
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -458,22 +526,40 @@ export function TreinosPage() {
                         <div className="space-y-1 min-w-0 flex-1">
                           <h3 className="font-semibold text-sm text-foreground line-clamp-1">{prog.name}</h3>
                           {aluno ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedAlunoPerfil({
-                                  ...aluno,
-                                  tipo: isStudio ? "Studio" : "Personal Trainer",
-                                  url: isStudio ? `/students/${aluno.id}` : `/personal-trainer/students/${aluno.id}`,
-                                });
-                                setAlunoPerfilOpen(true);
-                              }}
-                              className="text-xs text-primary hover:underline font-semibold flex items-center gap-1.5 group text-left cursor-pointer transition-colors max-w-full"
-                              title="Clique para ver o perfil do aluno vinculado"
-                            >
-                              <Link2 className="h-3 w-3 text-primary shrink-0" />
-                              <span className="truncate">Vinculado: {aluno.name}</span>
-                            </button>
+                            <div className="flex items-center justify-between gap-1 max-w-full">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedAlunoPerfil({
+                                    ...aluno,
+                                    programId: prog.id,
+                                    programName: prog.name,
+                                    tipo: isStudio ? "Studio" : "Personal Trainer",
+                                    url: isStudio ? `/students/${aluno.id}` : `/personal-trainer/students/${aluno.id}`,
+                                  });
+                                  setAlunoPerfilOpen(true);
+                                }}
+                                className="text-xs text-primary hover:underline font-semibold flex items-center gap-1.5 group text-left cursor-pointer transition-colors truncate"
+                                title="Clique para ver o perfil do aluno vinculado"
+                              >
+                                <Link2 className="h-3 w-3 text-primary shrink-0" />
+                                <span className="truncate">Vinculado: {aluno.name}</span>
+                              </button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10 shrink-0 gap-1 font-medium"
+                                title="Desvincular deste aluno e mover para o Acervo Geral / Modelos"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUnlinkStudent(prog.id, aluno.name);
+                                }}
+                              >
+                                <Unlink className="h-3 w-3" />
+                                <span>Desvincular</span>
+                              </Button>
+                            </div>
                           ) : (
                             <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
                               <Archive className="h-3 w-3 shrink-0 text-muted-foreground/80" />
@@ -593,6 +679,26 @@ export function TreinosPage() {
                           }}
                         >
                           <Sparkles className="h-3.5 w-3.5" />
+                        </Button>
+
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className={cn(
+                            "h-8 w-8",
+                            prog.is_archived
+                              ? "text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          )}
+                          title={prog.is_archived ? "Desarquivar Rotina (Tornar Ativa)" : "Arquivar Rotina"}
+                          onClick={() => handleToggleArchive(prog.id, prog.is_archived, prog.name)}
+                        >
+                          {prog.is_archived ? (
+                            <ArchiveRestore className="h-3.5 w-3.5" />
+                          ) : (
+                            <Archive className="h-3.5 w-3.5" />
+                          )}
                         </Button>
 
                         <Button
@@ -816,23 +922,37 @@ export function TreinosPage() {
                 )}
               </div>
 
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setAlunoPerfilOpen(false)}
-                >
-                  Fechar
-                </Button>
-                {selectedAlunoPerfil.url && (
-                  <Button asChild size="sm" className="gap-1.5">
-                    <Link to={selectedAlunoPerfil.url}>
-                      <span>Abrir Ficha Completa</span>
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </Link>
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50">
+                {selectedAlunoPerfil.programId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 gap-1.5 text-xs font-semibold"
+                    onClick={() => handleUnlinkStudent(selectedAlunoPerfil.programId, selectedAlunoPerfil.name)}
+                  >
+                    <Unlink className="h-3.5 w-3.5" />
+                    <span>Desvincular deste Aluno</span>
                   </Button>
                 )}
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setAlunoPerfilOpen(false)}
+                  >
+                    Fechar
+                  </Button>
+                  {selectedAlunoPerfil.url && (
+                    <Button asChild size="sm" className="gap-1.5">
+                      <Link to={selectedAlunoPerfil.url}>
+                        <span>Abrir Ficha Completa</span>
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
