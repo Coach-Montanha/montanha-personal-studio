@@ -41,6 +41,7 @@ import { ClinicalAlertBadge } from "@/components/pt/ClinicalAlertBadge";
 import { CoachAiCopilotDialog } from "@/components/pt/CoachAiCopilotDialog";
 import { getStudentAnamnesis, extractClinicalAlerts } from "@/lib/anamnesis";
 import { generateWorkoutWhatsAppFeedback, createWhatsAppUrl } from "@/lib/coach-ai";
+import { StudentObservationsCard } from "@/components/students/StudentObservationsCard";
 import { Sparkles } from "lucide-react";
 import {
   Timeline,
@@ -514,6 +515,12 @@ function PTStudentDetail() {
 
           <SessionsBarChart sessions={sessions} />
           <AttendanceHeatmap sessions={sessions} payments={payments} />
+
+          <StudentObservationsCard
+            studentId={student.id}
+            studentType="pt"
+            initialNotes={student.notes}
+          />
         </TabsContent>
 
         <TabsContent value="sessions" className="space-y-4">

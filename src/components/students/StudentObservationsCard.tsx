@@ -70,9 +70,11 @@ function compressImage(file: File, maxDim = 800, quality = 0.8): Promise<string>
 
 export function StudentObservationsCard({
   studentId,
+  studentType = "studio",
   initialNotes,
 }: {
   studentId: string;
+  studentType?: "studio" | "pt";
   initialNotes?: string | null;
 }) {
   const qc = useQueryClient();
@@ -83,31 +85,59 @@ export function StudentObservationsCard({
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch observations from student_observations table (with graceful fallback)
-  const { data: observations = [], isLoading } = useQuery<ObservationItem[]>({
-    queryKey: ["student-observations", studentId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("student_observations" as any)
-        .select("*")
-        .eq("student_id", studentId)
-        .order("created_at", { ascending: false });
+  const targetTable = studentType === "pt" ? "pt_students" : "students";
+  const foreignKeyCol = studentType === "pt" ? "pt_student_id" : "student_id";
 
-      if (error) {
-        // If table doesn't exist yet, fallback to single legacy note if present
-        if (initialNotes) {
-          return [
-            {
-              id: "legacy",
-              student_id: studentId,
-              content: initialNotes,
-              created_at: new Date().toISOString(),
-            },
-          ];
-        }
-        return [];
+  // Helper para parsear observações em notas legadas / JSON embutido
+  const parseNotesToObservations = (notesText?: string | null): ObservationItem[] => {
+    if (!notesText) return [];
+    if (notesText.includes("[OBSERVATIONS_JSON]:")) {
+      try {
+        const jsonPart = notesText.split("[OBSERVATIONS_JSON]:")[1];
+        return JSON.parse(jsonPart);
+      } catch (e) {
+        console.error("Falha ao parsear observações JSON:", e);
       }
-      return (data ?? []) as ObservationItem[];
+    }
+    const cleanNotes = notesText.replace(/\[DUO_PARTNER:[^\]]+\]/g, "").trim();
+    if (!cleanNotes) return [];
+    return [
+      {
+        id: "legacy",
+        student_id: studentId,
+        content: cleanNotes,
+        created_at: new Date().toISOString(),
+      },
+    ];
+  };
+
+  // Fetch observations from student_observations table (com fallback estruturado em notes)
+  const { data: observations = [], isLoading } = useQuery<ObservationItem[]>({
+    queryKey: ["student-observations", studentType, studentId],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from("student_observations" as any)
+          .select("*")
+          .eq(foreignKeyCol, studentId)
+          .order("created_at", { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          return data as ObservationItem[];
+        }
+      } catch {
+        // Ignora erro de tabela não migrada
+      }
+
+      // Fallback: busca as notas atuais diretamente da tabela correspondente
+      const { data: row } = await supabase
+        .from(targetTable as any)
+        .select("notes")
+        .eq("id", studentId)
+        .maybeSingle();
+
+      const currentNotes = (row as any)?.notes || initialNotes;
+      return parseNotesToObservations(currentNotes);
     },
   });
 
@@ -143,33 +173,61 @@ export function StudentObservationsCard({
       const userId = authData.user?.id;
       if (!userId) throw new Error("Usuário não autenticado");
 
-      const { error } = await supabase
-        .from("student_observations" as any)
-        .insert({
-          user_id: userId,
+      let tableInserted = false;
+      try {
+        const { error } = await supabase
+          .from("student_observations" as any)
+          .insert({
+            user_id: userId,
+            [foreignKeyCol]: studentId,
+            content: content.trim(),
+            image_url: previewImage,
+          });
+        if (!error) tableInserted = true;
+      } catch {
+        tableInserted = false;
+      }
+
+      if (!tableInserted) {
+        // Fallback robusto: persiste na coluna notes da tabela correspondente
+        const { data: row } = await supabase
+          .from(targetTable as any)
+          .select("notes")
+          .eq("id", studentId)
+          .maybeSingle();
+
+        const currentNotes = (row as any)?.notes || "";
+        const duoMatch = currentNotes.match(/\[DUO_PARTNER:[^\]]+\]/);
+        const duoTag = duoMatch ? duoMatch[0] : "";
+
+        const currentItems = parseNotesToObservations(currentNotes);
+        const newItem: ObservationItem = {
+          id: (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : `obs_${Date.now()}`,
           student_id: studentId,
           content: content.trim(),
-          image_url: previewImage,
-        });
+          image_url: previewImage || null,
+          created_at: new Date().toISOString(),
+        };
 
-      if (error) {
-        // Fallback: update students.notes directly if table not yet migrated
-        const nowStr = new Date().toLocaleDateString("pt-BR");
-        const fallbackText = initialNotes
-          ? `${initialNotes}\n\n[${nowStr}] ${content.trim()}`
-          : `[${nowStr}] ${content.trim()}`;
+        const updatedItems = [newItem, ...currentItems.filter((it) => it.id !== "legacy")];
+        const newNotes = (duoTag ? `${duoTag}\n` : "") + `[OBSERVATIONS_JSON]:${JSON.stringify(updatedItems)}`;
 
         await supabase
-          .from("students")
-          .update({ notes: fallbackText })
+          .from(targetTable as any)
+          .update({ notes: newNotes } as any)
           .eq("id", studentId);
       }
 
       toast.success("Observação registrada com sucesso!");
       setContent("");
       setPreviewImage(null);
-      qc.invalidateQueries({ queryKey: ["student-observations", studentId] });
-      qc.invalidateQueries({ queryKey: ["student", studentId] });
+      qc.invalidateQueries({ queryKey: ["student-observations", studentType, studentId] });
+      if (studentType === "pt") {
+        qc.invalidateQueries({ queryKey: ["pt-student", studentId] });
+        qc.invalidateQueries({ queryKey: ["pt-students-overview"] });
+      } else {
+        qc.invalidateQueries({ queryKey: ["student", studentId] });
+      }
     } catch (err: any) {
       toast.error(`Erro ao salvar observação: ${err.message}`);
     } finally {
@@ -178,26 +236,46 @@ export function StudentObservationsCard({
   };
 
   const handleDeleteObservation = async (obsId: string) => {
-    if (obsId === "legacy") {
-      // Clear notes on students table
-      await supabase.from("students").update({ notes: null }).eq("id", studentId);
-      qc.invalidateQueries({ queryKey: ["student-observations", studentId] });
+    try {
+      await supabase
+        .from("student_observations" as any)
+        .delete()
+        .eq("id", obsId);
+    } catch {
+      // Ignora erro se tabela não existir
+    }
+
+    // Também limpa do fallback em notes
+    const { data: row } = await supabase
+      .from(targetTable as any)
+      .select("notes")
+      .eq("id", studentId)
+      .maybeSingle();
+
+    const currentNotes = (row as any)?.notes || "";
+    const duoMatch = currentNotes.match(/\[DUO_PARTNER:[^\]]+\]/);
+    const duoTag = duoMatch ? duoMatch[0] : "";
+
+    const currentItems = parseNotesToObservations(currentNotes);
+    const remaining = currentItems.filter((it) => it.id !== obsId);
+
+    const newNotes =
+      remaining.length > 0
+        ? (duoTag ? `${duoTag}\n` : "") + `[OBSERVATIONS_JSON]:${JSON.stringify(remaining)}`
+        : duoTag || null;
+
+    await supabase
+      .from(targetTable as any)
+      .update({ notes: newNotes } as any)
+      .eq("id", studentId);
+
+    toast.success("Observação removida");
+    qc.invalidateQueries({ queryKey: ["student-observations", studentType, studentId] });
+    if (studentType === "pt") {
+      qc.invalidateQueries({ queryKey: ["pt-student", studentId] });
+    } else {
       qc.invalidateQueries({ queryKey: ["student", studentId] });
-      toast.success("Observação removida");
-      return;
     }
-
-    const { error } = await supabase
-      .from("student_observations" as any)
-      .delete()
-      .eq("id", obsId);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Observação excluída");
-    qc.invalidateQueries({ queryKey: ["student-observations", studentId] });
   };
 
   return (
