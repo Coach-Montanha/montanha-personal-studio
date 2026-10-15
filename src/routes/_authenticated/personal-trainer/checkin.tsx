@@ -55,6 +55,9 @@ Seu check-in foi registrado com sucesso!
 📦 *Saldo restante:* {{saldo}} aula(s)
    • {{utilizadas}} de {{contratadas}} aulas utilizadas
 
+📲 *Acesse seus treinos e portal oficial:*
+🔗 https://montanha-personal-studio.vercel.app
+
 Bom treino! 💪`;
 
 const WA_VARS = [
@@ -97,7 +100,12 @@ function CheckinPage() {
 
   useEffect(() => {
     try {
-      setWaTemplate(localStorage.getItem(WA_TEMPLATE_KEY) ?? "");
+      let tpl = localStorage.getItem(WA_TEMPLATE_KEY) ?? "";
+      if (tpl && tpl.includes("lovable.app")) {
+        tpl = tpl.replace(/https?:\/\/[a-zA-Z0-9.-]*lovable\.app[^\s]*/gi, "https://montanha-personal-studio.vercel.app");
+        localStorage.setItem(WA_TEMPLATE_KEY, tpl);
+      }
+      setWaTemplate(tpl);
     } catch { /* ignore */ }
   }, []);
 
@@ -331,11 +339,14 @@ function CheckinPage() {
     }
 
     lines.push(``);
+    lines.push(`📲 *Acesse seu portal oficial:*`);
+    lines.push(`🔗 https://montanha-personal-studio.vercel.app`);
+    lines.push(``);
     lines.push(`Bom treino! 💪`);
 
     const defaultMessage = lines.join("\n");
     const totalRemainingAfter = chosen && bal ? Math.max(0, bal.remaining - 1) : (bal?.remaining ?? 0);
-    const whatsappMessage = waTemplate.trim()
+    let whatsappMessage = waTemplate.trim()
       ? applyTemplate(waTemplate, {
           aluno: targetStudent.name,
           data: dateLabel,
@@ -347,6 +358,16 @@ function CheckinPage() {
           plano: chosen?.planName ?? "",
         })
       : defaultMessage;
+
+    // Redirecionamento transparente e permanente para a Vercel
+    whatsappMessage = whatsappMessage.replace(
+      /https?:\/\/[a-zA-Z0-9.-]*lovable\.app[^\s]*/gi,
+      "https://montanha-personal-studio.vercel.app"
+    );
+    if (!whatsappMessage.includes("https://montanha-personal-studio.vercel.app")) {
+      whatsappMessage += `\n\n📲 *Portal oficial:* https://montanha-personal-studio.vercel.app`;
+    }
+
     const phone = targetStudent.phone.replace(/\D/g, "");
     const url = `https://wa.me/55${phone}?text=${encodeURIComponent(whatsappMessage)}`;
     window.open(url, "_blank");

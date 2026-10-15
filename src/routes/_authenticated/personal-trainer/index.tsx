@@ -103,7 +103,7 @@ function PTOverview() {
     queryFn: async () => {
       let q = supabase
         .from("pt_sessions")
-        .select("id,pt_student_id,session_date,session_time,duration_minutes,status,exercises,performance_notes,next_session_plan,pt_students(name)")
+        .select("id,pt_student_id,session_date,session_time,duration_minutes,status,exercises,performance_notes,next_session_plan,pt_payment_id,pt_students(id,name,phone,notes)")
         .gte("session_date", format(monthStart, "yyyy-MM-dd"))
         .lte("session_date", format(monthEnd, "yyyy-MM-dd"))
         .order("session_date");
@@ -905,6 +905,8 @@ function PTOverview() {
         onOpenChange={setDayDetailOpen}
         date={selectedDay}
         sessions={monthSessions}
+        students={students}
+        packageUsage={packageUsage}
         onEdit={(s) => {
           setEditingSession(s);
           setSessionOpenEdit(true);
@@ -1183,12 +1185,14 @@ function Legend({ className, label }: { className: string; label: string }) {
 }
 
 function DaySessionsDialog({
-  open, onOpenChange, date, sessions, onEdit, onAdd, onDelete,
+  open, onOpenChange, date, sessions, students = [], packageUsage = new Map<string, number>(), onEdit, onAdd, onDelete,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   date: string;
   sessions: any[];
+  students?: any[];
+  packageUsage?: Map<string, number>;
   onEdit: (s: any) => void;
   onAdd: () => void;
   onDelete: (id: string) => void;
@@ -1200,6 +1204,110 @@ function DaySessionsDialog({
   const label = date
     ? new Date(date + "T12:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })
     : "";
+
+  const studentMap = useMemo(() => new Map<string, any>(students.map((st: any) => [st.id, st])), [students]);
+
+  const handleSendWhatsApp = (session: any) => {
+    const student = studentMap.get(session.pt_student_id) || session.pt_students;
+    const rawPhone = student?.phone || session.pt_students?.phone || "";
+    const phone = rawPhone.replace(/\D/g, "");
+
+    if (!phone) {
+      toast.error(`O aluno ${student?.name || session.pt_students?.name || "selecionado"} não possui WhatsApp cadastrado.`);
+      return;
+    }
+
+    const studentName = student?.name || session.pt_students?.name || "Aluno";
+
+    // Data da aula por extenso (ex: "terça-feira, 13 de outubro de 2026")
+    const dateObj = new Date((session.session_date || date) + "T12:00");
+    const dateLabel = isNaN(dateObj.getTime())
+      ? session.session_date
+      : dateObj.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+    const timeLabel = session.session_time ? session.session_time.slice(0, 5) : "--:--";
+    const durationLabel = `${session.duration_minutes || 60} min`;
+
+    // Cálculo do saldo do pacote
+    let contracted = 0;
+    let used = 0;
+    let remaining = 0;
+    let planName = "";
+
+    if (student?.pt_payments) {
+      const paidPkgs = (student.pt_payments as any[]).filter((p) => p.status === "paid");
+      for (const p of paidPkgs) {
+        const pkgContracted = Number(p.pt_plans?.sessions_per_month ?? p.sessions_paid ?? 0) || 0;
+        const pkgUsed = packageUsage.get(p.id) ?? 0;
+        contracted += pkgContracted;
+        used += pkgUsed;
+        if (!planName && p.pt_plans?.name) {
+          planName = p.pt_plans.name;
+        }
+      }
+      remaining = Math.max(0, contracted - used);
+    }
+
+    // Lê template se o treinador tiver configurado
+    let savedTemplate = "";
+    try {
+      savedTemplate = localStorage.getItem("edufinance.checkinWhatsAppTemplate") || "";
+    } catch { /* ignore */ }
+
+    let message = "";
+    if (savedTemplate.trim()) {
+      message = savedTemplate
+        .replace(/\{\{aluno\}\}/gi, studentName)
+        .replace(/\{\{data\}\}/gi, dateLabel)
+        .replace(/\{\{hora\}\}/gi, timeLabel)
+        .replace(/\{\{duracao\}\}/gi, durationLabel)
+        .replace(/\{\{saldo\}\}/gi, String(remaining))
+        .replace(/\{\{utilizadas\}\}/gi, String(used))
+        .replace(/\{\{contratadas\}\}/gi, String(contracted))
+        .replace(/\{\{plano\}\}/gi, planName);
+    } else {
+      const lines: string[] = [
+        `Olá ${studentName}! ✅`,
+        ``,
+        `Passando para registrar e confirmar sua aula realizada:`,
+        ``,
+        `📅 *Data:* ${dateLabel}`,
+        `🕐 *Horário:* ${timeLabel}`,
+        `⏱️ *Duração:* ${durationLabel}`,
+      ];
+
+      if (session.exercises) {
+        lines.push(`🏋️ *Treino / Foco:* ${session.exercises}`);
+      }
+
+      if (contracted > 0) {
+        lines.push(``);
+        lines.push(`📦 *Saldo:* ${remaining} aula(s) restante(s)`);
+        lines.push(`   • ${used} de ${contracted} aulas utilizadas`);
+      }
+
+      lines.push(``);
+      lines.push(`📲 *Acesse seus treinos e portal oficial:*`);
+      lines.push(`🔗 https://montanha-personal-studio.vercel.app`);
+      lines.push(``);
+      lines.push(`Bom treino e seguimos firmes na evolução! 💪`);
+
+      message = lines.join("\n");
+    }
+
+    // Redirecionamento permanente e seguro para a plataforma oficial Vercel
+    message = message.replace(
+      /https?:\/\/[a-zA-Z0-9.-]*lovable\.app[^\s]*/gi,
+      "https://montanha-personal-studio.vercel.app"
+    );
+    if (!message.includes("https://montanha-personal-studio.vercel.app")) {
+      message += `\n\n📲 *Portal oficial:* https://montanha-personal-studio.vercel.app`;
+    }
+
+    const cleanPhone = phone.startsWith("55") ? phone : `55${phone}`;
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+    toast.success(`Abrindo WhatsApp para enviar comprovante da aula a ${studentName}...`);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -1220,12 +1328,21 @@ function DaySessionsDialog({
                     <div className="font-medium">{s.pt_students?.name ?? "—"}</div>
                     <PTSessionStatusBadge status={s.status} />
                   </div>
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" onClick={() => onEdit(s)}>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                      title="Enviar registro da aula via WhatsApp"
+                      onClick={() => handleSendWhatsApp(s)}
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => onEdit(s)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => onDelete(s.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => onDelete(s.id)}>
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
