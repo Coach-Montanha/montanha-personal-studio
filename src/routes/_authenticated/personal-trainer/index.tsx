@@ -84,9 +84,14 @@ function PTOverview() {
         .from("pt_students")
         .select("id,name,phone,status,notes,pt_payments!pt_payments_pt_student_id_fkey(id,amount,payment_date,status,pt_plan_id,sessions_paid,reference_month,pt_plans(name,sessions_per_month,package_sessions,billing_type))")
         .is("deleted_at", null)
+        .neq("id", "00000000-0000-0000-0000-000000000001")
         .order("name");
       if (scopeId) q = q.eq("user_id", scopeId);
-      return (await q).data ?? [];
+      const raw = (await q).data ?? [];
+      return raw.filter((s: any) =>
+        s.id !== "00000000-0000-0000-0000-000000000001" &&
+        (!s.notes || (!s.notes.includes("[Studio]") && !s.notes.includes("[Aluno Studio]")))
+      );
     },
     staleTime: 30_000,
     refetchInterval: 5 * 60 * 1000,

@@ -129,9 +129,14 @@ function CheckinPage() {
         .select("id,name,phone,status,goal,health_notes,notes,pt_payments(id,amount,payment_date,status,sessions_paid,reference_month,pt_plans(name,sessions_per_month))")
         .eq("status", "active")
         .is("deleted_at", null)
+        .neq("id", "00000000-0000-0000-0000-000000000001")
         .order("name");
       if (scopeId) q = q.eq("user_id", scopeId);
-      return (await q).data ?? [];
+      const raw = (await q).data ?? [];
+      return raw.filter((s: any) =>
+        s.id !== "00000000-0000-0000-0000-000000000001" &&
+        (!s.notes || (!s.notes.includes("[Studio]") && !s.notes.includes("[Aluno Studio]")))
+      );
     },
     staleTime: 0,
     refetchOnWindowFocus: true,

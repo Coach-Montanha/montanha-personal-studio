@@ -38,7 +38,18 @@ export function PTPaymentDialog({
   const qc = useQueryClient();
   const { data: students = [] } = useQuery({
     queryKey: ["pt-students-all"],
-    queryFn: async () => (await supabase.from("pt_students").select("id,name").is("deleted_at", null).order("name")).data ?? [],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pt_students")
+        .select("id,name,notes")
+        .is("deleted_at", null)
+        .neq("id", "00000000-0000-0000-0000-000000000001")
+        .order("name");
+      return (data ?? []).filter((s: any) =>
+        s.id !== "00000000-0000-0000-0000-000000000001" &&
+        (!s.notes || (!s.notes.includes("[Studio]") && !s.notes.includes("[Aluno Studio]")))
+      );
+    },
   });
   const { data: plans = [] } = useQuery({
     queryKey: ["pt-plans-all"],
