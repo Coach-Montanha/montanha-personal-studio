@@ -23,9 +23,6 @@ import {
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { ImportTrainingPanel } from "@/components/pt/ImportTrainingPanel";
-import { ImportExercisesPanel } from "@/components/pt/ImportExercisesPanel";
-
 import { confirmDialog } from "@/lib/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,26 +45,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-
-type PageTab = "movimentos" | "importar" | "exercicios";
 
 export const Route = createFileRoute("/_authenticated/personal-trainer/biblioteca")({
   head: () => ({
     meta: [
-      { title: "Biblioteca — EduFinance PT" },
+      { title: "Biblioteca de Exercícios — Central de Treinos" },
       {
         name: "description",
         content:
-          "Catálogo reutilizável de exercícios com vídeos de referência e importação de programas prontos.",
+          "Catálogo oficial de exercícios com vídeos de referência para consulta e prescrição de treinos.",
       },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>): { tab?: PageTab } =>
-    s.tab === "importar" || s.tab === "movimentos" || s.tab === "exercicios"
-      ? { tab: s.tab as PageTab }
-      : {},
   component: BibliotecaPage,
 });
 
@@ -133,12 +123,7 @@ function generatePaginationRange(current: number, total: number): (number | stri
 
 function BibliotecaPage() {
   const qc = useQueryClient();
-  const navigate = Route.useNavigate();
-  const { tab } = Route.useSearch();
-  const pageTab: PageTab = tab ?? "movimentos";
-  const setPageTab = (v: PageTab) => navigate({ search: { tab: v }, replace: true });
   const [search, setSearch] = useState("");
-
   const [groupFilter, setGroupFilter] = useState<string>("all");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<LibraryItem | null>(null);
@@ -227,45 +212,17 @@ function BibliotecaPage() {
     <div className="mx-auto w-full max-w-6xl space-y-6 p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          <Dumbbell className="h-3.5 w-3.5" />
-          Personal Trainer
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <Dumbbell className="h-3.5 w-3.5 text-primary" />
+          Central de Treinos
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Biblioteca</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">Biblioteca de Exercícios</h1>
         <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          O objetivo é conectar o banco de dados de exercícios de outro projeto a minha área biblioteca &gt; movimentos. Seu acervo de movimentos com vídeo de referência e a importação de programas prontos — tudo em um só lugar.
+          Acervo oficial de movimentos com vídeos de referência para consulta, execução e prescrição de treinos.
         </p>
       </div>
 
-      <Tabs value={pageTab} onValueChange={(v) => setPageTab(v as PageTab)}>
-        <div className="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <TabsList className="h-auto w-max gap-1 rounded-xl border border-border/60 bg-muted/40 p-1">
-            {[
-              { v: "movimentos", label: "Movimentos", icon: Dumbbell },
-              { v: "importar", label: "Importar treino", icon: ArrowLeftRight },
-              { v: "exercicios", label: "Importar exercícios", icon: DownloadCloud },
-            ].map((t) => (
-              <TabsTrigger
-                key={t.v}
-                value={t.v}
-                className="gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-              >
-                <t.icon className="h-4 w-4 shrink-0" />
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-
-        <TabsContent value="importar" className="mt-6">
-          <ImportTrainingPanel />
-        </TabsContent>
-
-        <TabsContent value="exercicios" className="mt-6">
-          <ImportExercisesPanel />
-        </TabsContent>
-
-        <TabsContent value="movimentos" className="mt-6 space-y-6">
+      <div className="space-y-6">
       <header className="space-y-4">
 
 
@@ -419,8 +376,7 @@ function BibliotecaPage() {
           )}
         </div>
       )}
-        </TabsContent>
-      </Tabs>
+      </div>
 
       <ExerciseFormDialog
         open={formOpen}

@@ -146,6 +146,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ({ error }) => {
     if (typeof window !== "undefined") {
       console.error("Root errorComponent:", error);
+      if (error?.message?.includes("Failed to fetch dynamically imported module")) {
+        const key = "last_chunk_reload";
+        const last = sessionStorage.getItem(key);
+        const now = Date.now();
+        if (!last || now - Number(last) > 10000) {
+          sessionStorage.setItem(key, String(now));
+          window.location.reload();
+          return null;
+        }
+      }
     }
     const recover = async () => {
       try {

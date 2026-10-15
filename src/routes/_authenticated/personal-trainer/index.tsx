@@ -368,13 +368,13 @@ function PTOverview() {
       <PageHeader
         icon={PageIcon}
         eyebrow="Personal Trainer"
-        title="Alunos PT"
-        description="Acompanhe planos, aulas e evolução de cada aluno"
+        title="Alunos"
+        description={`${students.length} aluno(s) cadastrado(s)`}
         actions={
           <>
-            <Link to="/personal-trainer/plans"><Button variant="outline">Planos PT</Button></Link>
+            <Link to="/personal-trainer/plans"><Button variant="outline">Planos</Button></Link>
             <Button onClick={() => { setPresetStudentId(undefined); setStudentOpen(true); }}>
-              <Plus className="h-4 w-4" /> Novo aluno PT
+              <Plus className="h-4 w-4" /> Novo aluno
             </Button>
           </>
         }
