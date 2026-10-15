@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dumbbell,
@@ -21,6 +21,11 @@ import {
   Image as ImageIcon,
   UserPlus,
   Pencil,
+  Link2,
+  Archive,
+  PenTool,
+  ExternalLink,
+  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +41,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PrescreverIaDialog } from "@/components/programa-ia/PrescreverIaDialog";
 import { AtribuirTreinoDialog } from "@/components/pt/AtribuirTreinoDialog";
 import { ProgramEditorDialog } from "@/components/pt/ProgramEditorDialog";
@@ -47,6 +59,15 @@ import { StudentViewDialog } from "@/components/pt/StudentViewDialog";
 import { LoadProgressionDialog } from "@/components/pt/LoadProgressionDialog";
 import { TrainingDayDetail } from "@/components/pt/TrainingDayDetail";
 import { ProgramImageDialog } from "@/components/program-image/ProgramImageDialog";
+
+function limparTextoGoals(goals?: string | null): string | null {
+  if (!goals) return null;
+  const limpo = goals
+    .replace(/Importado do Sistema Híbrido\s*[-·:]*\s*[a-zA-Z_À-ÿ]*/gi, "")
+    .replace(/^[\s·\-_:]+|[\s·\-_:]+$/g, "")
+    .trim();
+  return limpo.length > 0 ? limpo : null;
+}
 
 export const Route = createFileRoute("/_authenticated/treinos")({
   component: TreinosPage,
@@ -112,6 +133,8 @@ export function TreinosPage() {
   const [programEditorOpen, setProgramEditorOpen] = useState(false);
   const [selectedProgramIdForEdit, setSelectedProgramIdForEdit] = useState<string | null>(null);
   const [initialDayIdForEdit, setInitialDayIdForEdit] = useState<string | null>(null);
+  const [alunoPerfilOpen, setAlunoPerfilOpen] = useState(false);
+  const [selectedAlunoPerfil, setSelectedAlunoPerfil] = useState<any | null>(null);
 
   // Consulta de todos os programas com joins de alunos Studio e PT
   const { data: programs = [], isLoading } = useQuery({
@@ -423,6 +446,7 @@ export function TreinosPage() {
                 const isPt = !isTemplate && !isStudio;
                 const aluno = isTemplate ? null : (prog.students || prog.pt_students);
                 const isExpanded = expandedProgramId === prog.id;
+                const goalsLimpo = limparTextoGoals(prog.goals);
 
                 return (
                   <Card
@@ -431,64 +455,69 @@ export function TreinosPage() {
                   >
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="space-y-0.5">
+                        <div className="space-y-1 min-w-0 flex-1">
                           <h3 className="font-semibold text-sm text-foreground line-clamp-1">{prog.name}</h3>
                           {aluno ? (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              <span className="font-medium text-foreground">{aluno.name}</span>
-                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedAlunoPerfil({
+                                  ...aluno,
+                                  tipo: isStudio ? "Studio" : "Personal Trainer",
+                                  url: isStudio ? `/students/${aluno.id}` : `/personal-trainer/students/${aluno.id}`,
+                                });
+                                setAlunoPerfilOpen(true);
+                              }}
+                              className="text-xs text-primary hover:underline font-semibold flex items-center gap-1.5 group text-left cursor-pointer transition-colors max-w-full"
+                              title="Clique para ver o perfil do aluno vinculado"
+                            >
+                              <Link2 className="h-3 w-3 text-primary shrink-0" />
+                              <span className="truncate">Vinculado: {aluno.name}</span>
+                            </button>
                           ) : (
-                            <p className="text-xs text-muted-foreground italic font-medium">Modelo / Acervo Geral</p>
+                            <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                              <Archive className="h-3 w-3 shrink-0 text-muted-foreground/80" />
+                              <span>Acervo Geral / Modelo</span>
+                            </p>
                           )}
                         </div>
+                      </div>
 
-                        {isTemplate ? (
-                          <Badge variant="outline" className="text-[10px] text-muted-foreground font-semibold">
-                            Modelo
-                          </Badge>
-                        ) : isStudio ? (
-                          <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-0 font-semibold">
-                            Studio
+                      {/* Modalidade, Origem (IA/Manual) e Data */}
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] pt-1">
+                        <Badge variant="secondary" className="text-[10px] font-bold bg-muted text-foreground border-0 px-2 py-0.5">
+                          {CATEGORIA_LABELS[prog.training_type] || CATEGORIA_LABELS[prog.category] || prog.training_type || "Musculação"}
+                        </Badge>
+
+                        {prog.ai_generated_at ? (
+                          <Badge variant="secondary" className="text-[10px] font-semibold bg-primary/10 text-primary border-primary/20 flex items-center gap-1 px-1.5 py-0.5">
+                            <Sparkles className="h-2.5 w-2.5" /> IA
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[10px] font-semibold">
-                            Personal
+                          <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground border-border/80 flex items-center gap-1 px-1.5 py-0.5">
+                            <PenTool className="h-2.5 w-2.5" /> Manual
                           </Badge>
                         )}
+
+                        <span className="text-muted-foreground/60">•</span>
+                        <span className="text-muted-foreground text-[10px]">Início: {formatDateBR(prog.start_date)}</span>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground pt-1">
-                        <span className="bg-muted px-2 py-0.5 rounded text-[10px] font-medium">
-                          {CATEGORIA_LABELS[prog.training_type] || CATEGORIA_LABELS[prog.category] || prog.training_type}
-                        </span>
-                        <span>•</span>
-                        <span>Início: {formatDateBR(prog.start_date)}</span>
-                        {prog.ai_generated_at && (
-                          <>
-                            <span>•</span>
-                            <span className="text-primary font-medium flex items-center gap-0.5">
-                              <Sparkles className="h-2.5 w-2.5" /> IA
-                            </span>
-                          </>
-                        )}
-                      </div>
-
-                      {prog.goals && (
+                      {goalsLimpo && (
                         <p className="text-xs text-muted-foreground/90 line-clamp-2 bg-muted/20 p-2 rounded-lg text-[11px]">
-                          {prog.goals}
+                          {goalsLimpo}
                         </p>
                       )}
                     </div>
 
-                    {/* Ações da Rotina */}
-                    <div className="border-t border-border/50 pt-3 flex items-center justify-between gap-1 flex-wrap">
-                      <div className="flex items-center gap-1.5">
+                    {/* Ações da Rotina — Todos os ícones alinhados em linha única */}
+                    <div className="border-t border-border/60 pt-3 flex items-center justify-between gap-1 overflow-x-auto">
+                      <div className="flex items-center gap-1 shrink-0">
                         <Button
                           type="button"
                           size="sm"
                           variant="outline"
-                          className="h-8 text-xs gap-1.5 px-2.5 font-semibold text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/40 shadow-xs"
+                          className="h-8 text-xs gap-1 px-2.5 font-semibold text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/40 shadow-xs"
                           title="Editar Rotina, Sessões e Exercícios"
                           onClick={() => {
                             setSelectedProgramIdForEdit(prog.id);
@@ -512,16 +541,12 @@ export function TreinosPage() {
                         </Button>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-0.5 shrink-0">
                         <Button
                           type="button"
-                          size={isTemplate ? "sm" : "icon"}
-                          variant={isTemplate ? "default" : "ghost"}
-                          className={
-                            isTemplate
-                              ? "h-8 text-xs gap-1.5 font-semibold bg-primary text-primary-foreground hover:bg-primary/90 px-2.5 shadow-sm"
-                              : "h-8 w-8 text-primary hover:bg-primary/10"
-                          }
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-primary hover:bg-primary/10 hover:text-primary"
                           title="Atribuir a Aluno Ativo"
                           onClick={() => {
                             setAtribuirProgram({ id: prog.id, name: prog.name });
@@ -529,14 +554,13 @@ export function TreinosPage() {
                           }}
                         >
                           <UserPlus className="h-3.5 w-3.5" />
-                          {isTemplate && <span>Atribuir</span>}
                         </Button>
 
                         <Button
                           type="button"
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                           title="Exportar Imagem A4/Instagram"
                           onClick={() => {
                             setImageExportProgramId(prog.id);
@@ -550,7 +574,7 @@ export function TreinosPage() {
                           type="button"
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                           title="Baixar PDF"
                           onClick={() => handleDownloadPdf(prog.id, aluno?.name)}
                         >
@@ -750,6 +774,70 @@ export function TreinosPage() {
         programId={selectedProgramIdForEdit}
         initialDayId={initialDayIdForEdit}
       />
+
+      {/* Dialog de Visualização Rápida do Aluno Vinculado */}
+      <Dialog open={alunoPerfilOpen} onOpenChange={setAlunoPerfilOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <User className="h-4 w-4 text-primary" />
+              Perfil do Aluno Vinculado
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Informações do aluno atribuído a esta rotina de treino.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedAlunoPerfil && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-xl border border-border/70 bg-card p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-foreground">{selectedAlunoPerfil.name}</h4>
+                  <Badge variant="secondary" className="text-[10px] font-semibold">
+                    {selectedAlunoPerfil.tipo}
+                  </Badge>
+                </div>
+
+                {selectedAlunoPerfil.email && (
+                  <p className="text-xs text-muted-foreground">
+                    Email: <span className="font-medium text-foreground">{selectedAlunoPerfil.email}</span>
+                  </p>
+                )}
+
+                {selectedAlunoPerfil.notes && (
+                  <div className="space-y-1 pt-1 border-t border-border/50">
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Observações / Histórico:
+                    </p>
+                    <p className="text-xs text-muted-foreground bg-muted/30 p-2 rounded-md whitespace-pre-wrap max-h-36 overflow-y-auto">
+                      {selectedAlunoPerfil.notes}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAlunoPerfilOpen(false)}
+                >
+                  Fechar
+                </Button>
+                {selectedAlunoPerfil.url && (
+                  <Button asChild size="sm" className="gap-1.5">
+                    <Link to={selectedAlunoPerfil.url}>
+                      <span>Abrir Ficha Completa</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

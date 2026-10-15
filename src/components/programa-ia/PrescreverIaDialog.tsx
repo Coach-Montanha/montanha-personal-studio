@@ -552,6 +552,29 @@ export function PrescreverIaDialog({
     setShowApiKeyInput(false);
   };
 
+  // Dias existentes da rotina (caso esteja continuando prescrição de pt_programs)
+  const { data: existingPtDays = [] } = useQuery({
+    queryKey: ["dialog-existing-days", programa?.id],
+    enabled: !!programa?.id && !!isOpen,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pt_training_days" as never)
+        .select("id, name, day_label, sort_order")
+        .eq("program_id" as never, programa!.id)
+        .order("sort_order" as never, { ascending: true });
+      return (data || []) as Array<{ id: string; name: string; day_label: string; sort_order: number }>;
+    },
+  });
+
+  // Sincroniza nome, metodologia e prompt quando programa é selecionado
+  useEffect(() => {
+    if (programa && isOpen) {
+      const title = programa.titulo || (programa as any)?.name;
+      if (title) setNomePrograma(title);
+      if (programa.metodologia) setMetodologia(programa.metodologia);
+    }
+  }, [programa, isOpen]);
+
   // Efeito para carregar as regras persistidas do programa E preferências globais
   useEffect(() => {
     async function carregarConfiguracoes() {
@@ -566,14 +589,21 @@ export function PrescreverIaDialog({
           .eq("coach_id", coach.id)
           .eq("metodologia", metodologia)
           .maybeSingle();
-        
-        // Se o coach configurou blocos e não temos um template manual no escopo, podemos sugerir
-        // mas o payload de "Continuar Progressão" já vem com o histórico injetado no escopoInicial.
-        // A IA no servidor agora já faz o merge se vier vazio.
       }
 
-      // 2. Carregar regras específicas do programa
-      const { data, error } = await supabase
+      // 2. Carregar regras específicas do programa (seja de pt_programs ou programs)
+      const { data: ptData } = await supabase
+        .from("pt_programs" as never)
+        .select("name, training_type, goals")
+        .eq("id" as never, programa.id)
+        .maybeSingle();
+
+      if (ptData) {
+        if ((ptData as any).training_type) setMetodologia((ptData as any).training_type);
+        if ((ptData as any).name) setNomePrograma((ptData as any).name);
+      }
+
+      const { data } = await supabase
         .from("programs")
         .select("regras_progressao")
         .eq("id", programa.id)
@@ -1309,6 +1339,38 @@ export function PrescreverIaDialog({
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
+          {/* Informações da Rotina sendo Continuada */}
+          {programa?.id && (
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-3.5 space-y-2 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-primary flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5" /> Continuando Prescrição da Rotina
+                </span>
+                <Badge variant="outline" className="text-[10px] font-semibold border-primary/30 text-primary">
+                  {existingPtDays.length} {existingPtDays.length === 1 ? "sessão cadastrada" : "sessões cadastradas"}
+                </Badge>
+              </div>
+              <p className="text-sm font-bold text-foreground">{nomePrograma}</p>
+              {existingPtDays.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider">
+                    Sessões Cadastradas (a IA continuará a periodização adicionando os próximos treinos):
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {existingPtDays.map((d, i) => (
+                      <span
+                        key={d.id}
+                        className="text-[11px] bg-background/90 border border-border/70 px-2 py-0.5 rounded-md font-medium text-foreground flex items-center gap-1"
+                      >
+                        <span className="font-semibold text-primary">{d.day_label || `T${i + 1}`}:</span> {d.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Seletor de Programa / Aluno se não veio pré-definido */}
           {!programa?.id && (
             <div className="rounded-xl border border-border/80 bg-muted/20 p-3.5 space-y-3">

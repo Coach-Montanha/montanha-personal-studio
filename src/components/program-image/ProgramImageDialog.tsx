@@ -132,13 +132,21 @@ function GuiaDeUso({ realcado }: { realcado?: boolean }) {
 }
 
 export function ProgramImageDialog({
-  programa,
+  programId,
+  programa: programaProp,
+  open: controlledOpen,
   onOpenChange,
 }: {
-  programa: Programa | null;
+  programId?: string | null;
+  programa?: Programa | null;
+  open?: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const open = !!programa;
+  const [loadedProgram, setLoadedProgram] = useState<Programa | null>(null);
+  const [resolvedSessionIds, setResolvedSessionIds] = useState<string[]>([]);
+  const effectiveProgram = programaProp || loadedProgram;
+  const open = controlledOpen !== undefined ? controlledOpen : !!effectiveProgram;
+
   const [layout, setLayout] = useState<ImageLayout | null>(null);
   const [sessoes, setSessoes] = useState<SessaoImagemPreparada[] | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -147,8 +155,61 @@ export function ProgramImageDialog({
   const [novidades, setNovidades] = useState(false);
   const [destaque, setDestaque] = useState<Destaque>(null);
 
-  const sessionIds = useMemo(() => (programa ? idsDasSessoes(programa) : []), [programa]);
-  const modalidade = programa?.metodologia ?? null;
+  const targetId = programId || programaProp?.id;
+
+  // Carrega programa de pt_programs ou programs caso venha apenas programId ou falte sessões
+  useEffect(() => {
+    if (!targetId || !open) {
+      setLoadedProgram(null);
+      setResolvedSessionIds([]);
+      return;
+    }
+
+    let cancelado = false;
+    (async () => {
+      // 1. Tenta pt_programs + pt_training_days
+      const { data: ptProg } = await supabase
+        .from("pt_programs" as never)
+        .select("id, name, training_type")
+        .eq("id" as never, targetId)
+        .maybeSingle();
+
+      if (ptProg && !cancelado) {
+        const { data: ptDays } = await supabase
+          .from("pt_training_days" as never)
+          .select("id, name, sort_order")
+          .eq("program_id" as never, targetId)
+          .order("sort_order" as never);
+
+        const days = (ptDays || []) as any[];
+        setLoadedProgram({
+          id: (ptProg as any).id,
+          titulo: (ptProg as any).name,
+          metodologia: (ptProg as any).training_type,
+          program_weeks: [
+            {
+              numero_semana: 1,
+              sessions: days.map((d, i) => ({ id: d.id, numero_dia: i + 1, titulo: d.name })),
+            },
+          ],
+        });
+        setResolvedSessionIds(days.map((d) => String(d.id)));
+        return;
+      }
+
+      // 2. Se não achou em pt_programs, usa programaProp legado
+      if (programaProp && !cancelado) {
+        setLoadedProgram(programaProp);
+        setResolvedSessionIds(idsDasSessoes(programaProp));
+      }
+    })();
+
+    return () => {
+      cancelado = true;
+    };
+  }, [targetId, open, programaProp]);
+
+  const modalidade = effectiveProgram?.metodologia ?? null;
   const modalidadeLabel = modalidade
     ? (METHODOLOGY_LABEL[modalidade as Methodology] ?? modalidade)
     : null;
@@ -173,17 +234,17 @@ export function ProgramImageDialog({
   }
 
   useEffect(() => {
-    if (!programa) {
+    if (!effectiveProgram || resolvedSessionIds.length === 0) {
       setSessoes(null);
       setPreview(null);
       return;
     }
-    const resolvido = carregarLayout(programa.id, modalidade);
+    const resolvido = carregarLayout(effectiveProgram.id, modalidade);
     setLayout(resolvido.layout);
     let cancelado = false;
     (async () => {
       try {
-        const dados = await prepararSessoesParaImagem(sessionIds);
+        const dados = await prepararSessoesParaImagem(resolvedSessionIds);
         if (!cancelado) setSessoes(dados);
       } catch (e: any) {
         if (!cancelado) toast.error(e?.message ?? "Não foi possível carregar as sessões");
@@ -192,7 +253,7 @@ export function ProgramImageDialog({
     return () => {
       cancelado = true;
     };
-  }, [programa, sessionIds, modalidade]);
+  }, [effectiveProgram, resolvedSessionIds, modalidade]);
 
   async function exportar(formato: "png" | "jpg" | "pdf") {
     if (!layout || !sessoes || sessoes.length === 0) return;

@@ -55,7 +55,72 @@ export async function buildContinuationContext(
   const weekIds = (weeks ?? []).map((w) => w.id);
   const lastWeekNumber = weeks?.length ? weeks[weeks.length - 1].numero_semana : 0;
 
-  if (weekIds.length === 0 || nHistory === 0) {
+  if (weekIds.length === 0) {
+    const { data: ptDays } = await supabase
+      .from("pt_training_days" as never)
+      .select("id, name, day_label, sort_order, description")
+      .eq("program_id" as never, programId)
+      .order("sort_order" as never, { ascending: true });
+
+    const days = (ptDays || []) as any[];
+    if (days.length > 0 && nHistory > 0) {
+      const dayIds = days.map((d) => d.id);
+      const { data: ptExercises } = await supabase
+        .from("pt_training_exercises" as never)
+        .select("id, training_day_id, name, sets, reps, load, rest_seconds, notes, sort_order")
+        .in("training_day_id" as never, dayIds)
+        .order("sort_order" as never, { ascending: true });
+
+      const exList = (ptExercises || []) as any[];
+      const recentSessions = days.map((d, idx) => {
+        const exs = exList.filter((e) => e.training_day_id === d.id);
+        return {
+          week: 1,
+          day: (d.sort_order ?? idx) + 1,
+          title: d.name || `Dia ${d.day_label || idx + 1}`,
+          exerciseNames: exs.map((e) => e.name),
+          muscleGroups: [],
+        };
+      });
+
+      const usageMap = new Map<string, { count: number; lastIdx: number; name: string }>();
+      exList.forEach((e, idx) => {
+        const curr = usageMap.get(e.name) || { count: 0, lastIdx: idx, name: e.name };
+        curr.count += 1;
+        curr.lastIdx = idx;
+        usageMap.set(e.name, curr);
+      });
+
+      const usage = Array.from(usageMap.entries()).map(([k, v]) => ({
+        exerciseId: k,
+        name: v.name,
+        count: v.count,
+        lastSeenSessionIdx: v.lastIdx,
+      }));
+
+      const notes = [
+        `Rotina contínua com ${days.length} sessões já prescritas:`,
+        ...recentSessions.map(
+          (s) => `- ${s.title}: ${s.exerciseNames.slice(0, 8).join(", ") || "Sem exercícios"}`
+        ),
+        "Atenção IA: Prossiga a periodização adicionando os novos dias/semanas em coerência com os treinos acima, mantendo a divisão biomecânica sem duplicar desnecessariamente ou reiniciar do zero.",
+      ].join("\n");
+
+      return {
+        version: 1,
+        programId,
+        sourceSessionCount: days.length,
+        lastWeekNumber: 1,
+        recentSessions,
+        usage,
+        hardExcludeIds: [],
+        softAvoidIds: [],
+        recentFormats: ["series_reps"],
+        lastSessionStructure: null,
+        progressionNotes: notes,
+      };
+    }
+
     return {
       version: 1,
       programId,

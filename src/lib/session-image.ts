@@ -121,25 +121,85 @@ export interface SessaoImagemPreparada {
 }
 
 async function fetchSessionFull(sessionId: string) {
-  const { data: session, error } = await supabase
+  const { data: session } = await supabase
     .from("sessions")
     .select(
       "id, titulo, numero_dia, data, program_week_id, program_weeks(numero_semana, programs(id, titulo, metodologia))",
     )
     .eq("id", sessionId)
-    .single();
-  if (error || !session) throw new Error(error?.message ?? "Sessão não encontrada");
+    .maybeSingle();
 
-  const { data: blocks } = await supabase
-    .from("session_blocks")
-    .select(
-      "id, ordem, titulo, formato, duracao_min, config, session_block_exercises(ordem, reps, series, pct_1rm, lado, nome_livre, exercises(nome_pt))",
-    )
-    .eq("session_id", sessionId)
-    .order("ordem");
+  if (session) {
+    const { data: blocks } = await supabase
+      .from("session_blocks")
+      .select(
+        "id, ordem, titulo, formato, duracao_min, config, session_block_exercises(ordem, reps, series, pct_1rm, lado, nome_livre, exercises(nome_pt))",
+      )
+      .eq("session_id", sessionId)
+      .order("ordem");
 
-  const metodologia = (session as any).program_weeks?.programs?.metodologia ?? "hibrido";
-  return { session, blocks: blocks ?? [], metodologia };
+    const metodologia = (session as any).program_weeks?.programs?.metodologia ?? "hibrido";
+    return { session, blocks: blocks ?? [], metodologia };
+  }
+
+  // Fallback para pt_training_days / pt_programs (ecossistema unificado)
+  const { data: ptDay } = await supabase
+    .from("pt_training_days" as never)
+    .select("id, name, day_label, sort_order, program_id, pt_programs:program_id(id, name, training_type)")
+    .eq("id" as never, sessionId)
+    .maybeSingle();
+
+  if (ptDay) {
+    const { data: ptExercises } = await supabase
+      .from("pt_training_exercises" as never)
+      .select("*")
+      .eq("training_day_id" as never, sessionId)
+      .order("sort_order" as never);
+
+    const prog = (ptDay as any).pt_programs;
+    const metodologia = prog?.training_type || "musculacao";
+    const mappedSession = {
+      id: (ptDay as any).id,
+      titulo: (ptDay as any).name,
+      numero_dia: ((ptDay as any).sort_order ?? 0) + 1,
+      data: null,
+      program_weeks: {
+        numero_semana: 1,
+        programs: {
+          id: prog?.id,
+          titulo: prog?.name,
+          metodologia,
+        },
+      },
+    };
+
+    const exerciseRows = (ptExercises || []).map((ex: any, idx: number) => ({
+      ordem: ex.sort_order ?? idx,
+      reps: ex.reps,
+      series: ex.sets,
+      pct_1rm: null,
+      lado: null,
+      nome_livre: ex.name,
+      exercises: { nome_pt: ex.name },
+    }));
+
+    const mappedBlocks = [
+      {
+        id: `block-${(ptDay as any).id}`,
+        chave: `block-${(ptDay as any).id}`,
+        ordem: 1,
+        titulo: (ptDay as any).name || "TREINO PRINCIPAL",
+        formato: "series_reps",
+        duracao_min: null,
+        config: {},
+        session_block_exercises: exerciseRows,
+      },
+    ];
+
+    return { session: mappedSession, blocks: mappedBlocks, metodologia };
+  }
+
+  throw new Error("Sessão não encontrada");
 }
 
 export async function prepararSessaoParaImagem(
