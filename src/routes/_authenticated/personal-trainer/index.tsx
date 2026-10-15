@@ -1219,94 +1219,141 @@ function DaySessionsDialog({
 
     const studentName = student?.name || session.pt_students?.name || "Aluno";
 
-    // Data da aula por extenso (ex: "terça-feira, 13 de outubro de 2026")
+    // Data no padrão exato do check-in (ex: "segunda-feira, 12 de outubro" sem o ano)
     const dateObj = new Date((session.session_date || date) + "T12:00");
     const dateLabel = isNaN(dateObj.getTime())
       ? session.session_date
-      : dateObj.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+      : dateObj.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
     const timeLabel = session.session_time ? session.session_time.slice(0, 5) : "--:--";
     const durationLabel = `${session.duration_minutes || 60} min`;
 
-    // Cálculo do saldo do pacote
-    let contracted = 0;
-    let used = 0;
-    let remaining = 0;
-    let planName = "";
-
-    if (student?.pt_payments) {
-      const paidPkgs = (student.pt_payments as any[]).filter((p) => p.status === "paid");
-      for (const p of paidPkgs) {
-        const pkgContracted = Number(p.pt_plans?.sessions_per_month ?? p.sessions_paid ?? 0) || 0;
-        const pkgUsed = packageUsage.get(p.id) ?? 0;
-        contracted += pkgContracted;
-        used += pkgUsed;
-        if (!planName && p.pt_plans?.name) {
-          planName = p.pt_plans.name;
-        }
+    // Resgata o saldo correto do aluno (ou parceiro Duo)
+    const computeStudentBal = (st: any) => {
+      if (!st) return null;
+      const payments: any[] = [];
+      for (const p of st.pt_payments ?? []) {
+        if (p.status !== "paid") continue;
+        const contracted = Number(p.pt_plans?.sessions_per_month ?? p.sessions_paid ?? 0) || 0;
+        const used = packageUsage.get(p.id) ?? 0;
+        payments.push({
+          id: p.id,
+          payment_date: p.payment_date,
+          reference_month: p.reference_month ?? null,
+          planName: p.pt_plans?.name ?? null,
+          contracted,
+          used,
+          remaining: Math.max(0, contracted - used),
+        });
       }
-      remaining = Math.max(0, contracted - used);
+      payments.sort((a, b) => (a.payment_date < b.payment_date ? -1 : a.payment_date > b.payment_date ? 1 : 0));
+      const contracted = payments.reduce((acc, p) => acc + p.contracted, 0);
+      const used = payments.reduce((acc, p) => acc + p.used, 0);
+      return {
+        contracted,
+        used,
+        remaining: Math.max(0, contracted - used),
+        payments,
+        packagesWithBalance: payments.filter((p) => p.remaining > 0 && p.contracted > 0),
+      };
+    };
+
+    let bal = computeStudentBal(student);
+    if (!bal || bal.contracted === 0) {
+      const partnerId = student?.notes ? parseStudentPartner(student.notes).partnerId : null;
+      if (partnerId) {
+        const partner = studentMap.get(partnerId);
+        const pBal = computeStudentBal(partner);
+        if (pBal && pBal.contracted > 0) bal = pBal;
+      }
     }
 
-    // Lê template se o treinador tiver configurado
+    let chosen: any = null;
+    if (bal && bal.payments.length > 0) {
+      if (session.pt_payment_id) {
+        chosen = bal.payments.find((p: any) => p.id === session.pt_payment_id) || null;
+      }
+      if (!chosen) {
+        chosen = bal.packagesWithBalance[0] || bal.payments[bal.payments.length - 1] || null;
+      }
+    }
+
+    // Monta exatamente as linhas padrão do check-in
+    const lines: string[] = [
+      `Olá ${studentName}! ✅`,
+      ``,
+      `Seu check-in foi registrado com sucesso!`,
+      ``,
+      `📅 *Data:* ${dateLabel}`,
+      `🕐 *Horário:* ${timeLabel}`,
+    ];
+
+    if (chosen && bal) {
+      const totalRemainingAfter = bal.remaining;
+      const usedAfter = chosen.used;
+      const otherRemaining = bal.packagesWithBalance
+        .filter((p) => p.id !== chosen.id)
+        .reduce((acc, p) => acc + p.remaining, 0);
+      const otherCount = bal.packagesWithBalance.filter((p) => p.id !== chosen.id && p.remaining > 0).length;
+      const openPackages = bal.packagesWithBalance.length;
+
+      lines.push(``);
+      if (openPackages > 1) {
+        lines.push(`📦 *Saldo restante:* ${totalRemainingAfter} aula(s) em ${openPackages} pacote(s)`);
+      } else {
+        lines.push(`📦 *Saldo restante:* ${totalRemainingAfter} aula(s)`);
+      }
+      lines.push(`   • ${usedAfter} de ${chosen.contracted} aulas utilizadas`);
+      if (otherCount > 0) {
+        lines.push(`   • Outros pacotes em aberto: ${otherCount} pacote(s), ${otherRemaining} aula(s)`);
+      }
+      if (totalRemainingAfter === 0) {
+        lines.push(``);
+        lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+      }
+    } else {
+      lines.push(``);
+      if (bal && bal.contracted > 0 && bal.remaining === 0) {
+        lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+      } else if (bal && bal.remaining > 0) {
+        lines.push(`📦 *Saldo atual:* ${bal.remaining} aula(s)`);
+        lines.push(`ℹ️ Check-in registrado com sucesso.`);
+      } else {
+        lines.push(`ℹ️ Check-in registrado com sucesso.`);
+      }
+    }
+
+    lines.push(``);
+    lines.push(`Bom treino! 💪`);
+
+    const defaultMessage = lines.join("\n");
+
     let savedTemplate = "";
     try {
       savedTemplate = localStorage.getItem("edufinance.checkinWhatsAppTemplate") || "";
     } catch { /* ignore */ }
 
-    let message = "";
-    if (savedTemplate.trim()) {
-      message = savedTemplate
-        .replace(/\{\{aluno\}\}/gi, studentName)
-        .replace(/\{\{data\}\}/gi, dateLabel)
-        .replace(/\{\{hora\}\}/gi, timeLabel)
-        .replace(/\{\{duracao\}\}/gi, durationLabel)
-        .replace(/\{\{saldo\}\}/gi, String(remaining))
-        .replace(/\{\{utilizadas\}\}/gi, String(used))
-        .replace(/\{\{contratadas\}\}/gi, String(contracted))
-        .replace(/\{\{plano\}\}/gi, planName);
-    } else {
-      const lines: string[] = [
-        `Olá ${studentName}! ✅`,
-        ``,
-        `Passando para registrar e confirmar sua aula realizada:`,
-        ``,
-        `📅 *Data:* ${dateLabel}`,
-        `🕐 *Horário:* ${timeLabel}`,
-        `⏱️ *Duração:* ${durationLabel}`,
-      ];
+    let message = savedTemplate.trim()
+      ? savedTemplate
+          .replace(/\{\{aluno\}\}/gi, studentName)
+          .replace(/\{\{data\}\}/gi, dateLabel)
+          .replace(/\{\{hora\}\}/gi, timeLabel)
+          .replace(/\{\{duracao\}\}/gi, durationLabel)
+          .replace(/\{\{saldo\}\}/gi, String(bal?.remaining ?? 0))
+          .replace(/\{\{utilizadas\}\}/gi, chosen ? String(chosen.used) : "0")
+          .replace(/\{\{contratadas\}\}/gi, chosen ? String(chosen.contracted) : "0")
+          .replace(/\{\{plano\}\}/gi, chosen?.planName ?? "")
+      : defaultMessage;
 
-      if (session.exercises) {
-        lines.push(`🏋️ *Treino / Foco:* ${session.exercises}`);
-      }
-
-      if (contracted > 0) {
-        lines.push(``);
-        lines.push(`📦 *Saldo:* ${remaining} aula(s) restante(s)`);
-        lines.push(`   • ${used} de ${contracted} aulas utilizadas`);
-      }
-
-      lines.push(``);
-      lines.push(`📲 *Acesse seus treinos e portal oficial:*`);
-      lines.push(`🔗 https://montanha-personal-studio.vercel.app`);
-      lines.push(``);
-      lines.push(`Bom treino e seguimos firmes na evolução! 💪`);
-
-      message = lines.join("\n");
-    }
-
-    // Redirecionamento permanente e seguro para a plataforma oficial Vercel
+    // Se houver qualquer resquício de lovable em template customizado, sanitiza para vercel
     message = message.replace(
       /https?:\/\/[a-zA-Z0-9.-]*lovable\.app[^\s]*/gi,
       "https://montanha-personal-studio.vercel.app"
     );
-    if (!message.includes("https://montanha-personal-studio.vercel.app")) {
-      message += `\n\n📲 *Portal oficial:* https://montanha-personal-studio.vercel.app`;
-    }
 
     const cleanPhone = phone.startsWith("55") ? phone : `55${phone}`;
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
-    toast.success(`Abrindo WhatsApp para enviar comprovante da aula a ${studentName}...`);
+    toast.success(`Abrindo WhatsApp com comprovante de ${studentName}...`);
   };
 
   return (

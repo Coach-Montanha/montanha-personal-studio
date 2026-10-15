@@ -50,13 +50,9 @@ Seu check-in foi registrado com sucesso!
 
 📅 *Data:* {{data}}
 🕐 *Horário:* {{hora}}
-⏱️ *Duração:* {{duracao}}
 
 📦 *Saldo restante:* {{saldo}} aula(s)
    • {{utilizadas}} de {{contratadas}} aulas utilizadas
-
-📲 *Acesse seus treinos e portal oficial:*
-🔗 https://montanha-personal-studio.vercel.app
 
 Bom treino! 💪`;
 
@@ -339,9 +335,6 @@ function CheckinPage() {
     }
 
     lines.push(``);
-    lines.push(`📲 *Acesse seu portal oficial:*`);
-    lines.push(`🔗 https://montanha-personal-studio.vercel.app`);
-    lines.push(``);
     lines.push(`Bom treino! 💪`);
 
     const defaultMessage = lines.join("\n");
@@ -359,14 +352,11 @@ function CheckinPage() {
         })
       : defaultMessage;
 
-    // Redirecionamento transparente e permanente para a Vercel
+    // Sanitiza link caso o template personalizado ainda cite lovable
     whatsappMessage = whatsappMessage.replace(
       /https?:\/\/[a-zA-Z0-9.-]*lovable\.app[^\s]*/gi,
       "https://montanha-personal-studio.vercel.app"
     );
-    if (!whatsappMessage.includes("https://montanha-personal-studio.vercel.app")) {
-      whatsappMessage += `\n\n📲 *Portal oficial:* https://montanha-personal-studio.vercel.app`;
-    }
 
     const phone = targetStudent.phone.replace(/\D/g, "");
     const url = `https://wa.me/55${phone}?text=${encodeURIComponent(whatsappMessage)}`;
