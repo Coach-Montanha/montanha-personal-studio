@@ -38,17 +38,12 @@ function getPreviousMonthKey(monthKey: string): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function calculateTargetDate(originalDate: string, targetMonth: string): string {
-  try {
-    const day = originalDate.slice(8, 10) || "01";
-    const [targetYear, targetMonthNum] = targetMonth.split("-").map(Number);
-    // Último dia do mês alvo
-    const lastDay = new Date(targetYear, targetMonthNum, 0).getDate();
-    const finalDay = Math.min(Number(day), lastDay);
-    return `${targetMonth}-${String(finalDay).padStart(2, "0")}`;
-  } catch {
-    return `${targetMonth}-01`;
-  }
+function calculateTargetDate(_originalDate: string, _targetMonth: string): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 export function ExpenseRenewalDialog({
@@ -318,7 +313,7 @@ export function ExpenseRenewalDialog({
                           </span>
                         )}
                         <span>•</span>
-                        <span>Data sugerida: {formatDateBR(targetDate)}</span>
+                        <span>Data do registro: {formatDateBR(targetDate)} (hoje)</span>
                       </div>
                     </div>
                   </div>

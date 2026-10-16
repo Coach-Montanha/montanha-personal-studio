@@ -207,26 +207,36 @@ function FinanceiroPage() {
       const userId = userData.user?.id;
       if (!userId) throw new Error("Usuário não autenticado.");
 
+      // Data presente exata em que o botão é apertado
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonthStr = String(today.getMonth() + 1).padStart(2, "0");
+      const currentDayStr = String(today.getDate()).padStart(2, "0");
+      const todayIso = `${currentYear}-${currentMonthStr}-${currentDayStr}`;
+      const targetRefMonth = `${currentYear}-${currentMonthStr}`;
+
       const newExpense = {
         user_id: userId,
         category_id: exp.category_id,
         description: exp.description,
         amount: Number(exp.amount),
-        expense_date: exp.expense_date,
-        reference_month: month,
+        expense_date: todayIso,
+        reference_month: targetRefMonth,
         segment: exp.segment || "general",
         type: exp.type || "variable",
         recurrent: true,
-        notes: `Cópia de ${exp.description}`,
+        notes: exp.notes ? `${exp.notes} (Renovado de ${exp.reference_month})` : `(Renovado de ${exp.reference_month})`,
       };
 
       const { error } = await supabase.from("expenses").insert(newExpense as any);
       if (error) throw error;
 
-      toast.success(`"${exp.description}" duplicada com sucesso para ${formatMonthLabel(month)}!`);
+      toast.success(
+        `"${exp.description}" renovada com sucesso para hoje (${formatDateBR(todayIso)}) em ${formatMonthLabel(targetRefMonth)}!`
+      );
       qc.invalidateQueries({ queryKey: ["expenses-all"] });
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao duplicar despesa.");
+      toast.error(err?.message || "Erro ao renovar despesa.");
     }
   }
 
@@ -533,15 +543,6 @@ function FinanceiroPage() {
               >
                 <Search className="h-4 w-4" />
                 <span>Buscar</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="h-11 w-full sm:h-10 sm:w-auto gap-1.5"
-                onClick={() => setRenewalOpen(true)}
-                title="Renovação de despesas dos meses anteriores"
-              >
-                <Repeat className="h-4 w-4 text-primary" />
-                <span>Renovar</span>
               </Button>
               <Button
                 className="h-11 w-full sm:h-10 sm:w-auto"
@@ -928,16 +929,6 @@ function FinanceiroPage() {
                   <span>Buscar despesas</span>
                 </Button>
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 text-xs h-8"
-                  onClick={() => setRenewalOpen(true)}
-                  title="Renovar despesas vindas do mês anterior"
-                >
-                  <Repeat className="h-3.5 w-3.5 text-primary" />
-                  <span>Renovar despesas</span>
-                </Button>
-                <Button
                   size="sm"
                   className="gap-1.5 text-xs h-8"
                   onClick={() => {
@@ -1004,8 +995,8 @@ function FinanceiroPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-primary hover:bg-primary/10"
-                              title="Duplicar esta despesa"
+                              className="text-primary hover:bg-primary/10 hover:text-primary"
+                              title="Renovar esta despesa para hoje (data presente)"
                               onClick={() => handleDuplicateExpense(e)}
                             >
                               <Repeat className="h-4 w-4" />

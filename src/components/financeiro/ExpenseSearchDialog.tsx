@@ -110,31 +110,32 @@ export function ExpenseSearchDialog({
       const userId = userData.user?.id;
       if (!userId) throw new Error("Usuário não autenticado.");
 
-      // Calcula data com o mesmo dia no mês atual
-      const day = exp.expense_date?.slice(8, 10) || "01";
-      const [targetYear, targetMonthNum] = currentMonth.split("-").map(Number);
-      const lastDay = new Date(targetYear, targetMonthNum, 0).getDate();
-      const finalDay = Math.min(Number(day), lastDay);
-      const newDate = `${currentMonth}-${String(finalDay).padStart(2, "0")}`;
+      // Define sempre a data presente exata em que o botão é apertado
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const currentMonthStr = String(today.getMonth() + 1).padStart(2, "0");
+      const currentDayStr = String(today.getDate()).padStart(2, "0");
+      const todayIso = `${currentYear}-${currentMonthStr}-${currentDayStr}`;
+      const targetRefMonth = `${currentYear}-${currentMonthStr}`;
 
       const newExpense = {
         user_id: userId,
         category_id: exp.category_id || null,
         description: exp.description,
         amount: Number(exp.amount),
-        expense_date: newDate,
-        reference_month: currentMonth,
+        expense_date: todayIso,
+        reference_month: targetRefMonth,
         segment: exp.segment || "general",
         type: exp.type || "variable",
         recurrent: true,
-        notes: exp.notes ? `${exp.notes} (Copiado de ${exp.reference_month})` : `(Copiado de ${exp.reference_month})`,
+        notes: exp.notes ? `${exp.notes} (Renovado de ${exp.reference_month})` : `(Renovado de ${exp.reference_month})`,
       };
 
       const { error } = await supabase.from("expenses").insert(newExpense as any);
       if (error) throw error;
 
       toast.success(
-        `"${exp.description}" registrada com sucesso para o mês de ${formatMonthLabel(currentMonth)}!`
+        `"${exp.description}" renovada com sucesso para ${formatMonthLabel(targetRefMonth)}!`
       );
       qc.invalidateQueries({ queryKey: ["expenses-all"] });
     } catch (err: any) {
