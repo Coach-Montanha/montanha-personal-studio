@@ -25,6 +25,8 @@ import {
   DollarSign,
   Scale,
   Wallet,
+  Search,
+  Repeat,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -70,6 +72,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { EmptyState } from "@/components/edufinance/EmptyState";
 import { ExpenseDialog } from "@/components/financeiro/ExpenseDialog";
+import { ExpenseRenewalDialog } from "@/components/financeiro/ExpenseRenewalDialog";
+import { ExpenseSearchDialog } from "@/components/financeiro/ExpenseSearchDialog";
 import { MonthYearPicker } from "@/components/edufinance/MonthYearPicker";
 import {
   formatBRL,
@@ -193,7 +197,38 @@ function FinanceiroPage() {
   const [month, setMonth] = useState(currentMonthKey());
   const [segment, setSegment] = useState("all");
   const [expenseOpen, setExpenseOpen] = useState(false);
+  const [renewalOpen, setRenewalOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [editing, setEditing] = useState<ExpenseRow | null>(null);
+
+  async function handleDuplicateExpense(exp: ExpenseRow) {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) throw new Error("Usuário não autenticado.");
+
+      const newExpense = {
+        user_id: userId,
+        category_id: exp.category_id,
+        description: exp.description,
+        amount: Number(exp.amount),
+        expense_date: exp.expense_date,
+        reference_month: month,
+        segment: exp.segment || "general",
+        type: exp.type || "variable",
+        recurrent: true,
+        notes: `Cópia de ${exp.description}`,
+      };
+
+      const { error } = await supabase.from("expenses").insert(newExpense as any);
+      if (error) throw error;
+
+      toast.success(`"${exp.description}" duplicada com sucesso para ${formatMonthLabel(month)}!`);
+      qc.invalidateQueries({ queryKey: ["expenses-all"] });
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao duplicar despesa.");
+    }
+  }
 
   const [kpiOrder, setKpiOrder] = useLocalStorage<string[]>(
     "financeiro.kpiOrder",
@@ -481,7 +516,7 @@ function FinanceiroPage() {
             </div>
             <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
               <Select value={segment} onValueChange={setSegment}>
-                <SelectTrigger className="h-11 w-full sm:h-10 sm:w-[200px]">
+                <SelectTrigger className="h-11 w-full sm:h-10 sm:w-[190px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -490,6 +525,24 @@ function FinanceiroPage() {
                   <SelectItem value="pt">🏋️ Personal Trainer</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                variant="outline"
+                className="h-11 w-full sm:h-10 sm:w-auto gap-1.5"
+                onClick={() => setSearchOpen(true)}
+                title="Busca específica de despesas por nome, valor ou período"
+              >
+                <Search className="h-4 w-4" />
+                <span>Buscar</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-11 w-full sm:h-10 sm:w-auto gap-1.5"
+                onClick={() => setRenewalOpen(true)}
+                title="Renovação de despesas dos meses anteriores"
+              >
+                <Repeat className="h-4 w-4 text-primary" />
+                <span>Renovar</span>
+              </Button>
               <Button
                 className="h-11 w-full sm:h-10 sm:w-auto"
                 onClick={() => {
@@ -858,30 +911,59 @@ function FinanceiroPage() {
         {/* TAB: Despesas */}
         <TabsContent value="expenses">
           <Card className="p-3.5 sm:p-5 min-w-0 max-w-full overflow-hidden">
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-semibold">
                 Despesas — {formatMonthLabel(month)}
                 {segment !== "all" && ` · ${SEGMENT_LABELS[segment]}`}
               </h3>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setEditing(null);
-                  setExpenseOpen(true);
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Nova despesa
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs h-8"
+                  onClick={() => setSearchOpen(true)}
+                  title="Busca específica por nome, valor ou histórico"
+                >
+                  <Search className="h-3.5 w-3.5" />
+                  <span>Buscar despesas</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs h-8"
+                  onClick={() => setRenewalOpen(true)}
+                  title="Renovar despesas vindas do mês anterior"
+                >
+                  <Repeat className="h-3.5 w-3.5 text-primary" />
+                  <span>Renovar despesas</span>
+                </Button>
+                <Button
+                  size="sm"
+                  className="gap-1.5 text-xs h-8"
+                  onClick={() => {
+                    setEditing(null);
+                    setExpenseOpen(true);
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Nova despesa</span>
+                </Button>
+              </div>
             </div>
             {monthExpenses.length === 0 ? (
               <EmptyState
                 icon={<Wallet className="h-5 w-5" />}
                 title="Nenhuma despesa neste mês"
-                description="Registre suas despesas para acompanhar o balanço."
+                description="Registre novas despesas ou renove automaticamente as despesas vindas do mês anterior."
                 action={
-                  <Button onClick={() => setExpenseOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" /> Registrar despesa
-                  </Button>
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <Button variant="outline" onClick={() => setRenewalOpen(true)} className="gap-2">
+                      <Repeat className="h-4 w-4 text-primary" /> Renovar do mês anterior
+                    </Button>
+                    <Button onClick={() => setExpenseOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" /> Registrar despesa
+                    </Button>
+                  </div>
                 }
               />
             ) : (
@@ -895,7 +977,7 @@ function FinanceiroPage() {
                       <TableHead>Tipo</TableHead>
                       <TableHead>Data</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
-                      <TableHead></TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -922,10 +1004,20 @@ function FinanceiroPage() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="text-primary hover:bg-primary/10"
+                              title="Duplicar esta despesa"
+                              onClick={() => handleDuplicateExpense(e)}
+                            >
+                              <Repeat className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => {
                                 setEditing(e);
                                 setExpenseOpen(true);
                               }}
+                              title="Editar despesa"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -933,6 +1025,7 @@ function FinanceiroPage() {
                               variant="ghost"
                               size="icon"
                               onClick={() => remove(e.id)}
+                              title="Excluir despesa"
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -1157,6 +1250,24 @@ function FinanceiroPage() {
 
 
       <ExpenseDialog open={expenseOpen} onOpenChange={setExpenseOpen} expense={editing} />
+
+      <ExpenseRenewalDialog
+        open={renewalOpen}
+        onOpenChange={setRenewalOpen}
+        targetMonth={month}
+        allExpenses={allExpenses}
+      />
+
+      <ExpenseSearchDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        currentMonth={month}
+        allExpenses={allExpenses}
+        onEditExpense={(exp) => {
+          setEditing(exp);
+          setExpenseOpen(true);
+        }}
+      />
     </div>
   );
 }
