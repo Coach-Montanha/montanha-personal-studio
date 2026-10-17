@@ -28,6 +28,7 @@ import {
   PenTool,
   ExternalLink,
   User,
+  MoreVertical,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -596,9 +604,9 @@ export function TreinosPage() {
                       )}
                     </div>
 
-                    {/* Ações da Rotina — Todos os ícones alinhados em linha única */}
-                    <div className="border-t border-border/60 pt-3 flex items-center justify-between gap-1 overflow-x-auto">
-                      <div className="flex items-center gap-1 shrink-0">
+                    {/* Ações da Rotina — Design sem estouro com dropdown de mais ações */}
+                    <div className="border-t border-border/60 pt-3 flex items-center justify-between gap-1">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <Button
                           type="button"
                           size="sm"
@@ -639,32 +647,7 @@ export function TreinosPage() {
                             setAtribuirOpen(true);
                           }}
                         >
-                          <UserPlus className="h-3.5 w-3.5" />
-                        </Button>
-
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                          title="Exportar Imagem A4/Instagram"
-                          onClick={() => {
-                            setImageExportProgramId(prog.id);
-                            setImageExportOpen(true);
-                          }}
-                        >
-                          <ImageIcon className="h-3.5 w-3.5" />
-                        </Button>
-
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                          title="Baixar PDF"
-                          onClick={() => handleDownloadPdf(prog.id, aluno?.name)}
-                        >
-                          <Download className="h-3.5 w-3.5" />
+                          <UserPlus className="h-4 w-4" />
                         </Button>
 
                         <Button
@@ -678,39 +661,72 @@ export function TreinosPage() {
                             setPrescreverIaOpen(true);
                           }}
                         >
-                          <Sparkles className="h-3.5 w-3.5" />
+                          <Sparkles className="h-4 w-4" />
                         </Button>
 
                         <Button
                           type="button"
                           size="icon"
                           variant="ghost"
-                          className={cn(
-                            "h-8 w-8",
-                            prog.is_archived
-                              ? "text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
-                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                          )}
-                          title={prog.is_archived ? "Desarquivar Rotina (Tornar Ativa)" : "Arquivar Rotina"}
-                          onClick={() => handleToggleArchive(prog.id, prog.is_archived, prog.name)}
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          title="Baixar PDF"
+                          onClick={() => handleDownloadPdf(prog.id, aluno?.name)}
                         >
-                          {prog.is_archived ? (
-                            <ArchiveRestore className="h-3.5 w-3.5" />
-                          ) : (
-                            <Archive className="h-3.5 w-3.5" />
-                          )}
+                          <Download className="h-4 w-4" />
                         </Button>
 
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          title="Excluir Rotina"
-                          onClick={() => handleDelete(prog.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                              title="Mais opções"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setImageExportProgramId(prog.id);
+                                setImageExportOpen(true);
+                              }}
+                              className="gap-2 cursor-pointer text-xs"
+                            >
+                              <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                              <span>Exportar Imagem</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() => handleToggleArchive(prog.id, prog.is_archived, prog.name)}
+                              className="gap-2 cursor-pointer text-xs"
+                            >
+                              {prog.is_archived ? (
+                                <>
+                                  <ArchiveRestore className="h-4 w-4 text-amber-600" />
+                                  <span>Desarquivar Treino</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Archive className="h-4 w-4 text-muted-foreground" />
+                                  <span>Arquivar Treino</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(prog.id)}
+                              className="gap-2 cursor-pointer text-xs text-destructive focus:text-destructive focus:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span>Excluir Treino</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
 
