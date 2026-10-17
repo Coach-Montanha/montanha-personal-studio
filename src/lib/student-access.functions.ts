@@ -197,6 +197,9 @@ export const syncStudentPassword = createServerFn({ method: "POST" })
  * synchronizes the auth.users password, ensures confirmed email and role,
  * and enables instant, error-free login without manual intervention.
  */
+// In-memory rate limiter contra força bruta no auto-heal (máximo 5 falhas por 10 minutos)
+const loginFailureMap = new Map<string, { attempts: number; blockedUntil: number }>();
+
 export const autoHealStudentLogin = createServerFn({ method: "POST" })
   .validator((input: { email: string; password: string }) => {
     if (!input?.email || !input?.password) {
@@ -209,6 +212,18 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { email, password } = data;
+    const now = Date.now();
+    const rateRecord = loginFailureMap.get(email);
+
+    if (rateRecord && rateRecord.blockedUntil > now) {
+      const waitMin = Math.ceil((rateRecord.blockedUntil - now) / 60000);
+      return {
+        healed: false,
+        reason: "RATE_LIMITED",
+        message: `Muitas tentativas consecutivas incorretas. Por segurança, tente novamente em ${waitMin} minuto(s).`,
+      };
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1. Validar rigorosamente formato do PIN (exatamente 10 dígitos numéricos)
@@ -233,22 +248,30 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
       .ilike("email", email);
 
     const matches = [...(studioMatch || []), ...(ptMatch || [])];
-    if (matches.length === 0) {
-      return { healed: false, reason: "NOT_FOUND" };
+    const isMatchingKnownField = matches.length > 0 && matches.some((m) => m.access_pin === password);
+
+    if (!isMatchingKnownField) {
+      // Incrementar tentativas com falha para bloquear brute-force
+      const currentAttempts = (rateRecord?.attempts || 0) + 1;
+      const blockedUntil = currentAttempts >= 5 ? now + 10 * 60 * 1000 : 0;
+      loginFailureMap.set(email, { attempts: currentAttempts, blockedUntil });
+      return { 
+        healed: false, 
+        reason: "INVALID_CREDENTIALS", 
+        message: "Credenciais de acesso não localizadas ou PIN incorreto." 
+      };
     }
 
-    // 4. O auto-heal só é autorizado se o PIN fornecido bater exatamente com o PIN registrado pelo personal
-    const isMatchingKnownField = matches.some((m) => m.access_pin === password);
-
-    const canAuthorize = isMatchingKnownField;
-
-    if (!canAuthorize) {
-      return { healed: false, reason: "PASSWORD_MISMATCH" };
-    }
+    // Sucesso: limpar histórico de tentativas
+    loginFailureMap.delete(email);
 
     // Student identity verified! Ensure auth user is perfectly configured and synchronized
-    const { data: userList } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-    let authUser = userList?.users?.find((u) => u.email?.toLowerCase() === email);
+    const existingAccountId = matches.find((m) => m.account_user_id)?.account_user_id;
+    let authUser: any = null;
+    if (existingAccountId) {
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(existingAccountId);
+      if (userData?.user) authUser = userData.user;
+    }
 
     let authUserId: string;
 

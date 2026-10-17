@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Loader2, CheckCircle2, Lock, ShieldCheck, KeyRound, Mail, User, Eye, EyeOff, Sparkles, ArrowRight, Smartphone } from "lucide-react";
+import { Loader2, CheckCircle2, Lock, ShieldCheck, KeyRound, Mail, User, Eye, EyeOff, Sparkles, ArrowRight, Smartphone, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,19 @@ import { validateEmailMx, checkProjectAccess } from "@/services/ecosystem-auth-s
 function safeNext(next: unknown): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) return "/";
   return next;
+}
+
+function calculateAge(dateStr: string): number {
+  if (!dateStr) return 0;
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const birth = new Date(y, (m || 1) - 1, d || 1);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const mDiff = today.getMonth() - birth.getMonth();
+  if (mDiff < 0 || (mDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
 }
 
 export const Route = createFileRoute("/auth")({
@@ -63,6 +76,7 @@ function AuthPage() {
   const [pin, setPin] = useState(searchParams.pass || searchParams.password || "");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [showReset, setShowReset] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
@@ -177,6 +191,22 @@ function AuthPage() {
     const cleanEmail = email.trim().toLowerCase();
     const cleanCredential = authMethod === "pin" ? pin.trim() : password.trim();
 
+    if (!name.trim()) {
+      setLoading(false);
+      return toast.error("Por favor, informe seu nome completo.");
+    }
+
+    if (!birthDate) {
+      setLoading(false);
+      return toast.error("Informe sua data de nascimento para validação de maioridade (ECA/LGPD).");
+    }
+
+    const age = calculateAge(birthDate);
+    if (age < 18) {
+      setLoading(false);
+      return toast.error("Conforme o ECA e a LGPD (Art. 14), o cadastro direto é permitido apenas para maiores de 18 anos. Menores devem ser cadastrados pelo Studio com autorização do responsável legal.");
+    }
+
     if (authMethod === "pin" && !/^\d{10}$/.test(cleanCredential)) {
       setLoading(false);
       return toast.error("O PIN de acesso deve conter exatamente 10 dígitos numéricos.");
@@ -192,7 +222,12 @@ function AuthPage() {
       password: cleanCredential,
       options: {
         emailRedirectTo: `${window.location.origin}${nextPath}`,
-        data: { name },
+        data: { 
+          name,
+          birth_date: birthDate,
+          age_verified: true,
+          age_verified_at: new Date().toISOString()
+        },
       },
     });
     setLoading(false);
@@ -398,22 +433,46 @@ function AuthPage() {
               {/* Form */}
               <form onSubmit={view === "signin" ? handleSignIn : handleSignUp} className="space-y-4">
                 {view === "signup" && (
-                  <div className="space-y-1.5">
-                    <label htmlFor="su-name-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Nome Completo</label>
-                    <div className="relative">
-                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                      <input
-                        id="su-name-input"
-                        type="text"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Ex: Coach Silva"
-                        style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a", colorScheme: "light", WebkitTextFillColor: "#0f172a" }}
-                        className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
-                      />
+                  <>
+                    <div className="space-y-1.5">
+                      <label htmlFor="su-name-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Nome Completo</label>
+                      <div className="relative">
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                        <input
+                          id="su-name-input"
+                          type="text"
+                          required
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Ex: Coach Silva"
+                          style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a", colorScheme: "light", WebkitTextFillColor: "#0f172a" }}
+                          className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                        />
+                      </div>
                     </div>
-                  </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="su-birth-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                          Data de Nascimento
+                        </label>
+                        <span className="text-[10px] text-purple-400 font-medium">ECA & LGPD (+18 anos)</span>
+                      </div>
+                      <div className="relative">
+                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                        <input
+                          id="su-birth-input"
+                          type="date"
+                          required
+                          max={new Date().toISOString().split("T")[0]}
+                          value={birthDate}
+                          onChange={(e) => setBirthDate(e.target.value)}
+                          style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a", colorScheme: "light", WebkitTextFillColor: "#0f172a" }}
+                          className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                        />
+                      </div>
+                    </div>
+                  </>
                 )}
 
                 <div className="space-y-1.5">

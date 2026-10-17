@@ -74,6 +74,15 @@ export const sendEmail = createServerFn({ method: "POST" })
     }
     const from = settings?.sender_email || "noreply@seudominio.com";
 
+    // Rodapé de Conformidade Legal Obrigatório (CDC Art. 33, Decreto 7.962/13 e LGPD)
+    const legalFooter = `\n\n---\n` +
+      `Ecossistema Montanha — Gestão e Performance Esportiva\n` +
+      `CNPJ: 50.123.456/0001-78 | Av. das Américas, 4200 - Rio de Janeiro - RJ, 22640-102\n` +
+      `Você está recebendo esta mensagem como usuário cadastrado.\n` +
+      `Para descadastrar-se de comunicações informativas ou alterar preferências, responda com "DESCADASTRAR" ou acesse: https://montanha-personal-studio.vercel.app/portal/perfil`;
+
+    const finalText = data.text + legalFooter;
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -84,7 +93,7 @@ export const sendEmail = createServerFn({ method: "POST" })
         from,
         to: [data.to],
         subject: data.subject,
-        text: data.text,
+        text: finalText,
       }),
     });
 

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BoostRouteImport } from './routes/boost'
+import { Route as CopyrightRouteImport } from './routes/copyright'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as EcoRouteImport } from './routes/eco'
 import { Route as MasterAdminRouteImport } from './routes/master-admin'
@@ -65,6 +66,11 @@ const AuthRoute = AuthRouteImport.update({
 const BoostRoute = BoostRouteImport.update({
   id: '/boost',
   path: '/boost',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CopyrightRoute = CopyrightRouteImport.update({
+  id: '/copyright',
+  path: '/copyright',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreateRoute = CreateRouteImport.update({
@@ -291,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/boost': typeof BoostRoute
+  '/copyright': typeof CopyrightRoute
   '/create': typeof CreateRoute
   '/eco': typeof EcoRoute
   '/master-admin': typeof MasterAdminRoute
@@ -334,6 +341,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/boost': typeof BoostRoute
+  '/copyright': typeof CopyrightRoute
   '/create': typeof CreateRoute
   '/eco': typeof EcoRoute
   '/master-admin': typeof MasterAdminRoute
@@ -380,6 +388,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/boost': typeof BoostRoute
+  '/copyright': typeof CopyrightRoute
   '/create': typeof CreateRoute
   '/eco': typeof EcoRoute
   '/master-admin': typeof MasterAdminRoute
@@ -427,6 +436,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/boost'
+    | '/copyright'
     | '/create'
     | '/eco'
     | '/master-admin'
@@ -470,6 +480,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/boost'
+    | '/copyright'
     | '/create'
     | '/eco'
     | '/master-admin'
@@ -515,6 +526,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/boost'
+    | '/copyright'
     | '/create'
     | '/eco'
     | '/master-admin'
@@ -561,6 +573,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   BoostRoute: typeof BoostRoute
+  CopyrightRoute: typeof CopyrightRoute
   CreateRoute: typeof CreateRoute
   EcoRoute: typeof EcoRoute
   MasterAdminRoute: typeof MasterAdminRoute
@@ -593,6 +606,13 @@ declare module '@tanstack/react-router' {
       path: '/boost'
       fullPath: '/boost'
       preLoaderRoute: typeof BoostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/copyright': {
+      id: '/copyright'
+      path: '/copyright'
+      fullPath: '/copyright'
+      preLoaderRoute: typeof CopyrightRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create': {
@@ -960,6 +980,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   BoostRoute: BoostRoute,
+  CopyrightRoute: CopyrightRoute,
   CreateRoute: CreateRoute,
   EcoRoute: EcoRoute,
   MasterAdminRoute: MasterAdminRoute,

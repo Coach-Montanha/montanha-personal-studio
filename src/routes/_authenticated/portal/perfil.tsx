@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatBRL, formatDateBR } from "@/lib/format";
-import { ChevronDown, ChevronUp, CalendarCheck, CheckCircle2 } from "lucide-react";
+import { ChevronDown, ChevronUp, CalendarCheck, CheckCircle2, ShieldCheck } from "lucide-react";
 import { HistoryShareSelector } from "@/components/pt/HistoryShareSelector";
 
 export const Route = createFileRoute("/_authenticated/portal/perfil")({
@@ -227,6 +227,17 @@ function PerfilPage() {
                       {currentPayment.due_date ? formatDateBR(currentPayment.due_date) : "—"}
                     </div>
                   </div>
+                </div>
+
+                {/* Transparência CDC Art. 6º e 39: Regra de Renovação & Cancelamento */}
+                <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground space-y-1">
+                  <div className="font-semibold text-foreground flex items-center gap-1.5">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                    Regra de Renovação & Cancelamento (CDC & Decreto 7.962/13):
+                  </div>
+                  <p>
+                    Plano com cobrança periódica ({currentPayment.plans?.billing_cycle ?? "mensal"}). O aviso prévio de renovação é enviado 7 dias antes do vencimento. O cancelamento pode ser solicitado a qualquer momento sem custos adicionais.
+                  </p>
                 </div>
               </div>
             ) : (
