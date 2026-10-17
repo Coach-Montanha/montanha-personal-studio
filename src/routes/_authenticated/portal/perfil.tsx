@@ -31,12 +31,12 @@ function PerfilPage() {
         supabase.from("students").select("id").eq("account_user_id", u.user.id).maybeSingle(),
         supabase.from("pt_students").select("id").eq("account_user_id", u.user.id).maybeSingle(),
       ]);
-      return { 
-        studio: !!studio.data, 
-        pt: !!pt.data, 
-        studioId: studio.data?.id, 
+      return {
+        studio: !!studio.data,
+        pt: !!pt.data,
+        studioId: studio.data?.id,
         ptId: pt.data?.id,
-        userId: u.user.id 
+        userId: u.user.id,
       };
     },
   });
@@ -132,7 +132,9 @@ function PerfilPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("class_attendance")
-        .select("id,created_at,class_sessions(session_date,start_time,classes(name,programs(name,color)))")
+        .select(
+          "id,created_at,class_sessions(session_date,start_time,classes(name,programs(name,color)))",
+        )
         .eq("student_id", userTypes!.studioId!)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -151,7 +153,10 @@ function PerfilPage() {
   }
 
   const statusBadge = (status: string) => {
-    if (status === "paid") return <Badge className="border-state-paid/30 bg-state-paid-soft text-state-paid">Pago</Badge>;
+    if (status === "paid")
+      return (
+        <Badge className="border-state-paid/30 bg-state-paid-soft text-state-paid">Pago</Badge>
+      );
     if (status === "pending") return <Badge variant="secondary">Pendente</Badge>;
     if (status === "overdue") return <Badge variant="destructive">Vencido</Badge>;
     return <Badge variant="outline">{status}</Badge>;
@@ -160,7 +165,9 @@ function PerfilPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <header>
-        <p className="text-overline mb-1.5 text-muted-foreground">{userTypes?.studio && userTypes?.pt ? "Portal Híbrido" : "Área do aluno"}</p>
+        <p className="text-overline mb-1.5 text-muted-foreground">
+          {userTypes?.studio && userTypes?.pt ? "Portal Híbrido" : "Área do aluno"}
+        </p>
         <h1 className="text-title text-foreground">Meus dados</h1>
       </header>
 
@@ -182,11 +189,15 @@ function PerfilPage() {
           </div>
           <div>
             <Label className="text-overline text-muted-foreground">Nascimento</Label>
-            <div className="text-body text-foreground">{me?.birth_date ? formatDateBR(me.birth_date) : "—"}</div>
+            <div className="text-body text-foreground">
+              {me?.birth_date ? formatDateBR(me.birth_date) : "—"}
+            </div>
           </div>
           <div>
             <Label className="text-overline text-muted-foreground">Aluno desde</Label>
-            <div className="text-body text-foreground">{me?.created_at ? formatDateBR(me.created_at) : "—"}</div>
+            <div className="text-body text-foreground">
+              {me?.created_at ? formatDateBR(me.created_at) : "—"}
+            </div>
           </div>
         </div>
         <p className="text-xs text-muted-foreground pt-2 border-t">
@@ -205,20 +216,25 @@ function PerfilPage() {
                   <Label className="text-overline text-muted-foreground">Plano atual</Label>
                   <div className="text-lg font-semibold">{currentPayment.plans?.name}</div>
                   <div className="text-sm text-muted-foreground">
-                    {formatBRL(Number(currentPayment.plans?.price ?? currentPayment.amount ?? 0))} / {currentPayment.plans?.billing_cycle ?? "mês"}
+                    {formatBRL(Number(currentPayment.plans?.price ?? currentPayment.amount ?? 0))} /{" "}
+                    {currentPayment.plans?.billing_cycle ?? "mês"}
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-3 pt-3 mt-2 border-t">
                   <div>
                     <Label className="text-overline text-muted-foreground">Valor pago</Label>
                     <div className="text-base font-medium">
-                      {currentPayment.amount != null ? formatBRL(Number(currentPayment.amount)) : "—"}
+                      {currentPayment.amount != null
+                        ? formatBRL(Number(currentPayment.amount))
+                        : "—"}
                     </div>
                   </div>
                   <div>
                     <Label className="text-overline text-muted-foreground">Data do pagamento</Label>
                     <div className="text-base font-medium">
-                      {currentPayment.payment_date ? formatDateBR(currentPayment.payment_date) : "—"}
+                      {currentPayment.payment_date
+                        ? formatDateBR(currentPayment.payment_date)
+                        : "—"}
                     </div>
                   </div>
                   <div>
@@ -236,7 +252,9 @@ function PerfilPage() {
                     Regra de Renovação & Cancelamento (CDC & Decreto 7.962/13):
                   </div>
                   <p>
-                    Plano com cobrança periódica ({currentPayment.plans?.billing_cycle ?? "mensal"}). O aviso prévio de renovação é enviado 7 dias antes do vencimento. O cancelamento pode ser solicitado a qualquer momento sem custos adicionais.
+                    Plano com cobrança periódica ({currentPayment.plans?.billing_cycle ?? "mensal"}
+                    ). O aviso prévio de renovação é enviado 7 dias antes do vencimento. O
+                    cancelamento pode ser solicitado a qualquer momento sem custos adicionais.
                   </p>
                 </div>
               </div>
@@ -249,27 +267,46 @@ function PerfilPage() {
               onClick={() => setShowHistory((v) => !v)}
               className="transition-ui mt-3 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              {showHistory ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              {showHistory ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              )}
               {showHistory ? "Ocultar histórico Studio" : "Ver histórico Studio"}
             </button>
 
             {showHistory && (
               <div className="pt-3 border-t space-y-4">
                 <div>
-                  <h3 className="text-overline mb-2 text-muted-foreground">Histórico de planos Studio</h3>
+                  <h3 className="text-overline mb-2 text-muted-foreground">
+                    Histórico de planos Studio
+                  </h3>
                   {planHistory.length === 0 ? (
                     <p className="text-sm text-muted-foreground">Nenhum plano registrado</p>
                   ) : (
                     <ul className="space-y-1.5">
                       {planHistory.map((h: any) => (
-                        <li key={h.id} className="transition-ui flex items-center justify-between rounded-xl border border-border bg-card/60 p-3 text-sm hover:bg-muted/40">
+                        <li
+                          key={h.id}
+                          className="transition-ui flex items-center justify-between rounded-xl border border-border bg-card/60 p-3 text-sm hover:bg-muted/40"
+                        >
                           <div>
                             <div className="font-medium">
-                              {h.plans?.name} {h.is_current && <Badge className="ml-1 border-state-paid/30 bg-state-paid-soft text-[10px] text-state-paid">atual</Badge>}
+                              {h.plans?.name}{" "}
+                              {h.is_current && (
+                                <Badge className="ml-1 border-state-paid/30 bg-state-paid-soft text-[10px] text-state-paid">
+                                  atual
+                                </Badge>
+                              )}
                             </div>
-                            <div className="text-xs text-muted-foreground">{formatDateBR(h.start_date)} — {h.end_date ? formatDateBR(h.end_date) : "atual"}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {formatDateBR(h.start_date)} —{" "}
+                              {h.end_date ? formatDateBR(h.end_date) : "atual"}
+                            </div>
                           </div>
-                          <div className="text-numeric text-xs">{formatBRL(Number(h.plans?.price ?? 0))}</div>
+                          <div className="text-numeric text-xs">
+                            {formatBRL(Number(h.plans?.price ?? 0))}
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -277,20 +314,33 @@ function PerfilPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-overline mb-2 text-muted-foreground">Histórico de pagamentos Studio</h3>
+                  <h3 className="text-overline mb-2 text-muted-foreground">
+                    Histórico de pagamentos Studio
+                  </h3>
                   {paymentsHistory.length === 0 ? (
                     <p className="text-sm text-muted-foreground">Nenhum pagamento registrado</p>
                   ) : (
                     <ul className="space-y-1.5">
                       {paymentsHistory.map((p: any) => (
-                        <li key={p.id} className="transition-ui flex items-center justify-between rounded-xl border border-border bg-card/60 p-3 text-sm hover:bg-muted/40">
+                        <li
+                          key={p.id}
+                          className="transition-ui flex items-center justify-between rounded-xl border border-border bg-card/60 p-3 text-sm hover:bg-muted/40"
+                        >
                           <div>
-                            <div className="font-medium">{p.reference_month ?? formatDateBR(p.payment_date)}</div>
-                            <div className="text-xs text-muted-foreground">Pago em {formatDateBR(p.payment_date)}{p.due_date && <> · vence {formatDateBR(p.due_date)}</>}{p.payment_method && <> · {p.payment_method}</>}</div>
+                            <div className="font-medium">
+                              {p.reference_month ?? formatDateBR(p.payment_date)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Pago em {formatDateBR(p.payment_date)}
+                              {p.due_date && <> · vence {formatDateBR(p.due_date)}</>}
+                              {p.payment_method && <> · {p.payment_method}</>}
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             {statusBadge(p.status)}
-                            <span className="text-numeric text-xs">{formatBRL(Number(p.amount))}</span>
+                            <span className="text-numeric text-xs">
+                              {formatBRL(Number(p.amount))}
+                            </span>
                           </div>
                         </li>
                       ))}
@@ -304,7 +354,9 @@ function PerfilPage() {
 
         {userTypes?.pt && (
           <Card className="space-y-4 p-5 sm:p-6">
-            <h2 className="text-overline text-muted-foreground">Personal Trainer — Plano e Financeiro</h2>
+            <h2 className="text-overline text-muted-foreground">
+              Personal Trainer — Plano e Financeiro
+            </h2>
             <div className="space-y-4">
               {ptMe?.goal && (
                 <div>
@@ -314,17 +366,29 @@ function PerfilPage() {
               )}
               {ptPaymentsHistory.length > 0 ? (
                 <div>
-                  <Label className="text-overline text-muted-foreground">Últimos Pagamentos PT</Label>
+                  <Label className="text-overline text-muted-foreground">
+                    Últimos Pagamentos PT
+                  </Label>
                   <ul className="mt-2 space-y-1.5">
                     {ptPaymentsHistory.slice(0, 5).map((p: any) => (
-                      <li key={p.id} className="transition-ui flex items-center justify-between rounded-xl border border-border bg-card/60 p-3 text-sm hover:bg-muted/40">
+                      <li
+                        key={p.id}
+                        className="transition-ui flex items-center justify-between rounded-xl border border-border bg-card/60 p-3 text-sm hover:bg-muted/40"
+                      >
                         <div>
-                          <div className="font-medium">{p.pt_plans?.name ?? "Personal Trainer"}</div>
-                          <div className="text-xs text-muted-foreground">Pago em {formatDateBR(p.payment_date)}{p.due_date && <> · vence {formatDateBR(p.due_date)}</>}</div>
+                          <div className="font-medium">
+                            {p.pt_plans?.name ?? "Personal Trainer"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Pago em {formatDateBR(p.payment_date)}
+                            {p.due_date && <> · vence {formatDateBR(p.due_date)}</>}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           {statusBadge(p.status)}
-                          <span className="text-numeric text-xs">{formatBRL(Number(p.amount))}</span>
+                          <span className="text-numeric text-xs">
+                            {formatBRL(Number(p.amount))}
+                          </span>
                         </div>
                       </li>
                     ))}
@@ -336,7 +400,9 @@ function PerfilPage() {
 
               {userTypes?.ptId && (
                 <div className="pt-4 border-t">
-                  <Label className="text-overline text-muted-foreground mb-3 block">Relatório de Treinos Anteriores</Label>
+                  <Label className="text-overline text-muted-foreground mb-3 block">
+                    Relatório de Treinos Anteriores
+                  </Label>
                   <HistoryShareSelector studentId={userTypes.ptId} />
                 </div>
               )}
@@ -352,7 +418,9 @@ function PerfilPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
               <CheckCircle2 className="h-4 w-4" />
             </div>
-            <h2 className="text-sm font-semibold leading-tight text-foreground">Histórico de check-ins</h2>
+            <h2 className="text-sm font-semibold leading-tight text-foreground">
+              Histórico de check-ins
+            </h2>
           </div>
           {checkins.length > 0 && (
             <span className="text-xs text-muted-foreground tabular-nums">
@@ -387,9 +455,7 @@ function PerfilPage() {
                 const dateStr = session?.session_date ?? c.created_at;
                 const d = new Date(dateStr);
                 const day = d.getDate();
-                const month = d
-                  .toLocaleDateString("pt-BR", { month: "short" })
-                  .replace(".", "");
+                const month = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
                 const time = session?.start_time
                   ? String(session.start_time).slice(0, 5)
                   : new Date(c.created_at).toLocaleTimeString("pt-BR", {
@@ -408,9 +474,7 @@ function PerfilPage() {
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">
-                        {cls?.name ?? "Turma"}
-                      </div>
+                      <div className="truncate text-sm font-medium">{cls?.name ?? "Turma"}</div>
                       {prog?.name && (
                         <span
                           className="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium"

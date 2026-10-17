@@ -1,7 +1,21 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Loader2, CheckCircle2, Lock, ShieldCheck, KeyRound, Mail, User, Eye, EyeOff, Sparkles, ArrowRight, Smartphone, Calendar } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  Lock,
+  ShieldCheck,
+  KeyRound,
+  Mail,
+  User,
+  Eye,
+  EyeOff,
+  Sparkles,
+  ArrowRight,
+  Smartphone,
+  Calendar,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -28,7 +42,9 @@ function calculateAge(dateStr: string): number {
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>): {
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): {
     next?: string;
     email?: string;
     pass?: string;
@@ -38,7 +54,8 @@ export const Route = createFileRoute("/auth")({
   } => ({
     next: typeof s.next === "string" ? s.next : undefined,
     email: typeof s.email === "string" ? s.email : undefined,
-    pass: typeof s.pass === "string" ? s.pass : (typeof s.password === "string" ? s.password : undefined),
+    pass:
+      typeof s.pass === "string" ? s.pass : typeof s.password === "string" ? s.password : undefined,
     trial: typeof s.trial === "string" ? s.trial : undefined,
     token: typeof s.token === "string" ? s.token : undefined,
   }),
@@ -127,13 +144,13 @@ function AuthPage() {
       return toast.error(mx.reason || "E-mail inválido.");
     }
 
-    const access = await checkProjectAccess(null, 'eduflow-finance', cleanEmail);
+    const access = await checkProjectAccess(null, "eduflow-finance", cleanEmail);
     if (!access.hasAccess) {
       setLoading(false);
       return toast.error(access.message);
     }
 
-    let { data: signInData, error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email: cleanEmail,
       password: cleanCredential,
     });
@@ -141,7 +158,9 @@ function AuthPage() {
     if (error) {
       // Auto-healing for registered students
       try {
-        const healResult = await autoHealFn({ data: { email: cleanEmail, password: cleanCredential } });
+        const healResult = await autoHealFn({
+          data: { email: cleanEmail, password: cleanCredential },
+        });
         if (healResult && healResult.healed) {
           const retryHealed = await supabase.auth.signInWithPassword({
             email: cleanEmail,
@@ -204,7 +223,9 @@ function AuthPage() {
     const age = calculateAge(birthDate);
     if (age < 18) {
       setLoading(false);
-      return toast.error("Conforme o ECA e a LGPD (Art. 14), o cadastro direto é permitido apenas para maiores de 18 anos. Menores devem ser cadastrados pelo Studio com autorização do responsável legal.");
+      return toast.error(
+        "Conforme o ECA e a LGPD (Art. 14), o cadastro direto é permitido apenas para maiores de 18 anos. Menores devem ser cadastrados pelo Studio com autorização do responsável legal.",
+      );
     }
 
     if (authMethod === "pin" && !/^\d{10}$/.test(cleanCredential)) {
@@ -222,11 +243,11 @@ function AuthPage() {
       password: cleanCredential,
       options: {
         emailRedirectTo: `${window.location.origin}${nextPath}`,
-        data: { 
+        data: {
           name,
           birth_date: birthDate,
           age_verified: true,
-          age_verified_at: new Date().toISOString()
+          age_verified_at: new Date().toISOString(),
         },
       },
     });
@@ -268,7 +289,6 @@ function AuthPage() {
 
       {/* Floating Hero Stage Card Container */}
       <div className="w-full max-w-[900px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[560px] my-auto">
-        
         {/* A) NAV RAIL */}
         <nav className="w-full md:w-24 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 p-4 flex md:flex-col items-center justify-between z-20 flex-shrink-0">
           <div className="flex flex-col items-center gap-1.5">
@@ -277,7 +297,9 @@ function AuthPage() {
                 <Sparkles className="h-5 w-5 text-[#6958e2]" />
               </div>
             </div>
-            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Studio</span>
+            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              Studio
+            </span>
           </div>
 
           <div className="flex md:flex-col items-center gap-3">
@@ -318,25 +340,36 @@ function AuthPage() {
 
         {/* B) FLOATING HERO CARD */}
         <div className="w-full md:w-80 relative overflow-hidden bg-slate-950/90 p-6 md:p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800">
-          <div aria-hidden className="absolute -top-24 -left-24 w-64 h-64 bg-[#6958e2]/20 rounded-full blur-3xl pointer-events-none" />
-          
+          <div
+            aria-hidden
+            className="absolute -top-24 -left-24 w-64 h-64 bg-[#6958e2]/20 rounded-full blur-3xl pointer-events-none"
+          />
+
           <div className="relative z-10 space-y-4">
             {view === "signin" ? (
               <div className="space-y-3 animate-in fade-in">
-                <h2 className="text-2xl md:text-3xl font-extrabold !text-white text-white tracking-tight leading-tight" style={{ color: "#ffffff" }}>
+                <h2
+                  className="text-2xl md:text-3xl font-extrabold !text-white text-white tracking-tight leading-tight"
+                  style={{ color: "#ffffff" }}
+                >
                   Montanha Personal Studio
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Gestão financeira e inteligência operacional de alta performance para personal trainers e studios.
+                  Gestão financeira e inteligência operacional de alta performance para personal
+                  trainers e studios.
                 </p>
               </div>
             ) : (
               <div className="space-y-3 animate-in fade-in">
-                <h2 className="text-2xl md:text-3xl font-extrabold !text-white text-white tracking-tight leading-tight" style={{ color: "#ffffff" }}>
+                <h2
+                  className="text-2xl md:text-3xl font-extrabold !text-white text-white tracking-tight leading-tight"
+                  style={{ color: "#ffffff" }}
+                >
                   Eleve seu Studio ao Próximo Nível
                 </h2>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Automatize faturamentos, gerencie alunos e simplifique sua rotina operacional com inteligência.
+                  Automatize faturamentos, gerencie alunos e simplifique sua rotina operacional com
+                  inteligência.
                 </p>
               </div>
             )}
@@ -359,8 +392,15 @@ function AuthPage() {
           {showReset ? (
             <div className="space-y-6 my-auto">
               <div>
-                <h3 className="text-2xl font-bold !text-white text-white tracking-tight" style={{ color: "#ffffff" }}>Recuperar Senha</h3>
-                <p className="text-sm text-slate-400 mt-1">Informe seu e-mail cadastrado para receber o link de redefinição.</p>
+                <h3
+                  className="text-2xl font-bold !text-white text-white tracking-tight"
+                  style={{ color: "#ffffff" }}
+                >
+                  Recuperar Senha
+                </h3>
+                <p className="text-sm text-slate-400 mt-1">
+                  Informe seu e-mail cadastrado para receber o link de redefinição.
+                </p>
               </div>
 
               {resetSent ? (
@@ -369,10 +409,15 @@ function AuthPage() {
                     <CheckCircle2 className="h-5 w-5 text-emerald-400" />
                     <span>E-mail de recuperação enviado!</span>
                   </div>
-                  <p className="text-xs text-slate-300">Confira sua caixa de entrada e a pasta de spam do e-mail informado.</p>
+                  <p className="text-xs text-slate-300">
+                    Confira sua caixa de entrada e a pasta de spam do e-mail informado.
+                  </p>
                   <button
                     type="button"
-                    onClick={() => { setShowReset(false); setResetSent(false); }}
+                    onClick={() => {
+                      setShowReset(false);
+                      setResetSent(false);
+                    }}
                     className="text-xs font-bold text-[#6958e2] hover:underline block pt-2"
                   >
                     ← Voltar para o login
@@ -381,7 +426,12 @@ function AuthPage() {
               ) : (
                 <form onSubmit={handleReset} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label htmlFor="reset-email-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">E-mail</label>
+                    <label
+                      htmlFor="reset-email-input"
+                      className="text-xs font-semibold text-slate-300 uppercase tracking-wider"
+                    >
+                      E-mail
+                    </label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                       <input
@@ -391,11 +441,19 @@ function AuthPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="seu.email@exemplo.com"
-                        style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a", colorScheme: "light", WebkitTextFillColor: "#0f172a" }}
+                        style={{
+                          fontSize: "16px",
+                          backgroundColor: "#ffffff",
+                          color: "#0f172a",
+                          colorScheme: "light",
+                          WebkitTextFillColor: "#0f172a",
+                        }}
                         className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                       />
                     </div>
-                    {resetError && <p className="text-xs text-red-400 font-semibold">{resetError}</p>}
+                    {resetError && (
+                      <p className="text-xs text-red-400 font-semibold">{resetError}</p>
+                    )}
                   </div>
 
                   <button
@@ -420,7 +478,10 @@ function AuthPage() {
           ) : (
             <div className="space-y-6 my-auto">
               <div>
-                <h3 className="text-2xl font-bold !text-white text-white tracking-tight" style={{ color: "#ffffff" }}>
+                <h3
+                  className="text-2xl font-bold !text-white text-white tracking-tight"
+                  style={{ color: "#ffffff" }}
+                >
                   {view === "signin" ? "Acessar Plataforma" : "Criar sua Conta"}
                 </h3>
                 <p className="text-sm text-slate-400 mt-1">
@@ -431,11 +492,19 @@ function AuthPage() {
               </div>
 
               {/* Form */}
-              <form onSubmit={view === "signin" ? handleSignIn : handleSignUp} className="space-y-4">
+              <form
+                onSubmit={view === "signin" ? handleSignIn : handleSignUp}
+                className="space-y-4"
+              >
                 {view === "signup" && (
                   <>
                     <div className="space-y-1.5">
-                      <label htmlFor="su-name-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Nome Completo</label>
+                      <label
+                        htmlFor="su-name-input"
+                        className="text-xs font-semibold text-slate-300 uppercase tracking-wider"
+                      >
+                        Nome Completo
+                      </label>
                       <div className="relative">
                         <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                         <input
@@ -445,7 +514,13 @@ function AuthPage() {
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Ex: Coach Silva"
-                          style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a", colorScheme: "light", WebkitTextFillColor: "#0f172a" }}
+                          style={{
+                            fontSize: "16px",
+                            backgroundColor: "#ffffff",
+                            color: "#0f172a",
+                            colorScheme: "light",
+                            WebkitTextFillColor: "#0f172a",
+                          }}
                           className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                         />
                       </div>
@@ -453,10 +528,15 @@ function AuthPage() {
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label htmlFor="su-birth-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                        <label
+                          htmlFor="su-birth-input"
+                          className="text-xs font-semibold text-slate-300 uppercase tracking-wider"
+                        >
                           Data de Nascimento
                         </label>
-                        <span className="text-[10px] text-purple-400 font-medium">ECA & LGPD (+18 anos)</span>
+                        <span className="text-[10px] text-purple-400 font-medium">
+                          ECA & LGPD (+18 anos)
+                        </span>
                       </div>
                       <div className="relative">
                         <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
@@ -467,7 +547,13 @@ function AuthPage() {
                           max={new Date().toISOString().split("T")[0]}
                           value={birthDate}
                           onChange={(e) => setBirthDate(e.target.value)}
-                          style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a", colorScheme: "light", WebkitTextFillColor: "#0f172a" }}
+                          style={{
+                            fontSize: "16px",
+                            backgroundColor: "#ffffff",
+                            color: "#0f172a",
+                            colorScheme: "light",
+                            WebkitTextFillColor: "#0f172a",
+                          }}
                           className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                         />
                       </div>
@@ -476,7 +562,12 @@ function AuthPage() {
                 )}
 
                 <div className="space-y-1.5">
-                  <label htmlFor="si-email-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">E-mail de Acesso</label>
+                  <label
+                    htmlFor="si-email-input"
+                    className="text-xs font-semibold text-slate-300 uppercase tracking-wider"
+                  >
+                    E-mail de Acesso
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <input
@@ -486,7 +577,13 @@ function AuthPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="seu.email@exemplo.com"
-                      style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a", colorScheme: "light", WebkitTextFillColor: "#0f172a" }}
+                      style={{
+                        fontSize: "16px",
+                        backgroundColor: "#ffffff",
+                        color: "#0f172a",
+                        colorScheme: "light",
+                        WebkitTextFillColor: "#0f172a",
+                      }}
                       className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                     />
                   </div>
@@ -494,8 +591,13 @@ function AuthPage() {
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label htmlFor="pin-input" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                      {view === "signup" ? "PIN ou Senha (no mínimo 6 dígitos)" : "PIN ou Senha de Acesso"}
+                    <label
+                      htmlFor="pin-input"
+                      className="text-xs font-semibold text-slate-300 uppercase tracking-wider"
+                    >
+                      {view === "signup"
+                        ? "PIN ou Senha (no mínimo 6 dígitos)"
+                        : "PIN ou Senha de Acesso"}
                     </label>
                   </div>
                   <div className="relative">
@@ -507,7 +609,13 @@ function AuthPage() {
                       value={pin}
                       onChange={(e) => setPin(e.target.value)}
                       placeholder="••••••••"
-                      style={{ fontSize: "16px", backgroundColor: "#ffffff", color: "#0f172a", colorScheme: "light", WebkitTextFillColor: "#0f172a" }}
+                      style={{
+                        fontSize: "16px",
+                        backgroundColor: "#ffffff",
+                        color: "#0f172a",
+                        colorScheme: "light",
+                        WebkitTextFillColor: "#0f172a",
+                      }}
                       className="w-full h-11 pl-10 pr-12 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
                     />
                     <button
@@ -550,7 +658,9 @@ function AuthPage() {
                   className="w-full h-12 rounded-xl bg-[#6958e2] hover:bg-[#5b4bc4] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 min-h-[44px]"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <span>{view === "signin" ? "Entrar no Personal Studio" : "Criar Conta de Acesso"}</span>
+                  <span>
+                    {view === "signin" ? "Entrar no Personal Studio" : "Criar Conta de Acesso"}
+                  </span>
                 </button>
               </form>
 
@@ -578,7 +688,7 @@ function AuthPage() {
                       Fazer login
                     </button>
                   </span>
-                ) }
+                )}
               </div>
             </div>
           )}

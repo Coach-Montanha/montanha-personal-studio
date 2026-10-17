@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -7,13 +8,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  */
 export const createStudentAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (input: { studentId: string; email: string }) => {
-      if (!input.studentId) throw new Error("studentId requerido");
-      if (!input.email || !input.email.includes("@")) throw new Error("email inválido");
-      return { ...input, email: input.email.trim().toLowerCase() };
-    },
-  )
+  .inputValidator((input: { studentId: string; email: string }) => {
+    if (!input.studentId) throw new Error("studentId requerido");
+    if (!input.email || !input.email.includes("@")) throw new Error("email inválido");
+    return { ...input, email: input.email.trim().toLowerCase() };
+  })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", {
@@ -33,7 +32,6 @@ export const createStudentAccount = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const generateNumericPassword = () => {
-      const { randomInt } = require("crypto") as typeof import("crypto");
       // 8 dígitos numéricos aleatórios — padrão do sistema
       while (true) {
         let s = "";
@@ -44,8 +42,7 @@ export const createStudentAccount = createServerFn({ method: "POST" })
       }
     };
 
-    const isWeak = (msg: string) =>
-      /weak|pwned|known|easy to guess/i.test(msg);
+    const isWeak = (msg: string) => /weak|pwned|known|easy to guess/i.test(msg);
 
     let tempPassword = generateNumericPassword();
 
@@ -58,7 +55,11 @@ export const createStudentAccount = createServerFn({ method: "POST" })
           student.account_user_id,
           { password: tempPassword, email: data.email, email_confirm: true },
         );
-        if (!uErr) { lastErr = null; userUpdated = true; break; }
+        if (!uErr) {
+          lastErr = null;
+          userUpdated = true;
+          break;
+        }
         lastErr = uErr.message;
         if (!isWeak(uErr.message)) break;
         tempPassword = generateNumericPassword();
@@ -67,7 +68,10 @@ export const createStudentAccount = createServerFn({ method: "POST" })
       if (userUpdated) {
         await supabaseAdmin
           .from("user_roles")
-          .upsert({ user_id: student.account_user_id, role: "student" }, { onConflict: "user_id,role" });
+          .upsert(
+            { user_id: student.account_user_id, role: "student" },
+            { onConflict: "user_id,role" },
+          );
 
         const { error: sUpdErr } = await supabaseAdmin
           .from("students")
@@ -81,7 +85,8 @@ export const createStudentAccount = createServerFn({ method: "POST" })
     }
 
     // Primeiro acesso: cria usuário (ou reaproveita conta auth já existente com este e-mail)
-    let created: Awaited<ReturnType<typeof supabaseAdmin.auth.admin.createUser>>["data"] | null = null;
+    let created: Awaited<ReturnType<typeof supabaseAdmin.auth.admin.createUser>>["data"] | null =
+      null;
     let existingAuthUserId: string | null = null;
     {
       let lastErr: string | null = null;
@@ -92,7 +97,11 @@ export const createStudentAccount = createServerFn({ method: "POST" })
           email_confirm: true,
           user_metadata: { student_name: student.name },
         });
-        if (!res.error && res.data.user) { created = res.data; lastErr = null; break; }
+        if (!res.error && res.data.user) {
+          created = res.data;
+          lastErr = null;
+          break;
+        }
         lastErr = res.error?.message || "Falha ao criar usuário";
         // E-mail já cadastrado em auth (ex.: aluno excluído/restaurado) — reaproveita
         if (res.error && /already|registered|exists|duplicate/i.test(res.error.message)) {
@@ -103,8 +112,13 @@ export const createStudentAccount = createServerFn({ method: "POST" })
           if (!foundId) {
             // Fallback: percorre listUsers
             for (let page = 1; page <= 20 && !foundId; page++) {
-              const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
-              const u = list?.users.find((x) => x.email?.toLowerCase() === data.email.toLowerCase());
+              const { data: list } = await supabaseAdmin.auth.admin.listUsers({
+                page,
+                perPage: 200,
+              });
+              const u = list?.users.find(
+                (x) => x.email?.toLowerCase() === data.email.toLowerCase(),
+              );
               if (u) foundId = u.id;
               if (!list || list.users.length < 200) break;
             }
@@ -131,7 +145,10 @@ export const createStudentAccount = createServerFn({ method: "POST" })
           email: data.email,
           email_confirm: true,
         });
-        if (!uErr) { lastErr = null; break; }
+        if (!uErr) {
+          lastErr = null;
+          break;
+        }
         lastErr = uErr.message;
         if (!isWeak(uErr.message)) throw new Error(uErr.message);
         tempPassword = generateNumericPassword();
@@ -147,7 +164,6 @@ export const createStudentAccount = createServerFn({ method: "POST" })
       if (!existingAuthUserId) await supabaseAdmin.auth.admin.deleteUser(authUserId);
       throw new Error(rErr.message);
     }
-
 
     const { error: linkErr } = await supabaseAdmin
       .from("students")
@@ -228,10 +244,10 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
 
     // 1. Validar rigorosamente formato do PIN (exatamente 10 dígitos numéricos)
     if (!/^\d{10}$/.test(password)) {
-      return { 
-        healed: false, 
-        reason: "INVALID_PIN_FORMAT", 
-        message: "O PIN de acesso deve conter exatamente 10 dígitos numéricos." 
+      return {
+        healed: false,
+        reason: "INVALID_PIN_FORMAT",
+        message: "O PIN de acesso deve conter exatamente 10 dígitos numéricos.",
       };
     }
 
@@ -248,17 +264,18 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
       .ilike("email", email);
 
     const matches = [...(studioMatch || []), ...(ptMatch || [])];
-    const isMatchingKnownField = matches.length > 0 && matches.some((m) => m.access_pin === password);
+    const isMatchingKnownField =
+      matches.length > 0 && matches.some((m) => m.access_pin === password);
 
     if (!isMatchingKnownField) {
       // Incrementar tentativas com falha para bloquear brute-force
       const currentAttempts = (rateRecord?.attempts || 0) + 1;
       const blockedUntil = currentAttempts >= 5 ? now + 10 * 60 * 1000 : 0;
       loginFailureMap.set(email, { attempts: currentAttempts, blockedUntil });
-      return { 
-        healed: false, 
-        reason: "INVALID_CREDENTIALS", 
-        message: "Credenciais de acesso não localizadas ou PIN incorreto." 
+      return {
+        healed: false,
+        reason: "INVALID_CREDENTIALS",
+        message: "Credenciais de acesso não localizadas ou PIN incorreto.",
       };
     }
 
@@ -297,16 +314,22 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
 
     // Ensure account_user_id linked and temp_password consistent on all matching records
     for (const m of studioMatch || []) {
-      await supabaseAdmin.from("students").update({
-        account_user_id: authUserId,
-        temp_password: password
-      }).eq("id", m.id);
+      await supabaseAdmin
+        .from("students")
+        .update({
+          account_user_id: authUserId,
+          temp_password: password,
+        })
+        .eq("id", m.id);
     }
     for (const m of ptMatch || []) {
-      await supabaseAdmin.from("pt_students").update({
-        account_user_id: authUserId,
-        temp_password: password
-      }).eq("id", m.id);
+      await supabaseAdmin
+        .from("pt_students")
+        .update({
+          account_user_id: authUserId,
+          temp_password: password,
+        })
+        .eq("id", m.id);
     }
 
     // Ensure student role
@@ -316,5 +339,3 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
 
     return { healed: true, name: matches[0].name };
   });
-
-

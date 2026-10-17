@@ -6,9 +6,16 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/copyright")({
   head: () => ({
     meta: [
-      { title: "Canal de Notificação de Direitos Autorais (Notice & Takedown) — Ecossistema Montanha" },
-      { name: "description", content: "Canal formal para recebimento de denúncias de infração a direitos autorais e propriedade intelectual nos termos da Lei 9.610/98 e Marco Civil da Internet." }
-    ]
+      {
+        title:
+          "Canal de Notificação de Direitos Autorais (Notice & Takedown) — Ecossistema Montanha",
+      },
+      {
+        name: "description",
+        content:
+          "Canal formal para recebimento de denúncias de infração a direitos autorais e propriedade intelectual nos termos da Lei 9.610/98 e Marco Civil da Internet.",
+      },
+    ],
   }),
   component: CopyrightNoticePage,
 });
@@ -28,7 +35,11 @@ function CopyrightNoticePage() {
     if (!goodFaith) {
       return toast.error("Você deve declarar sob as penas da lei a veracidade das informações.");
     }
-    const proto = "DMCA-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+    const proto =
+      "DMCA-" +
+      Date.now().toString(36).toUpperCase() +
+      "-" +
+      Math.random().toString(36).substring(2, 6).toUpperCase();
     setProtocol(proto);
     setSent(true);
     toast.success("Notificação de infração protocolada com sucesso!");
@@ -37,7 +48,10 @@ function CopyrightNoticePage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 md:p-8 font-sans">
       <div className="max-w-3xl mx-auto w-full my-auto py-8">
-        <a href="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-6">
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors mb-6"
+        >
           <ArrowLeft className="h-4 w-4" /> Voltar ao início
         </a>
 
@@ -51,7 +65,9 @@ function CopyrightNoticePage() {
                 Canal de Notificação de Direitos Autorais
               </h1>
               <p className="text-sm text-slate-400 mt-1">
-                Procedimento formal de <em>Notice and Takedown</em> em estrita conformidade com a Lei de Direitos Autorais (Lei nº 9.610/1998) e o Marco Civil da Internet (Lei nº 12.965/2014, Arts. 19 e 20).
+                Procedimento formal de <em>Notice and Takedown</em> em estrita conformidade com a
+                Lei de Direitos Autorais (Lei nº 9.610/1998) e o Marco Civil da Internet (Lei nº
+                12.965/2014, Arts. 19 e 20).
               </p>
             </div>
           </div>
@@ -67,14 +83,18 @@ function CopyrightNoticePage() {
                 {protocol}
               </div>
               <p className="text-xs text-slate-400 mt-2">
-                Nossa equipe jurídica iniciará a averiguação cautelar no prazo regulamentar de até 48 horas úteis. O notificado será cientificado para exercer o direito de contranotificação.
+                Nossa equipe jurídica iniciará a averiguação cautelar no prazo regulamentar de até
+                48 horas úteis. O notificado será cientificado para exercer o direito de
+                contranotificação.
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Seu Nome Completo</label>
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Seu Nome Completo
+                  </label>
                   <input
                     type="text"
                     required
@@ -85,7 +105,9 @@ function CopyrightNoticePage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">E-mail para Contato Formal</label>
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    E-mail para Contato Formal
+                  </label>
                   <input
                     type="email"
                     required
@@ -98,7 +120,9 @@ function CopyrightNoticePage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Titular dos Direitos Autorais / Propriedade Intelectual</label>
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Titular dos Direitos Autorais / Propriedade Intelectual
+                </label>
                 <input
                   type="text"
                   required
@@ -110,7 +134,9 @@ function CopyrightNoticePage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">URL ou Localização do Conteúdo Objeto da Denúncia</label>
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  URL ou Localização do Conteúdo Objeto da Denúncia
+                </label>
                 <input
                   type="url"
                   required
@@ -122,7 +148,9 @@ function CopyrightNoticePage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Descrição Detalhada da Obra Protegida e da Infração</label>
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Descrição Detalhada da Obra Protegida e da Infração
+                </label>
                 <textarea
                   required
                   rows={4}
@@ -142,8 +170,14 @@ function CopyrightNoticePage() {
                   onChange={(e) => setGoodFaith(e.target.checked)}
                   className="mt-1 h-4 w-4 rounded border-slate-700 text-purple-600 focus:ring-purple-500 bg-slate-900"
                 />
-                <label htmlFor="good-faith-check" className="text-xs text-slate-300 leading-relaxed">
-                  Declaro, sob as penas do Art. 299 do Código Penal Brasileiro (falsidade ideológica) e da Lei nº 9.610/98, que sou o titular dos direitos autorais ou estou legalmente autorizado a agir em seu nome, e que as informações prestadas são verídicas e exatas.
+                <label
+                  htmlFor="good-faith-check"
+                  className="text-xs text-slate-300 leading-relaxed"
+                >
+                  Declaro, sob as penas do Art. 299 do Código Penal Brasileiro (falsidade
+                  ideológica) e da Lei nº 9.610/98, que sou o titular dos direitos autorais ou estou
+                  legalmente autorizado a agir em seu nome, e que as informações prestadas são
+                  verídicas e exatas.
                 </label>
               </div>
 
@@ -157,8 +191,16 @@ function CopyrightNoticePage() {
           )}
 
           <div className="border-t border-slate-800 pt-6 text-xs text-slate-500 space-y-2">
-            <p><strong>Procedimento Regulamentar:</strong> Após o recebimento, o conteúdo apontado poderá ser cautelarmente suspenso em até 48 horas úteis para análise. O usuário responsável pela publicação será formalmente notificado e poderá apresentar contranotificação fundamentada.</p>
-            <p><strong>Encarregado / DPO Ecossistema Montanha:</strong> juridico@montanha.app | Av. das Américas, 4200 - Barra da Tijuca, RJ.</p>
+            <p>
+              <strong>Procedimento Regulamentar:</strong> Após o recebimento, o conteúdo apontado
+              poderá ser cautelarmente suspenso em até 48 horas úteis para análise. O usuário
+              responsável pela publicação será formalmente notificado e poderá apresentar
+              contranotificação fundamentada.
+            </p>
+            <p>
+              <strong>Encarregado / DPO Ecossistema Montanha:</strong> juridico@montanha.app | Av.
+              das Américas, 4200 - Barra da Tijuca, RJ.
+            </p>
           </div>
         </div>
       </div>

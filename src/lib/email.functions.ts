@@ -50,17 +50,15 @@ export const saveEmailSettings = createServerFn({ method: "POST" })
 
 export const sendEmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (input: { to: string; subject: string; text: string }) => {
-      if (!input.to || !input.to.includes("@")) throw new Error("Destinatário inválido");
-      if (!input.text || input.text.trim().length === 0) throw new Error("Mensagem vazia");
-      return {
-        to: input.to,
-        subject: input.subject || "Mensagem da sua academia",
-        text: input.text,
-      };
-    },
-  )
+  .inputValidator((input: { to: string; subject: string; text: string }) => {
+    if (!input.to || !input.to.includes("@")) throw new Error("Destinatário inválido");
+    if (!input.text || input.text.trim().length === 0) throw new Error("Mensagem vazia");
+    return {
+      to: input.to,
+      subject: input.subject || "Mensagem da sua academia",
+      text: input.text,
+    };
+  })
   .handler(async ({ data, context }) => {
     const { data: settings, error } = await context.supabase
       .from("user_email_settings")
@@ -75,7 +73,8 @@ export const sendEmail = createServerFn({ method: "POST" })
     const from = settings?.sender_email || "noreply@seudominio.com";
 
     // Rodapé de Conformidade Legal Obrigatório (CDC Art. 33, Decreto 7.962/13 e LGPD)
-    const legalFooter = `\n\n---\n` +
+    const legalFooter =
+      `\n\n---\n` +
       `Ecossistema Montanha — Gestão e Performance Esportiva\n` +
       `CNPJ: 50.123.456/0001-78 | Av. das Américas, 4200 - Rio de Janeiro - RJ, 22640-102\n` +
       `Você está recebendo esta mensagem como usuário cadastrado.\n` +
