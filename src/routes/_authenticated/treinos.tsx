@@ -288,7 +288,6 @@ export function TreinosPage() {
       .from("pt_programs" as never)
       .update({
         pt_student_id: "00000000-0000-0000-0000-000000000001",
-        studio_student_id: null,
       } as never)
       .eq("id" as never, programId);
 
