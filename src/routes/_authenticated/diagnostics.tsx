@@ -23,6 +23,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatBRL, formatDateBR } from "@/lib/format";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 export const Route = createFileRoute("/_authenticated/diagnostics")({
   head: () => ({ meta: [{ title: "Diagnóstico & Segurança — EduFinance" }] }),
@@ -474,15 +475,9 @@ function DiagnosticsPage() {
             <div className="max-h-64 overflow-y-auto rounded border bg-background">
               {allList
                 .filter((s: any) => s.id !== keepId)
-                .filter((s: any) => {
-                  const q = mergeSearch.trim().toLowerCase();
-                  if (!q) return true;
-                  return (
-                    (s.name ?? "").toLowerCase().includes(q) ||
-                    (s.email ?? "").toLowerCase().includes(q) ||
-                    (s.phone ?? "").toLowerCase().includes(q)
-                  );
-                })
+                .filter((s: any) =>
+                  matchesSearchTerms([s.name, s.email, s.phone], mergeSearch)
+                )
                 .map((s: any) => {
                   const checked = mergeIds.includes(s.id);
                   return (

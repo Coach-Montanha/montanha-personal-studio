@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { AnnouncementsTab } from "@/components/crm/AnnouncementsTab";
 import { useScopeFilter } from "@/hooks/use-scope-filter";
 import { KanbanBoard, KanbanColumn, KanbanCard, type KanbanColumnDef } from "@/components/ui/kanban";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 type StatusKey = "active" | "inactive" | "churned";
 const STATUS_CHIPS: { key: StatusKey; label: string }[] = [
@@ -725,12 +726,7 @@ function StudentsKanbanPipeline({ students }: { students: Student[] }) {
     return students.filter((s) => {
       if (source !== "all" && s.kind !== source) return false;
       if (!search.trim()) return true;
-      const q = search.toLowerCase();
-      return (
-        s.name?.toLowerCase().includes(q) ||
-        s.email?.toLowerCase().includes(q) ||
-        s.phone?.includes(q)
-      );
+      return matchesSearchTerms([s.name, s.email, s.phone], search);
     });
   }, [students, search, source]);
 

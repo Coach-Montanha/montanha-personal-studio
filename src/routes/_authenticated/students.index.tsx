@@ -33,6 +33,7 @@ import { useScopeFilter } from "@/hooks/use-scope-filter";
 import { allocateCheckins, checkinChipClass, checkinTone } from "@/lib/checkins";
 import { cn } from "@/lib/utils";
 import { Ticket } from "lucide-react";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 
 export const Route = createFileRoute("/_authenticated/students/")({
@@ -213,8 +214,6 @@ function StudentsPage() {
   });
 
   const rows = useMemo(() => {
-    const norm = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-    const q = norm(search);
     return (students || [])
       .filter((s) => {
         if (!s) return false;
@@ -223,7 +222,7 @@ function StudentsPage() {
         const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : (s.status ?? "inactive");
         return effectiveStatus === status;
       })
-      .filter((s) => !q || norm(s.name).includes(q) || norm(s.email ?? "").includes(q))
+      .filter((s) => matchesSearchTerms([s.name, s.email, s.phone], search))
       .map((s) => {
         const paid = (s.payments || []).filter((p) => p && p.amount);
         const total = paid.reduce((a, p) => a + Number(p.amount || 0), 0);

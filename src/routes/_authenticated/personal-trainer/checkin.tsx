@@ -26,6 +26,7 @@ import { addSessionToCalendar } from "@/lib/gcal";
 import { cn } from "@/lib/utils";
 import { useScopeFilter } from "@/hooks/use-scope-filter";
 import { parseStudentPartner } from "@/lib/pt-duo";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 
 export const Route = createFileRoute("/_authenticated/personal-trainer/checkin")({
@@ -176,11 +177,9 @@ function CheckinPage() {
 
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-    return students.filter((s: any) => {
-      const name = s.name.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-      return !q || name.includes(q);
-    });
+    return students.filter((s: any) =>
+      matchesSearchTerms([s.name, s.email, s.phone], search)
+    );
   }, [students, search]);
 
   const alreadyCheckedInIds = useMemo(

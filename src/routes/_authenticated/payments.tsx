@@ -29,6 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { usePaymentMethods } from "@/hooks/use-payment-methods";
 import { addMonths, currentMonthKey, formatBRL, formatDateBR, formatMonthLabel } from "@/lib/format";
 import { useScopeFilter } from "@/hooks/use-scope-filter";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 export const Route = createFileRoute("/_authenticated/payments")({
   head: () => ({ meta: [{ title: "Pagamentos — EduFinance" }] }),
@@ -254,7 +255,6 @@ function PaymentsPage() {
   const PER_PAGE = 50;
 
   const rows = useMemo(() => {
-    const q = search.toLowerCase();
     const filtered = payments.filter((p) => {
       if (useRange) {
         if (rangeStart && p.payment_date < rangeStart) return false;
@@ -264,7 +264,7 @@ function PaymentsPage() {
       }
       if (method !== "all" && p.payment_method !== method) return false;
       if (status !== "all" && p.status !== status) return false;
-      if (q && !p.student_name.toLowerCase().includes(q)) return false;
+      if (search && !matchesSearchTerms([p.student_name, p.notes, p.description], search)) return false;
       return true;
     });
     const statusOrder: Record<string, number> = { overdue: 0, pending: 1, paid: 2, cancelled: 3 };

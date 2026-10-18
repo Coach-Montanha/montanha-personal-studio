@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { paymentMethodLabel } from "@/lib/format";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 type Kind = "studio" | "pt";
 
@@ -63,10 +64,9 @@ export function PerStudentExport() {
   const list = kind === "studio" ? studioStudents : ptStudents;
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return list;
+    if (!search.trim()) return list;
     return list.filter((s: any) =>
-      s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q),
+      matchesSearchTerms([s.name, s.email], search)
     );
   }, [list, search]);
 

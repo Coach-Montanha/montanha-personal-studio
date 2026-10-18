@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 export function ImportExercisesPanel() {
   const qc = useQueryClient();
@@ -31,12 +32,9 @@ export function ImportExercisesPanel() {
   const exercises = data?.exercises ?? [];
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return exercises;
-    return exercises.filter(
-      (e) =>
-        e.name.toLowerCase().includes(q) ||
-        (e.muscle_group ?? "").toLowerCase().includes(q),
+    if (!search.trim()) return exercises;
+    return exercises.filter((e) =>
+      matchesSearchTerms([e.name, e.muscle_group], search)
     );
   }, [exercises, search]);
 

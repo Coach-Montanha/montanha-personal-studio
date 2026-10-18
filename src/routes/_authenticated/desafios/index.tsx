@@ -23,6 +23,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 import { PageHeader } from "@/components/ui-kit/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -337,9 +338,7 @@ export function DesafiosPage() {
   const filterChallenges = (statusFilter?: string) => {
     return challenges.filter((ch) => {
       const matchesStatus = !statusFilter || statusFilter === "all" || ch.status === statusFilter;
-      const matchesSearch =
-        ch.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ch.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = matchesSearchTerms([ch.title, ch.description], searchQuery);
       return matchesStatus && matchesSearch;
     });
   };

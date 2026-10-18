@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { migrateProgram } from "@/lib/pt-program-migrate.functions";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 type Mode = "copy" | "move";
 
@@ -58,10 +59,9 @@ export function MigrateProgramDialog({
   });
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
     const list = students.filter((s) => s.id !== currentStudentId);
-    if (!q) return list;
-    return list.filter((s) => s.name.toLowerCase().includes(q));
+    if (!search.trim()) return list;
+    return list.filter((s) => matchesSearchTerms(s.name, search));
   }, [students, search, currentStudentId]);
 
   async function confirm() {

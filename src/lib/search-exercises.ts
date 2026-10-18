@@ -5,14 +5,8 @@
  * - Calcula pontuação de relevância para posicionar os melhores resultados no topo
  */
 
-export function normalizeSearchText(text?: string | null): string {
-  if (!text) return "";
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
+import { normalizeSearchText } from "./search-utils";
+export { normalizeSearchText };
 
 export interface MatchResult {
   matched: boolean;

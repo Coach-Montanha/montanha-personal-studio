@@ -70,6 +70,7 @@ import { StudentViewDialog } from "@/components/pt/StudentViewDialog";
 import { LoadProgressionDialog } from "@/components/pt/LoadProgressionDialog";
 import { TrainingDayDetail } from "@/components/pt/TrainingDayDetail";
 import { ProgramImageDialog } from "@/components/program-image/ProgramImageDialog";
+import { matchesSearchTerms } from "@/lib/search-utils";
 
 function limparTextoGoals(goals?: string | null): string | null {
   if (!goals) return null;
@@ -190,11 +191,12 @@ export function TreinosPage() {
   // Filtros em memória
   const programasFiltrados = useMemo(() => {
     return programs.filter((p) => {
-      // Filtro de busca por nome da rotina ou nome do aluno
+      // Filtro de busca inteligente por nome da rotina, nome do aluno ou modalidade
       const alunoNome = p.students?.name || p.pt_students?.name || "";
-      const matchesSearch =
-        p.name.toLowerCase().includes(busca.toLowerCase()) ||
-        alunoNome.toLowerCase().includes(busca.toLowerCase());
+      const matchesSearch = matchesSearchTerms(
+        [p.name, alunoNome, p.training_type, p.category],
+        busca
+      );
       if (!matchesSearch) return false;
 
       const isTemplate =

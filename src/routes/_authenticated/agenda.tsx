@@ -43,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { matchesSearchTerms } from "@/lib/search-utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export const Route = createFileRoute("/_authenticated/agenda")({
@@ -626,7 +627,7 @@ function SessionDetails({
               </p>
             ) : (
               availableStudents
-                .filter((s) => s.name.toLowerCase().includes(addSearch.toLowerCase()))
+                .filter((s) => matchesSearchTerms([s.name, s.email, s.phone], addSearch))
                 .map((s) => (
                   <button
                     key={s.id}
