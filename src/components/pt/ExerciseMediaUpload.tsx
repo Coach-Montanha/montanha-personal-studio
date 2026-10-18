@@ -78,53 +78,66 @@ export function ExerciseMediaUpload({
 
   if (mediaUrl) {
     return (
-      <div className="relative overflow-hidden rounded-lg border bg-muted">
+      <div className="group/media relative overflow-hidden rounded-lg border border-border/80 bg-black/90 w-full aspect-video shadow-xs">
         {mediaType === "youtube" ? (
           <iframe
             src={mediaUrl}
-            className="aspect-video w-full"
+            className="h-full w-full object-cover"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
         ) : mediaType === "video" ? (
-          <video src={mediaUrl} controls className="aspect-video w-full object-cover" />
+          <video
+            src={mediaUrl}
+            controls
+            playsInline
+            preload="metadata"
+            className="h-full w-full object-cover"
+          />
         ) : (
-          <img src={mediaUrl} alt="Exercício" loading="lazy" decoding="async" className="aspect-video w-full object-cover" />
+          <img
+            src={mediaUrl}
+            alt="Exercício"
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
         )}
         <button
           type="button"
           onClick={onRemove}
-          className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-card transition-ui hover:brightness-110"
+          className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-destructive/90 text-destructive-foreground shadow-xs transition-opacity opacity-80 hover:opacity-100 hover:bg-destructive"
           aria-label="Remover mídia"
+          title="Remover vídeo/foto"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <div
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors hover:bg-accent/30",
+          "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-3 sm:p-4 text-center transition-colors hover:bg-accent/30",
           uploading && "pointer-events-none opacity-50",
         )}
         onClick={() => document.getElementById(inputId)?.click()}
       >
         {uploading ? (
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         ) : (
           <>
-            <div className="mb-2 flex gap-3 text-muted-foreground">
-              <ImageIcon className="h-6 w-6" />
-              <Play className="h-6 w-6" />
-              <Upload className="h-6 w-6" />
+            <div className="mb-1.5 flex gap-2 text-muted-foreground">
+              <ImageIcon className="h-4 w-4" />
+              <Play className="h-4 w-4" />
+              <Upload className="h-4 w-4" />
             </div>
-            <p className="text-center text-sm text-muted-foreground">
-              Clique para enviar <span className="font-medium">foto ou vídeo</span>
+            <p className="text-xs font-medium text-foreground">
+              Enviar <span className="text-primary font-semibold">vídeo ou foto</span>
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, MP4 — até 100MB</p>
+            <p className="text-[10px] text-muted-foreground">MP4, JPG até 100MB</p>
           </>
         )}
         <input
