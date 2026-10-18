@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { confirmDialog } from "@/lib/confirm-dialog";
 import { cn } from "@/lib/utils";
+import { filterAndRankExercises } from "@/lib/search-exercises";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -162,16 +163,7 @@ function BibliotecaPage() {
   }, [items]);
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    return items.filter((i) => {
-      if (groupFilter !== "all" && (i.muscle_group ?? "") !== groupFilter) return false;
-      if (!q) return true;
-      return (
-        i.name.toLowerCase().includes(q) ||
-        (i.muscle_group ?? "").toLowerCase().includes(q) ||
-        (i.description ?? "").toLowerCase().includes(q)
-      );
-    });
+    return filterAndRankExercises(items, search, groupFilter === "all" ? "Todos" : groupFilter);
   }, [items, search, groupFilter]);
 
   useEffect(() => {

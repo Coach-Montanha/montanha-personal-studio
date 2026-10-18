@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import localMfitCatalog from "@/data/mfit-exercises-normalized.json";
+import { filterAndRankExercises } from "@/lib/search-exercises";
 
 export type LibraryExercise = {
   id: string;
@@ -115,18 +116,7 @@ export function AddExerciseDialog({
   });
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    return library.filter((e) => {
-      if (selectedGroup !== "Todos") {
-        const mg = (e.muscle_group ?? "").toLowerCase();
-        if (!mg.includes(selectedGroup.toLowerCase())) return false;
-      }
-      if (!q) return true;
-      return (
-        e.name.toLowerCase().includes(q) ||
-        (e.muscle_group ?? "").toLowerCase().includes(q)
-      );
-    });
+    return filterAndRankExercises(library, search, selectedGroup);
   }, [library, search, selectedGroup]);
 
   const toggleSelect = (item: LibraryExercise) => {
