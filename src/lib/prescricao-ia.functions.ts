@@ -297,16 +297,41 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
       };
     }
 
-    const metodologiaEfetiva = data.metodologiaOverride || programa.metodologia || "musculacao";
+    const VALID_METODOLOGIAS = [
+      "musculacao",
+      "hibrido",
+      "kettlebell_fitness",
+      "kettlebell_sport",
+      "levantamento_peso",
+      "treinamento_funcional",
+      "corrida",
+    ];
+
+    let rawMetodologia = data.metodologiaOverride || programa.metodologia || "musculacao";
+    // Mapeamento de compatibilidade caso venha nomenclatura de divisao (ex: "numeric", "alphabetic") ou categoria
+    if (rawMetodologia === "numeric" || rawMetodologia === "alphabetic" || rawMetodologia === "general" || rawMetodologia === "hypertrophy" || rawMetodologia === "strength") {
+      rawMetodologia = "musculacao";
+    } else if (rawMetodologia === "conditioning") {
+      rawMetodologia = "treinamento_funcional";
+    } else if (rawMetodologia === "cardio") {
+      rawMetodologia = "corrida";
+    }
+
+    const metodologiaEfetiva = VALID_METODOLOGIAS.includes(rawMetodologia) ? rawMetodologia : "musculacao";
     const isKbSport = metodologiaEfetiva === "kettlebell_sport";
     const isWl = metodologiaEfetiva === "levantamento_peso";
     const isTf = metodologiaEfetiva === "treinamento_funcional";
     const isCo = metodologiaEfetiva === "corrida";
     const isHibrido = metodologiaEfetiva === "hibrido" || metodologiaEfetiva === "kettlebell_fitness";
 
-    if (metodologiaEfetiva !== "musculacao" && 
-        !isHibrido && 
-        !isKbSport && !isWl && !isTf && !isCo) {
+    if (
+      metodologiaEfetiva !== "musculacao" &&
+      !isHibrido &&
+      !isKbSport &&
+      !isWl &&
+      !isTf &&
+      !isCo
+    ) {
       throw new Error(
         "Prescrever com IA está disponível apenas para Musculação, Híbrido, Kettlebell Fitness, Kettlebell Sport, Levantamento de Peso, Treinamento Funcional e Corrida",
       );

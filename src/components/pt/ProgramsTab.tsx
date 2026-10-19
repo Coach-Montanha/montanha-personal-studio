@@ -792,7 +792,7 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
       )}
       <PrescreverIaDialog
         isOpen={iaProOpen}
-        programa={activeProgram ? { id: activeProgram.id, titulo: activeProgram.name, metodologia: (activeProgram as any).training_type } : null}
+        programa={activeProgram ? { id: activeProgram.id, titulo: activeProgram.name, metodologia: "musculacao" } : null}
         studentId={studentId}
         studioStudentId={studioStudentId}
         initialStudentType={studioStudentId ? "studio" : "pt"}

@@ -571,7 +571,12 @@ export function PrescreverIaDialog({
     if (programa && isOpen) {
       const title = programa.titulo || (programa as any)?.name;
       if (title) setNomePrograma(title);
-      if (programa.metodologia) setMetodologia(programa.metodologia);
+      const validTypes = ["musculacao", "hibrido", "kettlebell_fitness", "kettlebell_sport", "levantamento_peso", "treinamento_funcional", "corrida"];
+      if (programa.metodologia && validTypes.includes(programa.metodologia)) {
+        setMetodologia(programa.metodologia);
+      } else {
+        setMetodologia("musculacao");
+      }
     }
   }, [programa, isOpen]);
 
@@ -599,7 +604,13 @@ export function PrescreverIaDialog({
         .maybeSingle();
 
       if (ptData) {
-        if ((ptData as any).training_type) setMetodologia((ptData as any).training_type);
+        const rawType = (ptData as any).training_type;
+        const validTypes = ["musculacao", "hibrido", "kettlebell_fitness", "kettlebell_sport", "levantamento_peso", "treinamento_funcional", "corrida"];
+        if (rawType && validTypes.includes(rawType)) {
+          setMetodologia(rawType);
+        } else {
+          setMetodologia("musculacao");
+        }
         if ((ptData as any).name) setNomePrograma((ptData as any).name);
       }
 
