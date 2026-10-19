@@ -449,8 +449,8 @@ export function PrescreverIaDialog({
     queryFn: async () => {
       const { data } = await supabase
         .from("students" as never)
-        .select("id, name, email")
-        .eq("active" as never, true)
+        .select("id, name, email, status")
+        .is("deleted_at" as never, null)
         .order("name" as never);
       return (data || []) as Array<{ id: string; name: string; email: string | null }>;
     },
@@ -462,8 +462,9 @@ export function PrescreverIaDialog({
     queryFn: async () => {
       const { data } = await supabase
         .from("pt_students" as never)
-        .select("id, name, email")
-        .eq("is_active" as never, true)
+        .select("id, name, email, status")
+        .is("deleted_at" as never, null)
+        .neq("id" as never, "00000000-0000-0000-0000-000000000001")
         .order("name" as never);
       return (data || []) as Array<{ id: string; name: string; email: string | null }>;
     },
@@ -566,19 +567,28 @@ export function PrescreverIaDialog({
     },
   });
 
-  // Sincroniza nome, metodologia e prompt quando programa é selecionado
+  // Sincroniza nome, metodologia, aluno e prompt quando programa é selecionado ou aberto
   useEffect(() => {
-    if (programa && isOpen) {
-      const title = programa.titulo || (programa as any)?.name;
-      if (title) setNomePrograma(title);
-      const validTypes = ["musculacao", "hibrido", "kettlebell_fitness", "kettlebell_sport", "levantamento_peso", "treinamento_funcional", "corrida"];
-      if (programa.metodologia && validTypes.includes(programa.metodologia)) {
-        setMetodologia(programa.metodologia);
-      } else {
-        setMetodologia("musculacao");
+    if (isOpen) {
+      if (studioStudentId) {
+        setAlunoTipo("studio");
+        setSelectedStudentId(studioStudentId);
+      } else if (studentId) {
+        setAlunoTipo("pt");
+        setSelectedStudentId(studentId);
+      }
+      if (programa) {
+        const title = programa.titulo || (programa as any)?.name;
+        if (title) setNomePrograma(title);
+        const validTypes = ["musculacao", "hibrido", "kettlebell_fitness", "kettlebell_sport", "levantamento_peso", "treinamento_funcional", "corrida"];
+        if (programa.metodologia && validTypes.includes(programa.metodologia)) {
+          setMetodologia(programa.metodologia);
+        } else {
+          setMetodologia("musculacao");
+        }
       }
     }
-  }, [programa, isOpen]);
+  }, [programa, isOpen, studentId, studioStudentId]);
 
   // Efeito para carregar as regras persistidas do programa E preferências globais
   useEffect(() => {
@@ -1409,7 +1419,11 @@ export function PrescreverIaDialog({
                       size="sm"
                       variant={alunoTipo === "studio" ? "default" : "outline"}
                       className="text-xs flex-1 h-9"
-                      onClick={() => { setAlunoTipo("studio"); setSelectedStudentId(null); }}
+                      onClick={() => {
+                        setAlunoTipo("studio");
+                        if (studioStudentId) setSelectedStudentId(studioStudentId);
+                        else setSelectedStudentId(null);
+                      }}
                     >
                       Aluno Studio
                     </Button>
@@ -1418,7 +1432,11 @@ export function PrescreverIaDialog({
                       size="sm"
                       variant={alunoTipo === "pt" ? "default" : "outline"}
                       className="text-xs flex-1 h-9"
-                      onClick={() => { setAlunoTipo("pt"); setSelectedStudentId(null); }}
+                      onClick={() => {
+                        setAlunoTipo("pt");
+                        if (studentId) setSelectedStudentId(studentId);
+                        else setSelectedStudentId(null);
+                      }}
                     >
                       Aluno Personal
                     </Button>
@@ -2057,7 +2075,11 @@ export function PrescreverIaDialog({
                         size="sm"
                         variant={alunoTipo === "studio" ? "default" : "outline"}
                         className="text-xs h-7 px-2.5"
-                        onClick={() => { setAlunoTipo("studio"); setSelectedStudentId(null); }}
+                        onClick={() => {
+                          setAlunoTipo("studio");
+                          if (studioStudentId) setSelectedStudentId(studioStudentId);
+                          else setSelectedStudentId(null);
+                        }}
                       >
                         Aluno Studio
                       </Button>
@@ -2066,7 +2088,11 @@ export function PrescreverIaDialog({
                         size="sm"
                         variant={alunoTipo === "pt" ? "default" : "outline"}
                         className="text-xs h-7 px-2.5"
-                        onClick={() => { setAlunoTipo("pt"); setSelectedStudentId(null); }}
+                        onClick={() => {
+                          setAlunoTipo("pt");
+                          if (studentId) setSelectedStudentId(studentId);
+                          else setSelectedStudentId(null);
+                        }}
                       >
                         Aluno Personal
                       </Button>
