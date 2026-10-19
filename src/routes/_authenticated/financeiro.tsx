@@ -74,6 +74,7 @@ import { EmptyState } from "@/components/edufinance/EmptyState";
 import { ExpenseDialog } from "@/components/financeiro/ExpenseDialog";
 import { ExpenseRenewalDialog } from "@/components/financeiro/ExpenseRenewalDialog";
 import { ExpenseSearchDialog } from "@/components/financeiro/ExpenseSearchDialog";
+import { ExportExpensesDialog } from "@/components/financeiro/ExportExpensesDialog";
 import { MonthYearPicker } from "@/components/edufinance/MonthYearPicker";
 import {
   formatBRL,
@@ -199,6 +200,7 @@ function FinanceiroPage() {
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [renewalOpen, setRenewalOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [exportExpensesOpen, setExportExpensesOpen] = useState(false);
   const [editing, setEditing] = useState<ExpenseRow | null>(null);
 
   async function handleDuplicateExpense(exp: ExpenseRow) {
@@ -922,6 +924,16 @@ function FinanceiroPage() {
                   variant="outline"
                   size="sm"
                   className="gap-1.5 text-xs h-8"
+                  onClick={() => setExportExpensesOpen(true)}
+                  title="Exportar dados técnicos de despesas (Excel, PDF, CSV, TXT, Markdown, JSON)"
+                >
+                  <Download className="h-3.5 w-3.5 text-primary" />
+                  <span>Exportar</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs h-8"
                   onClick={() => setSearchOpen(true)}
                   title="Busca específica por nome, valor ou histórico"
                 >
@@ -1258,6 +1270,13 @@ function FinanceiroPage() {
           setEditing(exp);
           setExpenseOpen(true);
         }}
+      />
+
+      <ExportExpensesDialog
+        open={exportExpensesOpen}
+        onOpenChange={setExportExpensesOpen}
+        currentMonth={month}
+        allExpenses={allExpenses}
       />
     </div>
   );
