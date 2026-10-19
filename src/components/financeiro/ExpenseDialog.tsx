@@ -129,11 +129,31 @@ export function ExpenseDialog({
     } else {
       if (form.recurrent && form.recurrent_months && form.recurrent_months > 1) {
         const [y, m] = (form.reference_month ?? currentMonthKey()).split("-").map(Number);
+        const origDay = form.expense_date ? Number(form.expense_date.split("-")[2]) || 1 : 1;
+
         for (let i = 0; i < form.recurrent_months; i++) {
           const month = ((m - 1 + i) % 12) + 1;
           const year = y + Math.floor((m - 1 + i) / 12);
           const refMonth = `${year}-${String(month).padStart(2, "0")}`;
-          await supabase.from("expenses").insert({ ...payload, reference_month: refMonth });
+
+          // Garante dia válido no mês de destino (clamp)
+          const daysInMonth = new Date(year, month, 0).getDate();
+          const targetDay = Math.min(origDay, daysInMonth);
+          const expDate = `${year}-${String(month).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}`;
+
+          // Se a descrição tiver padrão de parcela (ex: "1/3"), atualiza para cada mês ("1/3", "2/3", "3/3")
+          let desc = payload.description;
+          const matchParcela = desc.match(/\b1\/(\d+)\b/);
+          if (matchParcela) {
+            desc = desc.replace(/\b1\/\d+\b/, `${i + 1}/${matchParcela[1]}`);
+          }
+
+          await supabase.from("expenses").insert({
+            ...payload,
+            description: desc,
+            expense_date: expDate,
+            reference_month: refMonth,
+          });
         }
       } else {
         const { error } = await supabase.from("expenses").insert(payload);
@@ -308,8 +328,14 @@ export function ExpenseDialog({
                 }
                 placeholder="Ex: 12 (para repetir por 1 ano)"
               />
-              <p className="text-xs text-muted-foreground">
-                Serão criados {form.recurrent_months ?? 0} registros, um por mês.
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {form.recurrent_months && form.recurrent_months > 1 ? (
+                  <>
+                    Serão criados <strong>{form.recurrent_months} registros individuais</strong> alocados automaticamente no mesmo dia de cada mês subsequente.
+                  </>
+                ) : (
+                  "Serão criados os registros, um para cada mês."
+                )}
               </p>
             </div>
           )}
