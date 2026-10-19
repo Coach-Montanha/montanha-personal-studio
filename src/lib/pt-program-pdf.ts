@@ -129,5 +129,24 @@ export async function downloadProgramPdf(programId: string, studentName?: string
   });
 
   const filename = `${(p.name ?? "rotina").replace(/[^\w\-]+/g, "_")}.pdf`;
-  doc.save(filename);
+
+  // Suporte robusto para download mobile (iOS Safari / Android Chrome) e desktop
+  try {
+    const blob = doc.output("blob");
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    }, 1000);
+  } catch (err) {
+    // Fallback nativo do jsPDF
+    doc.save(filename);
+  }
 }

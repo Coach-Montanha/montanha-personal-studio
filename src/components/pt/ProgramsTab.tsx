@@ -108,6 +108,7 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
   const [feedbackDay, setFeedbackDay] = useState<TrainingDay | null>(null);
   const [activeDayId, setActiveDayId] = useState<string | null>(null);
   const [studentViewOpen, setStudentViewOpen] = useState(false);
+  const [studentViewDayId, setStudentViewDayId] = useState<string | null>(null);
   const [progressionOpen, setProgressionOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [iaProOpen, setIaProOpen] = useState(false);
@@ -538,7 +539,10 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
             </button>
             <button
               type="button"
-              onClick={() => setStudentViewOpen(true)}
+              onClick={() => {
+                setStudentViewDayId(activeDayId);
+                setStudentViewOpen(true);
+              }}
               className="flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent"
             >
               <Eye className="h-3.5 w-3.5" />
@@ -694,6 +698,14 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setStudentViewDayId(day.id);
+                                setStudentViewOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" /> Visão do aluno neste treino
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => { setEditingDay(day); setDayOpen(true); }}>
                               <Pencil className="h-4 w-4" /> Editar
                             </DropdownMenuItem>
@@ -769,8 +781,14 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
       />
       <StudentViewDialog
         open={studentViewOpen}
-        onOpenChange={setStudentViewOpen}
+        onOpenChange={(v) => {
+          setStudentViewOpen(v);
+          if (!v) setStudentViewDayId(null);
+        }}
         programId={activeProgramId}
+        initialDayId={studentViewDayId}
+        studentId={studentId}
+        studentName={studentInfo?.name}
       />
       <LoadProgressionDialog
         open={progressionOpen}
