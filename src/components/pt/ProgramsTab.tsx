@@ -35,8 +35,9 @@ import { MigrateProgramDialog } from "./MigrateProgramDialog";
 import { ProgramLayoutEditor } from "./ProgramLayoutEditor";
 import { DragHandle, SortableList } from "@/components/ui-kit/SortableList";
 import { downloadProgramPdf } from "@/lib/pt-program-pdf";
-import { Download, TrendingUp, Sparkles, LayoutGrid } from "lucide-react";
+import { Download, TrendingUp, Sparkles, LayoutGrid, Copy } from "lucide-react";
 import { PrescreverIaDialog } from "@/components/programa-ia/PrescreverIaDialog";
+import { ReprogramDayAiDialog } from "./ReprogramDayAiDialog";
 import { Stepper, StepperFooter, type StepItem } from "@/components/ui/stepper";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -110,6 +111,9 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
   const [progressionOpen, setProgressionOpen] = useState(false);
   const [aiOpen, setAiOpen] = useState(false);
   const [iaProOpen, setIaProOpen] = useState(false);
+  const [reprogramAiOpen, setReprogramAiOpen] = useState(false);
+  const [reprogramDay, setReprogramDay] = useState<TrainingDay | null>(null);
+  const [duplicatingDayId, setDuplicatingDayId] = useState<string | null>(null);
   const [migrateOpen, setMigrateOpen] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [guidanceOpen, setGuidanceOpen] = useState(false);
@@ -239,6 +243,80 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
     if (error) return toast.error(error.message);
     toast.success("Treino excluído");
     qc.invalidateQueries({ queryKey: ["pt-training-days", activeProgramId] });
+  }
+
+  async function duplicateDay(day: TrainingDay) {
+    if (!activeProgramId) return;
+    setDuplicatingDayId(day.id);
+    const toastId = toast.loading(`Duplicando ${day.name}...`);
+
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) throw new Error("Usuário não autenticado");
+
+      // 1. Criar novo dia clonado
+      const newDayName = `${day.name} (Cópia)`;
+      const { data: newDay, error: dayErr } = await supabase
+        .from("pt_training_days" as never)
+        .insert({
+          user_id: userId,
+          program_id: activeProgramId,
+          name: newDayName,
+          day_label: day.day_label,
+          description: day.description ?? null,
+          sort_order: (day.sort_order ?? 0) + 1,
+        } as never)
+        .select("id")
+        .single();
+
+      if (dayErr || !newDay) throw new Error(dayErr?.message ?? "Falha ao duplicar dia");
+      const newDayId = (newDay as any).id as string;
+
+      // 2. Buscar exercícios do dia original
+      const { data: exercises, error: exFetchErr } = await supabase
+        .from("pt_training_exercises" as never)
+        .select("*")
+        .eq("training_day_id", day.id)
+        .order("sort_order", { ascending: true });
+
+      if (exFetchErr) throw new Error(exFetchErr.message);
+
+      // 3. Clonar os exercícios para o novo dia
+      if (exercises && exercises.length > 0) {
+        const clonedRows = (exercises as any[]).map((ex) => ({
+          user_id: userId,
+          training_day_id: newDayId,
+          name: ex.name,
+          series_type: ex.series_type ?? "reps_load",
+          sets_reps: ex.sets_reps ?? null,
+          load: ex.load ?? null,
+          time_seconds: ex.time_seconds ?? null,
+          inclination: ex.inclination ?? null,
+          pace: ex.pace ?? null,
+          cadence: ex.cadence ?? null,
+          rest_seconds: ex.rest_seconds ?? null,
+          observations: ex.observations ?? null,
+          video_url: ex.video_url ?? null,
+          exercise_library_id: ex.exercise_library_id ?? null,
+          sort_order: ex.sort_order ?? 0,
+        }));
+
+        const { error: insErr } = await supabase
+          .from("pt_training_exercises" as never)
+          .insert(clonedRows as never);
+
+        if (insErr) throw new Error(insErr.message);
+      }
+
+      toast.success(`${newDayName} criado com sucesso!`, { id: toastId });
+      qc.invalidateQueries({ queryKey: ["pt-training-days", activeProgramId] });
+      setActiveDayId(newDayId);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao duplicar treino", { id: toastId });
+    } finally {
+      setDuplicatingDayId(null);
+    }
   }
 
   async function markExecuted(day: TrainingDay) {
@@ -619,6 +697,21 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
                             <DropdownMenuItem onClick={() => { setEditingDay(day); setDayOpen(true); }}>
                               <Pencil className="h-4 w-4" /> Editar
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => duplicateDay(day)}
+                              disabled={duplicatingDayId === day.id}
+                            >
+                              <Copy className="h-4 w-4" /> Duplicar treino
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setReprogramDay(day);
+                                setReprogramAiOpen(true);
+                              }}
+                              className="text-primary font-medium"
+                            >
+                              <Sparkles className="h-4 w-4 text-primary" /> Reprogramar com IA
+                            </DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive" onClick={() => deleteDay(day.id)}>
                               <Trash2 className="h-4 w-4" /> Excluir
                             </DropdownMenuItem>
@@ -689,6 +782,14 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
         onOpenChange={setAiOpen}
         programId={activeProgramId}
       />
+      {activeProgramId && (
+        <ReprogramDayAiDialog
+          open={reprogramAiOpen}
+          onOpenChange={setReprogramAiOpen}
+          programId={activeProgramId}
+          day={reprogramDay}
+        />
+      )}
       <PrescreverIaDialog
         isOpen={iaProOpen}
         programa={activeProgram ? { id: activeProgram.id, titulo: activeProgram.name, metodologia: (activeProgram as any).training_type } : null}
