@@ -1095,9 +1095,15 @@ export function PrescreverIaDialog({
           planilhaArquivoNome?.replace(/\.[^/.]+$/, "") ||
           `Treino IA - ${METHODOLOGY_LABEL[metodologia as Methodology] || "Musculação"}`;
 
+        const isStudioStudent =
+          alunoTipo === "studio" ||
+          !!studioStudentId ||
+          (selectedStudentId ? !!studioStudents.find((s) => s.id === selectedStudentId) : false);
+
         const newProgPayload: any = {
           user_id: userId,
           pt_student_id: finalStudentId,
+          studio_student_id: isStudioStudent ? (selectedStudentId || studioStudentId || null) : null,
           name: progTitle,
           category: "hypertrophy",
           level: "intermediate",
@@ -1107,6 +1113,15 @@ export function PrescreverIaDialog({
           ai_prompt: prompt.trim() || (planilhaTexto ? `Planilha: ${planilhaArquivoNome}` : null),
           ai_generated_at: new Date().toISOString(),
         };
+
+        if (isStudioStudent && (selectedStudentId || studioStudentId)) {
+          const sid = selectedStudentId || studioStudentId;
+          await supabase
+            .from("pt_programs" as never)
+            .update({ studio_student_id: sid } as never)
+            .eq("pt_student_id", sid)
+            .is("studio_student_id", null);
+        }
 
         const { data: createdProg, error: errProg } = await supabase
           .from("pt_programs" as never)
@@ -1239,6 +1254,15 @@ export function PrescreverIaDialog({
       qc.invalidateQueries({ queryKey: ["pt-programs"] });
       qc.invalidateQueries({ queryKey: ["pt-training-days"] });
       qc.invalidateQueries({ queryKey: ["studio-student-programs"] });
+      if (selectedStudentId) {
+        qc.invalidateQueries({ queryKey: ["pt-programs", selectedStudentId] });
+      }
+      if (studentId) {
+        qc.invalidateQueries({ queryKey: ["pt-programs", studentId] });
+      }
+      if (studioStudentId) {
+        qc.invalidateQueries({ queryKey: ["pt-programs", studioStudentId] });
+      }
       limpar();
       onOpenChange(false);
     },

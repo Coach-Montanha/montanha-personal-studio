@@ -148,8 +148,12 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
     queryFn: async () => {
       let q = supabase
         .from("pt_programs" as never)
-        .select("*")
-        .eq(filterCol as never, filterVal);
+        .select("*");
+      if (studioStudentId) {
+        q = q.or(`studio_student_id.eq.${filterVal},pt_student_id.eq.${filterVal}`);
+      } else {
+        q = q.eq(filterCol as never, filterVal);
+      }
       if (view === "active") q = q.eq("is_archived", false).eq("is_deleted", false);
       else if (view === "archived") q = q.eq("is_archived", true).eq("is_deleted", false);
       else q = q.eq("is_deleted", true);
@@ -207,7 +211,8 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
       .eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Rotina movida para a lixeira");
-    qc.invalidateQueries({ queryKey: ["pt-programs", studentId] });
+    qc.invalidateQueries({ queryKey: ["pt-programs"] });
+    qc.invalidateQueries({ queryKey: ["pt-programs", filterVal] });
   }
 
   async function restoreProgram(id: string) {
@@ -217,7 +222,8 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
       .eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Rotina restaurada");
-    qc.invalidateQueries({ queryKey: ["pt-programs", studentId] });
+    qc.invalidateQueries({ queryKey: ["pt-programs"] });
+    qc.invalidateQueries({ queryKey: ["pt-programs", filterVal] });
   }
 
   async function archiveProgram(id: string, archived: boolean) {
@@ -227,7 +233,8 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
       .eq("id", id);
     if (error) return toast.error(error.message);
     toast.success(archived ? "Rotina arquivada" : "Rotina desarquivada");
-    qc.invalidateQueries({ queryKey: ["pt-programs", studentId] });
+    qc.invalidateQueries({ queryKey: ["pt-programs"] });
+    qc.invalidateQueries({ queryKey: ["pt-programs", filterVal] });
   }
 
   async function hardDeleteProgram(id: string) {
@@ -235,7 +242,8 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
     const { error } = await supabase.from("pt_programs" as never).delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Rotina excluída");
-    qc.invalidateQueries({ queryKey: ["pt-programs", studentId] });
+    qc.invalidateQueries({ queryKey: ["pt-programs"] });
+    qc.invalidateQueries({ queryKey: ["pt-programs", filterVal] });
   }
 
   async function deleteDay(id: string) {
