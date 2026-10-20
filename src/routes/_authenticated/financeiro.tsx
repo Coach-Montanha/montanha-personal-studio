@@ -27,6 +27,11 @@ import {
   Wallet,
   Search,
   Repeat,
+  Building2,
+  Store,
+  UserCheck,
+  AlertTriangle,
+  Layers,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
