@@ -131,6 +131,16 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
     },
   });
 
+  const openStudentViewWindow = (targetDayId?: string | null) => {
+    const params = new URLSearchParams();
+    if (activeProgramId) params.set("programId", activeProgramId);
+    if (targetDayId) params.set("dayId", targetDayId);
+    if (studentId) params.set("studentId", studentId);
+    if (studioStudentId) params.set("studioStudentId", studioStudentId);
+    if (studentInfo?.name) params.set("studentName", studentInfo.name);
+    window.open(`/treino?${params.toString()}`, "_blank");
+  };
+
   async function handleDownloadPdf() {
     if (!activeProgramId) return;
     setDownloadingPdf(true);
@@ -547,11 +557,9 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
             </button>
             <button
               type="button"
-              onClick={() => {
-                setStudentViewDayId(activeDayId);
-                setStudentViewOpen(true);
-              }}
+              onClick={() => openStudentViewWindow(activeDayId)}
               className="flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-medium hover:bg-accent"
+              title="Abrir treino na visão do aluno em uma nova janela independente (evita perda de dados)"
             >
               <Eye className="h-3.5 w-3.5" />
               <span>Visão do aluno</span>
@@ -707,10 +715,7 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onClick={() => {
-                                setStudentViewDayId(day.id);
-                                setStudentViewOpen(true);
-                              }}
+                              onClick={() => openStudentViewWindow(day.id)}
                             >
                               <Eye className="h-4 w-4" /> Visão do aluno neste treino
                             </DropdownMenuItem>

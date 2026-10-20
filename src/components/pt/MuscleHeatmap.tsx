@@ -1,9 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BODY_PATHS } from "./bodyPathsData";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Activity, RotateCcw } from "lucide-react";
 
 interface MuscleHeatmapProps {
   exercises: Array<{
@@ -16,38 +15,181 @@ interface MuscleHeatmapProps {
   showToggle?: boolean;
 }
 
-// Mapeador de palavras-chave do nome do exercício para chaves do SVG
-const MUSCLE_KEYWORDS: Record<string, string[]> = {
-  chest: ["supino", "peito", "crucifixo", "peck", "voador", "flexão", "crossover", "cross over", "chest"],
-  lats: ["puxada", "remada", "barra fixa", "pulldown", "pull down", "dorsal", "costas", "serrote", "cavalinho", "lat"],
-  deltoids: ["elevação lateral", "elevação frontal", "desenvolvimento", "ombro", "deltoide", "arnold", "militar", "shoulder"],
-  traps: ["encolhimento", "trapézio", "face pull", "remada alta"],
-  biceps: ["rosca", "bíceps", "biceps", "scott", "martelo", "concentrada"],
-  triceps: ["tríceps", "triceps", "testa", "corda", "coice", "paralela", "francês", "mergulho"],
-  abs: ["abdominal", "prancha", "infra", "supra", "core", "abs", "sit-up", "crunch"],
-  obliques: ["oblíquo", "lateral", "rotação", "twist", "pallof"],
-  quadriceps: ["agachamento", "leg press", "extensora", "afundo", "passada", "búlgaro", "squat", "quadríceps", "quadriceps", "sissy"],
-  hamstrings: ["flexora", "stiff", "rdl", "posterior", "isquiotibiais", "deadlift", "terra", "bom dia"],
-  glutes: ["elevação pélvica", "glúteo", "gluteo", "abdução", "abdutora", "coice", "pelvic"],
-  calves: ["panturrilha", "panturrilhas", "gêmeos", "calves", "solear"],
-  forearms: ["antebraço", "punho", "wrist"],
-};
+// Chaves exatas do SVG em BODY_PATHS
+export type SvgMuscleKey =
+  | "chest"
+  | "upper-back"
+  | "lower-back"
+  | "deltoids"
+  | "trapezius"
+  | "biceps"
+  | "triceps"
+  | "forearm"
+  | "abs"
+  | "obliques"
+  | "quadriceps"
+  | "hamstring"
+  | "gluteal"
+  | "calves"
+  | "adductors"
+  | "serratus"
+  | "hip-flexors";
 
-const MUSCLE_LABELS_BR: Record<string, string> = {
+const MUSCLE_LABELS_BR: Record<SvgMuscleKey, string> = {
   chest: "Peitoral",
-  lats: "Dorsais / Costas",
+  "upper-back": "Dorsais / Costas",
+  "lower-back": "Lombar",
   deltoids: "Ombros / Deltoides",
-  traps: "Trapézio",
+  trapezius: "Trapézio",
   biceps: "Bíceps",
   triceps: "Tríceps",
+  forearm: "Antebraços",
   abs: "Abdômen / Core",
   obliques: "Oblíquos",
   quadriceps: "Quadríceps",
-  hamstrings: "Posterior de Coxa",
-  glutes: "Glúteos",
+  hamstring: "Posterior de Coxa",
+  gluteal: "Glúteos",
   calves: "Panturrilhas",
-  forearms: "Antebraços",
+  adductors: "Adutores",
+  serratus: "Serrátil",
+  "hip-flexors": "Flexores do Quadril",
 };
+
+// Regras de correlação entre os exercícios da biblioteca (nomes e muscle_group) e os pontos exatos do mapa SVG
+function matchMusclesForExercise(nameRaw: string, groupRaw?: string | null, targetRaw?: string | null): SvgMuscleKey[] {
+  const text = `${nameRaw} ${groupRaw || ""} ${targetRaw || ""}`.toLowerCase();
+  const matched = new Set<SvgMuscleKey>();
+
+  // --- Peitoral ---
+  if (
+    /supino|peito|crucifixo|peck|voador|cross\s*over|crossover|flex[aã]o\s*de\s*bra[cç]o|chest/.test(text)
+  ) {
+    matched.add("chest");
+    if (/supino|flex[aã]o|paralela/.test(text)) {
+      matched.add("triceps");
+      matched.add("deltoids");
+    }
+  }
+
+  // --- Costas & Dorsais ---
+  if (
+    /puxada|pulldown|pull\s*down|remada|barra\s*fixa|chin\s*up|pull\s*up|serrote|cavalinho|dorsal|costas|latissimus|lat\b/.test(text)
+  ) {
+    matched.add("upper-back");
+    matched.add("biceps");
+  }
+
+  // --- Trapézio ---
+  if (/encolhimento|trap[eé]zio|face\s*pull|remada\s*alta|shrug/.test(text)) {
+    matched.add("trapezius");
+    matched.add("deltoids");
+  }
+
+  // --- Ombros / Deltoides ---
+  if (
+    /desenvolvimento|eleva[cç][aã]o\s*lateral|eleva[cç][aã]o\s*frontal|ombro|deltoide|arnold|militar|shoulder|crucifixo\s*inverso/.test(text)
+  ) {
+    matched.add("deltoids");
+    if (/desenvolvimento|militar|arnold/.test(text)) {
+      matched.add("triceps");
+    }
+  }
+
+  // --- Bíceps ---
+  if (/rosca|b[ií]ceps|scott|martelo|concentrada|biceps/.test(text)) {
+    matched.add("biceps");
+    matched.add("forearm");
+  }
+
+  // --- Tríceps ---
+  if (/tr[ií]ceps|testa|corda|coice|paralela|franc[eê]s|mergulho|pulley\s*tr[ií]ceps/.test(text)) {
+    matched.add("triceps");
+  }
+
+  // --- Antebraço / Punho ---
+  if (/antebra[cç]o|punho|wrist|grip/.test(text)) {
+    matched.add("forearm");
+  }
+
+  // --- Quadríceps & Coxa Anterior ---
+  if (
+    /agachamento|squat|leg\s*press|extensora|afundo|passada|avan[cç]o|b[uú]lgaro|hack|sissy|quadr[ií]ceps/.test(text)
+  ) {
+    matched.add("quadriceps");
+    matched.add("gluteal");
+  }
+
+  // --- Posterior de Coxa & Isquiotibiais ---
+  if (
+    /flexora|mesa\s*flexora|cadeira\s*flexora|stiff|rdl|isquiotibiais|posterior\s*de\s*coxa|hamstring|bom\s*dia|good\s*morning/.test(text)
+  ) {
+    matched.add("hamstring");
+    matched.add("gluteal");
+  }
+
+  // --- Levantamento Terra / Deadlift ---
+  if (/terra|deadlift/.test(text)) {
+    matched.add("hamstring");
+    matched.add("gluteal");
+    matched.add("lower-back");
+    matched.add("trapezius");
+  }
+
+  // --- Glúteos ---
+  if (
+    /eleva[cç][aã]o\s*p[eé]lvica|hip\s*thrust|gl[uú]teo|abdu[cç][aã]o|abdutora|coice\s*gl[uú]teo|glute/.test(text)
+  ) {
+    matched.add("gluteal");
+  }
+
+  // --- Adutores ---
+  if (/adutor|adu[cç][aã]o|adductor/.test(text)) {
+    matched.add("adductors");
+  }
+
+  // --- Panturrilhas ---
+  if (/panturrilha|g[eê]meos|solear|s[oó]leo|eleva[cç][aã]o\s*plantar|calves|calf/.test(text)) {
+    matched.add("calves");
+  }
+
+  // --- Abdômen / Core Anterior ---
+  if (
+    /abdominal|prancha|infra|supra|crunch|sit\s*up|canivete|remador|core|dead\s*bug|escalador/.test(text)
+  ) {
+    matched.add("abs");
+  }
+
+  // --- Oblíquos ---
+  if (/obl[ií]quo|rota[cç][aã]o|twist|lateral\s*core|pallof/.test(text)) {
+    matched.add("obliques");
+  }
+
+  // --- Lombar ---
+  if (/lombar|hiperextens[aã]o|superman|perdigueiro|lower\s*back/.test(text)) {
+    matched.add("lower-back");
+  }
+
+  // --- Fallback por muscle_group da Biblioteca oficial do Studio ---
+  if (matched.size === 0 && groupRaw) {
+    const g = groupRaw.toLowerCase();
+    if (g.includes("peito")) matched.add("chest");
+    else if (g.includes("costa")) {
+      matched.add("upper-back");
+      matched.add("trapezius");
+    } else if (g.includes("ombro")) matched.add("deltoids");
+    else if (g.includes("braço") || g.includes("braco")) {
+      matched.add("biceps");
+      matched.add("triceps");
+    } else if (g.includes("perna")) {
+      matched.add("quadriceps");
+      matched.add("hamstring");
+      matched.add("calves");
+    } else if (g.includes("glúteo") || g.includes("gluteo")) matched.add("gluteal");
+    else if (g.includes("core")) matched.add("abs");
+  }
+
+  return Array.from(matched);
+}
 
 export function MuscleHeatmap({
   exercises = [],
@@ -56,27 +198,39 @@ export function MuscleHeatmap({
 }: MuscleHeatmapProps) {
   const [view, setView] = useState<"front" | "back">("front");
 
-  // Identifica músculos ativos a partir dos exercícios do dia
+  // Identifica músculos ativos com correlação precisa aos caminhos do SVG
   const activeMuscles = useMemo(() => {
     const scores: Record<string, number> = {};
 
     for (const ex of exercises) {
-      const name = (ex.name || "").toLowerCase();
-      const target = (ex.target_muscle || ex.muscle_group || "").toLowerCase();
-
-      for (const [muscleKey, keywords] of Object.entries(MUSCLE_KEYWORDS)) {
-        if (
-          keywords.some((kw) => name.includes(kw)) ||
-          keywords.some((kw) => target.includes(kw)) ||
-          muscleKey === target
-        ) {
-          scores[muscleKey] = (scores[muscleKey] || 0) + 1;
-        }
+      const matchedKeys = matchMusclesForExercise(ex.name, ex.muscle_group, ex.target_muscle);
+      for (const key of matchedKeys) {
+        scores[key] = (scores[key] || 0) + 1;
       }
     }
 
     return scores;
   }, [exercises]);
+
+  // Escolhe automaticamente a vista predominante (Costas se posterior for dominante)
+  useEffect(() => {
+    const backCount =
+      (activeMuscles["upper-back"] || 0) +
+      (activeMuscles["lower-back"] || 0) +
+      (activeMuscles["gluteal"] || 0) +
+      (activeMuscles["hamstring"] || 0);
+    const frontCount =
+      (activeMuscles["chest"] || 0) +
+      (activeMuscles["abs"] || 0) +
+      (activeMuscles["quadriceps"] || 0) +
+      (activeMuscles["biceps"] || 0);
+
+    if (backCount > frontCount && backCount > 0) {
+      setView("back");
+    } else if (frontCount > 0) {
+      setView("front");
+    }
+  }, [activeMuscles]);
 
   const frontData = (BODY_PATHS as any)?.male?.front;
   const backData = (BODY_PATHS as any)?.male?.back;
@@ -84,7 +238,9 @@ export function MuscleHeatmap({
   const viewBox = currentData?.vb || "0 95 727 1280";
   const muscleGroups = currentData?.p || {};
 
-  const activeEntries = Object.entries(activeMuscles).sort((a, b) => b[1] - a[1]);
+  const activeEntries = Object.entries(activeMuscles)
+    .filter(([_, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1]);
 
   return (
     <div className={cn("flex flex-col items-center select-none", className)}>
@@ -122,16 +278,18 @@ export function MuscleHeatmap({
             const count = activeMuscles[muscleKey] || 0;
             const isActive = count > 0;
 
-            // Cores dinâmicas de acordo com o calor muscular
+            // Calor dinâmico: mais estímulo = cor mais viva e luminosa
             const fillColor = isActive
-              ? count > 2
-                ? "#8b5cf6" // Violeta intenso para grupos primários com muitas séries
-                : "#6366f1" // Índigo vibrante
+              ? count >= 3
+                ? "#ec4899" // Rosa/Rubi vibrante para alto volume
+                : count === 2
+                ? "#8b5cf6" // Violeta
+                : "#6366f1" // Índigo
               : "currentColor";
 
-            const fillOpacity = isActive ? 0.9 : 0.16;
-            const strokeColor = isActive ? "#c4b5fd" : "currentColor";
-            const strokeOpacity = isActive ? 0.8 : 0.25;
+            const fillOpacity = isActive ? 0.92 : 0.14;
+            const strokeColor = isActive ? "#ffffff" : "currentColor";
+            const strokeOpacity = isActive ? 0.9 : 0.22;
 
             return (
               <g
@@ -140,7 +298,7 @@ export function MuscleHeatmap({
                   "transition-all duration-300",
                   isActive
                     ? "cursor-pointer filter hover:brightness-125"
-                    : "text-muted-foreground/40"
+                    : "text-muted-foreground/35"
                 )}
               >
                 {Array.isArray(paths) &&
@@ -151,7 +309,7 @@ export function MuscleHeatmap({
                       fill={fillColor}
                       fillOpacity={fillOpacity}
                       stroke={strokeColor}
-                      strokeWidth={isActive ? 2 : 1}
+                      strokeWidth={isActive ? 1.8 : 0.8}
                       strokeOpacity={strokeOpacity}
                     />
                   ))}
@@ -174,7 +332,7 @@ export function MuscleHeatmap({
               variant="outline"
               className="text-[10px] px-2 py-0.5 border-primary/40 bg-primary/10 text-primary font-medium"
             >
-              {MUSCLE_LABELS_BR[muscleKey] || muscleKey} ({count}x)
+              {(MUSCLE_LABELS_BR as any)[muscleKey] || muscleKey} ({count}x)
             </Badge>
           ))
         )}

@@ -16,7 +16,9 @@ import {
   Target,
   Timer,
   CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { formatDateBR } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { FocusedDayView } from "@/components/pt/FocusedDayView";
@@ -141,11 +143,33 @@ export function StudentViewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
         className={cn(
           "w-[96vw] max-h-[92vh] overflow-y-auto p-4 sm:p-6 transition-all",
           activeDay ? "max-w-3xl" : "max-w-xl"
         )}
       >
+        <div className="flex justify-end -mt-2 mb-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (programId) params.set("programId", programId);
+              if (selectedDayId) params.set("dayId", selectedDayId);
+              if (studentId) params.set("studentId", studentId);
+              if (studentName) params.set("studentName", studentName);
+              window.open(`/treino?${params.toString()}`, "_blank");
+              onOpenChange(false);
+            }}
+            className="h-7 text-xs gap-1.5 text-primary hover:bg-primary/10 rounded-lg font-medium"
+            title="Abrir como janela independente sem risco de fechar ao clicar fora"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> Abrir em nova janela
+          </Button>
+        </div>
         {!program ? (
           <div className="py-8 text-center text-sm text-muted-foreground">
             Carregando rotina…

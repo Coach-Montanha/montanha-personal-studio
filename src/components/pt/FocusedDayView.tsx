@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   ArrowLeft,
   Check,
@@ -109,6 +109,92 @@ export function FocusedDayView({
     seconds: 60,
     exerciseName: "",
   });
+
+  const timerStorageKey = `pt_session_timer_${day.id}_${studentId || "default"}`;
+  const sessionStateKey = `pt_session_state_${day.id}_${studentId || "default"}`;
+  const MAX_SESSION_SECONDS = 3 * 60 * 60; // 3h = 10.800s
+
+  // Recupera timer e progresso de execução caso a tela tenha sido fechada ou recarregada
+  useEffect(() => {
+    try {
+      const rawTimer = localStorage.getItem(timerStorageKey);
+      if (rawTimer) {
+        const data = JSON.parse(rawTimer);
+        if (data && typeof data === "object") {
+          let total = Number(data.accumulatedSeconds) || 0;
+          if (data.running && data.startedAt) {
+            const elapsed = Math.floor((Date.now() - Number(data.startedAt)) / 1000);
+            total += Math.max(0, elapsed);
+          }
+          if (total >= MAX_SESSION_SECONDS) {
+            setTimerSeconds(MAX_SESSION_SECONDS);
+            setTimerRunning(false);
+            localStorage.setItem(
+              timerStorageKey,
+              JSON.stringify({ accumulatedSeconds: MAX_SESSION_SECONDS, running: false, startedAt: null })
+            );
+          } else {
+            setTimerSeconds(total);
+            setTimerRunning(Boolean(data.running));
+          }
+        }
+      }
+
+      const rawState = localStorage.getItem(sessionStateKey);
+      if (rawState) {
+        const state = JSON.parse(rawState);
+        if (state?.loads) setLoads((prev) => ({ ...state.loads, ...prev }));
+        if (state?.done) setDone((prev) => ({ ...state.done, ...prev }));
+        if (state?.completedSets) setCompletedSets((prev) => ({ ...state.completedSets, ...prev }));
+      }
+    } catch {
+      // ignore
+    }
+  }, [timerStorageKey, sessionStateKey]);
+
+  // Persiste estado do timer ativo
+  useEffect(() => {
+    try {
+      if (timerRunning) {
+        if (timerSeconds >= MAX_SESSION_SECONDS) {
+          setTimerSeconds(MAX_SESSION_SECONDS);
+          setTimerRunning(false);
+          toast.info("Limite de 3 horas atingido. O cronômetro foi pausado automaticamente.");
+          localStorage.setItem(
+            timerStorageKey,
+            JSON.stringify({ accumulatedSeconds: MAX_SESSION_SECONDS, running: false, startedAt: null })
+          );
+          return;
+        }
+        const startedAt = Date.now() - timerSeconds * 1000;
+        localStorage.setItem(
+          timerStorageKey,
+          JSON.stringify({ accumulatedSeconds: 0, running: true, startedAt })
+        );
+      } else if (timerSeconds > 0) {
+        localStorage.setItem(
+          timerStorageKey,
+          JSON.stringify({ accumulatedSeconds: timerSeconds, running: false, startedAt: null })
+        );
+      }
+    } catch {
+      // ignore
+    }
+  }, [timerRunning, timerSeconds, timerStorageKey]);
+
+  // Persiste cargas e séries em andamento para evitar perda por clique acidental ou recarregamento
+  useEffect(() => {
+    try {
+      if (Object.keys(loads).length > 0 || Object.keys(done).length > 0 || Object.keys(completedSets).length > 0) {
+        localStorage.setItem(
+          sessionStateKey,
+          JSON.stringify({ loads, done, completedSets })
+        );
+      }
+    } catch {
+      // ignore
+    }
+  }, [loads, done, completedSets, sessionStateKey]);
 
   const toggleExcludeFromSession = (exerciseId: string) => {
     setExcludedExerciseIds((prev) =>
@@ -278,6 +364,12 @@ export function FocusedDayView({
       }
 
       setLastExecutionId((newExec as any)?.id);
+      try {
+        localStorage.removeItem(timerStorageKey);
+        localStorage.removeItem(sessionStateKey);
+      } catch {
+        // ignore
+      }
       toast.success("Treino concluído com sucesso! 💪");
       setSummaryOpen(true);
     } catch (err: any) {
@@ -369,6 +461,11 @@ export function FocusedDayView({
           onReset={() => {
             setTimerSeconds(0);
             setTimerRunning(false);
+            try {
+              localStorage.removeItem(timerStorageKey);
+            } catch {
+              // ignore
+            }
           }}
         />
 

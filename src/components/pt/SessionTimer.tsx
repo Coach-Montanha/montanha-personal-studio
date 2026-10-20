@@ -74,6 +74,14 @@ export function SessionTimer({
     const startedAt = Date.now() - currentSeconds * 1000;
     const id = window.setInterval(() => {
       const next = Math.floor((Date.now() - startedAt) / 1000);
+      // Limite máximo de 3 horas (10.800 segundos) para evitar que o contador corra indefinidamente se esquecido
+      if (next >= 10800) {
+        setCurrentSeconds(10800);
+        setCurrentRunning(false);
+        playBeep();
+        toast.info("Limite de 3h de treino atingido. Cronômetro pausado automaticamente.");
+        return;
+      }
       setCurrentSeconds(next);
       const hoursDone = Math.floor(next / 3600);
       if (hoursDone > lastAlertRef.current && next > 0) {
