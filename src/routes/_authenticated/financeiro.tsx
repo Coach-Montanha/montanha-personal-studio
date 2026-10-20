@@ -390,6 +390,94 @@ function FinanceiroPage() {
     [allExpenses, month, segment],
   );
 
+  // Despesas puras do mês de referência para a visualização segmentada por cards
+  const rawMonthExpenses = useMemo(
+    () => allExpenses.filter((e) => e.reference_month === month),
+    [allExpenses, month],
+  );
+
+  const segmentExpenses = useMemo(() => {
+    const general = rawMonthExpenses.filter((e) => e.segment === "general" || !e.segment);
+    const studio = rawMonthExpenses.filter((e) => e.segment === "studio");
+    const pt = rawMonthExpenses.filter((e) => e.segment === "pt");
+
+    const sumAmt = (list: ExpenseRow[]) => list.reduce((s, e) => s + Number(e.amount || 0), 0);
+    const sumFix = (list: ExpenseRow[]) => list.filter((e) => e.type === "fixed").reduce((s, e) => s + Number(e.amount || 0), 0);
+    const sumVar = (list: ExpenseRow[]) => list.filter((e) => e.type === "variable").reduce((s, e) => s + Number(e.amount || 0), 0);
+
+    const totalGen = sumAmt(general);
+    const totalStu = sumAmt(studio);
+    const totalPt = sumAmt(pt);
+    const totalAll = totalGen + totalStu + totalPt;
+
+    const pctGen = totalAll > 0 ? (totalGen / totalAll) * 100 : 0;
+    const pctStu = totalAll > 0 ? (totalStu / totalAll) * 100 : 0;
+    const pctPt = totalAll > 0 ? (totalPt / totalAll) * 100 : 0;
+
+    const segmentsMeta = [
+      {
+        key: "general" as const,
+        label: "Gerais",
+        title: "Despesas Gerais",
+        subtitle: "Custos corporativos, softwares, contabilidade e despesas não atribuídas",
+        icon: Building2,
+        color: "text-sky-500",
+        badgeBg: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30",
+        barColor: "bg-sky-500",
+        expenses: general,
+        total: totalGen,
+        pct: pctGen,
+        fixas: sumFix(general),
+        variaveis: sumVar(general),
+        count: general.length,
+      },
+      {
+        key: "studio" as const,
+        label: "Studio",
+        title: "Despesas do Studio",
+        subtitle: "Aluguel, manutenção de maquinários, energia, limpeza e custos do espaço físico",
+        icon: Store,
+        color: "text-emerald-500",
+        badgeBg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+        barColor: "bg-emerald-500",
+        expenses: studio,
+        total: totalStu,
+        pct: pctStu,
+        fixas: sumFix(studio),
+        variaveis: sumVar(studio),
+        count: studio.length,
+      },
+      {
+        key: "pt" as const,
+        label: "Personal Trainer",
+        title: "Despesas Personal Trainer",
+        subtitle: "Equipamentos individuais, cursos, capacitação técnica e consultoria",
+        icon: UserCheck,
+        color: "text-amber-500",
+        badgeBg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
+        barColor: "bg-amber-500",
+        expenses: pt,
+        total: totalPt,
+        pct: pctPt,
+        fixas: sumFix(pt),
+        variaveis: sumVar(pt),
+        count: pt.length,
+      },
+    ];
+
+    const bottleneck = [...segmentsMeta].sort((a, b) => b.total - a.total)[0] || segmentsMeta[0];
+
+    return {
+      general,
+      studio,
+      pt,
+      totalAll,
+      segmentsMeta,
+      bottleneckKey: bottleneck.total > 0 ? bottleneck.key : null,
+      bottleneck,
+    };
+  }, [rawMonthExpenses]);
+
   // Para pagamentos do Studio, priorizamos reference_month.
   // Para PT, usamos estritamente payment_date para bater 100% com o Dashboard PT.
   const getStudioMonth = (p: any) => p.reference_month || (p.payment_date ? p.payment_date.slice(0, 7) : null);
