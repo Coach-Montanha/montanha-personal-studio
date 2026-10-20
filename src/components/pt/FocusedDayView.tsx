@@ -13,6 +13,7 @@ import {
   EyeOff,
   RotateCcw,
   Activity,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -93,6 +94,7 @@ export function FocusedDayView({
   const [lastExecutionId, setLastExecutionId] = useState<string | undefined>(undefined);
   const [completedSets, setCompletedSets] = useState<Record<string, number[]>>({});
   const [heatmapOpen, setHeatmapOpen] = useState(false);
+  const [quickMode, setQuickMode] = useState(false);
   const [plateCalcOpen, setPlateCalcOpen] = useState(false);
   const [plateCalcWeight, setPlateCalcWeight] = useState<number | string>(60);
   const [plateCalcExName, setPlateCalcExName] = useState<string>("");
@@ -159,10 +161,37 @@ export function FocusedDayView({
     [exercises]
   );
 
-  const activeExercises = useMemo(
-    () => candidateExercises.filter((e) => !excludedExerciseIds.includes(e.id)),
-    [candidateExercises, excludedExerciseIds]
-  );
+  const activeExercises = useMemo(() => {
+    let list = candidateExercises.filter((e) => !excludedExerciseIds.includes(e.id));
+    if (quickMode && list.length > 4) {
+      list = list.slice(0, 4);
+    }
+    return list;
+  }, [candidateExercises, excludedExerciseIds, quickMode]);
+
+  const plateauByExercise = useMemo(() => {
+    const map: Record<string, { count: number; load: string }> = {};
+    const relevantExecs = (allExecutions && allExecutions.length > 0 ? allExecutions : executions).slice(0, 4);
+
+    for (const ex of candidateExercises) {
+      const historicalLoads: string[] = [];
+      for (const exec of relevantExecs) {
+        const n = parseNotes(exec.notes);
+        if (n.loads && n.loads[ex.id]) {
+          historicalLoads.push(String(n.loads[ex.id]).trim().toLowerCase());
+        }
+      }
+
+      if (historicalLoads.length >= 3) {
+        const first = historicalLoads[0];
+        const allSame = historicalLoads.slice(0, 3).every((l) => l === first);
+        if (allSame && first) {
+          map[ex.id] = { count: 3, load: first };
+        }
+      }
+    }
+    return map;
+  }, [candidateExercises, allExecutions, executions]);
 
   const totalDone = useMemo(() => {
     return activeExercises.filter((parentEx) => {
@@ -277,6 +306,22 @@ export function FocusedDayView({
           )}
 
           <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setQuickMode((q) => !q)}
+              className={cn(
+                "h-7 gap-1 px-2 text-[11px] font-semibold rounded-lg border transition-all",
+                quickMode
+                  ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                  : "border-border/80 bg-background text-muted-foreground hover:text-foreground"
+              )}
+              title="Modo Rápido 30 Minutos (Foca nos exercícios compostos essenciais)"
+            >
+              <Timer className="h-3.5 w-3.5" />
+              <span>{quickMode ? "30 min" : "Sem Tempo?"}</span>
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -697,6 +742,18 @@ export function FocusedDayView({
                         <span>
                           Última carga registrada: <strong className="text-foreground">{last.load}</strong> em {formatDateBR(last.date)}
                         </span>
+                      </div>
+                    )}
+
+                    {plateauByExercise[ex.id] && (
+                      <div className="mt-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+                        <Zap className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+                        <div className="space-y-0.5">
+                          <span className="font-bold">Alerta de Platô ({plateauByExercise[ex.id].load} por 3 sessões):</span>
+                          <p className="text-[11px] leading-tight opacity-90">
+                            Carga inalterada recentemente. Experimente variar a pegada, usar halteres ou aplicar rest-pause para destravar a evolução.
+                          </p>
+                        </div>
                       </div>
                     )}
                   </div>
