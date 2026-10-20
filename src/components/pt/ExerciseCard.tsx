@@ -111,6 +111,7 @@ export function ExerciseCard({
     observations: exercise.observations ?? "",
     media_url: exercise.media_url ?? "",
     media_type: exercise.media_type ?? "image",
+    thumbnail_url: (exercise as any).thumbnail_url ?? "",
     series_type: exercise.series_type ?? "reps_load",
     time_seconds: exercise.time_seconds?.toString() ?? "",
     inclination: exercise.inclination ?? "",
@@ -396,13 +397,14 @@ export function ExerciseCard({
               <ExerciseMediaUpload
                 mediaUrl={form.media_url}
                 mediaType={form.media_type}
-                onUpload={(url, type: MediaType) => {
-                  setForm((f) => ({ ...f, media_url: url, media_type: type }));
-                  autoSave({ media_url: url, media_type: type });
+                thumbnailUrl={form.thumbnail_url}
+                onUpload={(url, type: MediaType, thumbUrl?: string | null) => {
+                  setForm((f) => ({ ...f, media_url: url, media_type: type, thumbnail_url: thumbUrl ?? f.thumbnail_url }));
+                  autoSave({ media_url: url, media_type: type, ...(thumbUrl ? { thumbnail_url: thumbUrl } : {}) });
                 }}
                 onRemove={() => {
-                  setForm((f) => ({ ...f, media_url: "", media_type: "image" }));
-                  autoSave({ media_url: null, media_type: null });
+                  setForm((f) => ({ ...f, media_url: "", media_type: "image", thumbnail_url: "" }));
+                  autoSave({ media_url: null, media_type: null, thumbnail_url: null });
                 }}
               />
             </div>
@@ -625,6 +627,7 @@ export function ExerciseCard({
             ...prev,
             media_url: newEx.media_url ?? "",
             media_type: newEx.media_type ?? "video",
+            thumbnail_url: newEx.thumbnail_url ?? "",
           }));
           setNameDraft(newEx.name);
           toast.success(`Exercício substituído por "${newEx.name}"!`);

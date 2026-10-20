@@ -30,22 +30,9 @@ import { WorkoutSummaryDialog } from "@/components/pt/WorkoutSummaryDialog";
 import { RestCountdownTimer, parseSafeSeconds } from "@/components/pt/RestCountdownTimer";
 import { PlateCalculatorDialog } from "@/components/pt/PlateCalculatorDialog";
 import { MuscleHeatmap } from "@/components/pt/MuscleHeatmap";
+import { resolveExerciseThumbnail } from "@/lib/thumbnail-utils";
 
-export function resolveExerciseThumbnail(mediaUrl?: string | null, thumbnailUrl?: string | null): string | null {
-  if (thumbnailUrl && thumbnailUrl.trim()) return thumbnailUrl.trim();
-  if (!mediaUrl) return null;
-  const u = mediaUrl.trim();
-  const ytMatch = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);
-  if (ytMatch) return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
-  const mfitMatch = u.match(/vd\.mfitpersonal\.com\.br\/(?:v2\/)?(\d+)\/mp4/);
-  if (mfitMatch) {
-    const id = mfitMatch[1];
-    return u.includes("/v2/")
-      ? `https://vd.mfitpersonal.com.br/v2/${id}/jpg/md/${id}_md.0000000.jpg`
-      : `https://vd.mfitpersonal.com.br/${id}/jpg/md/${id}_md.0000000.jpg`;
-  }
-  return null;
-}
+export { resolveExerciseThumbnail };
 
 function parseSetCount(setsReps?: string | null): number {
   if (!setsReps) return 3;

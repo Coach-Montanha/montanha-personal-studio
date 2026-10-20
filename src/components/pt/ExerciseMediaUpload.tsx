@@ -3,19 +3,22 @@ import { Upload, Play, ImageIcon, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { uploadVideoThumbnail } from "@/lib/thumbnail-utils";
 
 type MediaType = "image" | "video" | "youtube";
 
 interface ExerciseMediaUploadProps {
   mediaUrl?: string | null;
   mediaType?: string | null;
-  onUpload: (url: string, type: MediaType) => void;
+  thumbnailUrl?: string | null;
+  onUpload: (url: string, type: MediaType, thumbnailUrl?: string | null) => void;
   onRemove: () => void;
 }
 
 export function ExerciseMediaUpload({
   mediaUrl,
   mediaType,
+  thumbnailUrl,
   onUpload,
   onRemove,
 }: ExerciseMediaUploadProps) {
@@ -38,9 +41,15 @@ export function ExerciseMediaUpload({
       const isVideo = file.type.startsWith("video/");
       const filePath = `${userId}/${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("exercise-media")
-        .upload(filePath, file, { contentType: file.type });
+      // Inicia a geração de miniatura se for vídeo
+      const thumbPromise = isVideo ? uploadVideoThumbnail(file, userId) : Promise.resolve(null);
+
+      const [{ error: uploadError }, generatedThumb] = await Promise.all([
+        supabase.storage
+          .from("exercise-media")
+          .upload(filePath, file, { contentType: file.type }),
+        thumbPromise,
+      ]);
 
       if (uploadError) throw uploadError;
 
@@ -50,8 +59,8 @@ export function ExerciseMediaUpload({
         .createSignedUrl(filePath, 60 * 60 * 24 * 365 * 100);
       if (signErr || !signed?.signedUrl) throw signErr ?? new Error("Falha ao gerar URL");
 
-      onUpload(signed.signedUrl, isVideo ? "video" : "image");
-      toast.success("Mídia enviada com sucesso!");
+      onUpload(signed.signedUrl, isVideo ? "video" : "image", generatedThumb);
+      toast.success(isVideo ? "Vídeo e miniatura enviados com sucesso!" : "Mídia enviada com sucesso!");
     } catch (err: any) {
       toast.error(`Erro: ${err.message ?? err}`);
     }
@@ -69,7 +78,8 @@ export function ExerciseMediaUpload({
     }
     const videoId = match[1];
     const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    onUpload(embedUrl, "youtube");
+    const ytThumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    onUpload(embedUrl, "youtube", ytThumb);
     setYoutubeUrl("");
     setShowYoutube(false);
   }
@@ -89,6 +99,7 @@ export function ExerciseMediaUpload({
         ) : mediaType === "video" ? (
           <video
             src={mediaUrl}
+            poster={thumbnailUrl || `${mediaUrl}#t=0.001`}
             controls
             playsInline
             preload="metadata"

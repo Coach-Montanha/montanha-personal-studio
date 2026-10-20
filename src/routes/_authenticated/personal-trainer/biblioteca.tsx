@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { resolveExerciseThumbnail, uploadVideoThumbnail } from "@/lib/thumbnail-utils";
 
 export const Route = createFileRoute("/_authenticated/personal-trainer/biblioteca")({
   head: () => ({
@@ -99,6 +100,10 @@ function detectMedia(url: string): { type: string; thumb: string | null } {
   if (yt) return { type: "youtube", thumb: `https://img.youtube.com/vi/${yt}/hqdefault.jpg` };
   const vim = u.match(/vimeo\.com\/(\d+)/)?.[1];
   if (vim) return { type: "vimeo", thumb: null };
+  const mfitThumb = resolveExerciseThumbnail(u, null);
+  if (mfitThumb && u.includes("mfitpersonal.com.br")) {
+    return { type: "video", thumb: mfitThumb };
+  }
   if (/\.(mp4|webm|mov)(\?|$)/i.test(u)) return { type: "video", thumb: null };
   if (/\.(png|jpe?g|webp|gif|avif)(\?|$)/i.test(u)) return { type: "image", thumb: u };
   return { type: "url", thumb: null };
@@ -404,8 +409,17 @@ function ExerciseTile({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const thumb = item.thumbnail_url ?? (item.media_url ? detectMedia(item.media_url).thumb : null);
+  const [imgError, setImgError] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+
+  const thumb = resolveExerciseThumbnail(item.media_url, item.thumbnail_url);
   const hasVideo = !!item.media_url;
+  const isDirectVideo =
+    hasVideo &&
+    (item.media_type === "upload" ||
+      item.media_type === "video" ||
+      /\.(mp4|webm|mov)(\?|$)/i.test(item.media_url || "") ||
+      (item.media_url || "").includes("/storage/v1/"));
 
   return (
     <div
@@ -425,12 +439,22 @@ function ExerciseTile({
         )}
         aria-label={`Ver vídeo de ${item.name}`}
       >
-        {thumb ? (
+        {thumb && !imgError ? (
           <img
             src={thumb}
             alt=""
             loading="lazy"
+            onError={() => setImgError(true)}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : isDirectVideo && !videoError ? (
+          <video
+            src={`${item.media_url}#t=0.001`}
+            preload="metadata"
+            muted
+            playsInline
+            onError={() => setVideoError(true)}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105 pointer-events-none"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/40">
@@ -558,6 +582,7 @@ function ExerciseFormDialog({
   const [muscleGroup, setMuscleGroup] = useState<string>("");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaType, setMediaType] = useState<string | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<"link" | "upload">("link");
@@ -571,6 +596,7 @@ function ExerciseFormDialog({
       setMuscleGroup(editing?.muscle_group ?? "");
       setMediaUrl(editing?.media_url ?? "");
       setMediaType(editing?.media_type ?? null);
+      setThumbnailUrl(editing?.thumbnail_url ?? null);
       setDescription(editing?.description ?? "");
       setTab(editing?.media_type === "upload" ? "upload" : "link");
       setUploadProgress(0);
@@ -597,6 +623,9 @@ function ExerciseFormDialog({
       const userId = userData.user?.id;
       if (!userId) throw new Error("Sessão expirada");
 
+      // Inicia a geração e upload da miniatura em paralelo ao upload do vídeo
+      const thumbPromise = uploadVideoThumbnail(file, userId);
+
       const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
       const path = `${userId}/library/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
@@ -605,9 +634,12 @@ function ExerciseFormDialog({
         setUploadProgress((p) => (p < 88 ? p + Math.max(1, Math.round((90 - p) / 8)) : p));
       }, 400);
 
-      const { error: uploadError } = await supabase.storage
-        .from("exercise-media")
-        .upload(path, file, { contentType: file.type, upsert: false });
+      const [{ error: uploadError }, generatedThumb] = await Promise.all([
+        supabase.storage
+          .from("exercise-media")
+          .upload(path, file, { contentType: file.type, upsert: false }),
+        thumbPromise,
+      ]);
       clearInterval(tick);
       if (uploadError) throw uploadError;
 
@@ -618,8 +650,11 @@ function ExerciseFormDialog({
 
       setMediaUrl(signed.signedUrl);
       setMediaType("upload");
+      if (generatedThumb) {
+        setThumbnailUrl(generatedThumb);
+      }
       setUploadProgress(100);
-      toast.success("Vídeo enviado com sucesso");
+      toast.success("Vídeo e miniatura enviados com sucesso");
     } catch (e: any) {
       toast.error(e.message ?? "Erro ao enviar vídeo");
       setUploadProgress(0);
@@ -631,6 +666,7 @@ function ExerciseFormDialog({
   function clearMedia() {
     setMediaUrl("");
     setMediaType(null);
+    setThumbnailUrl(null);
     setUploadProgress(0);
   }
 
@@ -651,14 +687,25 @@ function ExerciseFormDialog({
           ? "upload"
           : detectMedia(trimmed).type
         : null;
-      const resolvedThumb = trimmed && !isUpload ? detectMedia(trimmed).thumb : null;
+
+      let finalThumb =
+        thumbnailUrl ||
+        (trimmed ? resolveExerciseThumbnail(trimmed, null) : null);
+
+      // Se ainda não tiver thumbnail e for vídeo direto, tenta capturar snapshot antes de salvar
+      if (!finalThumb && trimmed && (isUpload || /\.(mp4|webm|mov)(\?|$)/i.test(trimmed))) {
+        try {
+          const autoThumb = await uploadVideoThumbnail(trimmed, userId);
+          if (autoThumb) finalThumb = autoThumb;
+        } catch {}
+      }
 
       const payload = {
         name: name.trim(),
         muscle_group: muscleGroup || null,
         media_url: trimmed || null,
         media_type: resolvedType,
-        thumbnail_url: resolvedThumb,
+        thumbnail_url: finalThumb,
         description: description.trim() || null,
       };
 

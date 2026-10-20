@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import localMfitCatalog from "@/data/mfit-exercises-normalized.json";
 import { filterAndRankExercises } from "@/lib/search-exercises";
+import { resolveExerciseThumbnail } from "@/lib/thumbnail-utils";
 import type { LibraryExercise } from "./AddExerciseDialog";
 
 const MUSCLE_FILTER_CHIPS = [
@@ -185,18 +186,35 @@ export function SubstituteExerciseDialog({
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         {/* Miniatura ou Ícone */}
                         <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md bg-muted flex items-center justify-center border border-border/60">
-                          {item.thumbnail_url ? (
-                            <img
-                              src={item.thumbnail_url}
-                              alt={item.name}
-                              loading="lazy"
-                              className="h-full w-full object-cover"
-                            />
-                          ) : item.media_url ? (
-                            <Video className="h-4 w-4 text-primary" />
-                          ) : (
-                            <Dumbbell className="h-4 w-4 text-muted-foreground/60" />
-                          )}
+                          {(() => {
+                            const thumb = resolveExerciseThumbnail(item.media_url, item.thumbnail_url);
+                            const isDirectVideo = !!item.media_url && (item.media_type === "video" || item.media_type === "upload" || /\.(mp4|webm|mov)(\?|$)/i.test(item.media_url));
+                            if (thumb) {
+                              return (
+                                <img
+                                  src={thumb}
+                                  alt={item.name}
+                                  loading="lazy"
+                                  className="h-full w-full object-cover"
+                                />
+                              );
+                            }
+                            if (isDirectVideo) {
+                              return (
+                                <video
+                                  src={`${item.media_url}#t=0.001`}
+                                  preload="metadata"
+                                  muted
+                                  playsInline
+                                  className="h-full w-full object-cover pointer-events-none"
+                                />
+                              );
+                            }
+                            if (item.media_url) {
+                              return <Video className="h-4 w-4 text-primary" />;
+                            }
+                            return <Dumbbell className="h-4 w-4 text-muted-foreground/60" />;
+                          })()}
                         </div>
 
                         <div className="min-w-0 flex-1">

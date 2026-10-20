@@ -30,6 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import localMfitCatalog from "@/data/mfit-exercises-normalized.json";
 import { filterAndRankExercises } from "@/lib/search-exercises";
+import { resolveExerciseThumbnail } from "@/lib/thumbnail-utils";
 
 export type LibraryExercise = {
   id: string;
@@ -262,15 +263,8 @@ export function AddExerciseDialog({
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {filtered.slice(0, 60).map((exercise) => {
                   const isSelected = selectedExercises.has(exercise.id);
-                  const thumb =
-                    exercise.thumbnail_url ??
-                    (exercise.media_url && /(?:youtube\.com|youtu\.be)/.test(exercise.media_url)
-                      ? `https://img.youtube.com/vi/${
-                          exercise.media_url.match(
-                            /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/
-                          )?.[1]
-                        }/hqdefault.jpg`
-                      : null);
+                  const thumb = resolveExerciseThumbnail(exercise.media_url, exercise.thumbnail_url);
+                  const isDirectVideo = !!exercise.media_url && (exercise.media_type === "video" || exercise.media_type === "upload" || /\.(mp4|webm|mov)(\?|$)/i.test(exercise.media_url));
 
                   return (
                     <li key={exercise.id}>
@@ -300,6 +294,14 @@ export function AddExerciseDialog({
                               alt=""
                               loading="lazy"
                               className="h-full w-full object-cover"
+                            />
+                          ) : isDirectVideo ? (
+                            <video
+                              src={`${exercise.media_url}#t=0.001`}
+                              preload="metadata"
+                              muted
+                              playsInline
+                              className="h-full w-full object-cover pointer-events-none"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center">
