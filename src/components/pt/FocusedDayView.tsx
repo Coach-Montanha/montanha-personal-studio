@@ -31,6 +31,22 @@ import { RestCountdownTimer, parseSafeSeconds } from "@/components/pt/RestCountd
 import { PlateCalculatorDialog } from "@/components/pt/PlateCalculatorDialog";
 import { MuscleHeatmap } from "@/components/pt/MuscleHeatmap";
 
+export function resolveExerciseThumbnail(mediaUrl?: string | null, thumbnailUrl?: string | null): string | null {
+  if (thumbnailUrl && thumbnailUrl.trim()) return thumbnailUrl.trim();
+  if (!mediaUrl) return null;
+  const u = mediaUrl.trim();
+  const ytMatch = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/);
+  if (ytMatch) return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+  const mfitMatch = u.match(/vd\.mfitpersonal\.com\.br\/(?:v2\/)?(\d+)\/mp4/);
+  if (mfitMatch) {
+    const id = mfitMatch[1];
+    return u.includes("/v2/")
+      ? `https://vd.mfitpersonal.com.br/v2/${id}/jpg/md/${id}_md.0000000.jpg`
+      : `https://vd.mfitpersonal.com.br/${id}/jpg/md/${id}_md.0000000.jpg`;
+  }
+  return null;
+}
+
 function parseSetCount(setsReps?: string | null): number {
   if (!setsReps) return 3;
   const match = setsReps.match(/^(\d+)\s*[xX]/);
@@ -255,6 +271,14 @@ export function FocusedDayView({
     return list;
   }, [candidateExercises, excludedExerciseIds, quickMode]);
 
+  const displayExercises = useMemo(() => {
+    let list = candidateExercises;
+    if (quickMode && list.length > 4) {
+      list = list.slice(0, 4);
+    }
+    return list;
+  }, [candidateExercises, quickMode]);
+
   const plateauByExercise = useMemo(() => {
     const map: Record<string, { count: number; load: string }> = {};
     const relevantExecs = (allExecutions && allExecutions.length > 0 ? allExecutions : executions).slice(0, 4);
@@ -402,17 +426,27 @@ export function FocusedDayView({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setQuickMode((q) => !q)}
+              onClick={() => {
+                setQuickMode((q) => {
+                  const next = !q;
+                  if (next) {
+                    toast.info("Modo 30 min ativado: focado nos 4 exercícios essenciais 💪");
+                  } else {
+                    toast.info("Modo completo restaurado (todos os exercícios visíveis).");
+                  }
+                  return next;
+                });
+              }}
               className={cn(
-                "h-7 gap-1 px-2 text-[11px] font-semibold rounded-lg border transition-all",
+                "h-7 gap-1 px-2.5 text-[11px] font-bold rounded-lg border transition-all active:scale-95",
                 quickMode
-                  ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                  ? "bg-amber-500 text-white border-amber-600 shadow-xs hover:bg-amber-600"
                   : "border-border/80 bg-background text-muted-foreground hover:text-foreground"
               )}
-              title="Modo Rápido 30 Minutos (Foca nos exercícios compostos essenciais)"
+              title="Modo Rápido 30 Minutos (Foca nos 4 exercícios compostos essenciais)"
             >
               <Timer className="h-3.5 w-3.5" />
-              <span>{quickMode ? "30 min" : "Sem Tempo?"}</span>
+              <span>{quickMode ? "30 min ativo (4)" : "Sem Tempo?"}</span>
             </Button>
             <Button
               type="button"
@@ -504,9 +538,30 @@ export function FocusedDayView({
         </Card>
       ) : (
         <div className="space-y-3.5 pt-1">
-          {exercises
-            .filter((e) => !e.substitute_exercise_id)
-            .map((parentEx, idx) => {
+          {quickMode && candidateExercises.length > 4 && (
+            <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 flex items-center justify-between gap-2 text-xs text-amber-700 dark:text-amber-300 animate-in fade-in-50 duration-150">
+              <div className="flex items-center gap-2 min-w-0">
+                <Timer className="h-4 w-4 text-amber-500 shrink-0" />
+                <span className="truncate">
+                  <strong>Modo 30 min ativo:</strong> Exibindo os 4 exercícios principais (de {candidateExercises.length}).
+                </span>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setQuickMode(false);
+                  toast.info("Modo completo restaurado.");
+                }}
+                className="h-6 text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 px-2 shrink-0"
+              >
+                Ver todos ({candidateExercises.length})
+              </Button>
+            </div>
+          )}
+
+          {displayExercises.map((parentEx, idx) => {
               const substitute = exercises.find((s) => s.substitute_exercise_id === parentEx.id);
               const isActiveSub = substitute && activeSubstitutes[parentEx.id] === substitute.id;
               const ex = isActiveSub && substitute ? substitute : parentEx;
@@ -765,8 +820,15 @@ export function FocusedDayView({
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
                         />
-                      ) : ex.media_type === "video" ? (
-                        <video src={ex.media_url} controls className="max-h-72 sm:max-h-80 w-full object-contain rounded-xl bg-black/40" />
+                      ) : ex.media_type === "video" || (ex.media_url && ex.media_url.includes(".mp4")) ? (
+                        <video
+                          src={ex.media_url.includes("#t=") ? ex.media_url : `${ex.media_url}#t=0.001`}
+                          poster={resolveExerciseThumbnail(ex.media_url, ex.thumbnail_url) || undefined}
+                          preload="metadata"
+                          playsInline
+                          controls
+                          className="max-h-72 sm:max-h-80 w-full object-contain rounded-xl bg-black/40"
+                        />
                       ) : (
                         <img
                           src={ex.media_url}

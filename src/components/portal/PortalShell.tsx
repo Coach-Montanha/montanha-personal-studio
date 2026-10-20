@@ -382,7 +382,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </header>
-        <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(2.5rem+var(--safe-area-inset-bottom,0px))] sm:p-6 lg:p-8 overflow-x-clip">
+        <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(5.5rem+var(--safe-area-inset-bottom,0px))] sm:p-6 sm:pb-8 lg:p-8 overflow-x-clip">
           {children}
         </main>
       </div>

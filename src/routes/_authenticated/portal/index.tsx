@@ -194,7 +194,7 @@ function PortalHome() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12 sm:pb-4">
       <Dialog open={warnOpen} onOpenChange={setWarnOpen}>
         <DialogContent className="border-state-pending/50">
           <DialogHeader>
