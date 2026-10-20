@@ -12,6 +12,7 @@ import {
   Timer,
   EyeOff,
   RotateCcw,
+  Activity,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,6 +27,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { WorkoutSummaryDialog } from "@/components/pt/WorkoutSummaryDialog";
 import { RestCountdownTimer, parseSafeSeconds } from "@/components/pt/RestCountdownTimer";
+import { PlateCalculatorDialog } from "@/components/pt/PlateCalculatorDialog";
+import { MuscleHeatmap } from "@/components/pt/MuscleHeatmap";
 
 function parseSetCount(setsReps?: string | null): number {
   if (!setsReps) return 3;
@@ -89,6 +92,10 @@ export function FocusedDayView({
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [lastExecutionId, setLastExecutionId] = useState<string | undefined>(undefined);
   const [completedSets, setCompletedSets] = useState<Record<string, number[]>>({});
+  const [heatmapOpen, setHeatmapOpen] = useState(false);
+  const [plateCalcOpen, setPlateCalcOpen] = useState(false);
+  const [plateCalcWeight, setPlateCalcWeight] = useState<number | string>(60);
+  const [plateCalcExName, setPlateCalcExName] = useState<string>("");
   const [restTimer, setRestTimer] = useState<{
     active: boolean;
     seconds: number;
@@ -269,7 +276,23 @@ export function FocusedDayView({
             <div />
           )}
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setHeatmapOpen((h) => !h)}
+              className={cn(
+                "h-7 gap-1 px-2 text-[11px] font-semibold rounded-lg border transition-all",
+                heatmapOpen
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary"
+              )}
+              title="Ver mapa anatômico muscular dos exercícios do dia"
+            >
+              <Activity className="h-3.5 w-3.5" />
+              <span>Mapa Muscular</span>
+            </Button>
             <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-primary border border-primary/20">
               {day.day_label}
             </span>
@@ -303,6 +326,26 @@ export function FocusedDayView({
             setTimerRunning(false);
           }}
         />
+
+        {heatmapOpen && (
+          <div className="rounded-2xl border border-primary/25 bg-card/90 p-3 sm:p-4 shadow-sm animate-in fade-in-50 duration-200">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/60">
+              <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+                <Activity className="h-4 w-4 text-primary" />
+                Mapa Anatômico Muscular da Sessão
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setHeatmapOpen(false)}
+                className="h-6 text-[11px] px-2 text-muted-foreground hover:text-foreground"
+              >
+                Recolher
+              </Button>
+            </div>
+            <MuscleHeatmap exercises={activeExercises} />
+          </div>
+        )}
       </div>
 
       {day.description && (
@@ -618,6 +661,21 @@ export function FocusedDayView({
                         onChange={(e) => setLoads((l) => ({ ...l, [ex.id]: e.target.value }))}
                         className="h-11 flex-1 rounded-xl text-sm font-semibold tabular-nums bg-background border-border/80"
                       />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const currentVal = loads[ex.id] || ex.load || last?.load || 60;
+                          setPlateCalcWeight(currentVal);
+                          setPlateCalcExName(ex.name);
+                          setPlateCalcOpen(true);
+                        }}
+                        title="Calculadora visual de anilhas na barra"
+                        className="h-11 w-11 shrink-0 rounded-xl border-border/80 hover:border-primary/50 text-muted-foreground hover:text-primary transition-all active:scale-95"
+                      >
+                        <Dumbbell className="h-4 w-4" />
+                      </Button>
                       {last?.load && (
                         <Button
                           type="button"
@@ -723,6 +781,13 @@ export function FocusedDayView({
         totalSets={restTimer.totalSets}
         onDismiss={() => setRestTimer((t) => ({ ...t, active: false }))}
         onComplete={() => setRestTimer((t) => ({ ...t, active: false }))}
+      />
+
+      <PlateCalculatorDialog
+        open={plateCalcOpen}
+        onOpenChange={setPlateCalcOpen}
+        initialWeight={plateCalcWeight}
+        exerciseName={plateCalcExName}
       />
     </div>
   );
