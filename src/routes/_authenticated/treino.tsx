@@ -197,9 +197,9 @@ function TreinoAlunoStandalonePage() {
   const isLoading = loadingProgram || loadingDays || loadingExercises;
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-screen bg-background pb-[calc(3rem+var(--safe-area-inset-bottom,0px))]">
       {/* Banner Superior Fixo da Visão do Aluno para o Treinador */}
-      <div className="bg-primary/10 border-b border-primary/20 px-4 py-2.5 text-xs text-foreground flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+      <div className="bg-primary/10 border-b border-primary/20 px-4 pt-[calc(0.625rem+var(--safe-area-inset-top,0px))] pb-2.5 text-xs text-foreground flex flex-wrap items-center justify-between gap-2 shadow-2xs">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="border-primary/40 bg-primary/20 text-primary font-bold px-2 py-0.5 text-[11px]">
             Visão do Aluno

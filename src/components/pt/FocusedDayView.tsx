@@ -382,7 +382,7 @@ export function FocusedDayView({
   return (
     <div className="space-y-4">
       {/* Sticky Header com Console do Treino e Cronômetro */}
-      <div className="sticky top-0 z-30 -mx-3 sm:-mx-6 px-3 sm:px-6 py-3 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/85 border-b border-border/80 shadow-xs space-y-2.5">
+      <div className="sticky top-0 z-30 -mx-3 sm:-mx-6 px-3 sm:px-6 pt-[calc(0.75rem+var(--safe-area-inset-top,0px))] pb-3 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/85 border-b border-border/80 shadow-xs space-y-2.5">
         <div className="flex items-center justify-between gap-2">
           {onBack ? (
             <Button
@@ -882,7 +882,7 @@ export function FocusedDayView({
       )}
 
       {activeExercises.length > 0 && (
-        <div className="sticky bottom-0 z-20 -mx-3 sm:-mx-6 px-3 sm:px-6 py-3.5 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 border-t border-border/80 shadow-lg">
+        <div className="sticky bottom-0 z-20 -mx-3 sm:-mx-6 px-3 sm:px-6 pt-3 pb-[calc(0.875rem+var(--safe-area-inset-bottom,0px))] bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 border-t border-border/80 shadow-lg">
           <Button
             size="lg"
             onClick={handleComplete}
