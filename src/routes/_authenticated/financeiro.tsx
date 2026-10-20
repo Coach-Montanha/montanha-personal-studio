@@ -207,6 +207,8 @@ function FinanceiroPage() {
   const [renewalOpen, setRenewalOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportExpensesOpen, setExportExpensesOpen] = useState(false);
+  const [exportDefaultSegment, setExportDefaultSegment] = useState<string>("all");
+  const [expenseCardFilter, setExpenseCardFilter] = useState<"all" | "general" | "studio" | "pt">("all");
   const [editing, setEditing] = useState<ExpenseRow | null>(null);
 
   async function handleDuplicateExpense(exp: ExpenseRow) {
