@@ -123,15 +123,59 @@ export function ExpenseDialog({
       notes: form.notes ?? null,
     };
 
+    const matchParcela = payload.description.match(/\b1\/(\d+)\b/);
+    const totalParcelasDoTexto = matchParcela ? Number(matchParcela[1]) : 0;
+    const qtdMesesTotal = Math.max(
+      totalParcelasDoTexto,
+      form.recurrent && form.recurrent_months ? Number(form.recurrent_months) : 1
+    );
+
     if (form.id) {
       const { error } = await supabase.from("expenses").update(payload).eq("id", form.id);
       if (error) return toast.error(error.message);
-    } else {
-      if (form.recurrent && form.recurrent_months && form.recurrent_months > 1) {
+
+      // Se for recorrente e tiver mais de 1 mês, gera os meses subsequentes faltantes mesmo na edição
+      if (form.recurrent && qtdMesesTotal > 1) {
         const [y, m] = (form.reference_month ?? currentMonthKey()).split("-").map(Number);
         const origDay = form.expense_date ? Number(form.expense_date.split("-")[2]) || 1 : 1;
 
-        for (let i = 0; i < form.recurrent_months; i++) {
+        for (let i = 1; i < qtdMesesTotal; i++) {
+          const month = ((m - 1 + i) % 12) + 1;
+          const year = y + Math.floor((m - 1 + i) / 12);
+          const refMonth = `${year}-${String(month).padStart(2, "0")}`;
+
+          const daysInMonth = new Date(year, month, 0).getDate();
+          const targetDay = Math.min(origDay, daysInMonth);
+          const expDate = `${year}-${String(month).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}`;
+
+          let desc = payload.description;
+          if (matchParcela) {
+            desc = desc.replace(/\b1\/\d+\b/, `${i + 1}/${matchParcela[1]}`);
+          }
+
+          const { data: existing } = await supabase
+            .from("expenses")
+            .select("id")
+            .eq("reference_month", refMonth)
+            .eq("description", desc)
+            .limit(1);
+
+          if (!existing || existing.length === 0) {
+            await supabase.from("expenses").insert({
+              ...payload,
+              description: desc,
+              expense_date: expDate,
+              reference_month: refMonth,
+            });
+          }
+        }
+      }
+    } else {
+      if (form.recurrent && qtdMesesTotal > 1) {
+        const [y, m] = (form.reference_month ?? currentMonthKey()).split("-").map(Number);
+        const origDay = form.expense_date ? Number(form.expense_date.split("-")[2]) || 1 : 1;
+
+        for (let i = 0; i < qtdMesesTotal; i++) {
           const month = ((m - 1 + i) % 12) + 1;
           const year = y + Math.floor((m - 1 + i) / 12);
           const refMonth = `${year}-${String(month).padStart(2, "0")}`;
@@ -143,7 +187,6 @@ export function ExpenseDialog({
 
           // Se a descrição tiver padrão de parcela (ex: "1/3"), atualiza para cada mês ("1/3", "2/3", "3/3")
           let desc = payload.description;
-          const matchParcela = desc.match(/\b1\/(\d+)\b/);
           if (matchParcela) {
             desc = desc.replace(/\b1\/\d+\b/, `${i + 1}/${matchParcela[1]}`);
           }
