@@ -53,6 +53,70 @@ function calculateTotals(expenses: ExpenseExportItem[]) {
   return { total, fixas, variaveis, count: expenses.length };
 }
 
+export type SegmentBreakdownItem = {
+  key: string;
+  label: string;
+  total: number;
+  pct: number;
+  fixas: number;
+  variaveis: number;
+  count: number;
+};
+
+export function calculateSegmentBreakdown(expenses: ExpenseExportItem[]) {
+  const totals = calculateTotals(expenses);
+  const segments: Record<string, { total: number; fixas: number; variaveis: number; count: number }> = {
+    general: { total: 0, fixas: 0, variaveis: 0, count: 0 },
+    studio: { total: 0, fixas: 0, variaveis: 0, count: 0 },
+    pt: { total: 0, fixas: 0, variaveis: 0, count: 0 },
+  };
+
+  for (const exp of expenses) {
+    const segKey = exp.segment === "studio" || exp.segment === "pt" ? exp.segment : "general";
+    const amt = Number(exp.amount || 0);
+    segments[segKey].total += amt;
+    segments[segKey].count += 1;
+    if (exp.type === "fixed") segments[segKey].fixas += amt;
+    else segments[segKey].variaveis += amt;
+  }
+
+  const items: SegmentBreakdownItem[] = [
+    {
+      key: "general",
+      label: "Geral",
+      total: segments.general.total,
+      pct: totals.total > 0 ? (segments.general.total / totals.total) * 100 : 0,
+      fixas: segments.general.fixas,
+      variaveis: segments.general.variaveis,
+      count: segments.general.count,
+    },
+    {
+      key: "studio",
+      label: "Studio",
+      total: segments.studio.total,
+      pct: totals.total > 0 ? (segments.studio.total / totals.total) * 100 : 0,
+      fixas: segments.studio.fixas,
+      variaveis: segments.studio.variaveis,
+      count: segments.studio.count,
+    },
+    {
+      key: "pt",
+      label: "Personal Trainer",
+      total: segments.pt.total,
+      pct: totals.total > 0 ? (segments.pt.total / totals.total) * 100 : 0,
+      fixas: segments.pt.fixas,
+      variaveis: segments.pt.variaveis,
+      count: segments.pt.count,
+    },
+  ];
+
+  const activeSegments = items.filter((s) => s.count > 0);
+  const bottleneck = [...items].sort((a, b) => b.total - a.total)[0] || items[0];
+
+  return { items, activeSegments, bottleneck, totals };
+}
+
+
 /** Exportação para Excel (.xlsx) */
 export async function exportExpensesToExcel(
   expenses: ExpenseExportItem[],
@@ -65,6 +129,7 @@ export async function exportExpensesToExcel(
   const title = options.title || "Relatório Detalhado de Despesas";
   const subtitle = options.subtitle || `Emitido em: ${new Date().toLocaleDateString("pt-BR")}`;
   const totals = calculateTotals(expenses);
+  const breakdown = calculateSegmentBreakdown(expenses);
 
   const aoa: any[][] = [
     [businessName],
@@ -81,6 +146,19 @@ export async function exportExpensesToExcel(
       "Qtd Lançamentos:",
       totals.count,
     ],
+    [],
+    ["ANÁLISE DE GARGALOS POR CENTRO DE CUSTO (SEGMENTOS):"],
+    ["Segmento", "Total (R$)", "% Participação", "Fixas (R$)", "Variáveis (R$)", "Qtd Itens"],
+    ...breakdown.items.map((s) => [
+      s.label,
+      s.total,
+      `${s.pct.toFixed(1)}%`,
+      s.fixas,
+      s.variaveis,
+      s.count,
+    ]),
+    [],
+    [`Gargalo Principal: ${breakdown.bottleneck.label} (${breakdown.bottleneck.pct.toFixed(1)}% das despesas - ${formatBRL(breakdown.bottleneck.total)})`],
     [],
     [
       "Data",
@@ -313,12 +391,27 @@ export function generateExpensesMarkdownText(
   lines.push(`**${businessName}** · *${subtitle}*`);
   lines.push("");
 
+  const breakdown = calculateSegmentBreakdown(expenses);
+
   lines.push("## Resumo Financeiro");
   lines.push(`- **Total Geral:** ${formatBRL(totals.total)}`);
   lines.push(`- **Despesas Fixas:** ${formatBRL(totals.fixas)} (${totals.total > 0 ? ((totals.fixas / totals.total) * 100).toFixed(1) : 0}%)`);
   lines.push(`- **Despesas Variáveis:** ${formatBRL(totals.variaveis)} (${totals.total > 0 ? ((totals.variaveis / totals.total) * 100).toFixed(1) : 0}%)`);
   lines.push(`- **Lançamentos Analisados:** ${totals.count}`);
   lines.push("");
+
+  lines.push("## Avaliação de Gargalos por Centro de Custo (Segmentos)");
+  lines.push("| Segmento | Total | % do Total | Fixas | Variáveis | Qtd |");
+  lines.push("| :--- | ---: | ---: | ---: | ---: | :---: |");
+  for (const seg of breakdown.items) {
+    const icon = seg.key === "studio" ? "🎯 " : seg.key === "pt" ? "🏋️ " : "📦 ";
+    lines.push(`| ${icon}${seg.label} | ${formatBRL(seg.total)} | ${seg.pct.toFixed(1)}% | ${formatBRL(seg.fixas)} | ${formatBRL(seg.variaveis)} | ${seg.count} |`);
+  }
+  lines.push("");
+  if (breakdown.bottleneck.total > 0) {
+    lines.push(`> ⚠️ **Diagnóstico de Gargalo:** O segmento **${breakdown.bottleneck.label}** concentra o maior volume de custos (**${breakdown.bottleneck.pct.toFixed(1)}%** do total, totalizando **${formatBRL(breakdown.bottleneck.total)}**).`);
+    lines.push("");
+  }
 
   lines.push("## Detalhamento das Despesas");
   lines.push("| Data | Mês Ref. | Descrição | Categoria | Segmento | Tipo | Valor | Observações |");
@@ -408,10 +501,17 @@ export function exportExpensesToTxt(
   lines.push(subtitle.center(78));
   lines.push("=".repeat(78));
   lines.push("");
+  const breakdown = calculateSegmentBreakdown(expenses);
   lines.push(`TOTAL GERAL:       ${formatBRL(totals.total)}`);
   lines.push(`DESPESAS FIXAS:    ${formatBRL(totals.fixas)}`);
   lines.push(`DESPESAS VARIÁVEIS:${formatBRL(totals.variaveis)}`);
   lines.push(`QUANTIDADE:        ${totals.count} lançamentos`);
+  lines.push("");
+  lines.push("CENTROS DE CUSTO / GARGALOS:");
+  for (const seg of breakdown.items) {
+    lines.push(`  - ${seg.label.padEnd(16)}: ${formatBRL(seg.total).padStart(14)} (${seg.pct.toFixed(1)}%) [Fixas: ${formatBRL(seg.fixas)} | Var: ${formatBRL(seg.variaveis)}]`);
+  }
+  lines.push(`  * Gargalo Principal: ${breakdown.bottleneck.label} (${breakdown.bottleneck.pct.toFixed(1)}%)`);
   lines.push("-".repeat(78));
   lines.push(
     "DATA".padEnd(12) +
@@ -458,6 +558,7 @@ export function exportExpensesToJson(
       subtitle: options.subtitle || null,
       exportedAt: new Date().toISOString(),
       summary: totals,
+      segmentBreakdown: calculateSegmentBreakdown(expenses),
     },
     expenses: expenses.map((e) => ({
       id: e.id,

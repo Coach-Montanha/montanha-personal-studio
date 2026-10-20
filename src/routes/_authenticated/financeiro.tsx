@@ -47,6 +47,7 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -911,24 +912,41 @@ function FinanceiroPage() {
         </TabsContent>
 
 
-        {/* TAB: Despesas */}
-        <TabsContent value="expenses">
-          <Card className="p-3.5 sm:p-5 min-w-0 max-w-full overflow-hidden">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold">
-                Despesas — {formatMonthLabel(month)}
-                {segment !== "all" && ` · ${SEGMENT_LABELS[segment]}`}
-              </h3>
+        {/* TAB: Despesas com Separação por Cards Próprios e Análise de Gargalos */}
+        <TabsContent value="expenses" className="space-y-4">
+          {/* Painel Superior: Diagnóstico de Gargalos Financeiros */}
+          <Card className="p-3.5 sm:p-5 min-w-0 max-w-full overflow-hidden border-primary/20 bg-card">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-base font-semibold text-foreground">
+                    Despesas & Gargalos Financeiros — {formatMonthLabel(month)}
+                  </h3>
+                  {segmentExpenses.bottleneckKey && (
+                    <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 gap-1 text-[11px] font-medium">
+                      <AlertTriangle className="h-3 w-3" />
+                      Maior Gargalo: {segmentExpenses.bottleneck.label} ({segmentExpenses.bottleneck.pct.toFixed(0)}%)
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Avaliação individual e comparativa de custos entre Gerais, Studio e Personal Trainer para controle preciso de fluxo e gargalos.
+                </p>
+              </div>
+
               <div className="flex flex-wrap items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   className="gap-1.5 text-xs h-8"
-                  onClick={() => setExportExpensesOpen(true)}
-                  title="Exportar dados técnicos de despesas (Excel, PDF, CSV, TXT, Markdown, JSON)"
+                  onClick={() => {
+                    setExportDefaultSegment("all");
+                    setExportExpensesOpen(true);
+                  }}
+                  title="Exportar despesas em Excel, PDF, CSV, TXT, Markdown ou JSON"
                 >
                   <Download className="h-3.5 w-3.5 text-primary" />
-                  <span>Exportar</span>
+                  <span>Exportar Relatório</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -938,7 +956,17 @@ function FinanceiroPage() {
                   title="Busca específica por nome, valor ou histórico"
                 >
                   <Search className="h-3.5 w-3.5" />
-                  <span>Buscar despesas</span>
+                  <span>Buscar</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 text-xs h-8"
+                  onClick={() => setRenewalOpen(true)}
+                  title="Renovar despesas recorrentes do mês anterior"
+                >
+                  <Repeat className="h-3.5 w-3.5 text-primary" />
+                  <span>Renovar do mês anterior</span>
                 </Button>
                 <Button
                   size="sm"
@@ -953,102 +981,306 @@ function FinanceiroPage() {
                 </Button>
               </div>
             </div>
-            {monthExpenses.length === 0 ? (
-              <EmptyState
-                icon={<Wallet className="h-5 w-5" />}
-                title="Nenhuma despesa neste mês"
-                description="Registre novas despesas ou renove automaticamente as despesas vindas do mês anterior."
-                action={
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    <Button variant="outline" onClick={() => setRenewalOpen(true)} className="gap-2">
-                      <Repeat className="h-4 w-4 text-primary" /> Renovar do mês anterior
-                    </Button>
-                    <Button onClick={() => setExpenseOpen(true)}>
-                      <Plus className="mr-2 h-4 w-4" /> Registrar despesa
-                    </Button>
+
+            {/* 3 Cards de Indicadores de Gargalo por Centro de Custo */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              {segmentExpenses.segmentsMeta.map((s) => {
+                const isBottleneck = segmentExpenses.bottleneckKey === s.key && s.total > 0;
+                const isSelected = expenseCardFilter === s.key;
+                return (
+                  <div
+                    key={s.key}
+                    onClick={() => setExpenseCardFilter((prev) => (prev === s.key ? "all" : s.key))}
+                    className={`cursor-pointer rounded-xl border p-3.5 transition-all duration-200 ${
+                      isSelected
+                        ? "border-primary ring-2 ring-primary/20 bg-primary/5"
+                        : isBottleneck
+                        ? "border-amber-500/40 bg-amber-500/5 hover:border-amber-500/60"
+                        : "border-border/60 bg-muted/20 hover:border-border hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <s.icon className={`h-4 w-4 ${s.color}`} />
+                        {s.label}
+                      </span>
+                      {isBottleneck ? (
+                        <Badge variant="destructive" className="text-[10px] py-0 px-1.5 gap-1">
+                          <AlertTriangle className="h-3 w-3" /> Gargalo Principal
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] py-0 px-1.5">
+                          {s.count} {s.count === 1 ? "item" : "itens"}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="text-lg font-bold font-mono text-foreground">
+                        {formatBRL(s.total)}
+                      </span>
+                      <span className="text-xs font-semibold font-mono text-muted-foreground">
+                        {s.pct.toFixed(1)}% do total
+                      </span>
+                    </div>
+
+                    <div className="mt-2 pt-2 border-t border-border/50 flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>Fixas: <strong className="font-mono text-foreground">{formatBRL(s.fixas)}</strong></span>
+                      <span>Var: <strong className="font-mono text-foreground">{formatBRL(s.variaveis)}</strong></span>
+                    </div>
                   </div>
-                }
-              />
-            ) : (
-              <div className="w-full max-w-full overflow-x-auto [touch-action:pan-x]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Descrição</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead>Segmento</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead className="text-right">Valor</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {monthExpenses.map((e) => (
-                      <TableRow key={e.id}>
-                        <TableCell className="font-medium">{e.description}</TableCell>
-                        <TableCell>
-                          {e.expense_categories
-                            ? `${e.expense_categories.icon ?? "📦"} ${e.expense_categories.name}`
-                            : "—"}
-                        </TableCell>
-                        <TableCell>{SEGMENT_LABELS[e.segment] ?? e.segment}</TableCell>
-                        <TableCell>
-                          <span className="text-xs">
-                            {e.type === "fixed" ? "🔒 Fixa" : "🔄 Variável"}
-                          </span>
-                        </TableCell>
-                        <TableCell>{formatDateBR(e.expense_date)}</TableCell>
-                        <TableCell className="text-right font-mono">
-                          {formatBRL(e.amount)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-primary hover:bg-primary/10 hover:text-primary"
-                              title="Renovar esta despesa para hoje (data presente)"
-                              onClick={() => handleDuplicateExpense(e)}
-                            >
-                              <Repeat className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setEditing(e);
-                                setExpenseOpen(true);
-                              }}
-                              title="Editar despesa"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => remove(e.id)}
-                              title="Excluir despesa"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow>
-                      <TableCell colSpan={5} className="font-semibold">
-                        Total despesas do mês
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-semibold">
-                        {formatBRL(kpis.totalExpenses)}
-                      </TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
+                );
+              })}
+            </div>
+
+            {/* Barra de Distribuição Visual Proporcional dos Gargalos */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span className="font-medium">Distribuição Proporcional dos Custos:</span>
+                <span>Total Consolidado: <strong className="font-mono text-foreground">{formatBRL(segmentExpenses.totalAll)}</strong></span>
               </div>
-            )}
+              <div className="h-2.5 w-full rounded-full bg-muted/60 overflow-hidden flex">
+                {segmentExpenses.totalAll > 0 ? (
+                  segmentExpenses.segmentsMeta.map((s) => (
+                    <div
+                      key={s.key}
+                      style={{ width: `${s.pct}%` }}
+                      className={`${s.barColor} transition-all duration-300`}
+                      title={`${s.label}: ${s.pct.toFixed(1)}% (${formatBRL(s.total)})`}
+                    />
+                  ))
+                ) : (
+                  <div className="h-full w-full bg-muted" />
+                )}
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-sky-500" /> Gerais ({segmentExpenses.segmentsMeta[0].pct.toFixed(1)}%)
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" /> Studio ({segmentExpenses.segmentsMeta[1].pct.toFixed(1)}%)
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" /> Personal Trainer ({segmentExpenses.segmentsMeta[2].pct.toFixed(1)}%)
+                  </span>
+                </div>
+
+                {/* Filtro de Exibição dos Cards */}
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-muted-foreground mr-1">Exibir:</span>
+                  <Button
+                    variant={expenseCardFilter === "all" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-6 text-[10px] px-2"
+                    onClick={() => setExpenseCardFilter("all")}
+                  >
+                    Todos os 3 Cards
+                  </Button>
+                  <Button
+                    variant={expenseCardFilter === "general" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-6 text-[10px] px-2"
+                    onClick={() => setExpenseCardFilter("general")}
+                  >
+                    📦 Gerais
+                  </Button>
+                  <Button
+                    variant={expenseCardFilter === "studio" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-6 text-[10px] px-2"
+                    onClick={() => setExpenseCardFilter("studio")}
+                  >
+                    🎯 Studio
+                  </Button>
+                  <Button
+                    variant={expenseCardFilter === "pt" ? "default" : "ghost"}
+                    size="sm"
+                    className="h-6 text-[10px] px-2"
+                    onClick={() => setExpenseCardFilter("pt")}
+                  >
+                    🏋️ PT
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Renderização dos Cards Individuais de Despesas */}
+          <div className="space-y-4">
+            {segmentExpenses.segmentsMeta
+              .filter((s) => expenseCardFilter === "all" || expenseCardFilter === s.key)
+              .map((s) => {
+                const isBottleneck = segmentExpenses.bottleneckKey === s.key && s.total > 0;
+                return (
+                  <Card key={s.key} className="p-3.5 sm:p-5 min-w-0 max-w-full overflow-hidden">
+                    <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className={`p-1.5 rounded-lg ${s.badgeBg}`}>
+                            <s.icon className="h-4 w-4" />
+                          </div>
+                          <h3 className="text-sm sm:text-base font-semibold text-foreground">
+                            {s.title}
+                          </h3>
+                          <Badge variant="outline" className={`font-mono text-xs font-semibold ${s.badgeBg}`}>
+                            {formatBRL(s.total)}
+                          </Badge>
+                          <Badge variant="secondary" className="text-[11px] font-mono">
+                            {s.pct.toFixed(1)}% do total
+                          </Badge>
+                          {isBottleneck && (
+                            <Badge variant="destructive" className="gap-1 text-[11px]">
+                              <AlertTriangle className="h-3 w-3" /> Maior Gargalo
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {s.subtitle} · Fixas: <strong className="font-mono text-foreground">{formatBRL(s.fixas)}</strong> · Variáveis: <strong className="font-mono text-foreground">{formatBRL(s.variaveis)}</strong>
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1.5 text-xs"
+                          onClick={() => {
+                            setExportDefaultSegment(s.key);
+                            setExportExpensesOpen(true);
+                          }}
+                          title={`Exportar somente despesas de ${s.label}`}
+                        >
+                          <Download className="h-3.5 w-3.5 text-primary" />
+                          <span>Exportar {s.label}</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="h-8 gap-1.5 text-xs"
+                          onClick={() => {
+                            setEditing({ segment: s.key } as any);
+                            setExpenseOpen(true);
+                          }}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          <span>Nova em {s.label}</span>
+                        </Button>
+                      </div>
+                    </div>
+
+                    {s.expenses.length === 0 ? (
+                      <EmptyState
+                        icon={<s.icon className="h-5 w-5" />}
+                        title={`Nenhuma despesa de ${s.label} neste mês`}
+                        description={`Cadastre lançamentos dedicados para ${s.label.toLowerCase()} para monitorar seu impacto financeiro.`}
+                        action={
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setEditing({ segment: s.key } as any);
+                              setExpenseOpen(true);
+                            }}
+                          >
+                            <Plus className="mr-1.5 h-4 w-4" /> Registrar em {s.label}
+                          </Button>
+                        }
+                      />
+                    ) : (
+                      <div className="w-full max-w-full overflow-x-auto [touch-action:pan-x]">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Descrição</TableHead>
+                              <TableHead>Categoria</TableHead>
+                              <TableHead>Tipo</TableHead>
+                              <TableHead>Data</TableHead>
+                              <TableHead className="text-right">Valor</TableHead>
+                              <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {s.expenses.map((e) => (
+                              <TableRow key={e.id}>
+                                <TableCell className="font-medium">{e.description}</TableCell>
+                                <TableCell>
+                                  {e.expense_categories
+                                    ? `${e.expense_categories.icon ?? "📦"} ${e.expense_categories.name}`
+                                    : "—"}
+                                </TableCell>
+                                <TableCell>
+                                  <span className="text-xs">
+                                    {e.type === "fixed" ? "🔒 Fixa" : "🔄 Variável"}
+                                  </span>
+                                </TableCell>
+                                <TableCell>{formatDateBR(e.expense_date)}</TableCell>
+                                <TableCell className="text-right font-mono font-medium">
+                                  {formatBRL(e.amount)}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex justify-end gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="text-primary hover:bg-primary/10 hover:text-primary"
+                                      title="Renovar esta despesa para hoje (data presente)"
+                                      onClick={() => handleDuplicateExpense(e)}
+                                    >
+                                      <Repeat className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        setEditing(e);
+                                        setExpenseOpen(true);
+                                      }}
+                                      title="Editar despesa"
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => remove(e.id)}
+                                      title="Excluir despesa"
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            <TableRow className="bg-muted/30 font-semibold">
+                              <TableCell colSpan={4}>
+                                Subtotal {s.title} ({s.count} itens)
+                              </TableCell>
+                              <TableCell className="text-right font-mono font-semibold text-foreground">
+                                {formatBRL(s.total)}
+                              </TableCell>
+                              <TableCell></TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+          </div>
+
+          {/* Card Resumo Consolidado do Mês */}
+          <Card className="p-3.5 sm:p-4 bg-muted/20 border-border/60">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">Total Geral de Despesas ({formatMonthLabel(month)}):</span>
+                <span className="font-mono font-bold text-sm text-foreground">{formatBRL(segmentExpenses.totalAll)}</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-4 text-muted-foreground font-mono">
+                <span>Gerais: <strong className="text-foreground">{formatBRL(segmentExpenses.segmentsMeta[0].total)}</strong></span>
+                <span>Studio: <strong className="text-foreground">{formatBRL(segmentExpenses.segmentsMeta[1].total)}</strong></span>
+                <span>PT: <strong className="text-foreground">{formatBRL(segmentExpenses.segmentsMeta[2].total)}</strong></span>
+              </div>
+            </div>
           </Card>
         </TabsContent>
 
@@ -1277,6 +1509,7 @@ function FinanceiroPage() {
         onOpenChange={setExportExpensesOpen}
         currentMonth={month}
         allExpenses={allExpenses}
+        defaultSegment={exportDefaultSegment}
       />
     </div>
   );

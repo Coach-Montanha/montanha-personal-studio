@@ -76,16 +76,15 @@ export function ExpenseDialog({
 
   useEffect(() => {
     if (open) {
-      setForm(
-        expense ?? {
-          expense_date: format(new Date(), "yyyy-MM-dd"),
-          reference_month: currentMonthKey(),
-          segment: "general",
-          type: "variable",
-          recurrent: false,
-          payment_method: "transfer",
-        },
-      );
+      setForm({
+        expense_date: format(new Date(), "yyyy-MM-dd"),
+        reference_month: currentMonthKey(),
+        segment: "general",
+        type: "variable",
+        recurrent: false,
+        payment_method: "transfer",
+        ...(expense ?? {}),
+      });
     }
   }, [open, expense]);
 

@@ -48,6 +48,7 @@ interface ExportExpensesDialogProps {
   onOpenChange: (open: boolean) => void;
   currentMonth: string; // Ex: "2026-10"
   allExpenses: any[];
+  defaultSegment?: string;
 }
 
 type PeriodPreset =
@@ -64,10 +65,33 @@ export function ExportExpensesDialog({
   onOpenChange,
   currentMonth,
   allExpenses = [],
+  defaultSegment = "all",
 }: ExportExpensesDialogProps) {
   const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("current_month");
-  const [segmentFilter, setSegmentFilter] = useState<string>("all");
+  const [selectedSegments, setSelectedSegments] = useState<string[]>(["general", "studio", "pt"]);
   const [typeFilter, setTypeFilter] = useState<string>("all");
+
+  useEffect(() => {
+    if (open) {
+      if (defaultSegment === "general" || defaultSegment === "studio" || defaultSegment === "pt") {
+        setSelectedSegments([defaultSegment]);
+      } else if (defaultSegment === "studio_pt") {
+        setSelectedSegments(["studio", "pt"]);
+      } else {
+        setSelectedSegments(["general", "studio", "pt"]);
+      }
+    }
+  }, [open, defaultSegment]);
+
+  function toggleSegment(seg: string) {
+    setSelectedSegments((prev) => {
+      if (prev.includes(seg)) {
+        if (prev.length === 1) return prev; // Mantém pelo menos um
+        return prev.filter((s) => s !== seg);
+      }
+      return [...prev, seg];
+    });
+  }
 
   // Custom date range
   const [customStartMonth, setCustomStartMonth] = useState<string>(currentMonth);
@@ -125,9 +149,10 @@ export function ExportExpensesDialog({
           if (customEndMonth && refMonth > customEndMonth) return false;
         }
 
-        // Filtro de Segmento
-        if (segmentFilter !== "all" && exp.segment !== segmentFilter) {
-          return false;
+        // Filtro de Segmento (individual ou mesclado)
+        const expSeg = exp.segment || "general";
+        if (selectedSegments.length > 0 && selectedSegments.length < 3) {
+          if (!selectedSegments.includes(expSeg)) return false;
         }
 
         // Filtro de Tipo (fixa ou variável)
@@ -157,7 +182,7 @@ export function ExportExpensesDialog({
     currentYear,
     customStartMonth,
     customEndMonth,
-    segmentFilter,
+    selectedSegments,
     typeFilter,
   ]);
 
@@ -186,9 +211,14 @@ export function ExportExpensesDialog({
     else periodLabel = "Histórico Completo";
 
     let segmentLabel = "";
-    if (segmentFilter === "studio") segmentLabel = " · Studio";
-    else if (segmentFilter === "pt") segmentLabel = " · Personal Trainer";
-    else if (segmentFilter === "general") segmentLabel = " · Geral";
+    if (selectedSegments.length === 3) {
+      segmentLabel = " · Consolidado (Geral, Studio, PT)";
+    } else if (selectedSegments.length === 1) {
+      const s = selectedSegments[0];
+      segmentLabel = s === "studio" ? " · Studio" : s === "pt" ? " · Personal Trainer" : " · Geral";
+    } else {
+      segmentLabel = ` · Mesclado (${selectedSegments.map((s) => (s === "studio" ? "Studio" : s === "pt" ? "PT" : "Geral")).join(" + ")})`;
+    }
 
     let typeLabel = "";
     if (typeFilter === "fixed") typeLabel = " · Fixas";
@@ -206,9 +236,24 @@ export function ExportExpensesDialog({
     currentYear,
     customStartMonth,
     customEndMonth,
-    segmentFilter,
+    selectedSegments,
     typeFilter,
   ]);
+
+  // Totais por segmento do conjunto selecionado
+  const segmentTotals = useMemo(() => {
+    const s = {
+      general: { total: 0, count: 0 },
+      studio: { total: 0, count: 0 },
+      pt: { total: 0, count: 0 },
+    };
+    for (const exp of filteredExpenses) {
+      const k = (exp.segment === "studio" || exp.segment === "pt") ? exp.segment : "general";
+      s[k].total += Number(exp.amount || 0);
+      s[k].count += 1;
+    }
+    return s;
+  }, [filteredExpenses]);
 
   async function handleExport(format: "excel" | "pdf" | "csv" | "md" | "txt" | "json") {
     if (filteredExpenses.length === 0) {
@@ -318,22 +363,54 @@ export function ExportExpensesDialog({
               </Select>
             </div>
 
-            {/* Segmento */}
-            <div className="space-y-1.5">
-              <Label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5 text-primary" /> Segmento
-              </Label>
-              <Select value={segmentFilter} onValueChange={setSegmentFilter}>
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue placeholder="Todos os segmentos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os Segmentos</SelectItem>
-                  <SelectItem value="studio">Studio</SelectItem>
-                  <SelectItem value="pt">Personal Trainer</SelectItem>
-                  <SelectItem value="general">Geral</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Segmento / Modo Mesclado */}
+            <div className="space-y-1.5 sm:col-span-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Layers className="h-3.5 w-3.5 text-primary" /> Segmentos (Individual ou Mesclado)
+                </Label>
+                <span className="text-[10px] text-muted-foreground">
+                  {selectedSegments.length === 3 ? "Todos" : `${selectedSegments.length} selecionado(s)`}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant={selectedSegments.includes("general") ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 text-xs gap-1 px-2.5"
+                  onClick={() => toggleSegment("general")}
+                >
+                  <span>📦 Geral</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant={selectedSegments.includes("studio") ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 text-xs gap-1 px-2.5"
+                  onClick={() => toggleSegment("studio")}
+                >
+                  <span>🎯 Studio</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant={selectedSegments.includes("pt") ? "default" : "outline"}
+                  size="sm"
+                  className="h-8 text-xs gap-1 px-2.5"
+                  onClick={() => toggleSegment("pt")}
+                >
+                  <span>🏋️ Personal Trainer</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-[11px] px-2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setSelectedSegments(["general", "studio", "pt"])}
+                >
+                  Todos
+                </Button>
+              </div>
             </div>
 
             {/* Tipo */}
@@ -411,6 +488,32 @@ export function ExportExpensesDialog({
               </div>
             </div>
           </div>
+
+          {/* Breakdown por Segmento na Exportação */}
+          {selectedSegments.length > 1 && (
+            <div className="mt-3 pt-2.5 border-t border-primary/10">
+              <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">
+                Distribuição por Centro de Custo no Relatório:
+              </div>
+              <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
+                <div className={`p-1.5 rounded-lg border ${selectedSegments.includes("general") ? "bg-background/80 border-border/80" : "opacity-40 border-dashed"}`}>
+                  <div className="text-[10px] text-muted-foreground">📦 Geral</div>
+                  <div className="font-mono font-semibold text-[11px]">{formatBRL(segmentTotals.general.total)}</div>
+                  <div className="text-[9px] text-muted-foreground">{segmentTotals.general.count} itens</div>
+                </div>
+                <div className={`p-1.5 rounded-lg border ${selectedSegments.includes("studio") ? "bg-background/80 border-border/80" : "opacity-40 border-dashed"}`}>
+                  <div className="text-[10px] text-muted-foreground">🎯 Studio</div>
+                  <div className="font-mono font-semibold text-[11px]">{formatBRL(segmentTotals.studio.total)}</div>
+                  <div className="text-[9px] text-muted-foreground">{segmentTotals.studio.count} itens</div>
+                </div>
+                <div className={`p-1.5 rounded-lg border ${selectedSegments.includes("pt") ? "bg-background/80 border-border/80" : "opacity-40 border-dashed"}`}>
+                  <div className="text-[10px] text-muted-foreground">🏋️ PT</div>
+                  <div className="font-mono font-semibold text-[11px]">{formatBRL(segmentTotals.pt.total)}</div>
+                  <div className="text-[9px] text-muted-foreground">{segmentTotals.pt.count} itens</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Seção de Formatos para Análise Técnica */}
