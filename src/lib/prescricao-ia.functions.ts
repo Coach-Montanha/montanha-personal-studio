@@ -337,13 +337,43 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
       );
     }
     if (isKbSport && !data.kb) {
-      throw new Error("Configuração do Kettlebell Sport ausente");
+      const escolaValida = ["auto", "fedorenko", "rudnev", "vorotyntsev", "denisov", "vasilev", "gomonov"];
+      const escola = (data.escolaOverride && escolaValida.includes(data.escolaOverride)
+        ? data.escolaOverride
+        : "fedorenko") as EscolaMetodologica;
+
+      data.kb = {
+        escolaMetodologica: escola,
+        nivelAtleta: "intermediario",
+        disciplina: "long_cycle",
+        pesoCorporalKg: null,
+        cargas: {
+          longCycle: { pesoKettlebellKg: 16, repsAtuais10min: 50 },
+          snatch: { pesoKettlebellKg: 16, repsAtuais10min: 100 },
+          jerk: { pesoKettlebellKg: 16, repsAtuais10min: 60 },
+        },
+      };
     }
+
     if (isWl && !data.wl) {
-      throw new Error("Configuração do Levantamento de Peso ausente");
+      const escolaValidaWl = ["auto", "bulgara", "russa_classica", "chinesa", "cubana", "colombiana", "pendlay", "takano"];
+      const escola = (data.escolaOverride && escolaValidaWl.includes(data.escolaOverride)
+        ? data.escolaOverride
+        : "russa_classica") as EscolaWeightlifting;
+
+      data.wl = {
+        escolaMetodologica: escola,
+        nivelAtleta: "intermediario",
+        pesoCorporalKg: null,
+        classificacaoOficial: null,
+        pontoFracoIdentificado: null,
+        capacidadeRecuperacao: "media",
+        suporteTotalDeclarado: false,
+        cargas: {},
+      };
     }
+
     if (isTf && !data.tf) {
-      // Se não enviou configuração explícita, usa um fallback básico para não quebrar a chamada
       data.tf = { 
         escolaMetodologica: "auto", 
         nivelAtleta: "intermediario", 
@@ -353,8 +383,26 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
         lesoes: [] 
       };
     }
+
     if (isCo && !data.co) {
-      throw new Error("Configuração da Corrida ausente");
+      const escolaValidaCo = ["auto", "daniels", "lydiard", "canova", "hansons", "pfitzinger", "horwill", "koop"];
+      const escola = (data.escolaOverride && escolaValidaCo.includes(data.escolaOverride)
+        ? data.escolaOverride
+        : "daniels") as EscolaCorrida;
+
+      data.co = {
+        escolaMetodologica: escola,
+        nivelAtleta: "intermediario",
+        distanciaAlvo: "10k",
+        volumeSemanalKm: 25,
+        frequenciaSemanalAtual: data.diasPorSemana || 3,
+        marcaRecenteDistancia: null,
+        marcaRecenteTempo: null,
+        dataProvaAlvo: null,
+        terreno: "estrada",
+        preferenciaAltaFrequencia: false,
+        lesoes: [],
+      };
     }
     if (isHibrido && !data.hibrido) {
       throw new Error("Configuração do motor Híbrido/KB Fitness ausente (hibrido payload)");

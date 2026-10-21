@@ -504,6 +504,10 @@ export function PrescreverIaDialog({
   const [prompt, setPrompt] = useState("");
   const [metodologia, setMetodologia] = useState<Methodology | string>(programa?.metodologia || "musculacao");
   const [escola, setEscola] = useState<string>("auto");
+  // Parâmetros Kettlebell Sport
+  const [kbDisciplina, setKbDisciplina] = useState<"long_cycle" | "biathlon" | "ambas">(kbInicial?.disciplina || "long_cycle");
+  const [kbPesoSino, setKbPesoSino] = useState<number>(kbInicial?.cargas?.longCycle?.pesoKettlebellKg || 16);
+  const [kbNivel, setKbNivel] = useState<"iniciante" | "intermediario" | "avancado" | "elite">(kbInicial?.nivelAtleta || "intermediario");
   const [semanas, setSemanas] = useState(escopoInicial?.semanas || 1);
   const [diasPorSemana, setDiasPorSemana] = useState(escopoInicial?.diasPorSemana || 3);
   const [historicoSessoes, setHistoricoSessoes] = useState(6);
@@ -967,10 +971,48 @@ export function PrescreverIaDialog({
               set_type_id: f.set_type_id,
               field_labels: f.field_labels,
             })),
-            kb: kbInicial ?? null,
-            wl: wlInicial ?? null,
-            tf: tfInicial ?? null,
-            co: coInicial ?? null,
+            kb: kbInicial || (metodologia === "kettlebell_sport" ? {
+              escolaMetodologica: (escola !== "auto" ? escola : "fedorenko") as any,
+              nivelAtleta: kbNivel,
+              disciplina: kbDisciplina,
+              pesoCorporalKg: athleteMemory?.pesoKg || null,
+              cargas: {
+                longCycle: { pesoKettlebellKg: kbPesoSino, repsAtuais10min: 50 },
+                snatch: { pesoKettlebellKg: kbPesoSino, repsAtuais10min: 100 },
+                jerk: { pesoKettlebellKg: kbPesoSino, repsAtuais10min: 60 },
+              },
+            } : null),
+            wl: wlInicial || (metodologia === "levantamento_peso" ? {
+              escolaMetodologica: (escola !== "auto" ? escola : "russa_classica") as any,
+              nivelAtleta: (athleteMemory?.nivelAtleta as any) || "intermediario",
+              pesoCorporalKg: athleteMemory?.pesoKg || null,
+              classificacaoOficial: null,
+              pontoFracoIdentificado: null,
+              capacidadeRecuperacao: "media",
+              suporteTotalDeclarado: false,
+              cargas: {},
+            } : null),
+            tf: tfInicial || (metodologia === "treinamento_funcional" ? {
+              escolaMetodologica: (escola !== "auto" ? escola : "boyle") as any,
+              nivelAtleta: (athleteMemory?.nivelAtleta as any) || "intermediario",
+              objetivo: "condicionamento_geral",
+              equipamento: "academia_completa",
+              sedentarismoProlongado: false,
+              lesoes: [],
+            } : null),
+            co: coInicial || (metodologia === "corrida" ? {
+              escolaMetodologica: (escola !== "auto" ? escola : "daniels") as any,
+              nivelAtleta: (athleteMemory?.nivelAtleta as any) || "intermediario",
+              distanciaAlvo: "10k",
+              volumeSemanalKm: 25,
+              frequenciaSemanalAtual: diasPorSemana || 3,
+              marcaRecenteDistancia: null,
+              marcaRecenteTempo: null,
+              dataProvaAlvo: null,
+              terreno: "estrada",
+              preferenciaAltaFrequencia: false,
+              lesoes: [],
+            } : null),
             hibrido: (metodologia === "hibrido" || metodologia === "kettlebell_fitness")
               ? {
                   ...(hibridoPayload || {}),
@@ -1925,6 +1967,62 @@ export function PrescreverIaDialog({
                       </Select>
                     </div>
                   </div>
+
+                  {metodologia === "kettlebell_sport" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-xl border border-primary/20 bg-primary/5 animate-in fade-in-50 duration-200">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Disciplina
+                        </label>
+                        <Select value={kbDisciplina} onValueChange={(v: any) => setKbDisciplina(v)} disabled={gerarMut.isPending}>
+                          <SelectTrigger className="h-8 text-xs bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="long_cycle">Long Cycle (Ciclo Longo)</SelectItem>
+                            <SelectItem value="biathlon">Biathlon (Jerk + Snatch)</SelectItem>
+                            <SelectItem value="ambas">Ambas / Misto</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Peso do Sino Base
+                        </label>
+                        <Select value={String(kbPesoSino)} onValueChange={(v) => setKbPesoSino(Number(v))} disabled={gerarMut.isPending}>
+                          <SelectTrigger className="h-8 text-xs bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="12">12 kg (Iniciação)</SelectItem>
+                            <SelectItem value="16">16 kg (Amarelo / Base)</SelectItem>
+                            <SelectItem value="20">20 kg (Roxo)</SelectItem>
+                            <SelectItem value="24">24 kg (Verde / Profissional)</SelectItem>
+                            <SelectItem value="28">28 kg (Laranja)</SelectItem>
+                            <SelectItem value="32">32 kg (Vermelho / Elite)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Nível no Esporte
+                        </label>
+                        <Select value={kbNivel} onValueChange={(v: any) => setKbNivel(v)} disabled={gerarMut.isPending}>
+                          <SelectTrigger className="h-8 text-xs bg-background">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="iniciante">Iniciante</SelectItem>
+                            <SelectItem value="intermediario">Intermediário</SelectItem>
+                            <SelectItem value="avancado">Avançado</SelectItem>
+                            <SelectItem value="elite">Elite / CMS / MS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
