@@ -44,7 +44,7 @@ export const MAX_PROMPT_CHARS = 120_000;
 export function resolveAiModel(): string {
   const configured = process.env.LOVABLE_AI_MODEL;
   if (configured && configured.trim().length > 0) return configured.trim();
-  return "google/gemini-2.5-flash";
+  return process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 }
 
 function sanitize(body: string): string {
