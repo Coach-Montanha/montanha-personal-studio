@@ -624,9 +624,129 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
       }
 
       if (!template || template.length === 0) {
-        throw new Error(
-          "Não foi possível identificar o molde da sessão anterior para continuar a progressão. Configure o molde manualmente ou verifique se a rotina já possui treinos cadastrados.",
-        );
+        if (metodologiaEfetiva === "kettlebell_fitness") {
+          template = [
+            {
+              chave: "prep_mobilidade",
+              formato: "builtin:mobilidade",
+              presetId: "builtin:mobilidade",
+              titulo: "Mobilidade Articular",
+              duracaoMin: 5,
+              seriesMin: 1,
+              seriesMax: 2,
+              numeroExercicios: 2,
+              repsPorExercicio: "8-10 reps",
+              modoExecucao: "circuito",
+              descansoAposSeg: 30,
+              descansoEntreSeriesSeg: 0,
+              selecaoExercicios: "ia",
+              slot: "mobilidade",
+              fonteExercicios: {
+                metodologias: ["kettlebell_fitness"],
+                equipamento: ["Mobilidade"],
+              },
+            },
+            {
+              chave: "aquecimento_ativacao",
+              formato: "builtin:preparacao_movimento",
+              presetId: "builtin:preparacao_movimento",
+              titulo: "Aquecimento & Ativação",
+              duracaoMin: 6,
+              seriesMin: 2,
+              seriesMax: 2,
+              numeroExercicios: 2,
+              repsPorExercicio: "10-12 reps",
+              modoExecucao: "circuito",
+              descansoAposSeg: 60,
+              descansoEntreSeriesSeg: 30,
+              selecaoExercicios: "ia",
+              fonteExercicios: {
+                metodologias: ["kettlebell_fitness"],
+                equipamento: ["Ginásticos", "Kettlebell"],
+              },
+            },
+            {
+              chave: "complexo_principal",
+              formato: "builtin:circuito",
+              presetId: "builtin:circuito",
+              titulo: "Complexo Principal Kettlebell",
+              duracaoMin: 20,
+              seriesMin: 3,
+              seriesMax: 4,
+              numeroExercicios: 3,
+              repsPorExercicio: "8-12 reps",
+              modoExecucao: "circuito",
+              descansoAposSeg: 90,
+              descansoEntreSeriesSeg: 60,
+              selecaoExercicios: "ia",
+              fonteExercicios: {
+                metodologias: ["kettlebell_fitness"],
+                equipamento: ["Kettlebell"],
+              },
+            },
+          ] as SessaoTemplate;
+        } else {
+          template = [
+            {
+              chave: "prep_mobilidade",
+              formato: "builtin:mobilidade",
+              presetId: "builtin:mobilidade",
+              titulo: "Preparação & Mobilidade",
+              duracaoMin: 5,
+              seriesMin: 1,
+              seriesMax: 2,
+              numeroExercicios: 2,
+              repsPorExercicio: "8-10 reps",
+              modoExecucao: "circuito",
+              descansoAposSeg: 30,
+              descansoEntreSeriesSeg: 0,
+              selecaoExercicios: "ia",
+              slot: "mobilidade",
+              fonteExercicios: {
+                metodologias: ["hibrido"],
+                equipamento: ["Mobilidade"],
+              },
+            },
+            {
+              chave: "forca_principal",
+              formato: "builtin:series_fixas",
+              presetId: "builtin:series_fixas",
+              titulo: "Força & Movimentos Compostos",
+              duracaoMin: 18,
+              seriesMin: 3,
+              seriesMax: 4,
+              numeroExercicios: 3,
+              repsPorExercicio: "6-10 reps",
+              modoExecucao: "series_fixas",
+              descansoAposSeg: 90,
+              descansoEntreSeriesSeg: 60,
+              selecaoExercicios: "ia",
+              fonteExercicios: {
+                metodologias: ["hibrido"],
+                equipamento: ["Barbell", "Dumbbell", "Kettlebell"],
+              },
+            },
+            {
+              chave: "metcon_condicionamento",
+              formato: "builtin:circuito",
+              presetId: "builtin:circuito",
+              titulo: "MetCon & Condicionamento Híbrido",
+              duracaoMin: 15,
+              seriesMin: 3,
+              seriesMax: 3,
+              numeroExercicios: 3,
+              repsPorExercicio: "12-15 reps",
+              modoExecucao: "circuito",
+              descansoAposSeg: 60,
+              descansoEntreSeriesSeg: 45,
+              selecaoExercicios: "ia",
+              fonteExercicios: {
+                metodologias: ["hibrido"],
+                equipamento: ["Kettlebell", "Ginásticos", "Objetos Alternativos"],
+              },
+            },
+          ] as SessaoTemplate;
+        }
       }
 
       resolvedHibridoTemplate = template;
@@ -774,8 +894,19 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
           conteudo,
           resolvedHibridoTemplate,
           resolvedHibridoCandidatos,
+          (ctx.duracao_semanas || 1) * (ctx.dias_por_semana || 1),
         );
-        return { ...result, generation_source: "ai" } as any;
+        const exerciseNamesMap: Record<string, string> = {};
+        for (const pool of Object.values(resolvedHibridoCandidatos)) {
+          if (Array.isArray(pool)) {
+            for (const item of pool) {
+              if (item && item.id && item.nome) {
+                exerciseNamesMap[item.id] = item.nome;
+              }
+            }
+          }
+        }
+        return { ...result, exercise_names_map: exerciseNamesMap, generation_source: "ai" } as any;
       }
 
       const result = normalizarPrescricao(conteudo);

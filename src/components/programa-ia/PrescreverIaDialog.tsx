@@ -1057,7 +1057,7 @@ export function PrescreverIaDialog({
               const ids = Array.isArray(b.exerciciosIds) ? b.exerciciosIds : (Array.isArray(b.exercicios_ids) ? b.exercicios_ids : []);
               return ids.map((id: string) => ({
                 id,
-                name: b.titulo || "Exercício Prescrito", 
+                name: res.exercise_names_map?.[id] || b.titulo || "Exercício Prescrito", 
                 group_type: "individual",
                 group: ""
               }));
