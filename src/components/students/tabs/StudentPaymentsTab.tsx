@@ -229,17 +229,17 @@ export function StudentPaymentsTab({
             <div key={year} className="space-y-2">
               <h3 className="text-sm font-semibold text-muted-foreground">{year}</h3>
               <div className="w-full max-w-full rounded-xl border border-border/60 bg-card shadow-xs overflow-hidden">
-                <Table className="min-w-[650px]">
+                <Table className="w-full">
                   <TableHeader>
                     <TableRow className="hover:bg-transparent">
-                      <TableHead className="whitespace-nowrap">Mês de Referência</TableHead>
-                      <TableHead className="whitespace-nowrap">Data de Pagamento</TableHead>
-                      <TableHead className="whitespace-nowrap max-w-[200px]">Plano</TableHead>
-                      <TableHead className="text-right whitespace-nowrap">Valor</TableHead>
-                      <TableHead className="whitespace-nowrap">Forma</TableHead>
-                      <TableHead className="whitespace-nowrap">Status</TableHead>
-                      <TableHead className="whitespace-nowrap max-w-[140px]">Observações</TableHead>
-                      <TableHead className="text-right whitespace-nowrap pr-4 w-36"></TableHead>
+                      <TableHead className="whitespace-nowrap px-2.5 py-2 text-xs">Mês de Referência</TableHead>
+                      <TableHead className="whitespace-nowrap px-2 py-2 text-xs">Data</TableHead>
+                      <TableHead className="whitespace-nowrap px-2 py-2 text-xs max-w-[150px]">Plano</TableHead>
+                      <TableHead className="text-right whitespace-nowrap px-2 py-2 text-xs">Valor</TableHead>
+                      <TableHead className="whitespace-nowrap px-2 py-2 text-xs">Forma</TableHead>
+                      <TableHead className="whitespace-nowrap px-2 py-2 text-xs">Status</TableHead>
+                      <TableHead className="whitespace-nowrap px-2 py-2 text-xs max-w-[100px]">Observações</TableHead>
+                      <TableHead className="text-right whitespace-nowrap pr-2.5 py-2 text-xs w-32"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -257,14 +257,14 @@ export function StudentPaymentsTab({
                             pkg && isExpanded(p.id, pkg) && "border-b-0",
                           )}
                         >
-                          <TableCell className="text-xs capitalize">
+                          <TableCell className="text-xs capitalize px-2.5 py-2 whitespace-nowrap">
                             <span className="font-medium">{formatMonthLong(p.reference_month)}</span>
                             {isRenewable && (
                               <TooltipRoot>
                                 <TooltipTrigger asChild>
-                                  <span className="ml-2 inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary transition-colors duration-200">
-                                    <RefreshCw className="h-2.5 w-2.5" />
-                                    {remaining != null ? `auto · ${remaining}` : "auto"}
+                                  <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full border border-primary/20 bg-primary/10 px-1.5 py-0.2 text-[9px] font-semibold uppercase tracking-wide text-primary transition-colors duration-200">
+                                    <RefreshCw className="h-2 w-2" />
+                                    {remaining != null ? `${remaining}` : "auto"}
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -275,12 +275,12 @@ export function StudentPaymentsTab({
                               </TooltipRoot>
                             )}
                           </TableCell>
-                          <TableCell className="text-xs font-mono text-muted-foreground">
+                          <TableCell className="text-xs font-mono text-muted-foreground px-2 py-2 whitespace-nowrap">
                             {formatDateBR(p.payment_date)}
                           </TableCell>
-                          <TableCell className="max-w-[200px]">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <PlanBadge name={p.plans?.name} />
+                          <TableCell className="max-w-[150px] px-2 py-2">
+                            <div className="flex items-center gap-1 min-w-0">
+                              <PlanBadge name={p.plans?.name} className="max-w-[90px] text-[10px] px-1.5 py-0.5 truncate" />
                               {pkg && (
                                 <button
                                   type="button"
@@ -288,7 +288,7 @@ export function StudentPaymentsTab({
                                   aria-expanded={isExpanded(p.id, pkg)}
                                   aria-controls={`pkg-${p.id}`}
                                   className={cn(
-                                    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold tabular-nums",
+                                    "inline-flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
                                     "transition-all duration-200 hover:brightness-105 active:scale-[0.97]",
                                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
                                     checkinChipClass(
@@ -296,11 +296,11 @@ export function StudentPaymentsTab({
                                     ),
                                   )}
                                 >
-                                  <Ticket className="h-3 w-3" />
+                                  <Ticket className="h-2.5 w-2.5" />
                                   {Math.max(0, pkg.quota - pkg.used.length)}/{pkg.quota}
                                   <ChevronDown
                                     className={cn(
-                                      "h-3 w-3 transition-transform duration-200",
+                                      "h-2.5 w-2.5 transition-transform duration-200",
                                       isExpanded(p.id, pkg) && "rotate-180",
                                     )}
                                   />
@@ -308,19 +308,19 @@ export function StudentPaymentsTab({
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="text-right font-mono font-medium tabular-nums">
+                          <TableCell className="text-right font-mono font-medium tabular-nums px-2 py-2 whitespace-nowrap">
                             {formatBRL(p.amount)}
                           </TableCell>
-                          <TableCell className="text-xs">
+                          <TableCell className="text-xs px-2 py-2 whitespace-nowrap">
                             {paymentMethodLabel(p.payment_method)}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="px-2 py-2 whitespace-nowrap">
                             <PaymentStatusBadge status={p.status} />
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground max-w-[140px] truncate" title={p.notes ?? undefined}>
+                          <TableCell className="text-xs text-muted-foreground max-w-[100px] truncate px-2 py-2" title={p.notes ?? undefined}>
                             {p.notes ?? "—"}
                           </TableCell>
-                          <TableCell className="text-right whitespace-nowrap pr-4 py-3">
+                          <TableCell className="text-right whitespace-nowrap pr-2.5 py-2">
                             <PaymentActionsDock
                               canReceipt={p.status === "paid"}
                               onReceipt={() => handleGenerateReceipt(p)}
@@ -351,15 +351,15 @@ export function StudentPaymentsTab({
                     );
                   })}
                   <TableRow className="bg-muted/40 font-medium">
-                    <TableCell colSpan={3} className="text-xs">
+                    <TableCell colSpan={3} className="text-xs px-2.5 py-2">
                       Resumo {year}: {paidRows.length} pagamento
                       {paidRows.length === 1 ? "" : "s"}
                     </TableCell>
-                    <TableCell className="text-right font-mono">{formatBRL(total)}</TableCell>
-                    <TableCell colSpan={3} className="text-xs text-muted-foreground">
+                    <TableCell className="text-right font-mono text-xs px-2 py-2">{formatBRL(total)}</TableCell>
+                    <TableCell colSpan={3} className="text-xs text-muted-foreground px-2 py-2">
                       Ticket médio: {formatBRL(avg)}
                     </TableCell>
-                    <TableCell />
+                    <TableCell className="pr-2.5" />
                   </TableRow>
                 </TableBody>
               </Table>

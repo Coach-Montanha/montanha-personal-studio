@@ -30,7 +30,7 @@ export function PaymentActionsDock({
   className,
 }: PaymentActionsDockProps) {
   return (
-    <div className={cn("inline-flex items-center gap-1 justify-end select-none shrink-0", className)}>
+    <div className={cn("inline-flex items-center gap-0.5 justify-end select-none shrink-0", className)}>
       {/* 1. Recibo em PDF */}
       {canReceipt && onReceipt && (
         <TooltipRoot delayDuration={100}>
@@ -39,7 +39,7 @@ export function PaymentActionsDock({
               type="button"
               onClick={onReceipt}
               aria-label="Gerar recibo em PDF"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-6.5 w-6.5 items-center justify-center rounded-md text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <FileText className="h-3.5 w-3.5 shrink-0" />
             </button>
@@ -59,7 +59,7 @@ export function PaymentActionsDock({
               onClick={onToggleAutoRenew}
               aria-label={isRenewable ? "Desativar auto-renovação" : "Ativar auto-renovação"}
               className={cn(
-                "relative flex h-7 w-7 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                "relative flex h-6.5 w-6.5 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                 isRenewable
                   ? "text-emerald-500 hover:bg-emerald-500/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -87,7 +87,7 @@ export function PaymentActionsDock({
               disabled={!canRenew && !isRenewing}
               aria-label="Renovar pagamento"
               className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-2xs transition-all duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                "flex h-6.5 w-6.5 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-2xs transition-all duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                 canRenew
                   ? "hover:bg-primary/90 hover:scale-105"
                   : "opacity-40 cursor-not-allowed hover:scale-100"
@@ -114,7 +114,7 @@ export function PaymentActionsDock({
               type="button"
               onClick={onTransfer}
               aria-label="Transferir pagamento"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-purple-500 hover:bg-purple-500/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-6.5 w-6.5 items-center justify-center rounded-md text-purple-500 hover:bg-purple-500/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <ArrowRightLeft className="h-3.5 w-3.5 shrink-0" />
             </button>
@@ -133,7 +133,7 @@ export function PaymentActionsDock({
               type="button"
               onClick={onEdit}
               aria-label="Editar pagamento"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-6.5 w-6.5 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <Pencil className="h-3.5 w-3.5 shrink-0" />
             </button>
@@ -152,7 +152,7 @@ export function PaymentActionsDock({
               type="button"
               onClick={onDelete}
               aria-label="Excluir pagamento"
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex h-6.5 w-6.5 items-center justify-center rounded-md text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <Trash2 className="h-3.5 w-3.5 shrink-0" />
             </button>
