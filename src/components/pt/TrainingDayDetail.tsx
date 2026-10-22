@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, ChevronUp, ChevronDown, Loader2 } from "lucide-react";
+import { Plus, ChevronUp, ChevronDown, Loader2, Play, VideoOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -85,11 +85,31 @@ export function TrainingDayDetail({ dayId }: { dayId: string }) {
   return (
     <div className="space-y-3 border-t pt-4">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/30 p-2.5">
-        <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h4 className="text-sm font-semibold leading-tight">Exercícios prescritos</h4>
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold tabular-nums text-primary">
             {exercises.length}
           </span>
+          {exercises.length > 0 && (
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                title="Exercícios com vídeo de demonstração"
+              >
+                <Play className="h-2.5 w-2.5 fill-current" />
+                <span>{exercises.filter(e => !!e.media_url && e.media_url.trim().length > 0).length} com vídeo</span>
+              </span>
+              {exercises.filter(e => !e.media_url || e.media_url.trim().length === 0).length > 0 && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 font-medium text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                  title="Exercícios sem vídeo de demonstração"
+                >
+                  <VideoOff className="h-2.5 w-2.5" />
+                  <span>{exercises.filter(e => !e.media_url || e.media_url.trim().length === 0).length} sem vídeo</span>
+                </span>
+              )}
+            </div>
+          )}
           {saving && (
             <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
               <Loader2 className="h-3 w-3 animate-spin" /> salvando ordem…

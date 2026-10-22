@@ -15,6 +15,8 @@ import {
   ArrowRight,
   ArrowLeft,
   ArrowLeftRight,
+  Play,
+  VideoOff,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -234,6 +236,15 @@ export function ExerciseCard({
               title="Clique para substituir por outro exercício da biblioteca"
             >
               <span className="truncate">{exercise.name}</span>
+              {hasVideo ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                  <Play className="h-2 w-2 fill-current" /> Com vídeo
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                  <VideoOff className="h-2.5 w-2.5" /> Sem vídeo
+                </span>
+              )}
               <span className="hidden text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 transition-opacity group-hover/name:inline">
                 · {form.series_type === "reps_load" ? "Série/Rep" : 
                    form.series_type === "sets_time" ? "Série/Tempo" :
@@ -406,6 +417,7 @@ export function ExerciseCard({
                   setForm((f) => ({ ...f, media_url: "", media_type: "image", thumbnail_url: "" }));
                   autoSave({ media_url: null, media_type: null, thumbnail_url: null });
                 }}
+                onOpenLibrary={() => setSubstituteDialogOpen(true)}
               />
             </div>
 
