@@ -129,27 +129,60 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     </div>
   ),
   errorComponent: ({ error }) => {
+    const errorStr = String((error as any)?.message || error || "");
+    const isChunkLoadError =
+      errorStr.includes("dynamically imported module") ||
+      errorStr.includes("Failed to fetch dynamically imported module") ||
+      errorStr.includes("Importing a module script failed") ||
+      errorStr.includes("Loading chunk") ||
+      errorStr.includes("error loading dynamically imported module");
+
     if (typeof window !== "undefined") {
       console.error("Root errorComponent:", error);
-      if (error?.message?.includes("Failed to fetch dynamically imported module")) {
-        const key = "last_chunk_reload";
-        const last = sessionStorage.getItem(key);
-        const now = Date.now();
-        if (!last || now - Number(last) > 10000) {
-          sessionStorage.setItem(key, String(now));
+      if (isChunkLoadError) {
+        const key = "last_chunk_reload_url";
+        const lastUrl = sessionStorage.getItem(key);
+        // Se ainda não recarregou para esta URL exata, recarrega automaticamente
+        if (lastUrl !== window.location.href) {
+          sessionStorage.setItem(key, window.location.href);
           window.location.reload();
           return null;
         }
       }
     }
+
+    if (isChunkLoadError) {
+      return (
+        <div className="flex min-h-screen items-center justify-center p-8 bg-background">
+          <div className="max-w-md text-center space-y-3">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <span className="text-xl">✨</span>
+            </div>
+            <h1 className="text-xl font-bold text-foreground">Nova versão do sistema disponível</h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              O sistema foi atualizado com novas melhorias. Clique no botão abaixo para carregar a versão mais recente.
+            </p>
+            <div className="pt-2">
+              <button
+                onClick={() => {
+                  sessionStorage.removeItem("last_chunk_reload_url");
+                  window.location.reload();
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-90 active:scale-95 transition-all"
+              >
+                Atualizar agora
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     const recover = async () => {
       try {
-        // Limpa modo suporte / impersonação
         localStorage.removeItem("edufinance.impersonate");
-        // Limpa escopo de tenant (evita ficar preso vendo dados de outro)
         localStorage.removeItem("edufinance.tenantScope");
         localStorage.removeItem("edufinance.profileMode");
-        // Encerra a sessão do Supabase (limpa todas as chaves sb-*-auth-token)
         Object.keys(localStorage)
           .filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
           .forEach((k) => localStorage.removeItem(k));
@@ -162,6 +195,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         window.location.replace("/auth");
       }
     };
+
     return (
       <div className="flex min-h-screen items-center justify-center p-8">
         <div className="max-w-md text-center">
@@ -170,9 +204,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             Tente novamente em alguns instantes. Se você entrou como outro treinador e ficou preso
             nesta tela, use o botão abaixo para sair e voltar ao login.
           </p>
-          {error?.message && (
+          {(error as any)?.message && (
             <div className="mt-3 max-h-32 overflow-auto rounded border border-destructive/20 bg-destructive/10 p-2 text-left text-xs font-mono text-destructive break-all">
-              {error.message}
+              {(error as any).message}
             </div>
           )}
           <div className="mt-4 flex flex-wrap justify-center gap-2">
