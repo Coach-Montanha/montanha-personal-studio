@@ -39,6 +39,8 @@ import { downloadProgramPdf } from "@/lib/pt-program-pdf";
 import { Download, TrendingUp, Sparkles, LayoutGrid, Copy } from "lucide-react";
 import { PrescreverIaDialog } from "@/components/programa-ia/PrescreverIaDialog";
 import { ReprogramDayAiDialog } from "./ReprogramDayAiDialog";
+import { AddWeekDialog } from "./AddWeekDialog";
+import { parseDayMeta, buildDayDescription } from "@/lib/training-weeks";
 import { Stepper, StepperFooter, type StepItem } from "@/components/ui/stepper";
 
 const CATEGORY_LABELS: Record<string, string> = {
