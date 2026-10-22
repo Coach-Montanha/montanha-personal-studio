@@ -167,3 +167,34 @@ export function buildDayDescription(options: {
 
   return parts.join(" ");
 }
+
+
+/**
+ * Aplica progressão ou variação de carga matemática a uma string de carga (ex: '60kg', '20 kg').
+ */
+export function applyLoadVariation(
+  load: string | null | undefined,
+  variationType: "none" | "add_2kg" | "add_5pct" | "deload_15pct"
+): string | null {
+  if (!load || variationType === "none") return load ?? null;
+
+  // Procura padrão numérico + unidade (ex: 60kg, 12.5 kg, 20)
+  const match = load.trim().match(/^(\d+(?:[.,]\d+)?)\s*(kg|kilos?|lbs?|barras?|placas?)?$/i);
+  if (!match) return load;
+
+  const num = parseFloat(match[1].replace(",", "."));
+  if (isNaN(num)) return load;
+
+  const unit = match[2] || "kg";
+  let newNum = num;
+
+  if (variationType === "add_2kg") {
+    newNum = num + 2;
+  } else if (variationType === "add_5pct") {
+    newNum = Math.round((num * 1.05) * 2) / 2;
+  } else if (variationType === "deload_15pct") {
+    newNum = Math.round((num * 0.85) * 2) / 2;
+  }
+
+  return `${newNum}${unit ? ` ${unit}` : ""}`.trim();
+}

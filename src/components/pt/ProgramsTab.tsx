@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Plus, Pencil, Trash2, MoreVertical, Archive, ArchiveRestore,
-  CalendarDays, Target, Dumbbell, MessageSquare, CheckCircle2, RotateCcw, Eye,
+  CalendarDays,
+  CalendarPlus, Target, Dumbbell, MessageSquare, CheckCircle2, RotateCcw, Eye,
   ArrowRightLeft, ChevronDown, ChevronRight, HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -118,16 +119,28 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
   const [migrateOpen, setMigrateOpen] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [guidanceOpen, setGuidanceOpen] = useState(false);
+  const [addWeekOpen, setAddWeekOpen] = useState(false);
 
   const { data: studentInfo } = useQuery({
-    queryKey: ["pt-student-name", studentId],
+    queryKey: ["pt-student-name", studentId, studioStudentId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("pt_students")
-        .select("name")
-        .eq("id", studentId)
-        .maybeSingle();
-      return data;
+      if (studioStudentId) {
+        const { data } = await supabase
+          .from("students" as never)
+          .select("name")
+          .eq("id", studioStudentId)
+          .maybeSingle();
+        if (data) return data as { name: string };
+      }
+      if (studentId) {
+        const { data } = await supabase
+          .from("pt_students")
+          .select("name")
+          .eq("id", studentId)
+          .maybeSingle();
+        if (data) return data;
+      }
+      return null;
     },
   });
 
@@ -142,12 +155,18 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
   };
 
   async function handleDownloadPdf() {
-    if (!activeProgramId) return;
+    if (!activeProgramId) {
+      toast.error("Nenhuma rotina selecionada para download.");
+      return;
+    }
     setDownloadingPdf(true);
+    const toastId = toast.loading("Gerando arquivo PDF da rotina de treinos...");
     try {
       await downloadProgramPdf(activeProgramId, studentInfo?.name);
+      toast.success("Download iniciado com sucesso!", { id: toastId });
     } catch (e: any) {
-      toast.error(e?.message ?? "Falha ao gerar PDF");
+      console.error("[handleDownloadPdf] Erro:", e);
+      toast.error(e?.message ?? "Falha ao gerar PDF", { id: toastId });
     } finally {
       setDownloadingPdf(false);
     }
@@ -647,10 +666,18 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
               </Button>
               <Button
                 size="sm"
+                variant="default"
+                onClick={() => setAddWeekOpen(true)}
+                className="gap-1.5 shadow-xs font-semibold"
+              >
+                <CalendarPlus className="h-4 w-4" /> Adicionar semana
+              </Button>
+              <Button
+                size="sm"
                 variant="outline"
                 onClick={() => { setEditingDay(null); setDayOpen(true); }}
               >
-                <Plus className="h-4 w-4" /> Adicionar treino
+                <Plus className="h-4 w-4" /> Adicionar treino avulso
               </Button>
             </div>
           </div>
@@ -776,6 +803,15 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
         studentId={studentId}
         studioStudentId={studioStudentId}
       />
+      {activeProgramId && (
+        <AddWeekDialog
+          open={addWeekOpen}
+          onOpenChange={setAddWeekOpen}
+          programId={activeProgramId}
+          trainingDays={trainingDays}
+          onOpenAi={() => setAiOpen(true)}
+        />
+      )}
       {activeProgramId && (
         <TrainingDayDialog
           open={dayOpen}
@@ -1132,10 +1168,20 @@ function TrainingDayDialog({
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<TrainingDay>>({});
+  const [weekNumber, setWeekNumber] = useState<number>(1);
+  const [isWithCoach, setIsWithCoach] = useState<boolean>(false);
 
   useEffect(() => {
     if (!open) return;
     setForm(day ?? { name: "", day_label: "" });
+    if (day) {
+      const meta = parseDayMeta(day);
+      setWeekNumber(meta.weekNumber || 1);
+      setIsWithCoach(meta.isWithCoach);
+    } else {
+      setWeekNumber(1);
+      setIsWithCoach(false);
+    }
   }, [open, day]);
 
   async function save() {
@@ -1143,12 +1189,19 @@ function TrainingDayDialog({
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
     if (!userId) return;
+
+    const fullDescription = buildDayDescription({
+      description: form.description,
+      weekNumber: weekNumber,
+      isWithCoach: isWithCoach,
+    });
+
     const payload = {
       user_id: userId,
       program_id: programId,
       name: form.name,
       day_label: form.day_label,
-      description: form.description || null,
+      description: fullDescription || null,
     };
     const op = form.id
       ? supabase.from("pt_training_days" as never).update(payload as never).eq("id", form.id)
@@ -1166,34 +1219,77 @@ function TrainingDayDialog({
         <DialogHeader>
           <DialogTitle>{form.id ? "Editar treino" : "Adicionar treino"}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label>Nome do treino *</Label>
-            <Input
-              value={form.name ?? ""}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="Ex: Treino 1"
-            />
+        <div className="space-y-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Nome do treino *</Label>
+              <Input
+                value={form.name ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Ex: Treino 1"
+                className="h-9"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Identificação do dia *</Label>
+              <Input
+                value={form.day_label ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, day_label: e.target.value }))}
+                placeholder="Ex: Dia A ou S1D1"
+                className="h-9"
+              />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label>Identificação do dia *</Label>
-            <Input
-              value={form.day_label ?? ""}
-              onChange={(e) => setForm((f) => ({ ...f, day_label: e.target.value }))}
-              placeholder="Ex: Dia A"
-            />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Semana do Programa</Label>
+              <Select
+                value={String(weekNumber)}
+                onValueChange={(v) => setWeekNumber(Number(v))}
+              >
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((w) => (
+                    <SelectItem key={w} value={String(w)}>
+                      Semana {w}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs">Acompanhamento</Label>
+              <Select
+                value={isWithCoach ? "coach" : "sozinho"}
+                onValueChange={(v) => setIsWithCoach(v === "coach")}
+              >
+                <SelectTrigger className="h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sozinho">🏃 Treino Sozinho</SelectItem>
+                  <SelectItem value="coach">🏋️ Treino Comigo (Coach)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
           <div className="space-y-1.5">
-            <Label>Descrição</Label>
+            <Label className="text-xs">Descrição / Foco muscular</Label>
             <Textarea
-              rows={4}
+              rows={3}
               value={form.description ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Ex: Peito, ombro e tríceps — 4 séries de cada exercício"
+              className="text-xs resize-y"
             />
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={save}>Salvar</Button>
         </DialogFooter>
