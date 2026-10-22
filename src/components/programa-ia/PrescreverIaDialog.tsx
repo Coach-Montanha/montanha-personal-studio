@@ -22,6 +22,8 @@ import {
   Settings2,
   Key,
   Users,
+  Save,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +63,7 @@ import type {
   PrescricaoHibrido,
 } from "@/lib/hibrido-ia.server";
 import { parseAthleteMemory } from "@/lib/athlete-memory";
+import { parsePlanilhaParaTreino } from "@/lib/parse-planilha";
 
 
 const PLACEHOLDER = `Ex.: Próxima fase focada em força máxima, mantendo a divisão A/B anterior mas reduzindo as repetições para 4-6 e aumentando o descanso.
@@ -524,7 +527,7 @@ export function PrescreverIaDialog({
   const [planilhaArquivoNome, setPlanilhaArquivoNome] = useState<string | null>(null);
   const [planilhaImagem, setPlanilhaImagem] = useState<{ mimeType: string; data: string } | null>(null);
   const [planilhaFileUrl, setPlanilhaFileUrl] = useState<string | null>(null);
-  const [planilhaModo, setPlanilhaModo] = useState<"ajustar" | "continuar">("ajustar");
+  const [planilhaModo, setPlanilhaModo] = useState<"direto" | "ajustar" | "continuar">("direto");
   const [isExtractingPlanilha, setIsExtractingPlanilha] = useState(false);
   const [showPlanilhaPreview, setShowPlanilhaPreview] = useState(false);
 
@@ -960,7 +963,7 @@ export function PrescreverIaDialog({
             cooldownSessoes: cooldownSessoes,
             semanasNovas: semanas,
             planilhaBase: planilhaTexto.trim() || undefined,
-            planilhaModo: planilhaTexto.trim() ? planilhaModo : undefined,
+            planilhaModo: planilhaTexto.trim() && planilhaModo !== "direto" ? (planilhaModo as "ajustar" | "continuar") : undefined,
             planilhaImagem: planilhaImagem || undefined,
             fileUrl: planilhaFileUrl || undefined,
             setTypes: setTypes.map((t) => ({ id: t.id, label: t.label, fields: t.fields })),
@@ -1103,8 +1106,9 @@ export function PrescreverIaDialog({
   });
 
   const salvarMut = useMutation({
-    mutationFn: async () => {
-      if (!previa) throw new Error("Nada para salvar");
+    mutationFn: async (dadosOverride?: AiPrescription | PrescricaoHibrido | null) => {
+      const dadosParaSalvar = dadosOverride || previa;
+      if (!dadosParaSalvar) throw new Error("Nada para salvar");
 
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
@@ -1145,7 +1149,6 @@ export function PrescreverIaDialog({
         const newProgPayload: any = {
           user_id: userId,
           pt_student_id: finalStudentId,
-          studio_student_id: isStudioStudent ? (selectedStudentId || studioStudentId || null) : null,
           name: progTitle,
           category: "hypertrophy",
           level: "intermediate",
@@ -1155,15 +1158,6 @@ export function PrescreverIaDialog({
           ai_prompt: prompt.trim() || (planilhaTexto ? `Planilha: ${planilhaArquivoNome}` : null),
           ai_generated_at: new Date().toISOString(),
         };
-
-        if (isStudioStudent && (selectedStudentId || studioStudentId)) {
-          const sid = selectedStudentId || studioStudentId;
-          await supabase
-            .from("pt_programs" as never)
-            .update({ studio_student_id: sid } as never)
-            .eq("pt_student_id", sid)
-            .is("studio_student_id", null);
-        }
 
         const { data: createdProg, error: errProg } = await supabase
           .from("pt_programs" as never)
@@ -1175,7 +1169,7 @@ export function PrescreverIaDialog({
       }
 
       // Obtém os dias gerados
-      const diasPrevia: AiDay[] = (previa as any).days || [];
+      const diasPrevia: AiDay[] = (dadosParaSalvar as any).days || [];
       if (!diasPrevia.length) throw new Error("A prescrição não contém dias de treino estruturados");
 
       // Descobre a ordem inicial
@@ -1698,7 +1692,31 @@ export function PrescreverIaDialog({
                 </div>
 
                 {/* SELETOR DE MODO DE OPERAÇÃO DA PLANILHA */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPlanilhaModo("direto");
+                      if (planilhaTexto.trim()) {
+                        const parsed = parsePlanilhaParaTreino(planilhaTexto, planilhaArquivoNome || nomePrograma);
+                        if (parsed.days.length > 0) setPrevia(parsed);
+                      }
+                    }}
+                    className={`text-left p-3 rounded-lg border text-xs transition-all ${
+                      planilhaModo === "direto"
+                        ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs ring-1 ring-primary/30"
+                        : "border-border/60 bg-muted/20 text-muted-foreground hover:border-border"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold flex items-center gap-1.5">💾 Salvar Direto</span>
+                      {planilhaModo === "direto" && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                    </div>
+                    <p className="text-[11px] leading-relaxed font-normal text-muted-foreground">
+                      Importa os treinos exatamente como estão na planilha, sem modificações e sem IA.
+                    </p>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => setPlanilhaModo("ajustar")}
@@ -1709,7 +1727,7 @@ export function PrescreverIaDialog({
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold">🔄 Reorganizar & Ajustar</span>
+                      <span className="font-bold flex items-center gap-1.5">🔄 Reorganizar IA</span>
                       {planilhaModo === "ajustar" && <CheckCircle2 className="h-4 w-4 text-primary" />}
                     </div>
                     <p className="text-[11px] leading-relaxed font-normal text-muted-foreground">
@@ -1727,11 +1745,11 @@ export function PrescreverIaDialog({
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold">📈 Continuar Periodização</span>
+                      <span className="font-bold flex items-center gap-1.5">📈 Continuar IA</span>
                       {planilhaModo === "continuar" && <CheckCircle2 className="h-4 w-4 text-primary" />}
                     </div>
                     <p className="text-[11px] leading-relaxed font-normal text-muted-foreground">
-                      Usa a planilha como histórico prévio e projeta as próximas semanas com sobrecarga progressiva.
+                      Usa a planilha como histórico prévio e projeta as próximas semanas com IA.
                     </p>
                   </button>
                 </div>
@@ -1869,25 +1887,87 @@ export function PrescreverIaDialog({
               className="resize-y text-sm leading-relaxed transition-colors duration-200"
             />
 
-            <Button
-              onClick={() => gerarMut.mutate()}
-              disabled={!podeGerar}
-              className="w-full gap-2 transition-all duration-200 h-10 font-semibold"
-            >
-              {gerarMut.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Gerando {semanas} semana(s)...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  {planilhaArquivoNome && planilhaModo === "ajustar"
-                    ? "Reorganizar & Ajustar Treino com IA"
-                    : `Gerar Periodização com IA (${semanas} sem)`}
-                </>
-              )}
-            </Button>
+            {planilhaModo === "direto" && (planilhaArquivoNome || planilhaTexto.trim()) ? (
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (!planilhaTexto.trim()) {
+                      toast.error("Nenhum texto de treino encontrado. Cole ou suba uma planilha.");
+                      return;
+                    }
+                    const parsed = parsePlanilhaParaTreino(planilhaTexto, planilhaArquivoNome || nomePrograma);
+                    if (!parsed.days.length) {
+                      toast.error("Não foram encontrados exercícios no texto da planilha.");
+                      return;
+                    }
+                    setPrevia(parsed);
+                    toast.success(`${parsed.days.length} sessão/sessões estruturada(s) para pré-visualização!`);
+                  }}
+                  disabled={salvarMut.isPending || isExtractingPlanilha}
+                  className="flex-1 gap-2 h-10 text-xs font-semibold"
+                >
+                  <Eye className="h-4 w-4" />
+                  Pré-visualizar Treino da Planilha
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (!planilhaTexto.trim()) {
+                      toast.error("Nenhum texto de treino encontrado.");
+                      return;
+                    }
+                    let dadosParaSalvar = previa;
+                    if (!dadosParaSalvar || !(dadosParaSalvar as any).days?.length) {
+                      const parsed = parsePlanilhaParaTreino(planilhaTexto, planilhaArquivoNome || nomePrograma);
+                      if (!parsed.days.length) {
+                        toast.error("Não foram identificados exercícios na planilha.");
+                        return;
+                      }
+                      setPrevia(parsed);
+                      dadosParaSalvar = parsed;
+                    }
+                    salvarMut.mutate(dadosParaSalvar);
+                  }}
+                  disabled={salvarMut.isPending || isExtractingPlanilha}
+                  className="flex-1 gap-2 h-10 font-semibold"
+                >
+                  {salvarMut.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Salvando na rotina...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Salvar Planilha Direto no Banco
+                    </>
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={() => gerarMut.mutate()}
+                disabled={!podeGerar}
+                className="w-full gap-2 transition-all duration-200 h-10 font-semibold"
+              >
+                {gerarMut.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Gerando {semanas} semana(s)...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    {planilhaArquivoNome && planilhaModo === "ajustar"
+                      ? "Reorganizar & Ajustar Treino com IA"
+                      : `Gerar Periodização com IA (${semanas} sem)`}
+                  </>
+                )}
+              </Button>
+            )}
           </div>
 
           {/* PARÂMETROS AVANÇADOS / ESTRUTURA */}
