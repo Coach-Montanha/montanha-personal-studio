@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { parseDayMeta, buildDayDescription, groupDaysByWeek } from "@/lib/training-weeks";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dumbbell,
@@ -8,6 +9,7 @@ import {
   Calendar,
   Sparkles,
   Users,
+  User,
   Target,
   Clock,
   Layers,
@@ -417,8 +419,9 @@ export function ProgramEditorDialog({
                 </div>
               ) : (
                 <div className="flex flex-wrap items-center gap-2 border-b border-border/60 pb-3">
-                  {days.map((day) => {
+                  {days.map((day, idx) => {
                     const isSelected = selectedDayId === day.id;
+                    const meta = parseDayMeta(day, idx, days.length);
                     return (
                       <button
                         key={day.id}
@@ -427,10 +430,15 @@ export function ProgramEditorDialog({
                         className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                           isSelected
                             ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            : meta.isWithCoach
+                            ? "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-200 hover:bg-amber-500/20"
                             : "bg-background text-foreground border-border hover:bg-muted/60"
                         }`}
                       >
-                        <span>{day.name}</span>
+                        <span className="flex items-center gap-1">
+                          {meta.isWithCoach && <Sparkles className="h-3 w-3 text-amber-500 fill-amber-500/20" />}
+                          {day.name}
+                        </span>
                         {day.day_label && (
                           <span
                             className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${
@@ -440,6 +448,7 @@ export function ProgramEditorDialog({
                             {day.day_label}
                           </span>
                         )}
+                        <span className="text-[9px] opacity-75 font-mono">S{meta.weekNumber}</span>
                       </button>
                     );
                   })}

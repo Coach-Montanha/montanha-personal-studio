@@ -255,9 +255,16 @@ export function RestCountdownTimer({
           <div className="flex items-baseline gap-1.5 min-w-0 shrink-0">
             <span
               className={cn(
-                "font-mono text-3xl sm:text-4xl font-black tabular-nums tracking-tight",
-                isCompleted ? "text-emerald-400 animate-pulse" : "text-white",
+                "font-mono text-3xl sm:text-4xl font-black tabular-nums tracking-tight inline-block min-w-[5ch] text-left",
+                isCompleted ? "text-emerald-400" : "text-white",
               )}
+              style={{
+                fontVariantNumeric: "tabular-nums",
+                fontFeatureSettings: "'tnum' 1, 'zero' 1",
+                WebkitFontSmoothing: "antialiased",
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden",
+              }}
             >
               {formattedTime}
             </span>

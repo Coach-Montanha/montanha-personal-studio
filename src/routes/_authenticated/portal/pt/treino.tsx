@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { parseDayMeta, groupDaysByWeek } from "@/lib/training-weeks";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -7,6 +8,9 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
+  Sparkles,
+  User,
+  Calendar,
   ClipboardList,
   Dumbbell,
   History,
@@ -424,65 +428,121 @@ function PTTreinoPage() {
                     </span>
                   </div>
 
-                  <div className="grid gap-2.5">
-                    {programDays.map((d) => {
-                      const count = exercises.filter((e) => e.training_day_id === d.id).length;
-                      const doneToday = executions.some(
-                        (x) => x.training_day_id === d.id && isSameDay(x.executed_at, new Date()),
-                      );
-                      const lastExec = executions.find((x) => x.training_day_id === d.id);
-
-                      return (
-                        <button
-                          key={d.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedProgramId(null);
-                            setSelectedDayId(d.id);
-                          }}
-                          className={cn(
-                            "group relative flex flex-col gap-2 rounded-xl border bg-card p-3.5 sm:p-4 text-left shadow-xs transition-all duration-200",
-                            "hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-sm active:translate-y-0",
-                            doneToday && "border-emerald-500/30 bg-emerald-500/5",
-                          )}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-primary">
-                              {d.day_label}
+                  <div className="space-y-4">
+                    {groupDaysByWeek(programDays).map(({ weekNumber, days: weekDays }) => (
+                      <div
+                        key={weekNumber}
+                        className="rounded-2xl border border-border/80 bg-muted/20 p-3 sm:p-3.5 space-y-2.5 shadow-xs"
+                      >
+                        <div className="flex items-center justify-between px-1">
+                          <div className="flex items-center gap-2">
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-primary text-[10px] font-black">
+                              {weekNumber}
                             </span>
-                            {doneToday ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                                <CheckCircle2 className="h-3 w-3" /> Feito hoje
-                              </span>
-                            ) : lastExec ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                                <History className="h-3 w-3" />
-                                {formatDateBR(lastExec.executed_at)}
-                              </span>
-                            ) : null}
+                            <h4 className="text-xs sm:text-sm font-extrabold tracking-tight text-foreground uppercase">
+                              Semana {weekNumber}
+                            </h4>
                           </div>
+                          <span className="text-[11px] font-semibold text-muted-foreground tabular-nums">
+                            {weekDays.length} {weekDays.length === 1 ? "sessão" : "sessões"}
+                          </span>
+                        </div>
 
-                          <div className="flex items-baseline justify-between gap-2">
-                            <span className="text-sm sm:text-base font-bold leading-tight group-hover:text-primary transition-colors">
-                              {d.name}
-                            </span>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary shrink-0" />
-                          </div>
+                        <div className="grid gap-2">
+                          {weekDays.map((d) => {
+                            const count = exercises.filter((e) => e.training_day_id === d.id).length;
+                            const doneToday = executions.some(
+                              (x) => x.training_day_id === d.id && isSameDay(x.executed_at, new Date()),
+                            );
+                            const lastExec = executions.find((x) => x.training_day_id === d.id);
+                            const meta = parseDayMeta(d, programDays.indexOf(d), programDays.length);
 
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span className="tabular-nums">
-                              {count} {count === 1 ? "exercício" : "exercícios"}
-                            </span>
-                            {lastExec?.notes && parseNotes(lastExec.notes).timerSeconds ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] opacity-75">
-                                <Timer className="h-3 w-3" />
-                                {formatSeconds(parseNotes(lastExec.notes).timerSeconds!)}
-                              </span>
-                            ) : null}
-                          </div>
-                        </button>
-                      );
-                    })}
+                            return (
+                              <button
+                                key={d.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedProgramId(null);
+                                  setSelectedDayId(d.id);
+                                }}
+                                className={cn(
+                                  "group relative flex flex-col gap-2 rounded-xl border p-3.5 sm:p-4 text-left shadow-xs transition-all duration-200",
+                                  "hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0",
+                                  meta.isWithCoach
+                                    ? "border-amber-500/50 bg-gradient-to-r from-amber-500/[0.08] via-amber-500/[0.03] to-card hover:border-amber-500"
+                                    : "border-border bg-card hover:border-primary/60",
+                                  doneToday && "border-emerald-500/40 bg-emerald-500/10",
+                                )}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span
+                                      className={cn(
+                                        "rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider",
+                                        meta.isWithCoach
+                                          ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                                          : "bg-primary/10 text-primary",
+                                      )}
+                                    >
+                                      {d.day_label}
+                                    </span>
+
+                                    {meta.isWithCoach ? (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide">
+                                        <Sparkles className="h-3 w-3 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
+                                        Com o Coach
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 text-muted-foreground px-2 py-0.5 text-[10px] font-medium">
+                                        <User className="h-2.5 w-2.5 opacity-70" />
+                                        Treino Sozinho
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {doneToday ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                      <CheckCircle2 className="h-3 w-3" /> Feito hoje
+                                    </span>
+                                  ) : lastExec ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                      <History className="h-3 w-3" />
+                                      {formatDateBR(lastExec.executed_at)}
+                                    </span>
+                                  ) : null}
+                                </div>
+
+                                <div className="flex items-baseline justify-between gap-2">
+                                  <span
+                                    className={cn(
+                                      "text-sm sm:text-base font-bold leading-tight transition-colors",
+                                      meta.isWithCoach
+                                        ? "text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400"
+                                        : "group-hover:text-primary",
+                                    )}
+                                  >
+                                    {d.name}
+                                  </span>
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 shrink-0" />
+                                </div>
+
+                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                  <span className="tabular-nums">
+                                    {count} {count === 1 ? "exercício" : "exercícios"}
+                                  </span>
+                                  {lastExec?.notes && parseNotes(lastExec.notes).timerSeconds ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] opacity-75">
+                                      <Timer className="h-3 w-3" />
+                                      {formatSeconds(parseNotes(lastExec.notes).timerSeconds!)}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </>

@@ -125,14 +125,22 @@ export function SessionTimer({
           <span
             className={cn(
               "h-2.5 w-2.5 rounded-full shrink-0",
-              currentRunning
-                ? "bg-emerald-500 animate-ping"
+              currentRunning ? "bg-emerald-500 ring-2 ring-emerald-500/40 shadow-xs"
                 : currentSeconds > 0
                 ? "bg-amber-500"
                 : "bg-muted-foreground/60",
             )}
           />
-          <div className="font-mono text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-foreground leading-none">
+          <div
+            className="font-mono text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-foreground leading-none inline-block min-w-[7ch] text-left"
+            style={{
+              fontVariantNumeric: "tabular-nums",
+              fontFeatureSettings: "'tnum' 1, 'zero' 1",
+              WebkitFontSmoothing: "antialiased",
+              transform: "translateZ(0)",
+              backfaceVisibility: "hidden",
+            }}
+          >
             {formatSeconds(currentSeconds)}
           </div>
         </div>
@@ -215,7 +223,7 @@ export function SessionTimer({
           <Timer
             className={cn(
               "h-4 w-4 shrink-0 transition-colors",
-              currentRunning ? "text-emerald-500 animate-pulse" : "text-muted-foreground",
+              currentRunning ? "text-emerald-500" : "text-muted-foreground",
             )}
           />
           <span className="truncate text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -236,8 +244,7 @@ export function SessionTimer({
             <span
               className={cn(
                 "h-2 w-2 rounded-full",
-                currentRunning
-                  ? "bg-emerald-500 animate-ping"
+                currentRunning ? "bg-emerald-500 ring-2 ring-emerald-500/40 shadow-xs"
                   : currentSeconds > 0
                   ? "bg-amber-500"
                   : "bg-muted-foreground/60",
@@ -258,7 +265,16 @@ export function SessionTimer({
 
       {/* Dígitos gigantes (+100% a +150% maiores que o original de 24px) */}
       <div className="w-full py-0.5 text-center select-none">
-        <div className="font-mono text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tight text-foreground leading-none">
+        <div
+          className="font-mono text-4xl sm:text-5xl md:text-6xl font-black tabular-nums tracking-tight text-foreground leading-none inline-block min-w-[7.5ch] text-center"
+          style={{
+            fontVariantNumeric: "tabular-nums",
+            fontFeatureSettings: "'tnum' 1, 'zero' 1",
+            WebkitFontSmoothing: "antialiased",
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+          }}
+        >
           {formatSeconds(currentSeconds)}
         </div>
       </div>

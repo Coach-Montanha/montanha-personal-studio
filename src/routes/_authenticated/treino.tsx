@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { parseDayMeta, groupDaysByWeek } from "@/lib/training-weeks";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,8 @@ import {
   Timer,
   CheckCircle2,
   ArrowLeft,
+  Sparkles,
+  Calendar,
   ExternalLink,
   User,
 } from "lucide-react";
@@ -302,66 +305,122 @@ function TreinoAlunoStandalonePage() {
                   Nenhum treino adicionado nesta rotina.
                 </div>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {days.map((d) => {
-                    const count = exercises.filter((e) => e.training_day_id === d.id).length;
-                    const dayExecs = executions.filter((x) => x.training_day_id === d.id);
-                    const lastExec = dayExecs[0];
-
-                    return (
-                      <Card
-                        key={d.id}
-                        onClick={() => setSelectedDayId(d.id)}
-                        className={cn(
-                          "group relative flex flex-col justify-between gap-3 p-4 sm:p-5 rounded-2xl border bg-card shadow-xs cursor-pointer transition-all duration-200",
-                          "hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md active:translate-y-0"
-                        )}
-                      >
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-primary">
-                              {d.day_label}
-                            </span>
-                            {lastExec ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                                <History className="h-3 w-3" />
-                                {formatDateBR(lastExec.executed_at)}
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-muted-foreground">
-                                Sem execuções
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-baseline justify-between gap-2">
-                            <span className="text-base sm:text-lg font-bold leading-tight group-hover:text-primary transition-colors">
-                              {d.name}
-                            </span>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary shrink-0" />
-                          </div>
-
-                          {d.description && (
-                            <p className="line-clamp-2 text-xs text-muted-foreground">
-                              {d.description}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
-                          <span className="tabular-nums font-medium">
-                            {count} {count === 1 ? "exercício" : "exercícios"}
+                <div className="space-y-6">
+                  {groupDaysByWeek(days).map(({ weekNumber, days: weekDays }) => (
+                    <div
+                      key={weekNumber}
+                      className="rounded-2xl border border-border/80 bg-muted/20 p-4 sm:p-5 space-y-3.5 shadow-xs"
+                    >
+                      <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 text-primary text-xs font-black">
+                            {weekNumber}
                           </span>
-                          {lastExec?.notes && parseNotes(lastExec.notes).timerSeconds ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] text-primary/80 font-mono">
-                              <Timer className="h-3 w-3" />
-                              {formatSeconds(parseNotes(lastExec.notes).timerSeconds!)}
-                            </span>
-                          ) : null}
+                          <h3 className="text-sm font-extrabold tracking-tight text-foreground uppercase">
+                            Semana {weekNumber}
+                          </h3>
                         </div>
-                      </Card>
-                    );
-                  })}
+                        <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+                          {weekDays.length} {weekDays.length === 1 ? "sessão" : "sessões"}
+                        </span>
+                      </div>
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {weekDays.map((d) => {
+                          const count = exercises.filter((e) => e.training_day_id === d.id).length;
+                          const dayExecs = executions.filter((x) => x.training_day_id === d.id);
+                          const lastExec = dayExecs[0];
+                          const meta = parseDayMeta(d, days.indexOf(d), days.length);
+
+                          return (
+                            <Card
+                              key={d.id}
+                              onClick={() => setSelectedDayId(d.id)}
+                              className={cn(
+                                "group relative flex flex-col justify-between gap-3 p-4 sm:p-5 rounded-2xl border shadow-xs cursor-pointer transition-all duration-200",
+                                "hover:-translate-y-0.5 hover:shadow-md active:translate-y-0",
+                                meta.isWithCoach
+                                  ? "border-amber-500/50 bg-gradient-to-r from-amber-500/[0.08] via-amber-500/[0.03] to-card hover:border-amber-500"
+                                  : "border-border bg-card hover:border-primary/60"
+                              )}
+                            >
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span
+                                      className={cn(
+                                        "rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider",
+                                        meta.isWithCoach
+                                          ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                                          : "bg-primary/10 text-primary"
+                                      )}
+                                    >
+                                      {d.day_label}
+                                    </span>
+
+                                    {meta.isWithCoach ? (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide">
+                                        <Sparkles className="h-3 w-3 fill-amber-500/30 text-amber-600 dark:text-amber-400" />
+                                        Com o Coach
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-muted/80 text-muted-foreground px-2.5 py-0.5 text-[11px] font-medium">
+                                        <User className="h-3 w-3 opacity-70" />
+                                        Treino Sozinho
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {lastExec ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                                      <History className="h-3 w-3" />
+                                      {formatDateBR(lastExec.executed_at)}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[11px] text-muted-foreground">
+                                      Sem execuções
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-baseline justify-between gap-2">
+                                  <span
+                                    className={cn(
+                                      "text-base sm:text-lg font-bold leading-tight transition-colors",
+                                      meta.isWithCoach
+                                        ? "text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400"
+                                        : "group-hover:text-primary"
+                                    )}
+                                  >
+                                    {d.name}
+                                  </span>
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 shrink-0" />
+                                </div>
+
+                                {meta.cleanDescription && (
+                                  <p className="line-clamp-2 text-xs text-muted-foreground">
+                                    {meta.cleanDescription}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="flex items-center justify-between border-t border-border/50 pt-2 text-xs text-muted-foreground">
+                                <span className="tabular-nums">
+                                  {count} {count === 1 ? "exercício" : "exercícios"}
+                                </span>
+                                {lastExec?.notes && parseNotes(lastExec.notes).timerSeconds ? (
+                                  <span className="inline-flex items-center gap-1 text-[11px] text-primary/80 font-mono">
+                                    <Timer className="h-3 w-3" />
+                                    {formatSeconds(parseNotes(lastExec.notes).timerSeconds!)}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

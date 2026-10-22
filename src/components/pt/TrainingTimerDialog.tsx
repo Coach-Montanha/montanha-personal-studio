@@ -293,7 +293,16 @@ export function TrainingTimerDialog({
           </div>
 
           {/* Giant Numbers Display */}
-          <div className="text-4xl sm:text-5xl font-mono font-black tracking-tight text-white select-none my-0.5 tabular-nums">
+          <div
+            className="text-4xl sm:text-5xl font-mono font-black tracking-tight text-white select-none my-0.5 tabular-nums inline-block min-w-[6ch] text-center"
+            style={{
+              fontVariantNumeric: "tabular-nums",
+              fontFeatureSettings: "'tnum' 1, 'zero' 1",
+              WebkitFontSmoothing: "antialiased",
+              transform: "translateZ(0)",
+              backfaceVisibility: "hidden",
+            }}
+          >
             {displayTime}
           </div>
 
