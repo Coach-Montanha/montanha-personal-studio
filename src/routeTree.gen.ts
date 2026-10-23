@@ -51,6 +51,7 @@ import { Route as AuthenticatedPortalPerfilRouteImport } from './routes/_authent
 import { Route as AuthenticatedStudentsIndexRouteImport } from './routes/_authenticated/students.index'
 import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
 import { Route as ApiCronPreClassRouteImport } from './routes/api.cron.pre-class'
+import { Route as ApiNotificationsClearRouteImport } from './routes/api.notifications.clear'
 import { Route as AuthenticatedPersonalTrainerStudentsIdRouteImport } from './routes/_authenticated/personal-trainer/students.$id'
 import { Route as AuthenticatedPortalPtIndexRouteImport } from './routes/_authenticated/portal/pt/index'
 import { Route as AuthenticatedPortalPtTreinoRouteImport } from './routes/_authenticated/portal/pt/treino'
@@ -280,6 +281,11 @@ const ApiCronPreClassRoute = ApiCronPreClassRouteImport.update({
   path: '/api/cron/pre-class',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiNotificationsClearRoute = ApiNotificationsClearRouteImport.update({
+  id: '/api/notifications/clear',
+  path: '/api/notifications/clear',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPersonalTrainerStudentsIdRoute =
   AuthenticatedPersonalTrainerStudentsIdRouteImport.update({
     id: '/personal-trainer/students/$id',
@@ -337,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
+  '/api/notifications/clear': typeof ApiNotificationsClearRoute
   '/desafios/': typeof AuthenticatedDesafiosIndexRoute
   '/personal-trainer/': typeof AuthenticatedPersonalTrainerIndexRoute
   '/portal/': typeof AuthenticatedPortalIndexRoute
@@ -383,6 +390,7 @@ export interface FileRoutesByTo {
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
+  '/api/notifications/clear': typeof ApiNotificationsClearRoute
   '/desafios': typeof AuthenticatedDesafiosIndexRoute
   '/personal-trainer': typeof AuthenticatedPersonalTrainerIndexRoute
   '/portal': typeof AuthenticatedPortalIndexRoute
@@ -431,6 +439,7 @@ export interface FileRoutesById {
   '/_authenticated/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
+  '/api/notifications/clear': typeof ApiNotificationsClearRoute
   '/_authenticated/desafios/': typeof AuthenticatedDesafiosIndexRoute
   '/_authenticated/personal-trainer/': typeof AuthenticatedPersonalTrainerIndexRoute
   '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
@@ -479,6 +488,7 @@ export interface FileRouteTypes {
     | '/portal/perfil'
     | '/students/$id'
     | '/api/cron/pre-class'
+    | '/api/notifications/clear'
     | '/desafios/'
     | '/personal-trainer/'
     | '/portal/'
@@ -525,6 +535,7 @@ export interface FileRouteTypes {
     | '/portal/perfil'
     | '/students/$id'
     | '/api/cron/pre-class'
+    | '/api/notifications/clear'
     | '/desafios'
     | '/personal-trainer'
     | '/portal'
@@ -572,6 +583,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portal/perfil'
     | '/_authenticated/students/$id'
     | '/api/cron/pre-class'
+    | '/api/notifications/clear'
     | '/_authenticated/desafios/'
     | '/_authenticated/personal-trainer/'
     | '/_authenticated/portal/'
@@ -596,6 +608,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiCronPreClassRoute: typeof ApiCronPreClassRoute
+  ApiNotificationsClearRoute: typeof ApiNotificationsClearRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -894,6 +907,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronPreClassRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/notifications/clear': {
+      id: '/api/notifications/clear'
+      path: '/api/notifications/clear'
+      fullPath: '/api/notifications/clear'
+      preLoaderRoute: typeof ApiNotificationsClearRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/personal-trainer/students/$id': {
       id: '/_authenticated/personal-trainer/students/$id'
       path: '/personal-trainer/students/$id'
@@ -1012,6 +1032,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiCronPreClassRoute: ApiCronPreClassRoute,
+  ApiNotificationsClearRoute: ApiNotificationsClearRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

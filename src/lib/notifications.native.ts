@@ -26,13 +26,36 @@ export async function setupNativeNotificationChannel() {
 }
 
 /**
+ * Checa o estado da permissão de notificação (granted, denied, prompt)
+ */
+export async function checkNotificationPermissionStatus(): Promise<"granted" | "denied" | "prompt"> {
+  if (isNativeApp()) {
+    try {
+      const status = await LocalNotifications.checkPermissions();
+      return status.display;
+    } catch {
+      return "prompt";
+    }
+  }
+
+  if (typeof window !== "undefined" && "Notification" in window) {
+    return Notification.permission as "granted" | "denied" | "prompt";
+  }
+
+  return "prompt";
+}
+
+/**
  * Solicita permissão de notificação (Nativo Android/iOS ou Navegador Web)
  */
 export async function requestNotificationPermissions(): Promise<boolean> {
   if (isNativeApp()) {
     try {
       const status = await LocalNotifications.checkPermissions();
-      if (status.display === "granted") return true;
+      if (status.display === "granted") {
+        await setupNativeNotificationChannel();
+        return true;
+      }
 
       const request = await LocalNotifications.requestPermissions();
       const granted = request.display === "granted";
@@ -101,7 +124,7 @@ export async function scheduleClassReminderNotification({
 }
 
 /**
- * Dispara notificação nativa com som e banner no Android/iOS ou Web
+ * Dispara notificação imediata com som e banner no Android/iOS ou Web
  */
 export async function triggerDeviceNotification({
   title,
@@ -112,7 +135,7 @@ export async function triggerDeviceNotification({
   body: string;
   url?: string;
 }) {
-  // 1. Android / iOS Nativo via Capacitor
+  // 1. Android / iOS Nativo via Capacitor (disparo instantâneo)
   if (isNativeApp()) {
     try {
       await setupNativeNotificationChannel();
@@ -124,13 +147,12 @@ export async function triggerDeviceNotification({
             body,
             channelId: "studio_alerts",
             extra: { url },
-            schedule: { at: new Date(Date.now() + 100) }, // disparo imediato
           },
         ],
       });
       return;
     } catch (err) {
-      console.warn("[LocalNotifications] Falha ao agendar notificação nativa:", err);
+      console.warn("[LocalNotifications] Falha ao disparar notificação nativa:", err);
     }
   }
 

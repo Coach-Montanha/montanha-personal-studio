@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, BellDot, Trash2, Calendar, Dumbbell, CheckCircle2, Smartphone, Check } from "lucide-react";
+import { Bell, BellDot, Trash2, Calendar, Dumbbell, CheckCircle2, Smartphone, Check, Sparkles, Volume2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -20,6 +20,7 @@ import {
   triggerDeviceNotification,
   scheduleClassReminderNotification,
   setupNativeNotificationChannel,
+  checkNotificationPermissionStatus,
 } from "@/lib/notifications.native";
 
 function hashStringToInt(str: string): number {
@@ -57,49 +58,57 @@ export function NotificationCenter() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [isPermitted, setIsPermitted] = useState<boolean | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
-    // 1. Checagem e solicitação automática de permissão (Nativo ou Web)
+    // Checagem do status inicial de notificação
+    checkNotificationPermissionStatus().then((status) => {
+      setIsPermitted(status === "granted");
+    });
+
     if (isNativeApp()) {
       import("@capacitor/local-notifications").then(({ LocalNotifications }) => {
-        LocalNotifications.checkPermissions().then((status) => {
-          if (status.display === "granted") {
-            setIsPermitted(true);
-            setupNativeNotificationChannel();
-          } else {
-            setIsPermitted(false);
-            LocalNotifications.requestPermissions().then((req) => {
-              const granted = req.display === "granted";
-              setIsPermitted(granted);
-              if (granted) setupNativeNotificationChannel();
-            });
-          }
-        });
         LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
           const url = (action.notification.extra as any)?.url || "/agenda";
           navigate({ to: url });
         });
-      });
-    } else if (typeof window !== "undefined" && "Notification" in window) {
-      setIsPermitted(Notification.permission === "granted");
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js").catch(() => {});
-      }
+      }).catch(() => {});
+    } else if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
   }, [navigate]);
 
-  async function handleEnablePush() {
+  async function handleTestNotification(e?: React.MouseEvent) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    playNotificationSound();
+    await triggerDeviceNotification({
+      title: "Studio Montanha 🚀",
+      body: "Teste de alerta recebido com sucesso no seu celular!",
+      url: "/agenda",
+    });
+    toast.success("Notificação enviada!", {
+      description: "Verifique a barra de status do seu celular.",
+    });
+  }
+
+  async function handleEnablePush(e?: React.MouseEvent) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     try {
       const granted = await requestNotificationPermissions();
       setIsPermitted(granted);
       if (granted) {
         toast.success("Avisos no celular e na tela de bloqueio ativados!");
-        await triggerDeviceNotification({
-          title: "Studio Montanha Conectado! 🚀",
-          body: "Você receberá alertas de check-ins e turmas diretamente no seu celular.",
-        });
+        await handleTestNotification();
       } else {
-        toast.error("Permissão de notificação negada nas configurações do aparelho.");
+        toast.error("Permissão de notificação negada nas configurações do aparelho.", {
+          description: "Abra Configurações > Apps > Studio Montanha > Notificações para ativar.",
+        });
       }
     } catch (err) {
       console.warn("Erro ao pedir permissão de notificação:", err);
@@ -115,7 +124,7 @@ export function NotificationCenter() {
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false })
-        .limit(30);
+        .limit(40);
       return (data ?? []) as any[];
     },
     refetchInterval: 30000,
@@ -229,7 +238,7 @@ export function NotificationCenter() {
               ? `${count} aluno(s) com check-in: ${attendees.join(", ")}.`
               : "Nenhum aluno realizou check-in até o momento.";
 
-          // A) Agendamento futuro no sistema operacional (AlarmManager nativo do Android)
+          // Agendamento nativo futuro no Android
           const triggerAt = new Date(sessionTime.getTime() - 20 * 60000);
           if (triggerAt.getTime() > now.getTime()) {
             scheduleClassReminderNotification({
@@ -241,7 +250,7 @@ export function NotificationCenter() {
             });
           }
 
-          // B) Dispara imediatamente se estiver dentro da janela de 20 minutos
+          // Disparo imediato se estiver na janela de 20 minutos
           if (diffMinutes <= 20 && diffMinutes >= 0) {
             const storageKey = `notified_class_20m_${session.id}_${today}`;
             if (!localStorage.getItem(storageKey)) {
@@ -294,26 +303,62 @@ export function NotificationCenter() {
       .from("pt_notifications" as any)
       .update({ read: true } as any)
       .eq("id", id);
-    qc.invalidateQueries({ queryKey: ["notifications"] });
+    qc.invalidateQueries({ queryKey: ["notifications", user?.id] });
   }
 
-  async function markAllAsRead() {
+  async function markAllAsRead(e?: React.MouseEvent) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!user) return;
     await supabase
       .from("pt_notifications" as any)
       .update({ read: true } as any)
       .eq("user_id", user.id)
       .eq("read", false);
-    qc.invalidateQueries({ queryKey: ["notifications"] });
+    qc.invalidateQueries({ queryKey: ["notifications", user.id] });
   }
 
-  async function clearAll() {
-    if (!user) return;
-    await supabase
-      .from("pt_notifications" as any)
-      .delete()
-      .eq("user_id", user.id);
-    qc.invalidateQueries({ queryKey: ["notifications"] });
+  async function clearAll(e?: React.MouseEvent) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (!user?.id || isClearing) return;
+
+    setIsClearing(true);
+    // 1. Otimismo imediato na tela
+    qc.setQueryData(["notifications", user.id], []);
+
+    try {
+      // 2. Chamar endpoint no backend que roda com service_role (ignora RLS)
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      await fetch("/api/notifications/clear", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ user_id: user.id }),
+      }).catch(() => null);
+
+      // 3. Fallback no Supabase client direto
+      await supabase
+        .from("pt_notifications" as any)
+        .delete()
+        .eq("user_id", user.id)
+        .catch(() => null);
+
+      toast.success("Notificações apagadas com sucesso!");
+    } catch {
+      toast.info("Notificações limpas.");
+    } finally {
+      qc.invalidateQueries({ queryKey: ["notifications", user.id] });
+      setIsClearing(false);
+    }
   }
 
   const handleNotificationClick = (notification: any) => {
@@ -348,7 +393,7 @@ export function NotificationCenter() {
           {unreadCount > 0 ? (
             <>
               <BellDot className="h-5 w-5 text-primary animate-pulse" />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm">
                 {unreadCount}
               </span>
             </>
@@ -357,19 +402,20 @@ export function NotificationCenter() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-88 p-0 shadow-xl border-border/50">
+      <DropdownMenuContent align="end" className="w-88 p-0 shadow-2xl border-border/60 rounded-xl overflow-hidden">
+        {/* Cabeçalho */}
         <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/20">
           <div>
-            <h3 className="text-sm font-bold">Notificações do Studio</h3>
+            <h3 className="text-sm font-bold tracking-tight">Notificações do Studio</h3>
             <p className="text-[10px] text-muted-foreground">Check-ins e lembretes de aulas</p>
           </div>
-          <div className="flex gap-1">
+          <div className="flex items-center gap-1">
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
-                className="h-7 text-[10px] uppercase font-bold text-primary hover:text-primary hover:bg-primary/10"
+                className="h-7 text-[10px] uppercase font-bold text-primary hover:text-primary hover:bg-primary/10 px-2"
               >
                 Ler tudo
               </Button>
@@ -379,7 +425,8 @@ export function NotificationCenter() {
                 variant="ghost"
                 size="icon"
                 onClick={clearAll}
-                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                disabled={isClearing}
+                className="h-7 w-7 text-muted-foreground hover:text-destructive active:scale-90 transition-transform"
                 title="Limpar todas as notificações"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -388,36 +435,58 @@ export function NotificationCenter() {
           </div>
         </div>
 
-        {/* Banner de Ativação Nativo (Android APK ou Web) */}
-        {isPermitted === false ? (
-          <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Smartphone className="h-4 w-4 text-primary shrink-0" />
-              <span className="text-[11px] text-foreground font-medium">
-                Ativar avisos na barra do celular
-              </span>
-            </div>
-            <Button
-              size="sm"
-              variant="default"
-              onClick={handleEnablePush}
-              className="h-6 text-[10px] px-2 font-bold"
-            >
-              Ativar
-            </Button>
-          </div>
-        ) : isPermitted === true ? (
-          <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-1.5 flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-            <Check className="h-3 w-3" />
-            <span>Notificações ativas no celular e barra de status</span>
-          </div>
-        ) : null}
+        {/* Banner de Ativação / Teste de Notificações no Celular */}
+        <div className="border-b px-3.5 py-2 bg-muted/40 flex items-center justify-between gap-2 text-xs">
+          {isPermitted ? (
+            <>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 truncate">
+                  Avisos ativos no aparelho
+                </span>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleTestNotification}
+                className="h-6 text-[10px] px-2.5 font-bold border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 shrink-0"
+              >
+                Testar Alerta 📲
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Smartphone className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 truncate">
+                  Receber alertas no celular
+                </span>
+              </div>
+              <Button
+                size="sm"
+                onClick={handleEnablePush}
+                className="h-6 text-[10px] px-2.5 font-bold bg-amber-500 hover:bg-amber-600 text-white shrink-0 shadow-sm"
+              >
+                Ativar Notificações 🔔
+              </Button>
+            </>
+          )}
+        </div>
 
+        {/* Lista de Mensagens */}
         <div className="max-h-[380px] overflow-y-auto divide-y divide-border/40">
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-              <Bell className="h-8 w-8 text-muted-foreground/20 mb-2" />
-              <p className="text-xs text-muted-foreground">Nenhuma notificação por enquanto.</p>
+              <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center mb-2.5">
+                <Bell className="h-5 w-5 text-muted-foreground/40" />
+              </div>
+              <p className="text-xs font-medium text-foreground">Caixa de entrada limpa</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[220px]">
+                Novos check-ins de alunos e lembretes de turmas aparecerão aqui em tempo real.
+              </p>
             </div>
           ) : (
             notifications.map((n) => (
@@ -454,9 +523,10 @@ export function NotificationCenter() {
         </div>
 
         {notifications.length > 0 && (
-          <div className="bg-muted/30 px-4 py-2 text-center border-t">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-              Central de Alertas em Tempo Real
+          <div className="bg-muted/30 px-4 py-2 text-center border-t flex items-center justify-center gap-1.5">
+            <Sparkles className="h-3 w-3 text-primary" />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              Alertas em Tempo Real
             </span>
           </div>
         )}

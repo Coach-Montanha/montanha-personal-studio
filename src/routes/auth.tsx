@@ -15,12 +15,15 @@ import {
   ArrowRight,
   Smartphone,
   Calendar,
+  Users,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { autoHealStudentLogin } from "@/lib/student-access.functions";
 import { validateEmailMx, checkProjectAccess } from "@/services/ecosystem-auth-service";
+import { getSavedAccounts, switchToAccount, removeSavedAccount, type SavedAccount } from "@/lib/multi-account";
 
 function safeNext(next: unknown): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) return "/";
@@ -87,6 +90,8 @@ function AuthPage() {
   const [showSuPass, setShowSuPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [savedAccounts, setSavedAccounts] = useState<SavedAccount[]>([]);
+  const [quickLoggingId, setQuickLoggingId] = useState<string | null>(null);
 
   // Form states
   const [email, setEmail] = useState(searchParams.email || "");
@@ -103,6 +108,7 @@ function AuthPage() {
     if (typeof window === "undefined") return;
 
     try {
+      setSavedAccounts(getSavedAccounts());
       const savedEmail = localStorage.getItem("studio:remember_email");
       if (savedEmail && !email) setEmail(savedEmail);
 
@@ -128,6 +134,25 @@ function AuthPage() {
   }, []);
 
   // Brand Color: #6958e2 (Midnight Violet)
+
+  
+  async function handleQuickLogin(acc: SavedAccount) {
+    setQuickLoggingId(acc.id);
+    toast.info(`Entrando como ${acc.name || acc.email}...`);
+    const success = await switchToAccount(acc.id);
+    if (!success) {
+      toast.error("Acesso expirado. Por favor, digite suas credenciais para renovar.");
+      setSavedAccounts(getSavedAccounts());
+      setQuickLoggingId(null);
+    }
+  }
+
+  function handleRemoveSavedAccount(e: React.MouseEvent, accId: string) {
+    e.stopPropagation();
+    removeSavedAccount(accId);
+    setSavedAccounts(getSavedAccounts());
+    toast.success("Conta removida deste aparelho.");
+  }
 
   async function redirectAfterAuth(userId: string) {
     if (searchParams.next) {
@@ -541,6 +566,58 @@ function AuthPage() {
                     : "Preencha os dados abaixo para cadastrar seu novo acesso."}
                 </p>
               </div>
+
+              
+              {view === "signin" && savedAccounts.length > 0 && (
+                <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2.5 shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Users className="h-3.5 w-3.5 text-[#6958e2]" />
+                      Contas Salvas neste Celular
+                    </span>
+                    <span className="text-[10px] text-slate-400">Acesso rápido</span>
+                  </div>
+                  <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-0.5">
+                    {savedAccounts.map((acc) => {
+                      const isLogging = quickLoggingId === acc.id;
+                      return (
+                        <div
+                          key={acc.id}
+                          onClick={() => !isLogging && handleQuickLogin(acc)}
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 hover:bg-[#6958e2]/20 border border-slate-700 hover:border-[#6958e2]/50 cursor-pointer transition-all"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="h-7 w-7 rounded-full bg-[#6958e2]/20 text-[#6958e2] font-bold text-xs flex items-center justify-center border border-[#6958e2]/30 shrink-0">
+                              {acc.name ? acc.name.slice(0, 2).toUpperCase() : acc.email.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-white truncate">{acc.name || acc.email}</p>
+                              <p className="text-[10px] text-slate-400 truncate">{acc.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              disabled={isLogging}
+                              className="h-6 text-[10px] px-2.5 rounded-lg font-bold bg-[#6958e2] hover:bg-[#5b4bc4] text-white transition-all"
+                            >
+                              {isLogging ? "Entrando..." : "Entrar"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => handleRemoveSavedAccount(e, acc.id)}
+                              className="h-6 w-6 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 flex items-center justify-center transition-all"
+                              title="Remover deste aparelho"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Form */}
               <form

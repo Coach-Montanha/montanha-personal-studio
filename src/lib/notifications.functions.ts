@@ -40,3 +40,16 @@ export const sendInAppNotification = createServerFn({ method: "POST" })
 
     return { sent: withAccount.length, skipped: withoutAccount.map((s) => s.name) };
   });
+
+export const clearAllNotificationsFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("pt_notifications")
+      .delete()
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });

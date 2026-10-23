@@ -46,6 +46,7 @@ import { listTenants } from "@/lib/tenants.functions";
 import { Shield, Eye, UserCircle2 } from "lucide-react";
 import { GlobalSearch } from "@/components/edufinance/GlobalSearch";
 import { NotificationCenter } from "@/components/edufinance/NotificationCenter";
+import { AccountSwitcherDialog } from "@/components/auth/AccountSwitcherDialog";
 import { openTrainingTimer } from "@/hooks/use-training-timer";
 
 type NavItem = {
@@ -427,15 +428,28 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="text-[9px] text-sidebar-foreground/60 leading-tight">Conectado</div>
               </div>
             )}
-            <button
-              onClick={signOut}
-              data-testid="button-logout"
-              title="Sair da conta"
-              aria-label="Sair da conta"
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive active:scale-95 transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1 shrink-0">
+              <AccountSwitcherDialog
+                trigger={
+                  <button
+                    title="Alternar contas salvas"
+                    aria-label="Alternar contas salvas"
+                    className="grid h-8 w-8 place-items-center rounded-lg text-sidebar-foreground/80 hover:bg-primary/10 hover:text-primary active:scale-95 transition-colors"
+                  >
+                    <Users className="h-4 w-4" />
+                  </button>
+                }
+              />
+              <button
+                onClick={signOut}
+                data-testid="button-logout"
+                title="Sair da conta"
+                aria-label="Sair da conta"
+                className="grid h-8 w-8 place-items-center rounded-lg text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive active:scale-95 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -486,6 +500,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <GlobalSearch
               items={visibleNav.map((n) => ({ to: n.to, label: n.label, section: n.section }))}
             />
+            <AccountSwitcherDialog />
             <NotificationCenter />
             <button
               onClick={toggleTheme}

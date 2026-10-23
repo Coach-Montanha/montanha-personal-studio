@@ -10,6 +10,7 @@ import { DragDropPromptCard } from "@/components/pt/DragDropPromptCard";
 import { AiEnginePromptCard } from "@/components/pt/AiEnginePromptCard";
 import { BusinessLogosPanel } from "@/components/settings/BusinessLogosPanel";
 import { DownloadApkPanel } from "@/components/settings/DownloadApkPanel";
+import { MobileNotificationsCard } from "@/components/settings/MobileNotificationsCard";
 import { Smartphone } from "lucide-react";
 
 import { Stethoscope } from "lucide-react";
@@ -287,6 +288,8 @@ function GeneralSettings() {
       </Card>
 
       <BusinessLogosPanel />
+
+      <MobileNotificationsCard />
 
       <Card className="p-5 space-y-4">
         <h2 className="text-base font-semibold">Perfil</h2>
