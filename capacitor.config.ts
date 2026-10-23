@@ -15,6 +15,11 @@ const config: CapacitorConfig = {
     captureInput: true,
     webContentsDebuggingEnabled: process.env.NODE_ENV !== "production",
   },
+  plugins: {
+    LocalNotifications: {
+      iconColor: "#10B981",
+    },
+  },
 };
 
 export default config;

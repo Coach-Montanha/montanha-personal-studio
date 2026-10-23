@@ -14,6 +14,22 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import {
+  isNativeApp,
+  requestNotificationPermissions,
+  triggerDeviceNotification,
+  scheduleClassReminderNotification,
+  setupNativeNotificationChannel,
+} from "@/lib/notifications.native";
+
+function hashStringToInt(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash % 2147483647);
+}
 
 function playNotificationSound() {
   try {
@@ -36,71 +52,54 @@ function playNotificationSound() {
   }
 }
 
-// Dispara notificação nativa do sistema operacional (Android, iOS 16.4+, Windows)
-function showNativePushNotification(title: string, body: string, url: string = "/agenda") {
-  if (typeof window === "undefined" || !("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
-
-  try {
-    if ("serviceWorker" in navigator && navigator.serviceWorker.ready) {
-      navigator.serviceWorker.ready.then((reg) => {
-        reg.showNotification(title, {
-          body,
-          icon: "/icon-192.png",
-          badge: "/favicon.svg",
-          vibrate: [200, 100, 200],
-          tag: "studio-alert-" + Date.now(),
-          renotify: true,
-          data: { url },
-        } as any);
-      });
-    } else {
-      new Notification(title, {
-        body,
-        icon: "/icon-192.png",
-      });
-    }
-  } catch (err) {
-    console.warn("[NativePush] Erro ao disparar notificação nativa:", err);
-  }
-}
-
 export function NotificationCenter() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const [pushStatus, setPushStatus] = useState<NotificationPermission | "unsupported">("default");
+  const [isPermitted, setIsPermitted] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setPushStatus(Notification.permission);
-      // Registra o Service Worker
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js").catch((err) => {
-          console.warn("[SW] Registro falhou:", err);
+    // 1. Checagem e solicitação automática de permissão (Nativo ou Web)
+    if (isNativeApp()) {
+      import("@capacitor/local-notifications").then(({ LocalNotifications }) => {
+        LocalNotifications.checkPermissions().then((status) => {
+          if (status.display === "granted") {
+            setIsPermitted(true);
+            setupNativeNotificationChannel();
+          } else {
+            setIsPermitted(false);
+            LocalNotifications.requestPermissions().then((req) => {
+              const granted = req.display === "granted";
+              setIsPermitted(granted);
+              if (granted) setupNativeNotificationChannel();
+            });
+          }
         });
+        LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
+          const url = (action.notification.extra as any)?.url || "/agenda";
+          navigate({ to: url });
+        });
+      });
+    } else if (typeof window !== "undefined" && "Notification" in window) {
+      setIsPermitted(Notification.permission === "granted");
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
       }
-    } else {
-      setPushStatus("unsupported");
     }
-  }, []);
+  }, [navigate]);
 
   async function handleEnablePush() {
-    if (typeof window === "undefined" || !("Notification" in window)) {
-      toast.error("Notificações não são suportadas neste navegador.");
-      return;
-    }
     try {
-      const perm = await Notification.requestPermission();
-      setPushStatus(perm);
-      if (perm === "granted") {
-        toast.success("Avisos no celular e na tela de bloqueio ativados com sucesso!");
-        showNativePushNotification(
-          "Studio Montanha Conectado! 🚀",
-          "Você receberá alertas de novos check-ins e turmas diretamente no seu celular."
-        );
-      } else if (perm === "denied") {
-        toast.error("Permissão de notificação negada nas configurações do navegador.");
+      const granted = await requestNotificationPermissions();
+      setIsPermitted(granted);
+      if (granted) {
+        toast.success("Avisos no celular e na tela de bloqueio ativados!");
+        await triggerDeviceNotification({
+          title: "Studio Montanha Conectado! 🚀",
+          body: "Você receberá alertas de check-ins e turmas diretamente no seu celular.",
+        });
+      } else {
+        toast.error("Permissão de notificação negada nas configurações do aparelho.");
       }
     } catch (err) {
       console.warn("Erro ao pedir permissão de notificação:", err);
@@ -138,7 +137,7 @@ export function NotificationCenter() {
           table: "pt_notifications",
           filter: `user_id=eq.${user.id}`,
         },
-        (payload: any) => {
+        async (payload: any) => {
           qc.invalidateQueries({ queryKey: ["notifications", user.id] });
           playNotificationSound();
 
@@ -146,8 +145,12 @@ export function NotificationCenter() {
           const title = notif.title || (notif.type === "checkin" ? "🔔 Novo Check-in!" : "⏰ Studio");
           const message = notif.message || "";
 
-          // Disparo de notificação nativa no sistema operacional
-          showNativePushNotification(title, message, "/agenda");
+          // Disparo de notificação nativa no sistema operacional (Android APK e Web)
+          await triggerDeviceNotification({
+            title,
+            body: message,
+            url: "/agenda",
+          });
 
           if (notif.type === "checkin") {
             toast.success("🔔 Novo Check-in!", {
@@ -215,31 +218,41 @@ export function NotificationCenter() {
           sessionTime.setHours(h, m, 0, 0);
 
           const diffMinutes = Math.floor((sessionTime.getTime() - now.getTime()) / 60000);
+          const timeFormatted = session.start_time.slice(0, 5);
+          const className = (session.classes as any)?.name || "Turma";
+          const attendees = (session.class_attendance ?? [])
+            .map((a: any) => a.students?.name)
+            .filter(Boolean);
+          const count = attendees.length;
+          const body =
+            count > 0
+              ? `${count} aluno(s) com check-in: ${attendees.join(", ")}.`
+              : "Nenhum aluno realizou check-in até o momento.";
 
-          // Dispara quando faltarem entre 0 e 20 minutos para a aula
+          // A) Agendamento futuro no sistema operacional (AlarmManager nativo do Android)
+          const triggerAt = new Date(sessionTime.getTime() - 20 * 60000);
+          if (triggerAt.getTime() > now.getTime()) {
+            scheduleClassReminderNotification({
+              id: hashStringToInt(`class_20m_${session.id}_${today}`),
+              title: `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
+              body,
+              triggerAt,
+              url: "/agenda",
+            });
+          }
+
+          // B) Dispara imediatamente se estiver dentro da janela de 20 minutos
           if (diffMinutes <= 20 && diffMinutes >= 0) {
             const storageKey = `notified_class_20m_${session.id}_${today}`;
             if (!localStorage.getItem(storageKey)) {
               localStorage.setItem(storageKey, "true");
 
-              const attendees = (session.class_attendance ?? [])
-                .map((a: any) => a.students?.name)
-                .filter(Boolean);
-
-              const timeFormatted = session.start_time.slice(0, 5);
-              const className = (session.classes as any)?.name || "Turma";
-              const count = attendees.length;
-              const body =
-                count > 0
-                  ? `${count} aluno(s) com check-in: ${attendees.join(", ")}.`
-                  : "Nenhum aluno realizou check-in até o momento.";
-
               playNotificationSound();
-              showNativePushNotification(
-                `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
+              await triggerDeviceNotification({
+                title: `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
                 body,
-                "/agenda"
-              );
+                url: "/agenda",
+              });
 
               toast.info(`⏰ Aula em 20 min (${timeFormatted} - ${className})`, {
                 description: body,
@@ -375,13 +388,13 @@ export function NotificationCenter() {
           </div>
         </div>
 
-        {/* Banner de Ativação de Push Nativo no Celular */}
-        {pushStatus !== "granted" && pushStatus !== "unsupported" ? (
+        {/* Banner de Ativação Nativo (Android APK ou Web) */}
+        {isPermitted === false ? (
           <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Smartphone className="h-4 w-4 text-primary shrink-0" />
               <span className="text-[11px] text-foreground font-medium">
-                Ativar avisos na tela do celular
+                Ativar avisos na barra do celular
               </span>
             </div>
             <Button
@@ -393,10 +406,10 @@ export function NotificationCenter() {
               Ativar
             </Button>
           </div>
-        ) : pushStatus === "granted" ? (
+        ) : isPermitted === true ? (
           <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-1.5 flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
             <Check className="h-3 w-3" />
-            <span>Notificações ativas na tela do celular e bloqueio</span>
+            <span>Notificações ativas no celular e barra de status</span>
           </div>
         ) : null}
 
