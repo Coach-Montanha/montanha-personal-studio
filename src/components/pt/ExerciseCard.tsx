@@ -121,6 +121,8 @@ export function ExerciseCard({
     cadence: exercise.cadence ?? "",
   });
 
+  const hasVideo = Boolean(form.media_url?.trim() || exercise.media_url?.trim());
+
   useEffect(() => {
     if (editingName) {
       nameInputRef.current?.focus();
