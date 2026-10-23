@@ -986,10 +986,10 @@ input:-webkit-autofill:active {
 
 @media (max-width: 768px) {
   :root {
-    --app-safe-top: 36px;
-    --app-safe-bottom: 24px;
-    --safe-area-inset-top: max(env(safe-area-inset-top, 0px), 36px);
-    --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
+    --app-safe-top: 48px;
+    --app-safe-bottom: 40px;
+    --safe-area-inset-top: max(env(safe-area-inset-top, 0px), 48px);
+    --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), 40px);
   }
 }
 
@@ -997,10 +997,10 @@ input:-webkit-autofill:active {
 .native-capacitor,
 html.has-notch,
 body.has-notch {
-  --app-safe-top: 36px;
-  --app-safe-bottom: 24px;
-  --safe-area-inset-top: max(env(safe-area-inset-top, 0px), 36px);
-  --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
+  --app-safe-top: 48px;
+  --app-safe-bottom: 40px;
+  --safe-area-inset-top: max(env(safe-area-inset-top, 0px), 48px);
+  --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), 40px);
 }
 
 @utility pt-safe {

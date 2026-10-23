@@ -356,7 +356,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans relative overflow-hidden">
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 pt-[calc(1rem+var(--safe-area-inset-top,0px))] pb-[calc(1rem+var(--safe-area-inset-bottom,0px))] pl-[calc(1rem+var(--safe-area-inset-left,0px))] pr-[calc(1rem+var(--safe-area-inset-right,0px))] font-sans relative overflow-hidden">
       {/* Dynamic Background Mesh */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-[#6958e2]/20 blur-[160px]" />
