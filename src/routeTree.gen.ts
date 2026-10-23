@@ -50,6 +50,7 @@ import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPortalPerfilRouteImport } from './routes/_authenticated/portal/perfil'
 import { Route as AuthenticatedStudentsIndexRouteImport } from './routes/_authenticated/students.index'
 import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
+import { Route as ApiCronPreClassRouteImport } from './routes/api.cron.pre-class'
 import { Route as AuthenticatedPersonalTrainerStudentsIdRouteImport } from './routes/_authenticated/personal-trainer/students.$id'
 import { Route as AuthenticatedPortalPtIndexRouteImport } from './routes/_authenticated/portal/pt/index'
 import { Route as AuthenticatedPortalPtTreinoRouteImport } from './routes/_authenticated/portal/pt/treino'
@@ -274,6 +275,11 @@ const AuthenticatedStudentsIdRoute = AuthenticatedStudentsIdRouteImport.update({
   path: '/students/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiCronPreClassRoute = ApiCronPreClassRouteImport.update({
+  id: '/api/cron/pre-class',
+  path: '/api/cron/pre-class',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPersonalTrainerStudentsIdRoute =
   AuthenticatedPersonalTrainerStudentsIdRouteImport.update({
     id: '/personal-trainer/students/$id',
@@ -330,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/desafios/': typeof AuthenticatedDesafiosIndexRoute
   '/personal-trainer/': typeof AuthenticatedPersonalTrainerIndexRoute
   '/portal/': typeof AuthenticatedPortalIndexRoute
@@ -375,6 +382,7 @@ export interface FileRoutesByTo {
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/desafios': typeof AuthenticatedDesafiosIndexRoute
   '/personal-trainer': typeof AuthenticatedPersonalTrainerIndexRoute
   '/portal': typeof AuthenticatedPortalIndexRoute
@@ -422,6 +430,7 @@ export interface FileRoutesById {
   '/_authenticated/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/_authenticated/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/_authenticated/desafios/': typeof AuthenticatedDesafiosIndexRoute
   '/_authenticated/personal-trainer/': typeof AuthenticatedPersonalTrainerIndexRoute
   '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
@@ -469,6 +478,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/plans'
     | '/portal/perfil'
     | '/students/$id'
+    | '/api/cron/pre-class'
     | '/desafios/'
     | '/personal-trainer/'
     | '/portal/'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/plans'
     | '/portal/perfil'
     | '/students/$id'
+    | '/api/cron/pre-class'
     | '/desafios'
     | '/personal-trainer'
     | '/portal'
@@ -560,6 +571,7 @@ export interface FileRouteTypes {
     | '/_authenticated/personal-trainer/plans'
     | '/_authenticated/portal/perfil'
     | '/_authenticated/students/$id'
+    | '/api/cron/pre-class'
     | '/_authenticated/desafios/'
     | '/_authenticated/personal-trainer/'
     | '/_authenticated/portal/'
@@ -583,6 +595,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiCronPreClassRoute: typeof ApiCronPreClassRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -874,6 +887,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/cron/pre-class': {
+      id: '/api/cron/pre-class'
+      path: '/api/cron/pre-class'
+      fullPath: '/api/cron/pre-class'
+      preLoaderRoute: typeof ApiCronPreClassRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/personal-trainer/students/$id': {
       id: '/_authenticated/personal-trainer/students/$id'
       path: '/personal-trainer/students/$id'
@@ -991,6 +1011,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiCronPreClassRoute: ApiCronPreClassRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

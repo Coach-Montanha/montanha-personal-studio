@@ -417,6 +417,22 @@ export const studentCheckIn = createServerFn({ method: "POST" })
               is_bonus: true,
             },
           });
+
+          // Disparo Serverless WhatsApp para o Treinador
+          try {
+            const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
+            await sendTrainerWhatsAppAlert({
+              type: "checkin",
+              studentName,
+              className,
+              timeFormatted,
+              programName: progName,
+              date: session.session_date,
+              isBonus: true,
+            });
+          } catch (waErr) {
+            console.warn("[studentCheckIn:bonusRpc:wa] Falha ao enviar WhatsApp:", waErr);
+          }
         } catch (notifErr) {
           console.warn("[studentCheckIn:bonusRpc] Falha ao registrar notificação:", notifErr);
         }
@@ -541,6 +557,22 @@ export const studentCheckIn = createServerFn({ method: "POST" })
             is_bonus: true,
           },
         });
+
+        // Disparo Serverless WhatsApp para o Treinador
+        try {
+          const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
+          await sendTrainerWhatsAppAlert({
+            type: "checkin",
+            studentName,
+            className,
+            timeFormatted,
+            programName: progName,
+            date: session.session_date,
+            isBonus: true,
+          });
+        } catch (waErr) {
+          console.warn("[studentCheckIn:bonusFallback:wa] Falha ao enviar WhatsApp:", waErr);
+        }
       } catch (notifErr) {
         console.warn("[studentCheckIn:bonusFallback] Falha ao registrar notificação:", notifErr);
       }
@@ -663,6 +695,22 @@ export const studentCheckIn = createServerFn({ method: "POST" })
           is_bonus: false,
         },
       });
+
+      // Disparo Serverless WhatsApp para o Treinador
+      try {
+        const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
+        await sendTrainerWhatsAppAlert({
+          type: "checkin",
+          studentName,
+          className,
+          timeFormatted,
+          programName: progName,
+          date: session.session_date,
+          isBonus: false,
+        });
+      } catch (waErr) {
+        console.warn("[studentCheckIn:regular:wa] Falha ao enviar WhatsApp:", waErr);
+      }
     } catch (notifErr) {
       console.warn("[studentCheckIn:regular] Falha ao registrar notificação:", notifErr);
     }
