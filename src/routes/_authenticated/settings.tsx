@@ -9,6 +9,8 @@ import { TrashPanel } from "@/components/settings/TrashPanel";
 import { DragDropPromptCard } from "@/components/pt/DragDropPromptCard";
 import { AiEnginePromptCard } from "@/components/pt/AiEnginePromptCard";
 import { BusinessLogosPanel } from "@/components/settings/BusinessLogosPanel";
+import { DownloadApkPanel } from "@/components/settings/DownloadApkPanel";
+import { Smartphone } from "lucide-react";
 
 import { Stethoscope } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -32,7 +34,7 @@ import { useProfileMode } from "@/hooks/use-profile-mode";
 import { useRole } from "@/hooks/use-role";
 import { Shield, UserCog } from "lucide-react";
 
-const TABS = ["geral", "dados", "prompts", "lixeira"] as const;
+const TABS = ["geral", "dados", "prompts", "lixeira", "atualizacoes"] as const;
 type SettingsTab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -59,6 +61,7 @@ const TAB_META: Record<SettingsTab, { label: string; icon: LucideIcon; descripti
     icon: Sparkles,
     description: "Configuração de motores de IA e prompts customizados",
   },
+  atualizacoes: { label: "Download de Atualizações", icon: Smartphone, description: "Baixe o aplicativo atualizado (APK) para seu celular Android" },
   lixeira: {
     label: "Lixeira",
     icon: Trash2,
@@ -118,6 +121,9 @@ function SettingsPage() {
         </TabsContent>
         <TabsContent value="lixeira" className="mt-0 focus-visible:outline-none">
           {tab === "lixeira" && <TrashPanel />}
+        </TabsContent>
+        <TabsContent value="atualizacoes" className="mt-0 focus-visible:outline-none">
+          {tab === "atualizacoes" && <DownloadApkPanel />}
         </TabsContent>
       </Tabs>
     </div>

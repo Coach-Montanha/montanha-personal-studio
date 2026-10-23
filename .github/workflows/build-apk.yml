@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build & Package APK
@@ -19,19 +22,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
 
-      - name: Install dependencies
-        run: bun install
+      - name: Build Web Assets
+        run: npm run build
 
       - name: Sync Capacitor Android
         run: npx cap sync android
@@ -49,3 +49,14 @@ jobs:
           name: Montanha-Personal-Studio-Debug-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
+
+      - name: Publish Latest APK Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: latest
+          name: "Montanha Personal Studio (APK Atualizado)"
+          body: "Versão com notificações nativas no Android (check-ins e lembretes 20min com som e vibração)."
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
