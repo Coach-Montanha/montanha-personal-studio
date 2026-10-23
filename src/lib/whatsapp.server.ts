@@ -71,13 +71,32 @@ export async function sendTrainerWhatsAppAlert(payload: WhatsAppAlertPayload) {
   console.log(`[WhatsApp Serverless] Disparando para ${targetPhone}:`);
   console.log(messageText);
 
-  // 2. Disparo HTTP para o Gateway configurado (Evolution API, Z-API, Baileys Cloud ou Webhook)
   const gatewayUrl = process.env.WHATSAPP_GATEWAY_URL;
   const gatewayToken = process.env.WHATSAPP_GATEWAY_TOKEN || "";
+  const callmebotKey = process.env.CALLMEBOT_APIKEY;
 
+  // 2. Disparo via CallMeBot (100% gratuito e direto no WhatsApp)
+  if (callmebotKey || (gatewayUrl && gatewayUrl.includes("callmebot.com"))) {
+    const apiKey = callmebotKey || gatewayToken;
+    try {
+      const cleanDigits = targetPhone.replace(/\D/g, "");
+      const callmebotUrl = `https://api.callmebot.com/whatsapp.php?phone=${cleanDigits}&text=${encodeURIComponent(
+        messageText
+      )}&apikey=${apiKey}`;
+      const response = await fetch(callmebotUrl);
+      const respText = await response.text();
+      console.log(`[WhatsApp CallMeBot] Resposta (${response.status}):`, respText);
+      return { ok: response.ok, status: response.status, response: respText };
+    } catch (err: any) {
+      console.error("[WhatsApp CallMeBot] Erro:", err.message);
+      return { ok: false, error: err.message };
+    }
+  }
+
+  // 3. Disparo HTTP para outros Gateways (Evolution API, Z-API, Baileys Cloud ou Webhook)
   if (!gatewayUrl) {
     console.warn(
-      "[WhatsApp Serverless] WHATSAPP_GATEWAY_URL não configurada no ambiente. Mensagem registrada no log serverless."
+      "[WhatsApp Serverless] Gateway não configurado. Mensagem registrada no log serverless da Vercel."
     );
     return { ok: true, queued: true, targetPhone, simulated: true };
   }
@@ -95,7 +114,6 @@ export async function sendTrainerWhatsAppAlert(payload: WhatsAppAlertPayload) {
       headers["x-api-key"] = gatewayToken;
     }
 
-    // Auto-adaptação do payload de acordo com o endpoint
     if (gatewayUrl.includes("/send-now") || gatewayUrl.includes("/api/schedule")) {
       // Baileys / Montanha-WhatsApp-System
       body = JSON.stringify({
@@ -116,7 +134,7 @@ export async function sendTrainerWhatsAppAlert(payload: WhatsAppAlertPayload) {
         message: messageText,
       });
     } else {
-      // Payload universal para webhooks (n8n, Make, Custom)
+      // Webhook universal
       body = JSON.stringify({
         phone: targetPhone,
         number: targetPhone,
@@ -132,11 +150,11 @@ export async function sendTrainerWhatsAppAlert(payload: WhatsAppAlertPayload) {
     });
 
     const respText = await response.text();
-    console.log(`[WhatsApp Serverless] Resposta do Gateway (${response.status}):`, respText);
+    console.log(`[WhatsApp Serverless] Resposta (${response.status}):`, respText);
 
     return { ok: response.ok, status: response.status, response: respText };
   } catch (err: any) {
-    console.error("[WhatsApp Serverless] Erro no envio via gateway:", err.message);
+    console.error("[WhatsApp Serverless] Erro no gateway:", err.message);
     return { ok: false, error: err.message };
   }
 }
