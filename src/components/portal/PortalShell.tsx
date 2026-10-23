@@ -20,6 +20,8 @@ import { useIsFetching, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { NotificationsBell } from "@/components/portal/NotificationsBell";
+import { AccountSwitcherDialog } from "@/components/auth/AccountSwitcherDialog";
+import { Users } from "lucide-react";
 import { PortalAnnouncementPopup } from "@/components/portal/PortalAnnouncementPopup";
 import { PortalPersistGate, clearPortalCache } from "@/components/portal/PortalPersistGate";
 import { openTrainingTimer } from "@/hooks/use-training-timer";
@@ -306,7 +308,19 @@ export function PortalShell({ children }: { children: ReactNode }) {
                 Conectado
               </div>
             </div>
-            <button
+            <div className="flex items-center gap-1 shrink-0">
+              <AccountSwitcherDialog
+                trigger={
+                  <button
+                    title="Alternar contas / perfis"
+                    aria-label="Alternar contas / perfis"
+                    className="grid h-9 w-9 place-items-center rounded-lg text-sidebar-foreground/70 hover:bg-primary/10 hover:text-primary active:scale-95 transition-colors"
+                  >
+                    <Users className="h-4 w-4" />
+                  </button>
+                }
+              />
+              <button
               onClick={signOut}
               title="Sair"
               aria-label="Sair"
@@ -314,6 +328,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
             >
               <LogOut className="h-4 w-4" />
             </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -358,6 +373,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
               <RefreshCw className="h-3 w-3 animate-spin" aria-hidden />
               Atualizando
             </span>
+            <AccountSwitcherDialog />
             <NotificationsBell />
             <button
               onClick={toggleTheme}
