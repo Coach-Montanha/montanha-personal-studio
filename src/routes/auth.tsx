@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Loader2,
   CheckCircle2,
@@ -97,6 +97,35 @@ function AuthPage() {
   const [showReset, setShowReset] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
+
+  // Carrega credenciais salvas no dispositivo e tenta preenchimento automático nativo
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const savedEmail = localStorage.getItem("studio:remember_email");
+      if (savedEmail && !email) setEmail(savedEmail);
+
+      const savedRemember = localStorage.getItem("studio:remember_me");
+      if (savedRemember !== null) setRememberMe(savedRemember === "true");
+
+      // Suporte à API nativa de Gerenciador de Credenciais do Google / Android
+      if (navigator.credentials && (window as any).PasswordCredential) {
+        navigator.credentials
+          .get({ password: true } as any)
+          .then((cred: any) => {
+            if (cred && cred.id) {
+              setEmail(cred.id);
+              if (cred.password) {
+                setPin(cred.password);
+                setPassword(cred.password);
+              }
+            }
+          })
+          .catch(() => {});
+      }
+    } catch {}
+  }, []);
 
   // Brand Color: #6958e2 (Midnight Violet)
 
@@ -195,6 +224,28 @@ function AuthPage() {
     }
 
     setLoading(false);
+
+    // Salva ou remove o e-mail no dispositivo
+    try {
+      if (rememberMe) {
+        localStorage.setItem("studio:remember_email", cleanEmail);
+        localStorage.setItem("studio:remember_me", "true");
+      } else {
+        localStorage.removeItem("studio:remember_email");
+        localStorage.setItem("studio:remember_me", "false");
+      }
+
+      // Oferece salvar a credencial no Google Password Manager nativo do Android
+      if (typeof window !== "undefined" && navigator.credentials && (window as any).PasswordCredential) {
+        const cred = new (window as any).PasswordCredential({
+          id: cleanEmail,
+          password: cleanCredential,
+          name: cleanEmail.split("@")[0],
+        });
+        navigator.credentials.store(cred).catch(() => {});
+      }
+    } catch {}
+
     toast.success("Bem-vindo de volta!");
     if (signInData?.user) {
       await redirectAfterAuth(signInData.user.id);
@@ -493,6 +544,8 @@ function AuthPage() {
 
               {/* Form */}
               <form
+                method="post"
+                autoComplete="on"
                 onSubmit={view === "signin" ? handleSignIn : handleSignUp}
                 className="space-y-4"
               >
@@ -572,6 +625,8 @@ function AuthPage() {
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <input
                       id="si-email-input"
+                      name="username"
+                      autoComplete="username email"
                       type="email"
                       required
                       value={email}
@@ -604,6 +659,8 @@ function AuthPage() {
                     <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <input
                       id="pin-input"
+                      name="password"
+                      autoComplete={view === "signup" ? "new-password" : "current-password"}
                       type={showPass ? "text" : "password"}
                       required
                       value={pin}
