@@ -121,7 +121,7 @@ export const getAgenda = createServerFn({ method: "POST" })
     // (1) Identifica se userId é aluno (pega o user_id do studio) ou coach
     const { data: stu } = await supabaseAdmin
       .from("students")
-      .select("id, user_id, bonus_checkins_balance")
+      .select("id, user_id, bonus_checkins_balance, name")
       .eq("account_user_id", userId)
       .maybeSingle();
 
@@ -382,7 +382,7 @@ export const studentCheckIn = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: stu } = await supabase
       .from("students")
-      .select("id, user_id, bonus_checkins_balance")
+      .select("id, user_id, bonus_checkins_balance, name")
       .eq("account_user_id", userId)
       .maybeSingle();
     if (!stu) throw new Error("Perfil de aluno não encontrado");
@@ -395,6 +395,32 @@ export const studentCheckIn = createServerFn({ method: "POST" })
       });
 
       if (!rpcErr) {
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const session = await loadSessionContext(supabaseAdmin, data.sessionId);
+          const className = session.classes?.name || "Aula";
+          const progName = session.classes?.programs?.name;
+          const timeFormatted = session.start_time ? String(session.start_time).slice(0, 5) : "";
+          const studentName = stu.name || "Aluno";
+          await supabaseAdmin.from("pt_notifications" as any).insert({
+            user_id: session.user_id,
+            title: "Novo check-in realizado (Bônus)!",
+            message: `${studentName} confirmou presença na turma "${className}" às ${timeFormatted}${progName ? ` (${progName})` : ""} usando bônus.`,
+            type: "checkin",
+            metadata: {
+              session_id: session.id,
+              student_id: stu.id,
+              student_name: studentName,
+              class_name: className,
+              start_time: session.start_time,
+              session_date: session.session_date,
+              is_bonus: true,
+            },
+          });
+        } catch (notifErr) {
+          console.warn("[studentCheckIn:bonusRpc] Falha ao registrar notificação:", notifErr);
+        }
+
         return {
           ok: true,
           isBonus: true,
@@ -495,6 +521,30 @@ export const studentCheckIn = createServerFn({ method: "POST" })
         .select("id")
         .maybeSingle();
 
+      try {
+        const className = session.classes?.name || "Aula";
+        const progName = session.classes?.programs?.name;
+        const timeFormatted = session.start_time ? String(session.start_time).slice(0, 5) : "";
+        const studentName = freshStu.name || stu.name || "Aluno";
+        await supabaseAdmin.from("pt_notifications" as any).insert({
+          user_id: session.user_id,
+          title: "Novo check-in realizado (Bônus)!",
+          message: `${studentName} confirmou presença na turma "${className}" às ${timeFormatted}${progName ? ` (${progName})` : ""} usando bônus.`,
+          type: "checkin",
+          metadata: {
+            session_id: session.id,
+            student_id: freshStu.id,
+            student_name: studentName,
+            class_name: className,
+            start_time: session.start_time,
+            session_date: session.session_date,
+            is_bonus: true,
+          },
+        });
+      } catch (notifErr) {
+        console.warn("[studentCheckIn:bonusFallback] Falha ao registrar notificação:", notifErr);
+      }
+
       return {
         ok: true,
         isBonus: true,
@@ -591,6 +641,32 @@ export const studentCheckIn = createServerFn({ method: "POST" })
       is_bonus: false,
     });
     if (insErr) throw new Error(insErr.message);
+
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const className = session.classes?.name || "Aula";
+      const progName = session.classes?.programs?.name;
+      const timeFormatted = session.start_time ? String(session.start_time).slice(0, 5) : "";
+      const studentName = stu.name || "Aluno";
+      await supabaseAdmin.from("pt_notifications" as any).insert({
+        user_id: session.user_id,
+        title: "Novo check-in realizado!",
+        message: `${studentName} confirmou presença na turma "${className}" às ${timeFormatted}${progName ? ` (${progName})` : ""}.`,
+        type: "checkin",
+        metadata: {
+          session_id: session.id,
+          student_id: stu.id,
+          student_name: studentName,
+          class_name: className,
+          start_time: session.start_time,
+          session_date: session.session_date,
+          is_bonus: false,
+        },
+      });
+    } catch (notifErr) {
+      console.warn("[studentCheckIn:regular] Falha ao registrar notificação:", notifErr);
+    }
+
     return { ok: true, isBonus: false };
   });
 

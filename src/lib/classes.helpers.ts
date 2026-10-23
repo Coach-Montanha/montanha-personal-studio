@@ -141,8 +141,9 @@ export async function loadSessionContext(supabase: any, sessionId: string) {
     .select(`
       id, session_date, start_time, class_id, user_id,
       classes:class_id (
-        capacity, program_id,
-        checkin_opens_minutes_before, checkin_closes_minutes_before
+        name, capacity, program_id,
+        checkin_opens_minutes_before, checkin_closes_minutes_before,
+        programs:program_id ( name )
       )
     `)
     .eq("id", sessionId)
