@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Bell, BellDot, Trash2, Calendar, Dumbbell, Zap, CheckCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, BellDot, Trash2, Calendar, Dumbbell, CheckCircle2, Smartphone, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -32,7 +32,36 @@ function playNotificationSound() {
     osc.start();
     osc.stop(ctx.currentTime + 0.28);
   } catch {
-    // Silencia restrições de autoplay do navegador
+    // Silencia restrições de autoplay
+  }
+}
+
+// Dispara notificação nativa do sistema operacional (Android, iOS 16.4+, Windows)
+function showNativePushNotification(title: string, body: string, url: string = "/agenda") {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  try {
+    if ("serviceWorker" in navigator && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.showNotification(title, {
+          body,
+          icon: "/icon-192.png",
+          badge: "/favicon.svg",
+          vibrate: [200, 100, 200],
+          tag: "studio-alert-" + Date.now(),
+          renotify: true,
+          data: { url },
+        } as any);
+      });
+    } else {
+      new Notification(title, {
+        body,
+        icon: "/icon-192.png",
+      });
+    }
+  } catch (err) {
+    console.warn("[NativePush] Erro ao disparar notificação nativa:", err);
   }
 }
 
@@ -40,6 +69,43 @@ export function NotificationCenter() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const [pushStatus, setPushStatus] = useState<NotificationPermission | "unsupported">("default");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setPushStatus(Notification.permission);
+      // Registra o Service Worker
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch((err) => {
+          console.warn("[SW] Registro falhou:", err);
+        });
+      }
+    } else {
+      setPushStatus("unsupported");
+    }
+  }, []);
+
+  async function handleEnablePush() {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      toast.error("Notificações não são suportadas neste navegador.");
+      return;
+    }
+    try {
+      const perm = await Notification.requestPermission();
+      setPushStatus(perm);
+      if (perm === "granted") {
+        toast.success("Avisos no celular e na tela de bloqueio ativados com sucesso!");
+        showNativePushNotification(
+          "Studio Montanha Conectado! 🚀",
+          "Você receberá alertas de novos check-ins e turmas diretamente no seu celular."
+        );
+      } else if (perm === "denied") {
+        toast.error("Permissão de notificação negada nas configurações do navegador.");
+      }
+    } catch (err) {
+      console.warn("Erro ao pedir permissão de notificação:", err);
+    }
+  }
 
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications", user?.id],
@@ -77,6 +143,12 @@ export function NotificationCenter() {
           playNotificationSound();
 
           const notif = payload.new;
+          const title = notif.title || (notif.type === "checkin" ? "🔔 Novo Check-in!" : "⏰ Studio");
+          const message = notif.message || "";
+
+          // Disparo de notificação nativa no sistema operacional
+          showNativePushNotification(title, message, "/agenda");
+
           if (notif.type === "checkin") {
             toast.success("🔔 Novo Check-in!", {
               description: notif.message,
@@ -163,6 +235,12 @@ export function NotificationCenter() {
                   : "Nenhum aluno realizou check-in até o momento.";
 
               playNotificationSound();
+              showNativePushNotification(
+                `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
+                body,
+                "/agenda"
+              );
+
               toast.info(`⏰ Aula em 20 min (${timeFormatted} - ${className})`, {
                 description: body,
                 duration: 12000,
@@ -172,7 +250,6 @@ export function NotificationCenter() {
                 },
               });
 
-              // Registra também na tabela para ficar arquivado no histórico
               await supabase.from("pt_notifications" as any).insert({
                 user_id: user.id,
                 title: `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
@@ -297,6 +374,31 @@ export function NotificationCenter() {
             )}
           </div>
         </div>
+
+        {/* Banner de Ativação de Push Nativo no Celular */}
+        {pushStatus !== "granted" && pushStatus !== "unsupported" ? (
+          <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-[11px] text-foreground font-medium">
+                Ativar avisos na tela do celular
+              </span>
+            </div>
+            <Button
+              size="sm"
+              variant="default"
+              onClick={handleEnablePush}
+              className="h-6 text-[10px] px-2 font-bold"
+            >
+              Ativar
+            </Button>
+          </div>
+        ) : pushStatus === "granted" ? (
+          <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-1.5 flex items-center gap-2 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+            <Check className="h-3 w-3" />
+            <span>Notificações ativas na tela do celular e bloqueio</span>
+          </div>
+        ) : null}
 
         <div className="max-h-[380px] overflow-y-auto divide-y divide-border/40">
           {notifications.length === 0 ? (

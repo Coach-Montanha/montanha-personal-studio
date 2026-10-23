@@ -107,3 +107,61 @@ function requestUrl(req) {
   }
 }
 
+// ── Notificações Push PWA em Background (Android, iOS 16.4+ e Desktop) ──────────
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = data.title || "Studio Treinador";
+  const options = {
+    body: data.body || data.message || "Novo aviso no Studio.",
+    icon: data.icon || "/icon-192.png",
+    badge: data.badge || "/favicon.svg",
+    vibrate: [200, 100, 200],
+    tag: data.tag || "studio-notification",
+    renotify: true,
+    data: {
+      url: data.url || "/agenda",
+      timestamp: Date.now(),
+    },
+    actions: [
+      { action: "open", title: "Ver Agenda" },
+      { action: "close", title: "Dispensar" },
+    ],
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Clique na notificação nativa do celular abre o app diretamente na tela de Agenda
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  if (event.action === "close") return;
+
+  const targetUrl = event.notification.data?.url || "/agenda";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) {
+          if (client.url.includes(targetUrl)) {
+            return client.focus();
+          }
+          if ("navigate" in client) {
+            client.navigate(targetUrl);
+          }
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+
