@@ -259,7 +259,7 @@ function AgendaPage() {
 
       {/* Create/Edit turma dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+        <DialogContent className="max-h-[calc(100dvh-max(var(--safe-area-inset-top,0px),env(safe-area-inset-top,0px),44px)-max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px),36px)-1.5rem)] max-w-lg overflow-y-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Editar turma" : "Nova turma"}</DialogTitle>
           </DialogHeader>

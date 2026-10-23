@@ -544,6 +544,13 @@ export function PrescreverIaDialog({
   });
   const [tempApiKey, setTempApiKey] = useState(geminiApiKey);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  useEffect(() => {
+    const envKey = (import.meta as any)?.env?.VITE_GEMINI_API_KEY;
+    if (!geminiApiKey && envKey) {
+      setGeminiApiKey(envKey);
+    }
+  }, [geminiApiKey]);
+
 
   const salvarApiKey = (novaChave: string) => {
     const limpa = novaChave.trim();
@@ -951,7 +958,7 @@ export function PrescreverIaDialog({
       try {
         const res = await gerar({
           data: {
-            apiKey: geminiApiKey.trim() || undefined,
+            apiKey: geminiApiKey.trim() || (import.meta as any)?.env?.VITE_GEMINI_API_KEY || undefined,
             programId: programa?.id || "novo-programa",
             studentId: selectedStudentId || assignedStudent?.id || null,
             prompt: prompt.trim(),
@@ -1401,7 +1408,7 @@ export function PrescreverIaDialog({
         onOpenChange(o);
       }}
     >
-      <DialogContent className="flex max-h-[90dvh] max-w-2xl flex-col gap-0 p-0">
+      <DialogContent className="flex max-h-[calc(100dvh-max(var(--safe-area-inset-top,0px),env(safe-area-inset-top,0px),44px)-max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px),36px)-1.5rem)] max-w-2xl flex-col gap-0 p-0 overflow-hidden rounded-2xl shadow-2xl">
         <DialogHeader className="border-b border-border/60 px-5 py-4 text-left sm:px-6">
           <DialogTitle className="flex items-center gap-2 text-base">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
@@ -2383,7 +2390,7 @@ export function PrescreverIaDialog({
           )}
         </div>
 
-        <DialogFooter className="gap-2 border-t border-border/60 px-5 py-4 sm:px-6">
+        <DialogFooter className="gap-2 border-t border-border/60 px-5 py-4 pb-[calc(1rem+max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px),20px))] sm:px-6">
           <Button
             variant="ghost"
             onClick={() => {

@@ -38,17 +38,20 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        // Mobile-first: nunca ultrapassa a viewport, sempre rola por dentro.
-        "fixed left-[50%] top-[50%] z-50 grid translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background shadow-lg duration-200",
-        "w-[calc(100vw-1rem)] max-w-lg max-h-[calc(100dvh-1.5rem)] overflow-y-auto overscroll-contain",
-        "p-4 sm:p-6 sm:rounded-lg rounded-lg",
+        // Respeita estritamente o notch do topo e a barra de navegação virtual do Android/iOS
+        "fixed left-[50%] z-50 grid translate-x-[-50%] gap-4 border bg-background shadow-xl duration-200",
+        "w-[calc(100vw-1.25rem)] max-w-lg",
+        "top-[calc(50%+max(var(--safe-area-inset-top,0px),env(safe-area-inset-top,0px),44px)/2-max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px),36px)/2)] translate-y-[-50%]",
+        "max-h-[calc(100dvh-max(var(--safe-area-inset-top,0px),env(safe-area-inset-top,0px),44px)-max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px),36px)-1.5rem)]",
+        "overflow-y-auto overscroll-contain",
+        "p-4 sm:p-6 rounded-2xl sm:rounded-2xl",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className,
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-lg text-muted-foreground cursor-pointer transition-ui hover:bg-muted hover:text-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none">
+      <DialogPrimitive.Close className="absolute right-3.5 top-3.5 z-20 grid h-8 w-8 place-items-center rounded-xl text-muted-foreground cursor-pointer transition-ui hover:bg-muted hover:text-foreground outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none bg-background/80 backdrop-blur-sm border border-border/40">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -64,12 +67,13 @@ DialogHeader.displayName = "DialogHeader";
 
 /**
  * Rodapé fixo: acompanha a rolagem interna do diálogo, com blur para separar
- * as ações do conteúdo. No mobile os botões ocupam a linha inteira.
+ * as ações do conteúdo. No mobile os botões ocupam a linha inteira e compensam a barra de navegação virtual.
  */
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "sticky bottom-0 z-10 -mx-4 -mb-4 mt-2 flex flex-col-reverse gap-2 border-t border-border bg-background/90 px-4 pb-4 pt-3 backdrop-blur-md",
+      "sticky bottom-0 z-10 -mx-4 -mb-4 mt-2 flex flex-col-reverse gap-2 border-t border-border bg-background/95 px-4 pt-3 backdrop-blur-md",
+      "pb-[calc(1rem+max(var(--safe-area-inset-bottom,0px),env(safe-area-inset-bottom,0px),20px))]",
       "sm:-mx-6 sm:-mb-6 sm:flex-row sm:justify-end sm:px-6 sm:pb-6 sm:pt-4",
       "[&>button]:w-full sm:[&>button]:w-auto",
       className,
@@ -107,8 +111,8 @@ export {
   Dialog,
   DialogPortal,
   DialogOverlay,
-  DialogTrigger,
   DialogClose,
+  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogFooter,
