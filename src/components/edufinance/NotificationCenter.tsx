@@ -195,7 +195,7 @@ export function NotificationCenter() {
     };
   }, [user?.id, qc, navigate]);
 
-  // 2. Alerta preventivo automático 20 minutos antes de cada aula do dia
+  // 2. Alerta preventivo automático 19 minutos e 30 segundos antes de cada aula do dia
   useEffect(() => {
     if (!user?.id) return;
 
@@ -227,7 +227,8 @@ export function NotificationCenter() {
           const sessionTime = new Date();
           sessionTime.setHours(h, m, 0, 0);
 
-          const diffMinutes = Math.floor((sessionTime.getTime() - now.getTime()) / 60000);
+          const diffMs = sessionTime.getTime() - now.getTime();
+          const diffSeconds = Math.floor(diffMs / 1000);
           const timeFormatted = session.start_time.slice(0, 5);
           const className = (session.classes as any)?.name || "Turma";
           const attendees = (session.class_attendance ?? [])
@@ -239,34 +240,35 @@ export function NotificationCenter() {
               ? `${count} aluno(s) com check-in: ${attendees.join(", ")}.`
               : "Nenhum aluno realizou check-in até o momento.";
 
-          // Agendamento nativo futuro no Android
-          const triggerAt = new Date(sessionTime.getTime() - 20 * 60000);
+          // Agendamento nativo futuro no Android: exatamente 19m 30s antes (1170 segundos)
+          const TARGET_OFFSET_MS = (19 * 60 + 30) * 1000;
+          const triggerAt = new Date(sessionTime.getTime() - TARGET_OFFSET_MS);
           if (triggerAt.getTime() > now.getTime()) {
             scheduleClassReminderNotification({
-              id: hashStringToInt(`class_20m_${session.id}_${today}`),
-              title: `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
+              id: hashStringToInt(`class_19m30s_${session.id}_${today}`),
+              title: `⏰ Aula em 19m 30s (${timeFormatted} - ${className})`,
               body,
               triggerAt,
               url: "/agenda",
             });
           }
 
-          // Disparo imediato se estiver na janela de 20 minutos
-          if (diffMinutes <= 20 && diffMinutes >= 0) {
-            const storageKey = `notified_class_20m_${session.id}_${today}`;
+          // Disparo imediato se estiver na janela de 19 minutos e 30 segundos (<= 1170 segundos)
+          if (diffSeconds <= 1170 && diffSeconds >= 0) {
+            const storageKey = `notified_class_19m30s_${session.id}_${today}`;
             if (!localStorage.getItem(storageKey)) {
               localStorage.setItem(storageKey, "true");
 
               playNotificationSound();
-              const notifId = hashStringToInt(`class_20m_${session.id}_${today}`);
+              const notifId = hashStringToInt(`class_19m30s_${session.id}_${today}`);
               await triggerDeviceNotification({
                 id: notifId,
-                title: `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
+                title: `⏰ Aula em 19m 30s (${timeFormatted} - ${className})`,
                 body,
                 url: "/agenda",
               });
 
-              toast.info(`⏰ Aula em 20 min (${timeFormatted} - ${className})`, {
+              toast.info(`⏰ Aula em 19m 30s (${timeFormatted} - ${className})`, {
                 description: body,
                 duration: 12000,
                 action: {
@@ -277,9 +279,9 @@ export function NotificationCenter() {
 
               await supabase.from("pt_notifications" as any).insert({
                 user_id: user.id,
-                title: `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
+                title: `⏰ Aula em 19m 30s (${timeFormatted} - ${className})`,
                 message: body,
-                type: "class_reminder_20m",
+                type: "class_reminder_19m30s",
                 metadata: {
                   session_id: session.id,
                   start_time: session.start_time,
@@ -297,7 +299,7 @@ export function NotificationCenter() {
     };
 
     checkUpcomingClasses();
-    const interval = setInterval(checkUpcomingClasses, 45000);
+    const interval = setInterval(checkUpcomingClasses, 30000);
     return () => clearInterval(interval);
   }, [user?.id, navigate]);
 

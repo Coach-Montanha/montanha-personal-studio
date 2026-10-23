@@ -48,16 +48,16 @@ export const Route = createFileRoute("/api/cron/pre-class")({
             const sessionTime = new Date(nowBrt);
             sessionTime.setHours(h, m, 0, 0);
 
-            const diffMinutes = Math.floor(
-              (sessionTime.getTime() - nowBrt.getTime()) / 60000
+            const diffSeconds = Math.floor(
+              (sessionTime.getTime() - nowBrt.getTime()) / 1000
             );
 
-            // Janela do cron: entre 5 e 25 minutos antes da aula
-            if (diffMinutes <= 25 && diffMinutes >= 5) {
+            // Janela: 19 minutos e 30 segundos antes (1170s) até 3 minutos antes (180s)
+            if (diffSeconds <= 1170 && diffSeconds >= 180) {
               const { data: alreadySent } = await supabaseAdmin
                 .from("pt_notifications")
                 .select("id")
-                .eq("type", "whatsapp_class_reminder_20m")
+                .or("type.eq.whatsapp_class_reminder_19m30s,type.eq.whatsapp_class_reminder_20m")
                 .contains("metadata", { session_id: session.id, session_date: todayIso })
                 .maybeSingle();
 
@@ -70,7 +70,7 @@ export const Route = createFileRoute("/api/cron/pre-class")({
                 const timeFormatted = session.start_time.slice(0, 5);
 
                 await sendTrainerWhatsAppAlert({
-                  type: "pre_class_20m",
+                  type: "pre_class_19m30s",
                   className,
                   timeFormatted,
                   attendees,
@@ -79,9 +79,9 @@ export const Route = createFileRoute("/api/cron/pre-class")({
 
                 await supabaseAdmin.from("pt_notifications" as any).insert({
                   user_id: session.user_id,
-                  title: `⏰ [WhatsApp] Aula em 20 min (${timeFormatted} - ${className})`,
+                  title: `⏰ [WhatsApp] Aula em 19m 30s (${timeFormatted} - ${className})`,
                   message: `${attendees.length} aluno(s) confirmados: ${attendees.join(", ")}`,
-                  type: "whatsapp_class_reminder_20m",
+                  type: "whatsapp_class_reminder_19m30s",
                   metadata: {
                     session_id: session.id,
                     session_date: todayIso,

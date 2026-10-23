@@ -15,7 +15,7 @@ export function sanitizeWhatsAppNumber(phone: string): string {
 }
 
 export type WhatsAppAlertPayload = {
-  type: "checkin" | "pre_class_20m";
+  type: "checkin" | "pre_class_20m" | "pre_class_19m30s";
   studentName?: string;
   className: string;
   timeFormatted: string;
@@ -48,7 +48,7 @@ export async function sendTrainerWhatsAppAlert(payload: WhatsAppAlertPayload) {
     ]
       .filter(Boolean)
       .join("\n");
-  } else if (payload.type === "pre_class_20m") {
+  } else if (payload.type === "pre_class_19m30s" || payload.type === "pre_class_20m") {
     const attendees = payload.attendees ?? [];
     const attendeesList =
       attendees.length > 0
@@ -56,7 +56,7 @@ export async function sendTrainerWhatsAppAlert(payload: WhatsAppAlertPayload) {
         : "  (Nenhum aluno realizou check-in até o momento)";
 
     messageText = [
-      "⏰ *LEMBRETE: AULA EM 20 MINUTOS*",
+      "⏰ *LEMBRETE: AULA EM 19 MINUTOS E 30 SEGUNDOS*",
       "━━━━━━━━━━━━━━━━━━",
       `🏋️ *Turma:* ${payload.className}`,
       `⏰ *Início:* ${payload.timeFormatted}`,
