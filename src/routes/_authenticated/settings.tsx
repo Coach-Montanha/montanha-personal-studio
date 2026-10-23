@@ -35,7 +35,7 @@ import { useProfileMode } from "@/hooks/use-profile-mode";
 import { useRole } from "@/hooks/use-role";
 import { Shield, UserCog } from "lucide-react";
 
-const TABS = ["geral", "dados", "prompts", "lixeira", "atualizacoes"] as const;
+const TABS = ["geral", "atualizacoes", "dados", "prompts", "lixeira"] as const;
 type SettingsTab = (typeof TABS)[number];
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -62,7 +62,7 @@ const TAB_META: Record<SettingsTab, { label: string; icon: LucideIcon; descripti
     icon: Sparkles,
     description: "Configuração de motores de IA e prompts customizados",
   },
-  atualizacoes: { label: "Download de Atualizações", icon: Smartphone, description: "Baixe o aplicativo atualizado (APK) para seu celular Android" },
+  atualizacoes: { label: "Baixar APK", icon: Smartphone, description: "Baixe o aplicativo atualizado (APK) para seu celular Android" },
   lixeira: {
     label: "Lixeira",
     icon: Trash2,
@@ -290,6 +290,8 @@ function GeneralSettings() {
       <BusinessLogosPanel />
 
       <MobileNotificationsCard />
+
+      <DownloadApkPanel />
 
       <Card className="p-5 space-y-4">
         <h2 className="text-base font-semibold">Perfil</h2>
