@@ -156,6 +156,7 @@ export function NotificationCenter() {
 
           // Disparo de notificação nativa no sistema operacional (Android APK e Web)
           await triggerDeviceNotification({
+            id: hashStringToInt(notif.id || (title + message)),
             title,
             body: message,
             url: "/agenda",
@@ -257,7 +258,9 @@ export function NotificationCenter() {
               localStorage.setItem(storageKey, "true");
 
               playNotificationSound();
+              const notifId = hashStringToInt(`class_20m_${session.id}_${today}`);
               await triggerDeviceNotification({
+                id: notifId,
                 title: `⏰ Aula em 20 min (${timeFormatted} - ${className})`,
                 body,
                 url: "/agenda",

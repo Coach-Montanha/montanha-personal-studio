@@ -3,6 +3,15 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 
 export const isNativeApp = () => Capacitor.isNativePlatform();
 
+function hashNotificationId(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash % 2147483647);
+}
+
 /**
  * Cria canal de notificação com alta prioridade no Android (som, vibração e banner na barra de status)
  */
@@ -124,25 +133,29 @@ export async function scheduleClassReminderNotification({
 }
 
 /**
- * Dispara notificação imediata com som e banner no Android/iOS ou Web
+ * Dispara notificação imediata com som e banner no Android/iOS ou Web com deduplicação nativa
  */
 export async function triggerDeviceNotification({
+  id,
   title,
   body,
   url = "/agenda",
 }: {
+  id?: number;
   title: string;
   body: string;
   url?: string;
 }) {
-  // 1. Android / iOS Nativo via Capacitor (disparo instantâneo)
+  const notifId = id ?? hashNotificationId(title + body);
+
+  // 1. Android / iOS Nativo via Capacitor (deduplicação pelo ID determinístico)
   if (isNativeApp()) {
     try {
       await setupNativeNotificationChannel();
       await LocalNotifications.schedule({
         notifications: [
           {
-            id: Math.floor(Math.random() * 2147483647),
+            id: notifId,
             title,
             body,
             channelId: "studio_alerts",
@@ -156,9 +169,10 @@ export async function triggerDeviceNotification({
     }
   }
 
-  // 2. Web Browser Fallback (Service Worker ou Notification API)
+  // 2. Web Browser Fallback (Service Worker ou Notification API com deduplicação por tag)
   if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
     try {
+      const tag = `studio-alert-${notifId}`;
       if ("serviceWorker" in navigator && navigator.serviceWorker.ready) {
         navigator.serviceWorker.ready.then((reg) => {
           reg.showNotification(title, {
@@ -166,8 +180,8 @@ export async function triggerDeviceNotification({
             icon: "/icon-192.png",
             badge: "/favicon.svg",
             vibrate: [200, 100, 200],
-            tag: "studio-alert-" + Date.now(),
-            renotify: true,
+            tag,
+            renotify: false,
             data: { url },
           } as any);
         });
@@ -175,7 +189,8 @@ export async function triggerDeviceNotification({
         new Notification(title, {
           body,
           icon: "/icon-192.png",
-        });
+          tag,
+        } as any);
       }
     } catch (err) {
       console.warn("[WebNotification] Erro ao disparar notificação web:", err);
