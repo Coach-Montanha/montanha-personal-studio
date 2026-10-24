@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   listStudioForms,
   StudioFormItem,
   FormCategory,
   deleteStudioForm,
 } from "@/lib/forms-store";
+import { listFormsServerFn } from "@/lib/forms.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,9 +43,20 @@ function FormulariosAdminPage() {
   const [editTarget, setEditTarget] = useState<StudioFormItem | null | undefined>(undefined);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const refreshList = () => {
+  const refreshList = async () => {
+    try {
+      const data = await listFormsServerFn();
+      if (Array.isArray(data) && data.length > 0) {
+        setForms(data);
+        return;
+      }
+    } catch {}
     setForms(listStudioForms(user?.id));
   };
+
+  useEffect(() => {
+    refreshList();
+  }, [user?.id]);
 
   const filteredForms = useMemo(() => {
     return forms.filter((f) => {
@@ -239,13 +251,15 @@ function FormulariosAdminPage() {
                 <div className="mt-4 pt-3 border-t border-border flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5">
                     <Button
+                      asChild
                       variant="outline"
                       size="sm"
-                      onClick={() => setEmbedTarget(item)}
                       className="h-8 text-xs gap-1 font-semibold"
                     >
-                      <Eye className="h-3.5 w-3.5 text-primary" />
-                      Visualizar
+                      <a href={`/f/${item.slug || item.id}`} target="_blank" rel="noopener noreferrer">
+                        <Eye className="h-3.5 w-3.5 text-primary" />
+                        Visualizar
+                      </a>
                     </Button>
 
                     <Button

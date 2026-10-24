@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StudioFormItem, FormCategory, saveStudioForm } from "@/lib/forms-store";
+import { saveFormServerFn } from "@/lib/forms.functions";
 import { toast } from "sonner";
 import { Link2, Sparkles, Globe, UserCheck } from "lucide-react";
 
@@ -86,32 +87,37 @@ export function FormEditDialog({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim()) {
       return toast.error("Informe um título para o formulário.");
     }
-    if (!googleFormUrl.trim()) {
-      return toast.error("Cole o link do seu Google Forms.");
-    }
 
     try {
-      const saved = saveStudioForm(
-        {
-          id: formToEdit?.id,
-          title,
-          slug,
-          category,
-          description,
-          googleFormUrl,
-          badge,
-          estimatedMinutes: Number(estimatedMinutes) || 3,
-          visibleToStudents,
-          isPublicLead,
-        },
-        tenantId
-      );
+      const payload = {
+        id: formToEdit?.id,
+        title,
+        slug,
+        category,
+        description,
+        googleFormUrl,
+        badge,
+        estimatedMinutes: Number(estimatedMinutes) || 3,
+        visibleToStudents,
+        isPublicLead,
+        userId: tenantId,
+      };
+
+      // 1. Salva localmente como cache imediato
+      const saved = saveStudioForm(payload, tenantId);
+
+      // 2. Salva no banco de dados na nuvem via server function (para funcionar em qualquer dispositivo ou aba anônima)
+      try {
+        await saveFormServerFn({ data: payload });
+      } catch (cloudErr) {
+        console.warn("Aviso ao sincronizar na nuvem:", cloudErr);
+      }
 
       toast.success(
         formToEdit ? "Formulário atualizado com sucesso!" : "Novo formulário cadastrado!"

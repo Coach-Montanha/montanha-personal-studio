@@ -38,6 +38,20 @@ export function formatGoogleFormEmbedUrl(url: string): string {
 
 const DEFAULT_TEMPLATES: StudioFormItem[] = [
   {
+    id: "termo-de-autorizacao-de-uso-de-imagem",
+    slug: "termo-de-autorizacao-de-uso-de-imagem",
+    title: "Termo de Autorização de Uso de Imagem e Voz",
+    category: "geral",
+    description: "Autorização para gravação e veiculação de fotos, vídeos de evolução e depoimentos nas redes sociais do Studio.",
+    googleFormUrl: "",
+    badge: "Jurídico & LGPD",
+    estimatedMinutes: 2,
+    visibleToStudents: true,
+    isPublicLead: true,
+    createdAt: "2026-10-23T18:00:00.000Z",
+    updatedAt: "2026-10-23T18:00:00.000Z",
+  },
+  {
     id: "form_anamnese_padrao",
     slug: "anamnese",
     title: "Anamnese Geral & Histórico de Saúde",

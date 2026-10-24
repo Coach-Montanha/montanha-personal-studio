@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, useMemo, useEffect } from "react";
 import { listStudioForms, StudioFormItem } from "@/lib/forms-store";
+import { listFormsServerFn } from "@/lib/forms.functions";
 import { Button } from "@/components/ui/button";
 import {
   Sparkles,
@@ -10,15 +11,27 @@ import {
   ExternalLink,
   ShieldCheck,
 } from "lucide-react";
-import { FormEmbedDialog } from "@/components/forms/FormEmbedDialog";
 
 export const Route = createFileRoute("/_authenticated/portal/formularios")({
   component: PortalFormulariosPage,
 });
 
 function PortalFormulariosPage() {
-  const [forms] = useState<StudioFormItem[]>(() => listStudioForms());
-  const [selectedForm, setSelectedForm] = useState<StudioFormItem | null>(null);
+  const [forms, setForms] = useState<StudioFormItem[]>(() => listStudioForms());
+
+  useEffect(() => {
+    async function fetchPortalForms() {
+      try {
+        const data = await listFormsServerFn();
+        if (Array.isArray(data) && data.length > 0) {
+          setForms(data);
+        }
+      } catch (err) {
+        console.warn("Erro ao buscar formulários:", err);
+      }
+    }
+    fetchPortalForms();
+  }, []);
 
   const studentForms = useMemo(() => {
     return forms.filter((f) => f.visibleToStudents);
@@ -87,38 +100,35 @@ function PortalFormulariosPage() {
 
               <div className="mt-5 pt-3 border-t border-border flex items-center justify-between gap-2">
                 <Button
-                  onClick={() => setSelectedForm(item)}
+                  asChild
                   size="sm"
                   className="font-bold text-xs gap-1.5 shadow-sm"
                 >
-                  Preencher Agora
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <Link to="/f/$slug" params={{ slug: item.slug || item.id }}>
+                    Preencher Agora
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
                 </Button>
 
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 text-xs text-muted-foreground hover:text-foreground"
-                  title="Abrir no Google Forms externo"
-                >
-                  <a href={item.googleFormUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                    Abrir Externo
-                  </a>
-                </Button>
+                {item.googleFormUrl && item.googleFormUrl.includes("docs.google.com") && (
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                    title="Abrir no Google Forms externo"
+                  >
+                    <a href={item.googleFormUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                      Google Forms
+                    </a>
+                  </Button>
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
-
-      {/* Embedded Dialog */}
-      <FormEmbedDialog
-        form={selectedForm}
-        open={!!selectedForm}
-        onOpenChange={(open) => !open && setSelectedForm(null)}
-      />
     </div>
   );
 }
