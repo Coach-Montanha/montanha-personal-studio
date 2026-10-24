@@ -123,6 +123,7 @@ export function NotificationCenter() {
         .from("pt_notifications" as any)
         .select("*")
         .eq("user_id", user!.id)
+        .neq("type", "custom_form_definition")
         .order("created_at", { ascending: false })
         .limit(40);
       return (data ?? []) as any[];
@@ -343,6 +344,8 @@ export function NotificationCenter() {
         .from("pt_notifications" as any)
         .delete()
         .eq("user_id", user.id)
+        .neq("type", "custom_form_definition")
+        .neq("type", "form_submission")
         .catch(() => null);
 
       toast.success("Notificações apagadas com sucesso!");

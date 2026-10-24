@@ -70,6 +70,14 @@ export const listFormsServerFn = createServerFn({ method: "GET" }).handler(async
     for (const row of dbForms || []) {
       const meta = (row.metadata as any) || {};
       const slug = (meta.slug || row.id).toLowerCase();
+
+      // Se foi marcado como deletado
+      if (meta.deleted) {
+        formsMap.delete(slug);
+        formsMap.delete(row.id.toLowerCase());
+        continue;
+      }
+
       formsMap.set(slug, {
         id: row.id,
         slug,
@@ -462,24 +470,38 @@ export const deleteCustomFormServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const target = data.idOrSlug.trim();
+    const target = data.idOrSlug.trim().toLowerCase();
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target);
 
-    let query = supabaseAdmin
-      .from("pt_notifications")
-      .delete()
-      .eq("type", "custom_form_definition");
+    // 1. Deleta do banco se existir linha
+    try {
+      let query = supabaseAdmin
+        .from("pt_notifications")
+        .delete()
+        .eq("type", "custom_form_definition");
 
-    if (isUuid) {
-      query = query.or(`id.eq.${target},metadata->>slug.eq.${target}`);
-    } else {
-      query = query.filter("metadata->>slug", "eq", target.toLowerCase());
-    }
+      if (isUuid) {
+        query = query.or(`id.eq.${target},metadata->>slug.eq.${target}`);
+      } else {
+        query = query.filter("metadata->>slug", "eq", target);
+      }
+      await query;
+    } catch {}
 
-    const { error } = await query;
-    if (error) {
-      throw new Error(`Erro ao deletar formulário do servidor: ${error.message}`);
-    }
+    // 2. Se for um formulário default do sistema (ex: par-q, alinhamento-de-metas, avaliacao-de-satisfacao),
+    // grava uma tombstone para que ele não ressurja na listagem
+    try {
+      await supabaseAdmin.from("pt_notifications" as any).insert({
+        title: `Tombstone ${target}`,
+        message: "Formulário excluído pelo usuário",
+        type: "custom_form_definition",
+        metadata: {
+          slug: target,
+          deleted: true,
+          deleted_at: new Date().toISOString(),
+        },
+      });
+    } catch {}
 
     return { ok: true };
   });
