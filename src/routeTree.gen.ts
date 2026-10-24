@@ -51,10 +51,12 @@ import { Route as AuthenticatedPersonalTrainerPlansRouteImport } from './routes/
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal/index'
 import { Route as AuthenticatedPortalFormulariosRouteImport } from './routes/_authenticated/portal/formularios'
 import { Route as AuthenticatedPortalPerfilRouteImport } from './routes/_authenticated/portal/perfil'
+import { Route as AuthenticatedPortalPlanosRouteImport } from './routes/_authenticated/portal/planos'
 import { Route as AuthenticatedStudentsIndexRouteImport } from './routes/_authenticated/students.index'
 import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
 import { Route as ApiCronPreClassRouteImport } from './routes/api.cron.pre-class'
 import { Route as ApiNotificationsClearRouteImport } from './routes/api.notifications.clear'
+import { Route as ApiPaymentsInfinitepayWebhookRouteImport } from './routes/api.payments.infinitepay-webhook'
 import { Route as AuthenticatedPersonalTrainerStudentsIdRouteImport } from './routes/_authenticated/personal-trainer/students.$id'
 import { Route as AuthenticatedPortalPtIndexRouteImport } from './routes/_authenticated/portal/pt/index'
 import { Route as AuthenticatedPortalPtTreinoRouteImport } from './routes/_authenticated/portal/pt/treino'
@@ -285,6 +287,12 @@ const AuthenticatedPortalPerfilRoute =
     path: '/portal/perfil',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPortalPlanosRoute =
+  AuthenticatedPortalPlanosRouteImport.update({
+    id: '/portal/planos',
+    path: '/portal/planos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedStudentsIndexRoute =
   AuthenticatedStudentsIndexRouteImport.update({
     id: '/students/',
@@ -306,6 +314,12 @@ const ApiNotificationsClearRoute = ApiNotificationsClearRouteImport.update({
   path: '/api/notifications/clear',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPaymentsInfinitepayWebhookRoute =
+  ApiPaymentsInfinitepayWebhookRouteImport.update({
+    id: '/api/payments/infinitepay-webhook',
+    path: '/api/payments/infinitepay-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedPersonalTrainerStudentsIdRoute =
   AuthenticatedPersonalTrainerStudentsIdRouteImport.update({
     id: '/personal-trainer/students/$id',
@@ -364,9 +378,11 @@ export interface FileRoutesByFullPath {
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
+  '/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
+  '/api/payments/infinitepay-webhook': typeof ApiPaymentsInfinitepayWebhookRoute
   '/desafios/': typeof AuthenticatedDesafiosIndexRoute
   '/personal-trainer/': typeof AuthenticatedPersonalTrainerIndexRoute
   '/portal/': typeof AuthenticatedPortalIndexRoute
@@ -414,9 +430,11 @@ export interface FileRoutesByTo {
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
+  '/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
+  '/api/payments/infinitepay-webhook': typeof ApiPaymentsInfinitepayWebhookRoute
   '/desafios': typeof AuthenticatedDesafiosIndexRoute
   '/personal-trainer': typeof AuthenticatedPersonalTrainerIndexRoute
   '/portal': typeof AuthenticatedPortalIndexRoute
@@ -466,9 +484,11 @@ export interface FileRoutesById {
   '/_authenticated/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/_authenticated/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
   '/_authenticated/portal/perfil': typeof AuthenticatedPortalPerfilRoute
+  '/_authenticated/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
+  '/api/payments/infinitepay-webhook': typeof ApiPaymentsInfinitepayWebhookRoute
   '/_authenticated/desafios/': typeof AuthenticatedDesafiosIndexRoute
   '/_authenticated/personal-trainer/': typeof AuthenticatedPersonalTrainerIndexRoute
   '/_authenticated/portal/': typeof AuthenticatedPortalIndexRoute
@@ -518,9 +538,11 @@ export interface FileRouteTypes {
     | '/personal-trainer/plans'
     | '/portal/formularios'
     | '/portal/perfil'
+    | '/portal/planos'
     | '/students/$id'
     | '/api/cron/pre-class'
     | '/api/notifications/clear'
+    | '/api/payments/infinitepay-webhook'
     | '/desafios/'
     | '/personal-trainer/'
     | '/portal/'
@@ -568,9 +590,11 @@ export interface FileRouteTypes {
     | '/personal-trainer/plans'
     | '/portal/formularios'
     | '/portal/perfil'
+    | '/portal/planos'
     | '/students/$id'
     | '/api/cron/pre-class'
     | '/api/notifications/clear'
+    | '/api/payments/infinitepay-webhook'
     | '/desafios'
     | '/personal-trainer'
     | '/portal'
@@ -619,9 +643,11 @@ export interface FileRouteTypes {
     | '/_authenticated/personal-trainer/plans'
     | '/_authenticated/portal/formularios'
     | '/_authenticated/portal/perfil'
+    | '/_authenticated/portal/planos'
     | '/_authenticated/students/$id'
     | '/api/cron/pre-class'
     | '/api/notifications/clear'
+    | '/api/payments/infinitepay-webhook'
     | '/_authenticated/desafios/'
     | '/_authenticated/personal-trainer/'
     | '/_authenticated/portal/'
@@ -648,6 +674,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiCronPreClassRoute: typeof ApiCronPreClassRoute
   ApiNotificationsClearRoute: typeof ApiNotificationsClearRoute
+  ApiPaymentsInfinitepayWebhookRoute: typeof ApiPaymentsInfinitepayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -946,6 +973,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortalPerfilRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/portal/planos': {
+      id: '/_authenticated/portal/planos'
+      path: '/portal/planos'
+      fullPath: '/portal/planos'
+      preLoaderRoute: typeof AuthenticatedPortalPlanosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/students/': {
       id: '/_authenticated/students/'
       path: '/students'
@@ -972,6 +1006,13 @@ declare module '@tanstack/react-router' {
       path: '/api/notifications/clear'
       fullPath: '/api/notifications/clear'
       preLoaderRoute: typeof ApiNotificationsClearRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/infinitepay-webhook': {
+      id: '/api/payments/infinitepay-webhook'
+      path: '/api/payments/infinitepay-webhook'
+      fullPath: '/api/payments/infinitepay-webhook'
+      preLoaderRoute: typeof ApiPaymentsInfinitepayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/personal-trainer/students/$id': {
@@ -1024,6 +1065,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonalTrainerPlansRoute: typeof AuthenticatedPersonalTrainerPlansRoute
   AuthenticatedPortalFormulariosRoute: typeof AuthenticatedPortalFormulariosRoute
   AuthenticatedPortalPerfilRoute: typeof AuthenticatedPortalPerfilRoute
+  AuthenticatedPortalPlanosRoute: typeof AuthenticatedPortalPlanosRoute
   AuthenticatedStudentsIdRoute: typeof AuthenticatedStudentsIdRoute
   AuthenticatedDesafiosIndexRoute: typeof AuthenticatedDesafiosIndexRoute
   AuthenticatedPersonalTrainerIndexRoute: typeof AuthenticatedPersonalTrainerIndexRoute
@@ -1065,6 +1107,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPersonalTrainerPlansRoute,
   AuthenticatedPortalFormulariosRoute: AuthenticatedPortalFormulariosRoute,
   AuthenticatedPortalPerfilRoute: AuthenticatedPortalPerfilRoute,
+  AuthenticatedPortalPlanosRoute: AuthenticatedPortalPlanosRoute,
   AuthenticatedStudentsIdRoute: AuthenticatedStudentsIdRoute,
   AuthenticatedDesafiosIndexRoute: AuthenticatedDesafiosIndexRoute,
   AuthenticatedPersonalTrainerIndexRoute:
@@ -1098,6 +1141,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiCronPreClassRoute: ApiCronPreClassRoute,
   ApiNotificationsClearRoute: ApiNotificationsClearRoute,
+  ApiPaymentsInfinitepayWebhookRoute: ApiPaymentsInfinitepayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
