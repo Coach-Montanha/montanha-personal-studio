@@ -42,6 +42,7 @@ export const createPlanCheckoutOrder = createServerFn({ method: "POST" })
       const infinitePayRes = await createInfinitePayLink({
         orderNsu,
         amountInCents,
+        planName: plan.name,
         customerName: student.name,
         customerEmail: student.email || undefined,
         customerPhone: student.phone || undefined,
