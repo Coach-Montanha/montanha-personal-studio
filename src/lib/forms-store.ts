@@ -16,6 +16,26 @@ export interface StudioFormItem {
 }
 
 const STORAGE_KEY_PREFIX = "studio:forms_data_v1";
+const DELETED_FORMS_KEY = "studio:deleted_forms_v1";
+
+function getDeletedSlugs(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(DELETED_FORMS_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function addDeletedSlug(idOrSlug: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const current = getDeletedSlugs();
+    current.add(idOrSlug.toLowerCase().trim());
+    localStorage.setItem(DELETED_FORMS_KEY, JSON.stringify(Array.from(current)));
+  } catch {}
+}
 
 export function formatGoogleFormEmbedUrl(url: string): string {
   if (!url) return "";
@@ -114,17 +134,22 @@ function getStorageKey(tenantId?: string): string {
 }
 
 export function listStudioForms(tenantId?: string): StudioFormItem[] {
-  if (typeof window === "undefined") return DEFAULT_TEMPLATES;
+  const deleted = getDeletedSlugs();
+  const filterDeleted = (items: StudioFormItem[]) =>
+    items.filter((item) => !deleted.has(item.id.toLowerCase()) && !deleted.has(item.slug.toLowerCase()));
+
+  if (typeof window === "undefined") return filterDeleted(DEFAULT_TEMPLATES);
   try {
     const raw = localStorage.getItem(getStorageKey(tenantId));
     if (!raw) {
-      localStorage.setItem(getStorageKey(tenantId), JSON.stringify(DEFAULT_TEMPLATES));
-      return DEFAULT_TEMPLATES;
+      const initial = filterDeleted(DEFAULT_TEMPLATES);
+      localStorage.setItem(getStorageKey(tenantId), JSON.stringify(initial));
+      return initial;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : DEFAULT_TEMPLATES;
+    return Array.isArray(parsed) ? filterDeleted(parsed) : filterDeleted(DEFAULT_TEMPLATES);
   } catch {
-    return DEFAULT_TEMPLATES;
+    return filterDeleted(DEFAULT_TEMPLATES);
   }
 }
 
@@ -190,12 +215,11 @@ export function saveStudioForm(
   return newItem;
 }
 
-export function deleteStudioForm(id: string, tenantId?: string): boolean {
+export function deleteStudioForm(idOrSlug: string, tenantId?: string): boolean {
+  const target = idOrSlug.toLowerCase().trim();
+  addDeletedSlug(target);
   const forms = listStudioForms(tenantId);
-  const filtered = forms.filter((f) => f.id !== id);
-  if (filtered.length !== forms.length) {
-    localStorage.setItem(getStorageKey(tenantId), JSON.stringify(filtered));
-    return true;
-  }
-  return false;
+  const filtered = forms.filter((f) => f.id.toLowerCase() !== target && f.slug.toLowerCase() !== target);
+  localStorage.setItem(getStorageKey(tenantId), JSON.stringify(filtered));
+  return true;
 }

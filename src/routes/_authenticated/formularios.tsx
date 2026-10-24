@@ -130,7 +130,8 @@ function FormulariosAdminPage() {
     if (confirm(`Tem certeza que deseja remover o formulário "${form.title}"?`)) {
       try {
         deleteStudioForm(form.id, user?.id);
-        await deleteCustomFormServerFn({ data: { idOrSlug: form.id || form.slug } });
+        await deleteCustomFormServerFn({ data: { idOrSlug: form.slug || form.id } });
+deleteStudioForm(form.slug, user?.id);
       } catch (err: any) {
         console.warn("Erro ao deletar do servidor:", err?.message);
       }

@@ -14,6 +14,9 @@ import {
   UserRound,
   Gift,
   Dumbbell,
+  FileText,
+  Download,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,16 +45,20 @@ import { initials, formatMonthLabel } from "@/lib/format";
 // Modularized Tabs
 import { StudentOverviewTab } from "@/components/students/tabs/StudentOverviewTab";
 import { StudentPersonalTab } from "@/components/students/tabs/StudentPersonalTab";
+import { StudentFormsTab } from "@/components/students/tabs/StudentFormsTab";
+import { listSubmissionsServerFn, listFormsServerFn } from "@/lib/forms.functions";
 import { StudentPlanTab } from "@/components/students/tabs/StudentPlanTab";
 import { StudentPaymentsTab, type PaymentRow } from "@/components/students/tabs/StudentPaymentsTab";
 import { StudentCheckinsTab, type CheckinEntry } from "@/components/students/tabs/StudentCheckinsTab";
 import { StudentAttendanceTab } from "@/components/students/tabs/StudentAttendanceTab";
 import { BonusBalancePanel } from "@/components/students/tabs/BonusBalancePanel";
 import { ProgramsTab } from "@/components/pt/ProgramsTab";
+import { downloadFormSubmissionPdf } from "@/lib/form-submission-pdf";
 
 const STUDENT_TABS = [
   "overview",
   "personal",
+  "formularios",
   "plan",
   "payments",
   "programs",
@@ -370,6 +377,9 @@ function StudentDetail() {
               <TabsTrigger value="personal" className="gap-1.5 transition-all duration-200">
                 <UserRound className="h-3.5 w-3.5" /> Dados pessoais
               </TabsTrigger>
+              <TabsTrigger value="formularios" className="gap-1.5 transition-all duration-200">
+                <FileText className="h-3.5 w-3.5" /> Formulários & Anamnese
+              </TabsTrigger>
               <TabsTrigger value="plan" className="gap-1.5 transition-all duration-200">
                 <Layers className="h-3.5 w-3.5" /> Plano
               </TabsTrigger>
@@ -408,6 +418,16 @@ function StudentDetail() {
             <StudentPersonalTab
               student={student as any}
               onEdit={() => setEditOpen(true)}
+            />
+          </TabsContent>
+
+          <TabsContent value="formularios">
+            <StudentFormsTab
+              studentId={id}
+              studentName={student.name}
+              submissions={formSubmissions}
+              forms={availableForms}
+              onRefresh={loadStudentForms}
             />
           </TabsContent>
 

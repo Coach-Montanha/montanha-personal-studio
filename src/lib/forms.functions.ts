@@ -489,9 +489,19 @@ export const deleteCustomFormServerFn = createServerFn({ method: "POST" })
     } catch {}
 
     // 2. Se for um formulário default do sistema (ex: par-q, alinhamento-de-metas, avaliacao-de-satisfacao),
-    // grava uma tombstone para que ele não ressurja na listagem
+    // grava uma tombstone com user_id válido para que ele não ressurja na listagem
     try {
+      const { data: adminUser } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      const tombstoneUserId = adminUser?.id || "3f954063-c246-4989-8f48-dc84a12f5be3";
+
       await supabaseAdmin.from("pt_notifications" as any).insert({
+        user_id: tombstoneUserId,
         title: `Tombstone ${target}`,
         message: "Formulário excluído pelo usuário",
         type: "custom_form_definition",
