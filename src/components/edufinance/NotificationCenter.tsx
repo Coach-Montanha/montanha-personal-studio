@@ -201,7 +201,10 @@ export function NotificationCenter() {
 
     const checkUpcomingClasses = async () => {
       try {
-        const today = new Date().toISOString().slice(0, 10);
+        const now = new Date();
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+
         const { data: sessions, error } = await supabase
           .from("class_sessions")
           .select(`
@@ -219,16 +222,14 @@ export function NotificationCenter() {
 
         if (error || !sessions) return;
 
-        const now = new Date();
+        const currentDaySeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
         for (const session of sessions) {
           if (!session.start_time) continue;
-          const [h, m] = session.start_time.split(":").map(Number);
-          const sessionTime = new Date();
-          sessionTime.setHours(h, m, 0, 0);
+          const [h, m, s = 0] = session.start_time.split(":").map(Number);
+          const sessionDaySeconds = h * 3600 + m * 60 + s;
+          const diffSeconds = sessionDaySeconds - currentDaySeconds;
 
-          const diffMs = sessionTime.getTime() - now.getTime();
-          const diffSeconds = Math.floor(diffMs / 1000);
           const timeFormatted = session.start_time.slice(0, 5);
           const className = (session.classes as any)?.name || "Turma";
           const attendees = (session.class_attendance ?? [])
@@ -241,8 +242,11 @@ export function NotificationCenter() {
               : "Nenhum aluno realizou check-in até o momento.";
 
           // Agendamento nativo futuro no Android: exatamente 19m 30s antes (1170 segundos)
+          const sessionTime = new Date(now);
+          sessionTime.setHours(h, m, s, 0);
           const TARGET_OFFSET_MS = (19 * 60 + 30) * 1000;
           const triggerAt = new Date(sessionTime.getTime() - TARGET_OFFSET_MS);
+
           if (triggerAt.getTime() > now.getTime()) {
             scheduleClassReminderNotification({
               id: hashStringToInt(`class_19m30s_${session.id}_${today}`),
@@ -253,7 +257,7 @@ export function NotificationCenter() {
             });
           }
 
-          // Disparo imediato se estiver na janela de 19 minutos e 30 segundos (<= 1170 segundos)
+          // Disparo imediato se estiver na janela de 19 minutos e 30 segundos (<= 1170s e >= 0s)
           if (diffSeconds <= 1170 && diffSeconds >= 0) {
             const storageKey = `notified_class_19m30s_${session.id}_${today}`;
             if (!localStorage.getItem(storageKey)) {

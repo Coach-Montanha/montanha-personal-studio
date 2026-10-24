@@ -8,7 +8,7 @@
   "crons": [
     {
       "path": "/api/cron/pre-class",
-      "schedule": "0 10 * * *"
+      "schedule": "* * * * *"
     }
   ]
 }

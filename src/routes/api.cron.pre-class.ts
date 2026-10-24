@@ -16,11 +16,30 @@ export const Route = createFileRoute("/api/cron/pre-class")({
             });
           }
 
-          // 1. Data e hora atual no fuso de Brasília (UTC-3)
-          const nowBrt = new Date(
-            new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
-          );
-          const todayIso = nowBrt.toISOString().slice(0, 10);
+          // 1. Data e hora atual no fuso de Brasília (America/Sao_Paulo) via Intl.DateTimeFormat
+          const tz = "America/Sao_Paulo";
+          const now = new Date();
+          const parts = new Intl.DateTimeFormat("en-US", {
+            timeZone: tz,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          }).formatToParts(now);
+
+          const getPart = (type: string) => parts.find((p) => p.type === type)?.value || "00";
+          const year = getPart("year");
+          const month = getPart("month");
+          const day = getPart("day");
+          const hour = parseInt(getPart("hour"), 10);
+          const minute = parseInt(getPart("minute"), 10);
+          const second = parseInt(getPart("second"), 10);
+
+          const todayIso = `${year}-${month}-${day}`;
+          const currentDaySeconds = hour * 3600 + minute * 60 + second;
 
           // 2. Busca sessões do dia
           const { data: sessions, error } = await supabaseAdmin
@@ -44,20 +63,18 @@ export const Route = createFileRoute("/api/cron/pre-class")({
 
           for (const session of sessions || []) {
             if (!session.start_time) continue;
-            const [h, m] = session.start_time.split(":").map(Number);
-            const sessionTime = new Date(nowBrt);
-            sessionTime.setHours(h, m, 0, 0);
+            const [h, m, s = 0] = session.start_time.split(":").map(Number);
+            const sessionDaySeconds = h * 3600 + m * 60 + s;
 
-            const diffSeconds = Math.floor(
-              (sessionTime.getTime() - nowBrt.getTime()) / 1000
-            );
+            // Segundos restantes até a aula
+            const diffSeconds = sessionDaySeconds - currentDaySeconds;
 
-            // Janela: 19 minutos e 30 segundos antes (1170s) até 3 minutos antes (180s)
-            if (diffSeconds <= 1170 && diffSeconds >= 180) {
+            // Janela de disparo: de 19 minutos e 30 segundos (1170s) até 2 minutos antes (120s)
+            if (diffSeconds <= 1170 && diffSeconds >= 120) {
               const { data: alreadySent } = await supabaseAdmin
                 .from("pt_notifications")
                 .select("id")
-                .or("type.eq.whatsapp_class_reminder_19m30s,type.eq.whatsapp_class_reminder_20m")
+                .or("type.eq.class_reminder_19m30s,type.eq.whatsapp_class_reminder_19m30s,type.eq.whatsapp_class_reminder_20m")
                 .contains("metadata", { session_id: session.id, session_date: todayIso })
                 .maybeSingle();
 
@@ -68,27 +85,40 @@ export const Route = createFileRoute("/api/cron/pre-class")({
 
                 const className = (session.classes as any)?.name || "Turma";
                 const timeFormatted = session.start_time.slice(0, 5);
+                const count = attendees.length;
+                const messageText =
+                  count > 0
+                    ? `${count} aluno(s) confirmados: ${attendees.join(", ")}.`
+                    : "Nenhum aluno realizou check-in até o momento.";
 
-                await sendTrainerWhatsAppAlert({
-                  type: "pre_class_19m30s",
-                  className,
-                  timeFormatted,
-                  attendees,
-                  date: todayIso,
-                });
-
+                // 1. Notificação Push em Tempo Real no App/Celular (pt_notifications via Supabase Realtime)
                 await supabaseAdmin.from("pt_notifications" as any).insert({
                   user_id: session.user_id,
-                  title: `⏰ [WhatsApp] Aula em 19m 30s (${timeFormatted} - ${className})`,
-                  message: `${attendees.length} aluno(s) confirmados: ${attendees.join(", ")}`,
-                  type: "whatsapp_class_reminder_19m30s",
+                  title: `⏰ Aula em 19m 30s (${timeFormatted} - ${className})`,
+                  message: messageText,
+                  type: "class_reminder_19m30s",
                   metadata: {
                     session_id: session.id,
                     session_date: todayIso,
                     start_time: session.start_time,
+                    class_name: className,
+                    attendee_count: count,
                     attendees,
                   },
                 });
+
+                // 2. Alerta via WhatsApp Serverless (se configurado)
+                try {
+                  await sendTrainerWhatsAppAlert({
+                    type: "pre_class_19m30s",
+                    className,
+                    timeFormatted,
+                    attendees,
+                    date: todayIso,
+                  });
+                } catch (waErr: any) {
+                  console.warn("[Cron Pre-Class] Aviso WhatsApp:", waErr?.message);
+                }
 
                 notifiedList.push({
                   sessionId: session.id,
