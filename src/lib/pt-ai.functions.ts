@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { callLovableAiJson } from "@/lib/ai-gateway.server";
 
 const InputSchema = z.object({
   programId: z.string().uuid(),
@@ -29,7 +30,7 @@ export type AiPrescription = { days: AiTrainingDay[]; notes?: string };
 
 export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => InputSchema.parse(raw))
+  .validator((raw: unknown) => InputSchema.parse(raw))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: programRow, error } = await supabase
@@ -40,12 +41,6 @@ export const prescribeTrainingWithAi = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!programRow) throw new Error("Rotina não encontrada");
     const program = programRow as any;
-
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) {
-      throw new Error("Configuração do motor Híbrido/KB Fitness ausente (LOVABLE_API_KEY)");
-    }
-
 
     const system = `Você é um Personal Trainer experiente. Gere uma prescrição de treino em português (Brasil).
 Responda APENAS com JSON válido, sem markdown, no formato:
@@ -89,32 +84,13 @@ Objetivos: ${program.goals ?? "(não informado)"}
 Instruções do trainer:
 ${data.prompt}`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": key,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-        response_format: { type: "json_object" },
-      }),
+    const res = await callLovableAiJson<AiPrescription>({
+      prompt: user,
+      system,
+      temperature: 0.7,
     });
-    if (res.status === 429) throw new Error("Limite de uso da IA atingido. Tente novamente em alguns instantes.");
-    if (res.status === 402) throw new Error("Créditos da IA esgotados. Adicione créditos no workspace.");
-    if (!res.ok) throw new Error(`Falha na IA (${res.status})`);
-    const json = (await res.json()) as any;
-    const content: string = json.choices?.[0]?.message?.content ?? "{}";
-    let parsed: AiPrescription;
-    try {
-      parsed = JSON.parse(content) as AiPrescription;
-    } catch {
-      throw new Error("Resposta da IA não pôde ser interpretada.");
-    }
+
+    const parsed = res.json || { days: [] };
     if (!Array.isArray(parsed.days)) parsed.days = [];
     return parsed;
   });
@@ -145,7 +121,7 @@ export type ReprogramDayResult = {
 
 export const reprogramDayWithAi = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => ReprogramDaySchema.parse(raw))
+  .validator((raw: unknown) => ReprogramDaySchema.parse(raw))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: programRow, error: progErr } = await supabase
@@ -163,11 +139,6 @@ export const reprogramDayWithAi = createServerFn({ method: "POST" })
       .maybeSingle();
     if (dayErr || !dayRow) throw new Error("Sessão de treino não encontrada");
     const day = dayRow as any;
-
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) {
-      throw new Error("Configuração da IA ausente (LOVABLE_API_KEY)");
-    }
 
     const system = `Você é um Personal Trainer especialista em periodização e progressão de treino.
 Sua missão é REPROGRAMAR / REAJUSTAR uma sessão específica de treino de um aluno com base:
@@ -222,33 +193,11 @@ ${exerciseListStr}
 OBJETIVO / INSTRUÇÃO DO TREINADOR PARA O REAJUSTE:
 ${data.prompt}`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Lovable-API-Key": key,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-        response_format: { type: "json_object" },
-      }),
+    const res = await callLovableAiJson<ReprogramDayResult>({
+      prompt: user,
+      system,
+      temperature: 0.7,
     });
 
-    if (res.status === 429) throw new Error("Limite de uso da IA atingido. Tente novamente em alguns instantes.");
-    if (res.status === 402) throw new Error("Créditos da IA esgotados. Adicione créditos no workspace.");
-    if (!res.ok) throw new Error(`Falha na IA (${res.status})`);
-
-    const json = (await res.json()) as any;
-    const content: string = json.choices?.[0]?.message?.content ?? "{}";
-    let parsed: ReprogramDayResult;
-    try {
-      parsed = JSON.parse(content) as ReprogramDayResult;
-    } catch {
-      throw new Error("Resposta da IA não pôde ser interpretada.");
-    }
-    return parsed;
+    return res.json;
   });
