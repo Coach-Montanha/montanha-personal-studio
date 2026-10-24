@@ -17,10 +17,11 @@ import {
   Phone,
   Clock,
   Sparkles,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadFormSubmissionPdf } from "@/lib/form-submission-pdf";
-import { linkSubmissionToStudentServerFn } from "@/lib/forms.functions";
+import { linkSubmissionToStudentServerFn, importGoogleFormSubmissionsServerFn } from "@/lib/forms.functions";
 
 export interface FormSubmissionItem {
   id: string;
@@ -54,8 +55,100 @@ export function FormSubmissionsDialog({
   const [linkTargetStudentId, setLinkTargetStudentId] = useState<string>("");
   const [linking, setLinking] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   const activeSubmission = selectedSubmission || submissions[0] || null;
+
+  const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      if (lines.length < 2) {
+        toast.error("O arquivo CSV precisa conter ao menos uma linha de cabeçalho e uma de dados.");
+        return;
+      }
+
+      // Função simples e robusta para parsear CSV com aspas
+      const parseCSVLine = (line: string): string[] => {
+        const result: string[] = [];
+        let cur = "";
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"' || char === "'") {
+            inQuotes = !inQuotes;
+          } else if ((char === "," || char === ";") && !inQuotes) {
+            result.push(cur.trim().replace(/^["']|["']$/g, ""));
+            cur = "";
+          } else {
+            cur += char;
+          }
+        }
+        result.push(cur.trim().replace(/^["']|["']$/g, ""));
+        return result;
+      };
+
+      const headers = parseCSVLine(lines[0]);
+      const items = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        if (cols.length === 0 || cols.every((c) => !c)) continue;
+
+        let respondentName = "";
+        let respondentContact = "";
+        let submittedAt = "";
+        const answers: Record<string, any> = {};
+
+        cols.forEach((colVal, idx) => {
+          const header = (headers[idx] || `Pergunta ${idx + 1}`).trim();
+          const cleanHeader = header.toLowerCase();
+
+          if (/nome|aluno|respondente/i.test(cleanHeader) && !respondentName) {
+            respondentName = colVal;
+          } else if (/email|e-mail|whatsapp|telefone|contato|celular/i.test(cleanHeader) && !respondentContact) {
+            respondentContact = colVal;
+          } else if (/carimbo|data|timestamp|hora/i.test(cleanHeader) && !submittedAt) {
+            submittedAt = colVal;
+          } else {
+            answers[header] = colVal;
+          }
+        });
+
+        items.push({
+          respondentName: respondentName || `Respondente ${i}`,
+          respondentContact,
+          submittedAt,
+          answers,
+        });
+      }
+
+      if (items.length === 0) {
+        toast.error("Nenhuma resposta válida identificada no CSV.");
+        return;
+      }
+
+      const res = await importGoogleFormSubmissionsServerFn({
+        data: {
+          formSlug: activeSubmission?.formSlug || "historico-google-forms",
+          formTitle: activeSubmission?.formTitle || file.name.replace(/\.[^/.]+$/, ""),
+          items,
+        },
+      });
+
+      toast.success(`${res.insertedCount} respostas do Google Forms importadas com sucesso!`);
+      onRefresh();
+    } catch (err: any) {
+      toast.error(`Falha ao importar CSV: ${err?.message || "verifique o formato"}`);
+    } finally {
+      setImporting(false);
+      e.target.value = "";
+    }
+  };
 
   const handleDownloadPdf = async (sub: FormSubmissionItem) => {
     setDownloading(true);
@@ -120,6 +213,22 @@ export function FormSubmissionsDialog({
             <DialogDescription className="text-xs text-muted-foreground">
               Acesse respostas enviadas por alunos e novos leads, exporte termos em PDF e vincule aos perfis.
             </DialogDescription>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept=".csv"
+                className="hidden"
+                disabled={importing}
+                onChange={handleImportCsv}
+              />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-card hover:bg-muted/60 text-foreground transition-all shadow-xs cursor-pointer">
+                <Upload className="h-3.5 w-3.5 text-primary" />
+                {importing ? "Importando CSV..." : "Importar CSV do Google"}
+              </span>
+            </label>
           </div>
         </DialogHeader>
 

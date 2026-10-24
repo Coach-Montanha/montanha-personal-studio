@@ -384,3 +384,77 @@ export const linkSubmissionToStudentServerFn = createServerFn({ method: "POST" }
     return { ok: true };
   });
 
+export const importGoogleFormSubmissionsServerFn = createServerFn({ method: "POST" })
+  .validator(
+    (input: {
+      formSlug: string;
+      formTitle: string;
+      items: Array<{
+        respondentName: string;
+        respondentContact?: string;
+        submittedAt?: string;
+        answers: Record<string, any>;
+      }>;
+    }) => input
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Encontra o treinador responsável
+    let targetUserId = null;
+    try {
+      const normalized = (data.formSlug || "").toLowerCase().trim();
+      const { data: formDef } = await supabaseAdmin
+        .from("pt_notifications")
+        .select("user_id")
+        .eq("type", "custom_form_definition")
+        .filter("metadata->>slug", "eq", normalized)
+        .maybeSingle();
+
+      if (formDef?.user_id) targetUserId = formDef.user_id;
+    } catch {}
+
+    if (!targetUserId) {
+      try {
+        const { data: adminUser } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        targetUserId = adminUser?.id || "b75fc258-7809-4861-b52f-55877117cc92";
+      } catch {
+        targetUserId = "b75fc258-7809-4861-b52f-55877117cc92";
+      }
+    }
+
+    let inserted = 0;
+    for (const item of data.items) {
+      const respName = item.respondentName || "Respondente Google Forms";
+      const respContact = item.respondentContact || "";
+      const submittedAt = item.submittedAt || new Date().toISOString();
+
+      const { error } = await supabaseAdmin.from("pt_notifications" as any).insert({
+        user_id: targetUserId,
+        title: `📋 Importado (Google Forms): ${data.formTitle} (${respName})`,
+        message: `${respName} (${respContact || "Sem contato"}) - histórico importado da planilha Google Forms.`,
+        type: "form_submission",
+        metadata: {
+          form_slug: data.formSlug,
+          form_title: data.formTitle,
+          respondent_name: respName,
+          respondent_contact: respContact,
+          answers: item.answers,
+          origin: "google_forms_csv_import",
+          submitted_at: submittedAt,
+        },
+      });
+
+      if (!error) inserted++;
+    }
+
+    return { ok: true, insertedCount: inserted };
+  });
+
+
