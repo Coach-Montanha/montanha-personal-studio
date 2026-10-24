@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,11 @@ import {
   Clock,
   Sparkles,
   Upload,
+  BarChart3,
+  HelpCircle,
+  Users2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadFormSubmissionPdf } from "@/lib/form-submission-pdf";
@@ -53,13 +58,65 @@ export function FormSubmissionsDialog({
   students,
   onRefresh,
 }: FormSubmissionsDialogProps) {
+  const [activeTab, setActiveTab] = useState<"resumo" | "pergunta" | "individual">("resumo");
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmissionItem | null>(null);
   const [linkTargetStudentId, setLinkTargetStudentId] = useState<string>("");
   const [linking, setLinking] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [selectedQuestionIdx, setSelectedQuestionIdx] = useState<number>(0);
+  const [individualIdx, setIndividualIdx] = useState<number>(0);
 
-  const activeSubmission = selectedSubmission || submissions[0] || null;
+  const activeSubmission = selectedSubmission || submissions[individualIdx] || submissions[0] || null;
+
+  // Resolve rótulo amigável para qualquer chave
+  const getFieldLabel = (key: string, formSlug?: string) => {
+    let clean = key.replace(/^f_/, "");
+    const matchedForm = forms.find(
+      (f) =>
+        f.slug.toLowerCase() === formSlug?.toLowerCase() ||
+        f.id === formSlug
+    );
+    if (matchedForm && matchedForm.fields) {
+      const matchedField = matchedForm.fields.find(
+        (fld) =>
+          fld.id === key ||
+          fld.id === "f_" + key ||
+          fld.id.replace(/^f_/, "") === key.replace(/^f_/, "")
+      );
+      if (matchedField?.label) {
+        return matchedField.label;
+      }
+    }
+    if (/^\d+$/.test(clean)) {
+      return `Pergunta ${clean}`;
+    }
+    return clean.replace(/_/g, " ");
+  };
+
+  // Coleta todas as perguntas únicas em todas as submissões
+  const questionSummaries = useMemo(() => {
+    const map = new Map<string, { label: string; responses: Array<{ respondent: string; answer: any; contact?: string; date: string }> }>();
+
+    for (const sub of submissions) {
+      const date = new Date(sub.createdAt).toLocaleDateString("pt-BR");
+      for (const [key, val] of Object.entries(sub.answers || {})) {
+        if (key.startsWith("_")) continue;
+        const label = getFieldLabel(key, sub.formSlug);
+        if (!map.has(label)) {
+          map.set(label, { label, responses: [] });
+        }
+        map.get(label)!.responses.push({
+          respondent: sub.respondentName,
+          contact: sub.respondentContact,
+          answer: val,
+          date,
+        });
+      }
+    }
+
+    return Array.from(map.values());
+  }, [submissions, forms]);
 
   const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -197,27 +254,64 @@ export function FormSubmissionsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[96vw] h-[88dvh] max-h-[850px] flex flex-col p-0 overflow-hidden bg-background border-border shadow-2xl">
-        <DialogHeader className="px-5 py-4 border-b border-border bg-card/60 backdrop-blur flex-shrink-0 flex flex-row items-center justify-between text-left">
+      <DialogContent className="max-w-5xl w-[96vw] h-[90dvh] max-h-[880px] flex flex-col p-0 overflow-hidden bg-background border-border shadow-2xl">
+        <DialogHeader className="px-5 py-3.5 border-b border-border bg-card/70 backdrop-blur flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
           <div>
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
                 <FileText className="h-3.5 w-3.5" />
-                Respostas & Protocolos
+                Google Forms Hub
               </span>
-              <span className="text-xs text-muted-foreground">
-                ({submissions.length} {submissions.length === 1 ? "envio" : "envios"})
+              <span className="text-xs text-muted-foreground font-semibold">
+                {submissions.length} {submissions.length === 1 ? "resposta" : "respostas"}
               </span>
             </div>
             <DialogTitle className="text-lg font-bold text-foreground mt-1">
-              Submissões dos Formulários Oficiais
+              Análise de Respostas dos Formulários
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Acesse respostas enviadas por alunos e novos leads, exporte termos em PDF e vincule aos perfis.
-            </DialogDescription>
           </div>
 
+          {/* Abas idênticas ao Google Forms: Resumo | Pergunta | Individual */}
           <div className="flex items-center gap-2">
+            <div className="flex items-center rounded-xl bg-muted p-1 border border-border/60">
+              <button
+                type="button"
+                onClick={() => setActiveTab("resumo")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === "resumo"
+                    ? "bg-background text-primary shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <BarChart3 className="h-3.5 w-3.5" />
+                Resumo
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("pergunta")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === "pergunta"
+                    ? "bg-background text-primary shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+                Pergunta
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("individual")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  activeTab === "individual"
+                    ? "bg-background text-primary shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Users2 className="h-3.5 w-3.5" />
+                Individual
+              </button>
+            </div>
+
             <label className="cursor-pointer">
               <input
                 type="file"
@@ -228,7 +322,7 @@ export function FormSubmissionsDialog({
               />
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-card hover:bg-muted/60 text-foreground transition-all shadow-xs cursor-pointer">
                 <Upload className="h-3.5 w-3.5 text-primary" />
-                {importing ? "Importando CSV..." : "Importar CSV do Google"}
+                {importing ? "Importando..." : "Importar CSV"}
               </span>
             </label>
           </div>
@@ -239,213 +333,409 @@ export function FormSubmissionsDialog({
             <FileText className="h-12 w-12 stroke-[1.2] text-muted-foreground/40 mb-3" />
             <p className="font-semibold text-foreground text-sm">Nenhuma resposta registrada ainda</p>
             <p className="text-xs max-w-sm mt-1">
-              Assim que um aluno ou lead preencher qualquer formulário pelo link público, o registro aparecerá aqui automaticamente.
+              Assim que um aluno ou lead preencher qualquer formulário pelo link público ou importar do Google Forms, as análises completas aparecerão aqui.
             </p>
           </div>
         ) : (
-          <div className="flex-1 min-h-0 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border">
-            {/* Lista Lateral de Envios */}
-            <div className="w-full md:w-80 flex-shrink-0 overflow-y-auto divide-y divide-border bg-muted/20">
-              {submissions.map((sub) => {
-                const isSelected = activeSubmission?.id === sub.id;
-                const date = new Date(sub.createdAt).toLocaleString("pt-BR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
-                return (
-                  <button
-                    key={sub.id}
-                    onClick={() => setSelectedSubmission(sub)}
-                    className={`w-full text-left p-3.5 transition-colors flex flex-col gap-1.5 ${
-                      isSelected
-                        ? "bg-primary/10 border-l-4 border-l-primary"
-                        : "hover:bg-muted/40 border-l-4 border-l-transparent"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`font-semibold text-sm truncate ${isSelected ? "text-primary dark:text-white" : "text-foreground"}`}>
-                        {sub.respondentName}
-                      </span>
-                      <span className={`text-[10px] flex items-center gap-1 flex-shrink-0 ${isSelected ? "text-primary/80 dark:text-slate-300" : "text-muted-foreground"}`}>
-                        <Clock className="h-3 w-3" />
-                        {date}
-                      </span>
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            {/* ABA 1: RESUMO (Cards por pergunta com estatísticas e barras de distribuição) */}
+            {activeTab === "resumo" && (
+              <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 bg-muted/10">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-card border border-border rounded-xl p-4 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Total de Respostas
+                    </span>
+                    <p className="text-2xl font-extrabold text-foreground mt-1">{submissions.length}</p>
+                  </div>
+                  <div className="bg-card border border-border rounded-xl p-4 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Perguntas Mapeadas
+                    </span>
+                    <p className="text-2xl font-extrabold text-primary mt-1">{questionSummaries.length}</p>
+                  </div>
+                  <div className="bg-card border border-border rounded-xl p-4 shadow-2xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      Alunos Vinculados
+                    </span>
+                    <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+                      {submissions.filter((s) => s.studentId).length}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {questionSummaries.map((q, idx) => {
+                    // Contagem de valores para gerar barras de frequência
+                    const valueCounts: Record<string, number> = {};
+                    let totalCounted = 0;
+
+                    for (const r of q.responses) {
+                      const valStr = Array.isArray(r.answer)
+                        ? r.answer.join(", ")
+                        : typeof r.answer === "boolean"
+                        ? r.answer
+                          ? "Sim"
+                          : "Não"
+                        : String(r.answer || "").trim();
+
+                      if (!valStr) continue;
+                      valueCounts[valStr] = (valueCounts[valStr] || 0) + 1;
+                      totalCounted++;
+                    }
+
+                    const sortedCounts = Object.entries(valueCounts).sort((a, b) => b[1] - a[1]);
+                    const isChoiceQuestion = sortedCounts.length > 0 && sortedCounts.length <= 10;
+
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-3.5"
+                      >
+                        <div className="flex items-center justify-between border-b border-border/50 pb-2.5">
+                          <h3 className="font-bold text-sm text-foreground leading-snug">
+                            {q.label}
+                          </h3>
+                          <span className="text-[11px] font-medium text-muted-foreground">
+                            {q.responses.length} {q.responses.length === 1 ? "resposta" : "respostas"}
+                          </span>
+                        </div>
+
+                        {isChoiceQuestion ? (
+                          /* Visualização em Barras estilo Google Forms */
+                          <div className="space-y-2.5 pt-1">
+                            {sortedCounts.map(([val, count]) => {
+                              const pct = Math.round((count / (totalCounted || 1)) * 100);
+                              return (
+                                <div key={val} className="space-y-1">
+                                  <div className="flex items-center justify-between text-xs font-medium">
+                                    <span className="text-foreground max-w-[80%] truncate">{val}</span>
+                                    <span className="text-muted-foreground font-mono">
+                                      {count} ({pct}%)
+                                    </span>
+                                  </div>
+                                  <div className="h-3 w-full rounded-full bg-muted overflow-hidden">
+                                    <div
+                                      className="h-full rounded-full bg-primary/80 transition-all duration-500"
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          /* Visualização de Lista de Respostas Textuais */
+                          <div className="space-y-2 max-h-48 overflow-y-auto divide-y divide-border/40">
+                            {q.responses.map((r, rIdx) => (
+                              <div key={rIdx} className="pt-2 pb-1 text-xs flex flex-col gap-0.5">
+                                <span className="font-medium text-foreground">
+                                  {Array.isArray(r.answer)
+                                    ? r.answer.join(", ")
+                                    : String(r.answer || "—")}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {r.respondent} • {r.date}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ABA 2: PERGUNTA (Navegue pergunta por pergunta estilo Google Forms) */}
+            {activeTab === "pergunta" && (
+              <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 bg-muted/10">
+                {questionSummaries.length > 0 && (
+                  <>
+                    {/* Seletor de Pergunta */}
+                    <div className="bg-card border border-border rounded-2xl p-4 shadow-xs flex items-center justify-between gap-3">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 shrink-0"
+                        disabled={selectedQuestionIdx <= 0}
+                        onClick={() => setSelectedQuestionIdx((p) => Math.max(0, p - 1))}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+
+                      <div className="flex-1 text-center min-w-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Pergunta {selectedQuestionIdx + 1} de {questionSummaries.length}
+                        </span>
+                        <h3 className="font-extrabold text-sm sm:text-base text-foreground truncate mt-0.5">
+                          {questionSummaries[selectedQuestionIdx]?.label}
+                        </h3>
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 shrink-0"
+                        disabled={selectedQuestionIdx >= questionSummaries.length - 1}
+                        onClick={() =>
+                          setSelectedQuestionIdx((p) => Math.min(questionSummaries.length - 1, p + 1))
+                        }
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
                     </div>
 
-                    <p className={`text-xs font-semibold truncate ${isSelected ? "text-primary dark:text-white" : "text-primary"}`}>
-                      {sub.formTitle}
-                    </p>
+                    {/* Respostas da Pergunta Selecionada */}
+                    <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        {questionSummaries[selectedQuestionIdx]?.responses.length} Respostas Registradas
+                      </h4>
 
-                    <div className={`flex items-center justify-between text-[11px] mt-0.5 ${isSelected ? "text-foreground/90 dark:text-slate-200" : "text-muted-foreground"}`}>
-                      <span className="truncate max-w-[130px] font-medium">
-                        {sub.respondentContact || "Sem telefone"}
+                      <div className="divide-y divide-border/50">
+                        {questionSummaries[selectedQuestionIdx]?.responses.map((r, idx) => (
+                          <div key={idx} className="py-3 flex items-start justify-between gap-3 text-xs">
+                            <div className="space-y-1 min-w-0 flex-1">
+                              <p className="font-semibold text-foreground text-sm">
+                                {Array.isArray(r.answer)
+                                  ? r.answer.join(", ")
+                                  : typeof r.answer === "boolean"
+                                  ? r.answer
+                                    ? "Sim"
+                                    : "Não"
+                                  : String(r.answer || "—")}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">
+                                Respondido por: <strong className="text-foreground">{r.respondent}</strong> ({r.contact || "Sem contato"})
+                              </p>
+                            </div>
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">{r.date}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* ABA 3: INDIVIDUAL (Visualização completa por ficha/respondente) */}
+            {activeTab === "individual" && (
+              <div className="flex-1 min-h-0 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border">
+                {/* Lista Lateral de Envios */}
+                <div className="w-full md:w-80 flex-shrink-0 overflow-y-auto divide-y divide-border bg-muted/20">
+                  {submissions.map((sub, sIdx) => {
+                    const isSelected = activeSubmission?.id === sub.id;
+                    const date = new Date(sub.createdAt).toLocaleString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+                    return (
+                      <button
+                        key={sub.id}
+                        onClick={() => {
+                          setSelectedSubmission(sub);
+                          setIndividualIdx(sIdx);
+                        }}
+                        className={`w-full text-left p-3.5 transition-colors flex flex-col gap-1.5 ${
+                          isSelected
+                            ? "bg-primary/10 border-l-4 border-l-primary"
+                            : "hover:bg-muted/40 border-l-4 border-l-transparent"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className={`font-semibold text-sm truncate ${
+                              isSelected ? "text-primary dark:text-white" : "text-foreground"
+                            }`}
+                          >
+                            {sub.respondentName}
+                          </span>
+                          <span
+                            className={`text-[10px] flex items-center gap-1 flex-shrink-0 ${
+                              isSelected ? "text-primary/80 dark:text-slate-300" : "text-muted-foreground"
+                            }`}
+                          >
+                            <Clock className="h-3 w-3" />
+                            {date}
+                          </span>
+                        </div>
+
+                        <p
+                          className={`text-xs font-semibold truncate ${
+                            isSelected ? "text-primary dark:text-white" : "text-primary"
+                          }`}
+                        >
+                          {sub.formTitle}
+                        </p>
+
+                        <div
+                          className={`flex items-center justify-between text-[11px] mt-0.5 ${
+                            isSelected ? "text-foreground/90 dark:text-slate-200" : "text-muted-foreground"
+                          }`}
+                        >
+                          <span className="truncate max-w-[130px] font-medium">
+                            {sub.respondentContact || "Sem telefone"}
+                          </span>
+                          {sub.studentId ? (
+                            <span className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 font-medium text-[10px]">
+                              <CheckCircle2 className="h-3 w-3" /> Vinculado
+                            </span>
+                          ) : (
+                            <span
+                              className={`text-[10px] font-medium ${
+                                isSelected
+                                  ? "text-amber-700 dark:text-amber-300 font-bold"
+                                  : "text-amber-600 dark:text-amber-400"
+                              }`}
+                            >
+                              Pendente
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Detalhes da Submissão Selecionada */}
+                {activeSubmission && (
+                  <div className="flex-1 overflow-y-auto p-5 space-y-5">
+                    {/* Header com Navegador de Fichas estilo Google Forms */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4 shadow-xs">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                          Resposta {individualIdx + 1} de {submissions.length}
+                        </span>
+                        <h3 className="text-base font-extrabold text-foreground mt-0.5">
+                          {activeSubmission.respondentName}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {activeSubmission.formTitle} • {new Date(activeSubmission.createdAt).toLocaleString("pt-BR")}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 px-2 text-xs"
+                          disabled={individualIdx <= 0}
+                          onClick={() => {
+                            const newIdx = Math.max(0, individualIdx - 1);
+                            setIndividualIdx(newIdx);
+                            setSelectedSubmission(submissions[newIdx]);
+                          }}
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 px-2 text-xs"
+                          disabled={individualIdx >= submissions.length - 1}
+                          onClick={() => {
+                            const newIdx = Math.min(submissions.length - 1, individualIdx + 1);
+                            setIndividualIdx(newIdx);
+                            setSelectedSubmission(submissions[newIdx]);
+                          }}
+                        >
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs gap-1.5 font-bold"
+                          disabled={downloading}
+                          onClick={() => handleDownloadPdf(activeSubmission)}
+                        >
+                          <Download className="h-3.5 w-3.5 text-primary" />
+                          {downloading ? "Exportando..." : "Baixar PDF"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Vínculo de Aluno */}
+                    <div className="bg-card border border-border rounded-xl p-4 shadow-xs space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Vínculo com Aluno Cadastrado
                       </span>
-                      {sub.studentId ? (
-                        <span className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 font-medium text-[10px]">
-                          <CheckCircle2 className="h-3 w-3" /> Vinculado
-                        </span>
+                      {activeSubmission.studentId ? (
+                        <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-500/20">
+                          <CheckCircle2 className="h-4 w-4" />
+                          Esta resposta já está vinculada e sincronizada ao histórico do aluno no Studio.
+                        </div>
                       ) : (
-                        <span className={`text-[10px] font-medium ${isSelected ? "text-amber-700 dark:text-amber-300 font-bold" : "text-amber-600 dark:text-amber-400"}`}>
-                          Pendente
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <select
+                            className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            value={linkTargetStudentId}
+                            onChange={(e) => setLinkTargetStudentId(e.target.value)}
+                          >
+                            <option value="">Selecione um aluno cadastrado...</option>
+                            {students.map((st) => (
+                              <option key={st.id} value={st.id}>
+                                {st.name}
+                              </option>
+                            ))}
+                          </select>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="h-9 text-xs gap-1.5 whitespace-nowrap"
+                            disabled={linking || !linkTargetStudentId}
+                            onClick={() => handleLinkStudent(activeSubmission.id)}
+                          >
+                            <LinkIcon className="h-3.5 w-3.5" />
+                            {linking ? "Vinculando..." : "Vincular a este Aluno"}
+                          </Button>
+                        </div>
                       )}
                     </div>
-                  </button>
-                );
-              })}
-            </div>
 
-            {/* Detalhes da Submissão Selecionada */}
-            {activeSubmission && (
-              <div className="flex-1 overflow-y-auto p-5 space-y-5">
-                {/* Topo do Registro */}
-                <div className="bg-card border border-border rounded-xl p-4 shadow-sm space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                    <div>
-                      <span className="text-[11px] uppercase tracking-wider font-bold text-primary">
-                        {activeSubmission.formTitle}
-                      </span>
-                      <h3 className="text-base font-bold text-foreground">
-                        {activeSubmission.respondentName}
-                      </h3>
-                    </div>
+                    {/* Respostas Detalhadas com labels legíveis */}
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Respostas da Ficha
+                      </h4>
 
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        className="h-8 gap-1.5 text-xs font-semibold"
-                        onClick={() => handleDownloadPdf(activeSubmission)}
-                        disabled={downloading}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        {downloading ? "Gerando..." : "Baixar PDF Oficial"}
-                      </Button>
-                    </div>
-                  </div>
+                      <div className="space-y-2">
+                        {Object.entries(activeSubmission.answers || {}).length === 0 ? (
+                          <p className="text-xs text-muted-foreground italic">
+                            Nenhum campo adicional preenchido.
+                          </p>
+                        ) : (
+                          Object.entries(activeSubmission.answers).map(([key, val]) => {
+                            const displayLabel = getFieldLabel(key, activeSubmission.formSlug);
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="h-3.5 w-3.5 text-primary" />
-                      <span>{activeSubmission.respondentContact || "Não informado"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-3.5 w-3.5 text-primary" />
-                      <span>{new Date(activeSubmission.createdAt).toLocaleString("pt-BR")}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Sparkles className="h-3.5 w-3.5 text-primary" />
-                      <span className="font-mono font-medium">
-                        SUB-{activeSubmission.id.slice(0, 8).toUpperCase()}
-                      </span>
+                            return (
+                              <div
+                                key={key}
+                                className="bg-card border border-border rounded-lg p-3 text-xs space-y-1"
+                              >
+                                <span className="font-semibold text-muted-foreground">
+                                  {displayLabel}:
+                                </span>
+                                <div className="text-foreground font-medium whitespace-pre-wrap pl-1">
+                                  {typeof val === "boolean"
+                                    ? val
+                                      ? "Sim / Aceito"
+                                      : "Não"
+                                    : Array.isArray(val)
+                                    ? val.join(", ")
+                                    : String(val || "—")}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Vínculo com Aluno */}
-                <div className="bg-muted/30 border border-border rounded-xl p-4 space-y-2">
-                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <User className="h-3.5 w-3.5 text-primary" />
-                    Vínculo com Perfil do Aluno
-                  </h4>
-                  {activeSubmission.studentId ? (
-                    <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                      <CheckCircle2 className="h-4 w-4" />
-                      Esta submissão está vinculada a um aluno do seu Studio.
-                    </div>
-                  ) : (
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                      <select
-                        aria-label="Vincular ao aluno"
-                        className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        value={linkTargetStudentId}
-                        onChange={(e) => setLinkTargetStudentId(e.target.value)}
-                      >
-                        <option value="">Selecione um aluno cadastrado...</option>
-                        {students.map((st) => (
-                          <option key={st.id} value={st.id}>
-                            {st.name}
-                          </option>
-                        ))}
-                      </select>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="h-9 text-xs gap-1.5 whitespace-nowrap"
-                        disabled={linking || !linkTargetStudentId}
-                        onClick={() => handleLinkStudent(activeSubmission.id)}
-                      >
-                        <LinkIcon className="h-3.5 w-3.5" />
-                        {linking ? "Vinculando..." : "Vincular a este Aluno"}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Respostas Detalhadas */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Perguntas & Respostas
-                  </h4>
-
-                  <div className="space-y-2">
-                    {Object.entries(activeSubmission.answers || {}).length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic">
-                        Nenhum campo adicional preenchido.
-                      </p>
-                    ) : (
-                      Object.entries(activeSubmission.answers).map(([key, val]) => {
-                        // Resolução de rótulo amigável caso seja ID numérico (ex: f_110748093)
-                        let displayLabel = key.replace(/^f_/, "");
-                        const matchedForm = forms.find(
-                          (f) =>
-                            f.slug.toLowerCase() === activeSubmission.formSlug?.toLowerCase() ||
-                            f.id === activeSubmission.formSlug
-                        );
-                        if (matchedForm && matchedForm.fields) {
-                          const matchedField = matchedForm.fields.find(
-                            (fld) =>
-                              fld.id === key ||
-                              fld.id === "f_" + key ||
-                              fld.id.replace(/^f_/, "") === key.replace(/^f_/, "")
-                          );
-                          if (matchedField?.label) {
-                            displayLabel = matchedField.label;
-                          }
-                        }
-
-                        // Se ainda for numérico puro, limpa o prefixo
-                        if (/^\d+$/.test(displayLabel)) {
-                          displayLabel = `Pergunta ${displayLabel}`;
-                        } else {
-                          displayLabel = displayLabel.replace(/_/g, " ");
-                        }
-
-                        return (
-                          <div
-                            key={key}
-                            className="bg-card border border-border rounded-lg p-3 text-xs space-y-1"
-                          >
-                            <span className="font-semibold text-muted-foreground">
-                              {displayLabel}:
-                            </span>
-                            <div className="text-foreground font-medium whitespace-pre-wrap pl-1">
-                              {typeof val === "boolean"
-                                ? val
-                                  ? "Sim / Aceito"
-                                  : "Não"
-                                : Array.isArray(val)
-                                ? val.join(", ")
-                                : String(val || "—")}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
