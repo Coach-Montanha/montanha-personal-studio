@@ -96,6 +96,26 @@ function StudentDetail() {
   const [renewingId, setRenewingId] = useState<string | null>(null);
   const [attendancePeriod, setAttendancePeriod] = useState<string>("all");
 
+  const [formSubmissions, setFormSubmissions] = useState<any[]>([]);
+  const [availableForms, setAvailableForms] = useState<any[]>([]);
+
+  const loadStudentForms = useCallback(async () => {
+    try {
+      const [subs, forms] = await Promise.all([
+        listSubmissionsServerFn(),
+        listFormsServerFn(),
+      ]);
+      if (Array.isArray(subs)) setFormSubmissions(subs);
+      if (Array.isArray(forms)) setAvailableForms(forms);
+    } catch (err) {
+      console.warn("Erro ao carregar formulários do aluno:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadStudentForms();
+  }, [loadStudentForms]);
+
   const { data: student } = useQuery({
     queryKey: ["student", id],
     queryFn: async () => {
