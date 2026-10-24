@@ -93,7 +93,14 @@ function PublicFormViewPage() {
     for (const field of form.fields) {
       if (field.required) {
         const val = answers[field.id];
-        if (val === undefined || val === null || (typeof val === "string" && !val.trim()) || val === false) {
+        const isEmptyArray = Array.isArray(val) && val.length === 0;
+        if (
+          val === undefined ||
+          val === null ||
+          (typeof val === "string" && !val.trim()) ||
+          val === false ||
+          isEmptyArray
+        ) {
           toast.error(`Por favor, preencha o campo obrigatório: ${field.label}`);
           return;
         }
@@ -392,6 +399,47 @@ function PublicFormViewPage() {
                               }`}
                             >
                               {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
+                            </span>
+                            <span className="leading-snug">{opt}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {field.type === "checkbox" && (
+                    <div className="grid gap-2 pt-1">
+                      {field.options?.map((opt) => {
+                        const currentList: string[] = Array.isArray(answers[field.id])
+                          ? answers[field.id]
+                          : [];
+                        const isChecked = currentList.includes(opt);
+
+                        const toggleOption = () => {
+                          const updated = isChecked
+                            ? currentList.filter((item) => item !== opt)
+                            : [...currentList, opt];
+                          handleFieldChange(field.id, updated);
+                        };
+
+                        return (
+                          <label
+                            key={opt}
+                            onClick={toggleOption}
+                            className={`flex items-center gap-3 p-3 rounded-xl border text-xs sm:text-sm cursor-pointer transition-all select-none ${
+                              isChecked
+                                ? "border-primary bg-primary/10 text-foreground font-semibold shadow-xs"
+                                : "border-border/70 bg-muted/20 text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                            }`}
+                          >
+                            <span
+                              className={`h-4.5 w-4.5 rounded-md border flex items-center justify-center shrink-0 transition-all ${
+                                isChecked
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-muted-foreground/60 bg-background"
+                              }`}
+                            >
+                              {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
                             </span>
                             <span className="leading-snug">{opt}</span>
                           </label>
