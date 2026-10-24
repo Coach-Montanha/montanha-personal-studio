@@ -241,23 +241,7 @@ export function NotificationCenter() {
               ? `${count} aluno(s) com check-in: ${attendees.join(", ")}.`
               : "Nenhum aluno realizou check-in até o momento.";
 
-          // Agendamento nativo futuro no Android: exatamente 19m 30s antes (1170 segundos)
-          const sessionTime = new Date(now);
-          sessionTime.setHours(h, m, s, 0);
-          const TARGET_OFFSET_MS = (19 * 60 + 30) * 1000;
-          const triggerAt = new Date(sessionTime.getTime() - TARGET_OFFSET_MS);
-
-          if (triggerAt.getTime() > now.getTime()) {
-            scheduleClassReminderNotification({
-              id: hashStringToInt(`class_19m30s_${session.id}_${today}`),
-              title: `⏰ Aula em 19m 30s (${timeFormatted} - ${className})`,
-              body,
-              triggerAt,
-              url: "/agenda",
-            });
-          }
-
-          // Disparo imediato se estiver na janela de 19 minutos e 30 segundos (<= 1170s e >= 0s)
+          // Canal Único: Disparo imediato se estiver na janela de 19 minutos e 30 segundos (<= 1170s e >= 0s)
           if (diffSeconds <= 1170 && diffSeconds >= 0) {
             const storageKey = `notified_class_19m30s_${session.id}_${today}`;
             if (!localStorage.getItem(storageKey)) {
