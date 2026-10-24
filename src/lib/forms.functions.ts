@@ -18,7 +18,7 @@ export const getFormBySlugServerFn = createServerFn({ method: "GET" })
         .from("pt_notifications")
         .select("id, user_id, title, metadata, created_at")
         .eq("type", "custom_form_definition")
-        .contains("metadata", { slug: normalized })
+        .or(`metadata->>slug.eq.${normalized},id.eq.${normalized}`)
         .maybeSingle();
 
       if (dbForm) {
@@ -143,12 +143,19 @@ export const saveFormServerFn = createServerFn({ method: "POST" })
       googleFormUrl: form.googleFormUrl || "",
     };
 
-    const { data: existing } = await supabaseAdmin
+    // Busca por id direto ou pelo slug gravado
+    let existingQuery = supabaseAdmin
       .from("pt_notifications")
       .select("id")
-      .eq("type", "custom_form_definition")
-      .contains("metadata", { slug })
-      .maybeSingle();
+      .eq("type", "custom_form_definition");
+
+    if (form.id) {
+      existingQuery = existingQuery.eq("id", form.id);
+    } else {
+      existingQuery = existingQuery.filter("metadata->>slug", "eq", slug);
+    }
+
+    const { data: existing } = await existingQuery.maybeSingle();
 
     if (existing) {
       await supabaseAdmin
