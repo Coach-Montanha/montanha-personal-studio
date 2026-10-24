@@ -994,165 +994,143 @@ function ProgramDialog({
           <DialogTitle>{form.id ? "Editar rotina de treino" : "Nova rotina de treino"}</DialogTitle>
         </DialogHeader>
 
-        {/* Stepper Progress Header */}
-        <Stepper
-          steps={steps}
-          currentStep={currentStep}
-          onStepClick={(index) => {
-            if (index > currentStep && (!form.name?.trim() || !form.start_date)) {
-              toast.error("Preencha o título e a data inicial antes de avançar.");
-              return;
-            }
-            setCurrentStep(index);
-          }}
-          className="mb-2"
-        />
+        {/* Painel Unificado Direto (Sem 3 etapas fragmentadas) */}
+        <div className="space-y-4 py-1 max-h-[75vh] overflow-y-auto pr-1">
+          {/* 1. Título & Período */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Título da rotina *</Label>
+            <Input
+              value={form.name ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="Ex: Treino Hipertrofia — S1 (2026)"
+              autoFocus
+              className="h-9"
+            />
+          </div>
 
-        {/* Step 0: Identificação */}
-        {currentStep === 0 && (
-          <div className="space-y-3.5 py-1">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>Título da rotina *</Label>
+              <Label className="text-xs font-semibold flex items-center justify-between">
+                <span>Data inicial *</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Clique no ícone de calendário</span>
+              </Label>
               <Input
-                value={form.name ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="Ex: Treino Hipertrofia — S1 (2026)"
-                autoFocus
+                type="date"
+                value={form.start_date ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
+                className="h-9 cursor-pointer"
               />
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Data inicial *</Label>
-                <Input
-                  type="date"
-                  value={form.start_date ?? ""}
-                  onChange={(e) => setForm((f) => ({ ...f, start_date: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Data final (opcional)</Label>
-                <Input
-                  type="date"
-                  value={form.end_date ?? ""}
-                  onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
-                />
-              </div>
-            </div>
             <div className="space-y-1.5">
-              <Label>Objetivos da rotina</Label>
-              <Textarea
-                rows={3}
-                value={form.goals ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, goals: e.target.value }))}
-                placeholder="Ex: Ganho de massa muscular em membros superiores, ênfase em deltoides…"
+              <Label className="text-xs font-semibold flex items-center justify-between">
+                <span>Data final (opcional)</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Clique no ícone de calendário</span>
+              </Label>
+              <Input
+                type="date"
+                value={form.end_date ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, end_date: e.target.value }))}
+                className="h-9 cursor-pointer"
               />
             </div>
           </div>
-        )}
 
-        {/* Step 1: Perfil do Treino */}
-        {currentStep === 1 && (
-          <div className="space-y-3.5 py-1">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Categoria</Label>
-                <Select
-                  value={form.category ?? "general"}
-                  onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(CATEGORY_LABELS).map(([k, l]) => (
-                      <SelectItem key={k} value={k}>{l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Nível</Label>
-                <Select
-                  value={form.level ?? "intermediate"}
-                  onValueChange={(v) => setForm((f) => ({ ...f, level: v }))}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(LEVEL_LABELS).map(([k, l]) => (
-                      <SelectItem key={k} value={k}>{l}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* 2. Categoria, Nível e Divisão */}
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Categoria</Label>
+              <Select
+                value={form.category ?? "general"}
+                onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
+              >
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_LABELS).map(([k, l]) => (
+                    <SelectItem key={k} value={k}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Tipo de divisão / nomenclatura</Label>
+              <Label className="text-xs font-semibold">Nível</Label>
+              <Select
+                value={form.level ?? "intermediate"}
+                onValueChange={(v) => setForm((f) => ({ ...f, level: v }))}
+              >
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(LEVEL_LABELS).map(([k, l]) => (
+                    <SelectItem key={k} value={k}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Divisão</Label>
               <Select
                 value={form.training_type ?? "numeric"}
                 onValueChange={(v) => setForm((f) => ({ ...f, training_type: v }))}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="numeric">Numérico (Treino 1, 2, 3…)</SelectItem>
-                  <SelectItem value="alphabetic">Alfabético (Treino A, B, C…)</SelectItem>
+                  <SelectItem value="numeric">1, 2, 3… (Numérico)</SelectItem>
+                  <SelectItem value="alphabetic">A, B, C… (Alfabético)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-        )}
 
-        {/* Step 2: Publicação & Regras */}
-        {currentStep === 2 && (
-          <div className="space-y-3.5 py-1">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>Mostrar no portal do aluno</Label>
-                <Select
-                  value={form.show_to_student ? "yes" : "no"}
-                  onValueChange={(v) => setForm((f) => ({ ...f, show_to_student: v === "yes" }))}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Sim (Visível)</SelectItem>
-                    <SelectItem value="no">Não (Apenas Personal)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Arquivar automaticamente</Label>
-                <Select
-                  value={form.auto_archive ? "yes" : "no"}
-                  onValueChange={(v) => setForm((f) => ({ ...f, auto_archive: v === "yes" }))}
-                >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Sim (Ao vencer)</SelectItem>
-                    <SelectItem value="no">Não (Manter ativo)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* 3. Regras de Exibição */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Mostrar no portal do aluno</Label>
+              <Select
+                value={form.show_to_student ? "yes" : "no"}
+                onValueChange={(v) => setForm((f) => ({ ...f, show_to_student: v === "yes" }))}
+              >
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yes">Sim (Visível)</SelectItem>
+                  <SelectItem value="no">Não (Apenas Personal)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-
-            <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-xs space-y-1">
-              <p className="font-semibold text-foreground">Resumo da Rotina:</p>
-              <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">{form.name}</span> · {CATEGORY_LABELS[form.category ?? "general"]} · {LEVEL_LABELS[form.level ?? "intermediate"]}
-              </p>
-              {form.start_date && (
-                <p className="text-muted-foreground">
-                  Início: {formatDateBR(form.start_date)} {form.end_date ? `até ${formatDateBR(form.end_date)}` : "(vigência indeterminada)"}
-                </p>
-              )}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Arquivar automaticamente</Label>
+              <Select
+                value={form.auto_archive ? "yes" : "no"}
+                onValueChange={(v) => setForm((f) => ({ ...f, auto_archive: v === "yes" }))}
+              >
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yes">Sim (Ao vencer vigência)</SelectItem>
+                  <SelectItem value="no">Não (Manter ativo)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        )}
 
-        <StepperFooter
-          currentStep={currentStep}
-          totalSteps={steps.length}
-          onPrev={handlePrev}
-          onNext={handleNext}
-          onFinish={save}
-          finishLabel={form.id ? "Salvar Alterações" : "Criar Rotina"}
-        />
+          {/* 4. Objetivos */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Objetivos & Observações da rotina</Label>
+            <Textarea
+              rows={2}
+              value={form.goals ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, goals: e.target.value }))}
+              placeholder="Ex: Ganho de massa muscular em membros superiores, ênfase em deltoides…"
+              className="text-xs resize-none"
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button size="sm" onClick={save} className="font-semibold">
+            {form.id ? "Salvar Alterações" : "Criar Rotina"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
@@ -1170,7 +1148,7 @@ function TrainingDayDialog({
 }) {
   const qc = useQueryClient();
   const [form, setForm] = useState<Partial<TrainingDay>>({});
-  const [weekNumber, setWeekNumber] = useState<number>(1);
+  const [weekLabel, setWeekLabel] = useState<string>("Semana 1");
   const [isWithCoach, setIsWithCoach] = useState<boolean>(false);
 
   useEffect(() => {
@@ -1178,10 +1156,10 @@ function TrainingDayDialog({
     setForm(day ?? { name: "", day_label: "" });
     if (day) {
       const meta = parseDayMeta(day);
-      setWeekNumber(meta.weekNumber || 1);
+      setWeekLabel(meta.customWeekLabel || `Semana ${meta.weekNumber || 1}`);
       setIsWithCoach(meta.isWithCoach);
     } else {
-      setWeekNumber(1);
+      setWeekLabel("Semana 1");
       setIsWithCoach(false);
     }
   }, [open, day]);
@@ -1194,7 +1172,7 @@ function TrainingDayDialog({
 
     const fullDescription = buildDayDescription({
       description: form.description,
-      weekNumber: weekNumber,
+      customWeekLabel: weekLabel.trim(),
       isWithCoach: isWithCoach,
     });
 
@@ -1245,22 +1223,13 @@ function TrainingDayDialog({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             <div className="space-y-1.5">
-              <Label className="text-xs">Semana do Programa</Label>
-              <Select
-                value={String(weekNumber)}
-                onValueChange={(v) => setWeekNumber(Number(v))}
-              >
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((w) => (
-                    <SelectItem key={w} value={String(w)}>
-                      Semana {w}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs font-semibold">Identificação da Semana (Livre)</Label>
+              <Input
+                value={weekLabel}
+                onChange={(e) => setWeekLabel(e.target.value)}
+                placeholder="Ex: Semana 1 & 2, Semana A & D..."
+                className="h-9 text-xs"
+              />
             </div>
 
             <div className="space-y-1.5">

@@ -4,6 +4,7 @@
  */
 
 export type TrainingDayMeta = {
+  customWeekLabel?: string;
   weekNumber: number;
   isWithCoach: boolean;
   cleanDescription: string;
