@@ -170,3 +170,75 @@ export const saveFormServerFn = createServerFn({ method: "POST" })
 
     return { ok: true, slug };
   });
+
+export const listSubmissionsServerFn = createServerFn({ method: "GET" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("pt_notifications")
+      .select("id, title, message, created_at, metadata")
+      .eq("type", "form_submission")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.warn("[listSubmissionsServerFn] Erro ao buscar submissões:", error.message);
+      return [];
+    }
+
+    return (data || []).map((row) => {
+      const meta = (row.metadata as any) || {};
+      return {
+        id: row.id,
+        title: row.title,
+        message: row.message,
+        createdAt: row.created_at,
+        formSlug: meta.form_slug || "",
+        formTitle: meta.form_title || row.title || "Formulário",
+        respondentName: meta.respondent_name || "Respondente",
+        respondentContact: meta.respondent_contact || "",
+        studentId: meta.student_id || null,
+        answers: meta.answers || {},
+      };
+    });
+  } catch (err: any) {
+    console.warn("[listSubmissionsServerFn] Exceção:", err?.message);
+    return [];
+  }
+});
+
+export const linkSubmissionToStudentServerFn = createServerFn({ method: "POST" })
+  .validator((input: { submissionId: string; studentId: string }) => input)
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Busca a submissão atual
+    const { data: row, error: fetchErr } = await supabaseAdmin
+      .from("pt_notifications")
+      .select("metadata")
+      .eq("id", data.submissionId)
+      .single();
+
+    if (fetchErr || !row) {
+      throw new Error("Submissão não encontrada.");
+    }
+
+    const currentMeta = (row.metadata as any) || {};
+    const updatedMeta = {
+      ...currentMeta,
+      student_id: data.studentId,
+      linked_at: new Date().toISOString(),
+    };
+
+    const { error: updateErr } = await supabaseAdmin
+      .from("pt_notifications")
+      .update({ metadata: updatedMeta })
+      .eq("id", data.submissionId);
+
+    if (updateErr) {
+      throw new Error(`Erro ao vincular resposta: ${updateErr.message}`);
+    }
+
+    return { ok: true };
+  });
+

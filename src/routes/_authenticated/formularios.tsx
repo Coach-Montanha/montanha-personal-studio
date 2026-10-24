@@ -6,7 +6,7 @@ import {
   FormCategory,
   deleteStudioForm,
 } from "@/lib/forms-store";
-import { listFormsServerFn } from "@/lib/forms.functions";
+import { listFormsServerFn, listSubmissionsServerFn } from "@/lib/forms.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,10 +24,16 @@ import {
   UserCheck,
   Clock,
   MessageCircle,
+  FileCheck2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { FormEmbedDialog } from "@/components/forms/FormEmbedDialog";
 import { FormEditDialog } from "@/components/forms/FormEditDialog";
+import {
+  FormSubmissionsDialog,
+  FormSubmissionItem,
+} from "@/components/forms/FormSubmissionsDialog";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/formularios")({
@@ -37,25 +43,46 @@ export const Route = createFileRoute("/_authenticated/formularios")({
 function FormulariosAdminPage() {
   const { user } = useAuth();
   const [forms, setForms] = useState<StudioFormItem[]>(() => listStudioForms(user?.id));
+  const [submissions, setSubmissions] = useState<FormSubmissionItem[]>([]);
+  const [students, setStudents] = useState<Array<{ id: string; name: string }>>([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [embedTarget, setEmbedTarget] = useState<StudioFormItem | null>(null);
   const [editTarget, setEditTarget] = useState<StudioFormItem | null | undefined>(undefined);
+  const [submissionsOpen, setSubmissionsOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const refreshList = async () => {
     try {
-      const data = await listFormsServerFn();
-      if (Array.isArray(data) && data.length > 0) {
-        setForms(data);
-        return;
+      const [formsData, subsData] = await Promise.all([
+        listFormsServerFn(),
+        listSubmissionsServerFn(),
+      ]);
+      if (Array.isArray(formsData) && formsData.length > 0) {
+        setForms(formsData);
+      }
+      if (Array.isArray(subsData)) {
+        setSubmissions(subsData as FormSubmissionItem[]);
       }
     } catch {}
-    setForms(listStudioForms(user?.id));
+    setForms((prev) => (prev.length > 0 ? prev : listStudioForms(user?.id)));
   };
 
   useEffect(() => {
     refreshList();
+    // Carrega alunos para vinculação rápida
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("students")
+          .select("id, name")
+          .is("deleted_at", null)
+          .order("name");
+        if (data) {
+          setStudents(data);
+        }
+      } catch {}
+    })();
   }, [user?.id]);
 
   const filteredForms = useMemo(() => {
@@ -125,14 +152,31 @@ function FormulariosAdminPage() {
           </p>
         </div>
 
-        <Button
-          onClick={() => setEditTarget(null)}
-          size="sm"
-          className="gap-2 font-bold shrink-0 shadow-sm"
-        >
-          <Plus className="h-4 w-4" />
-          Novo Formulário
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setSubmissionsOpen(true)}
+            size="sm"
+            variant="outline"
+            className="gap-2 font-bold shrink-0 shadow-sm relative border-primary/30 hover:bg-primary/10 text-primary"
+          >
+            <FileCheck2 className="h-4 w-4" />
+            Respostas Recebidas
+            {submissions.length > 0 && (
+              <span className="ml-1 rounded-full bg-primary px-1.5 py-0.2 text-[10px] text-primary-foreground font-black">
+                {submissions.length}
+              </span>
+            )}
+          </Button>
+
+          <Button
+            onClick={() => setEditTarget(null)}
+            size="sm"
+            className="gap-2 font-bold shrink-0 shadow-sm"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Formulário
+          </Button>
+        </div>
       </div>
 
       {/* Controls & Filters */}
@@ -333,6 +377,15 @@ function FormulariosAdminPage() {
         formToEdit={editTarget}
         tenantId={user?.id}
         onSaved={refreshList}
+      />
+
+      {/* Dialog de Respostas & Submissões */}
+      <FormSubmissionsDialog
+        open={submissionsOpen}
+        onOpenChange={setSubmissionsOpen}
+        submissions={submissions}
+        students={students}
+        onRefresh={refreshList}
       />
     </div>
   );
