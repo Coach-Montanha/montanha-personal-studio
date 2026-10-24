@@ -38,8 +38,7 @@ export const Route = createFileRoute("/api/notifications/clear")({
             .from("pt_notifications")
             .delete()
             .eq("user_id", userId)
-            .neq("type", "custom_form_definition")
-            .neq("type", "form_submission");
+            .neq("type", "custom_form_definition");
 
           if (error) {
             return new Response(JSON.stringify({ error: error.message }), {

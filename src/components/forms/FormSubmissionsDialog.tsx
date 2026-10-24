@@ -40,6 +40,7 @@ interface FormSubmissionsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   submissions: FormSubmissionItem[];
+  forms?: Array<{ id: string; slug: string; title: string; fields?: Array<{ id: string; label: string }> }>;
   students: Array<{ id: string; name: string }>;
   onRefresh: () => void;
 }
@@ -48,6 +49,7 @@ export function FormSubmissionsDialog({
   open,
   onOpenChange,
   submissions,
+  forms = [],
   students,
   onRefresh,
 }: FormSubmissionsDialogProps) {
@@ -263,21 +265,21 @@ export function FormSubmissionsDialog({
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-sm text-foreground truncate">
+                      <span className={`font-semibold text-sm truncate ${isSelected ? "text-primary dark:text-white" : "text-foreground"}`}>
                         {sub.respondentName}
                       </span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1 flex-shrink-0">
+                      <span className={`text-[10px] flex items-center gap-1 flex-shrink-0 ${isSelected ? "text-primary/80 dark:text-slate-300" : "text-muted-foreground"}`}>
                         <Clock className="h-3 w-3" />
                         {date}
                       </span>
                     </div>
 
-                    <p className="text-xs text-primary font-medium truncate">
+                    <p className={`text-xs font-semibold truncate ${isSelected ? "text-primary dark:text-white" : "text-primary"}`}>
                       {sub.formTitle}
                     </p>
 
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-0.5">
-                      <span className="truncate max-w-[130px]">
+                    <div className={`flex items-center justify-between text-[11px] mt-0.5 ${isSelected ? "text-foreground/90 dark:text-slate-200" : "text-muted-foreground"}`}>
+                      <span className="truncate max-w-[130px] font-medium">
                         {sub.respondentContact || "Sem telefone"}
                       </span>
                       {sub.studentId ? (
@@ -285,7 +287,7 @@ export function FormSubmissionsDialog({
                           <CheckCircle2 className="h-3 w-3" /> Vinculado
                         </span>
                       ) : (
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                        <span className={`text-[10px] font-medium ${isSelected ? "text-amber-700 dark:text-amber-300 font-bold" : "text-amber-600 dark:text-amber-400"}`}>
                           Pendente
                         </span>
                       )}
@@ -395,13 +397,39 @@ export function FormSubmissionsDialog({
                       </p>
                     ) : (
                       Object.entries(activeSubmission.answers).map(([key, val]) => {
+                        // Resolução de rótulo amigável caso seja ID numérico (ex: f_110748093)
+                        let displayLabel = key.replace(/^f_/, "");
+                        const matchedForm = forms.find(
+                          (f) =>
+                            f.slug.toLowerCase() === activeSubmission.formSlug?.toLowerCase() ||
+                            f.id === activeSubmission.formSlug
+                        );
+                        if (matchedForm && matchedForm.fields) {
+                          const matchedField = matchedForm.fields.find(
+                            (fld) =>
+                              fld.id === key ||
+                              fld.id === "f_" + key ||
+                              fld.id.replace(/^f_/, "") === key.replace(/^f_/, "")
+                          );
+                          if (matchedField?.label) {
+                            displayLabel = matchedField.label;
+                          }
+                        }
+
+                        // Se ainda for numérico puro, limpa o prefixo
+                        if (/^\d+$/.test(displayLabel)) {
+                          displayLabel = `Pergunta ${displayLabel}`;
+                        } else {
+                          displayLabel = displayLabel.replace(/_/g, " ");
+                        }
+
                         return (
                           <div
                             key={key}
                             className="bg-card border border-border rounded-lg p-3 text-xs space-y-1"
                           >
-                            <span className="font-semibold text-muted-foreground capitalize">
-                              {key.replace(/_/g, " ")}:
+                            <span className="font-semibold text-muted-foreground">
+                              {displayLabel}:
                             </span>
                             <div className="text-foreground font-medium whitespace-pre-wrap pl-1">
                               {typeof val === "boolean"

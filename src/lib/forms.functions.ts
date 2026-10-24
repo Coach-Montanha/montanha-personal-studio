@@ -457,4 +457,32 @@ export const importGoogleFormSubmissionsServerFn = createServerFn({ method: "POS
     return { ok: true, insertedCount: inserted };
   });
 
+export const deleteCustomFormServerFn = createServerFn({ method: "POST" })
+  .validator((input: { idOrSlug: string }) => input)
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const target = data.idOrSlug.trim();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target);
+
+    let query = supabaseAdmin
+      .from("pt_notifications")
+      .delete()
+      .eq("type", "custom_form_definition");
+
+    if (isUuid) {
+      query = query.or(`id.eq.${target},metadata->>slug.eq.${target}`);
+    } else {
+      query = query.filter("metadata->>slug", "eq", target.toLowerCase());
+    }
+
+    const { error } = await query;
+    if (error) {
+      throw new Error(`Erro ao deletar formulário do servidor: ${error.message}`);
+    }
+
+    return { ok: true };
+  });
+
+
 

@@ -6,7 +6,7 @@ import {
   FormCategory,
   deleteStudioForm,
 } from "@/lib/forms-store";
-import { listFormsServerFn, listSubmissionsServerFn } from "@/lib/forms.functions";
+import { listFormsServerFn, listSubmissionsServerFn, deleteCustomFormServerFn } from "@/lib/forms.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -126,9 +126,14 @@ function FormulariosAdminPage() {
     }
   };
 
-  const handleDelete = (form: StudioFormItem) => {
+  const handleDelete = async (form: StudioFormItem) => {
     if (confirm(`Tem certeza que deseja remover o formulário "${form.title}"?`)) {
-      deleteStudioForm(form.id, user?.id);
+      try {
+        deleteStudioForm(form.id, user?.id);
+        await deleteCustomFormServerFn({ data: { idOrSlug: form.id || form.slug } });
+      } catch (err: any) {
+        console.warn("Erro ao deletar do servidor:", err?.message);
+      }
       refreshList();
       toast.success("Formulário removido com sucesso.");
     }
@@ -384,6 +389,7 @@ function FormulariosAdminPage() {
         open={submissionsOpen}
         onOpenChange={setSubmissionsOpen}
         submissions={submissions}
+        forms={forms}
         students={students}
         onRefresh={refreshList}
       />

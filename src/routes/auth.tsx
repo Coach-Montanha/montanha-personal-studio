@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { autoHealStudentLogin } from "@/lib/student-access.functions";
 import { validateEmailMx, checkProjectAccess } from "@/services/ecosystem-auth-service";
-import { getSavedAccounts, switchToAccount, removeSavedAccount, type SavedAccount } from "@/lib/multi-account";
+import { getSavedAccounts, switchToAccount, removeSavedAccount, saveCurrentAccount, type SavedAccount } from "@/lib/multi-account";
 
 function safeNext(next: unknown): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) return "/";
@@ -272,6 +272,12 @@ function AuthPage() {
     } catch {}
 
     toast.success("Bem-vindo de volta!");
+    if (signInData?.session) {
+      saveCurrentAccount(signInData.session, {
+        name: cleanEmail.split("@")[0],
+        role: "Administrador",
+      });
+    }
     if (signInData?.user) {
       await redirectAfterAuth(signInData.user.id);
     } else {

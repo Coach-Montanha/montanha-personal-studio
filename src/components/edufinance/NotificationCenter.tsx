@@ -356,12 +356,14 @@ export function NotificationCenter() {
 
   const handleNotificationClick = (notification: any) => {
     markAsRead(notification.id);
-    if (notification.type === "training_complete" && notification.metadata?.student_id) {
+    if (notification.type === "form_submission") {
+      navigate({ to: "/formularios" });
+    } else if (notification.type === "training_complete" && notification.metadata?.student_id) {
       navigate({
         to: "/personal-trainer/students/$id",
         params: { id: notification.metadata.student_id },
       });
-    } else if (notification.type === "checkin" || notification.type === "class_reminder_20m") {
+    } else if (notification.type === "checkin" || notification.type === "class_reminder_20m" || notification.type === "class_reminder_19m30s") {
       navigate({ to: "/agenda" });
     }
   };
