@@ -55,6 +55,7 @@ import { Route as AuthenticatedPortalPlanosRouteImport } from './routes/_authent
 import { Route as AuthenticatedStudentsIndexRouteImport } from './routes/_authenticated/students.index'
 import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
 import { Route as ApiCronPreClassRouteImport } from './routes/api.cron.pre-class'
+import { Route as ApiFormsGoogleWebhookRouteImport } from './routes/api.forms.google-webhook'
 import { Route as ApiNotificationsClearRouteImport } from './routes/api.notifications.clear'
 import { Route as ApiPaymentsInfinitepayWebhookRouteImport } from './routes/api.payments.infinitepay-webhook'
 import { Route as AuthenticatedPersonalTrainerStudentsIdRouteImport } from './routes/_authenticated/personal-trainer/students.$id'
@@ -309,6 +310,11 @@ const ApiCronPreClassRoute = ApiCronPreClassRouteImport.update({
   path: '/api/cron/pre-class',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFormsGoogleWebhookRoute = ApiFormsGoogleWebhookRouteImport.update({
+  id: '/api/forms/google-webhook',
+  path: '/api/forms/google-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiNotificationsClearRoute = ApiNotificationsClearRouteImport.update({
   id: '/api/notifications/clear',
   path: '/api/notifications/clear',
@@ -381,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
+  '/api/forms/google-webhook': typeof ApiFormsGoogleWebhookRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
   '/api/payments/infinitepay-webhook': typeof ApiPaymentsInfinitepayWebhookRoute
   '/desafios/': typeof AuthenticatedDesafiosIndexRoute
@@ -433,6 +440,7 @@ export interface FileRoutesByTo {
   '/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
+  '/api/forms/google-webhook': typeof ApiFormsGoogleWebhookRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
   '/api/payments/infinitepay-webhook': typeof ApiPaymentsInfinitepayWebhookRoute
   '/desafios': typeof AuthenticatedDesafiosIndexRoute
@@ -487,6 +495,7 @@ export interface FileRoutesById {
   '/_authenticated/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
+  '/api/forms/google-webhook': typeof ApiFormsGoogleWebhookRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
   '/api/payments/infinitepay-webhook': typeof ApiPaymentsInfinitepayWebhookRoute
   '/_authenticated/desafios/': typeof AuthenticatedDesafiosIndexRoute
@@ -541,6 +550,7 @@ export interface FileRouteTypes {
     | '/portal/planos'
     | '/students/$id'
     | '/api/cron/pre-class'
+    | '/api/forms/google-webhook'
     | '/api/notifications/clear'
     | '/api/payments/infinitepay-webhook'
     | '/desafios/'
@@ -593,6 +603,7 @@ export interface FileRouteTypes {
     | '/portal/planos'
     | '/students/$id'
     | '/api/cron/pre-class'
+    | '/api/forms/google-webhook'
     | '/api/notifications/clear'
     | '/api/payments/infinitepay-webhook'
     | '/desafios'
@@ -646,6 +657,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portal/planos'
     | '/_authenticated/students/$id'
     | '/api/cron/pre-class'
+    | '/api/forms/google-webhook'
     | '/api/notifications/clear'
     | '/api/payments/infinitepay-webhook'
     | '/_authenticated/desafios/'
@@ -673,6 +685,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiCronPreClassRoute: typeof ApiCronPreClassRoute
+  ApiFormsGoogleWebhookRoute: typeof ApiFormsGoogleWebhookRoute
   ApiNotificationsClearRoute: typeof ApiNotificationsClearRoute
   ApiPaymentsInfinitepayWebhookRoute: typeof ApiPaymentsInfinitepayWebhookRoute
 }
@@ -1001,6 +1014,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronPreClassRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/forms/google-webhook': {
+      id: '/api/forms/google-webhook'
+      path: '/api/forms/google-webhook'
+      fullPath: '/api/forms/google-webhook'
+      preLoaderRoute: typeof ApiFormsGoogleWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/notifications/clear': {
       id: '/api/notifications/clear'
       path: '/api/notifications/clear'
@@ -1140,6 +1160,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiCronPreClassRoute: ApiCronPreClassRoute,
+  ApiFormsGoogleWebhookRoute: ApiFormsGoogleWebhookRoute,
   ApiNotificationsClearRoute: ApiNotificationsClearRoute,
   ApiPaymentsInfinitepayWebhookRoute: ApiPaymentsInfinitepayWebhookRoute,
 }

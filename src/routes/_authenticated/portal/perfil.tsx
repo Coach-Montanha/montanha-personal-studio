@@ -209,7 +209,15 @@ function PerfilPage() {
       <div className="grid gap-6">
         {userTypes?.studio && (
           <Card className="space-y-4 p-5 sm:p-6">
-            <h2 className="text-overline text-muted-foreground">Studio — Plano e Financeiro</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-overline text-muted-foreground">Studio — Plano e Financeiro</h2>
+              <Link
+                to="/portal/planos"
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              >
+                Mudar ou Renovar Plano &rarr;
+              </Link>
+            </div>
             {currentPayment ? (
               <div className="space-y-1">
                 <div>

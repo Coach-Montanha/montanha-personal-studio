@@ -8,6 +8,7 @@ import {
   Moon,
   Sun,
   ClipboardList,
+  CreditCard,
   FileText,
   PanelLeftClose,
   PanelLeftOpen,
@@ -31,6 +32,7 @@ type PortalMode = "studio" | "pt" | "both";
 
 const studioNav = [
   { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
+  { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
   { to: "/portal/perfil", label: "Meus dados", icon: User },
 ];
@@ -38,12 +40,14 @@ const studioNav = [
 const ptNav = [
   { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
   { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
+  { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
 ];
 
 const bothNav = [
   { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
   { to: "/portal/pt/treino", label: "Treino Personal", icon: ClipboardList },
+  { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
   { to: "/portal/perfil", label: "Meus dados", icon: User },
 ];
@@ -123,6 +127,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     ? [
         { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
         { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
+        { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
       ]
     : studioNav;
@@ -131,6 +136,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     ? ptNav
     : [
         { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
+        { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
       ];
 
@@ -139,6 +145,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     : [
         { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
         { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
+        { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
       ];
 
