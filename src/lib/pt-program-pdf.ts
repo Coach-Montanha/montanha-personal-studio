@@ -168,30 +168,11 @@ export async function downloadProgramPdf(programId: string, studentName?: string
 
   const filename = `${(p.name ?? "rotina").replace(/[^\w\-]+/g, "_")}.pdf`;
 
-  // 1. Suporte Mobile Web Share API
-  if (typeof navigator !== "undefined" && navigator.canShare) {
-    try {
-      const blob = doc.output("blob");
-      const file = new File([blob], filename, { type: "application/pdf" });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: p.name ?? "Rotina de treino",
-          text: `Ficha de treino em PDF: ${p.name ?? "Rotina"}`,
-        });
-        return;
-      }
-    } catch (shareErr: any) {
-      if (shareErr.name === "AbortError") return;
-      console.warn("navigator.share não completado, usando doc.save:", shareErr);
-    }
-  }
-
-  // 2. Download direto via doc.save() (sem abrir janela popup bloqueada no mobile)
+  // Disparo direto e confiável do download de arquivo (evita bloqueios do Web Share em navegadores desktop)
   try {
     doc.save(filename);
   } catch (err) {
-    console.warn("doc.save falhou, fallback em blob URL:", err);
+    console.warn("doc.save falhou, usando download por elemento âncora com Blob URL:", err);
     const blob = doc.output("blob");
     const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
