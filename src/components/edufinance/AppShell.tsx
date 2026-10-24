@@ -538,9 +538,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             seus próprios registros.
           </div>
         )}
-        <main className="flex-1 min-w-0 max-w-full p-3 pb-[calc(2.5rem+var(--safe-area-inset-bottom,0px))] sm:p-4 sm:pb-[calc(2.5rem+var(--safe-area-inset-bottom,0px))] md:p-6 lg:p-8 overflow-x-clip">
+        <main className="flex-1 min-w-0 max-w-full p-3 pb-[calc(4.5rem+var(--safe-area-inset-bottom,0px))] sm:p-4 sm:pb-[calc(4.5rem+var(--safe-area-inset-bottom,0px))] md:p-6 lg:p-8 overflow-x-clip">
           {children}
         </main>
+
+        {/* Barra em Liquid Glass opaco protegendo a área inferior do dock/botões de navegação no mobile */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-[calc(env(safe-area-inset-bottom,0px)+38px)] bg-background/80 backdrop-blur-md border-t border-border/30 shadow-xs md:hidden"
+        />
       </div>
     </div>
   );

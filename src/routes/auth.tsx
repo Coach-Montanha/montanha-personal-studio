@@ -356,7 +356,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex items-center justify-center p-4 pt-[calc(1rem+var(--safe-area-inset-top,0px))] pb-[calc(1rem+var(--safe-area-inset-bottom,0px))] pl-[calc(1rem+var(--safe-area-inset-left,0px))] pr-[calc(1rem+var(--safe-area-inset-right,0px))] font-sans relative overflow-hidden">
+    <div className="min-h-dvh w-full bg-slate-950 text-slate-100 flex items-center justify-center p-3 sm:p-4 pt-[calc(0.75rem+var(--safe-area-inset-top,0px))] pb-[calc(1.5rem+var(--safe-area-inset-bottom,0px))] pl-[calc(0.75rem+var(--safe-area-inset-left,0px))] pr-[calc(0.75rem+var(--safe-area-inset-right,0px))] font-sans relative overflow-y-auto">
       {/* Dynamic Background Mesh */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-[#6958e2]/20 blur-[160px]" />
@@ -364,13 +364,13 @@ function AuthPage() {
       </div>
 
       {/* Floating Hero Stage Card Container */}
-      <div className="w-full max-w-[900px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[560px] my-auto">
+      <div className="w-full max-w-[900px] bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row md:min-h-[560px] my-auto">
         {/* A) NAV RAIL */}
-        <nav className="w-full md:w-24 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 p-4 flex md:flex-col items-center justify-between z-20 flex-shrink-0">
-          <div className="flex flex-col items-center gap-1.5">
-            <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-[#6958e2] to-[#8b5cf6] p-0.5 shadow-md flex items-center justify-center">
+        <nav className="w-full md:w-24 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 p-3 md:p-4 flex md:flex-col items-center justify-between z-20 flex-shrink-0">
+          <div className="flex flex-row md:flex-col items-center gap-2 md:gap-1.5">
+            <div className="h-9 w-9 md:h-11 md:w-11 rounded-2xl bg-gradient-to-br from-[#6958e2] to-[#8b5cf6] p-0.5 shadow-md flex items-center justify-center">
               <div className="h-full w-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-[#6958e2]" />
+                <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-[#6958e2]" />
               </div>
             </div>
             <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
@@ -378,18 +378,18 @@ function AuthPage() {
             </span>
           </div>
 
-          <div className="flex md:flex-col items-center gap-3">
+          <div className="flex md:flex-col items-center gap-2 md:gap-3">
             <button
               type="button"
               onClick={() => setView("signin")}
               aria-label="Entrar na conta"
-              className={`min-h-[44px] min-w-[44px] px-4 py-2.5 rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-xs font-bold ${
+              className={`min-h-[40px] md:min-h-[44px] min-w-[40px] md:min-w-[44px] px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 transition-all text-xs font-bold ${
                 view === "signin"
                   ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
-              <User className="h-5 w-5" />
+              <User className="h-4 w-4 md:h-5 md:w-5" />
               <span>Entrar</span>
             </button>
 
@@ -397,13 +397,13 @@ function AuthPage() {
               type="button"
               onClick={() => setView("signup")}
               aria-label="Criar nova conta"
-              className={`min-h-[44px] min-w-[44px] px-4 py-2.5 rounded-xl flex flex-col items-center justify-center gap-1 transition-all text-xs font-bold ${
+              className={`min-h-[40px] md:min-h-[44px] min-w-[40px] md:min-w-[44px] px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 transition-all text-xs font-bold ${
                 view === "signup"
                   ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
-              <Sparkles className="h-5 w-5" />
+              <Sparkles className="h-4 w-4 md:h-5 md:w-5" />
               <span>Cadastrar</span>
             </button>
           </div>
@@ -414,8 +414,8 @@ function AuthPage() {
           </div>
         </nav>
 
-        {/* B) FLOATING HERO CARD */}
-        <div className="w-full md:w-80 relative overflow-hidden bg-slate-950/90 p-6 md:p-8 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800">
+        {/* B) FLOATING HERO CARD (Desktop only - prevents mobile overflow) */}
+        <div className="hidden md:flex w-full md:w-80 relative overflow-hidden bg-slate-950/90 p-6 md:p-8 flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800">
           <div
             aria-hidden
             className="absolute -top-24 -left-24 w-64 h-64 bg-[#6958e2]/20 rounded-full blur-3xl pointer-events-none"
