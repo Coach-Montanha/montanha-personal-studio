@@ -105,7 +105,40 @@ export const submitFormServerFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // 1. Resolve o treinador/gestor dono do formulário
+    let targetUserId: string | null = null;
+    try {
+      const normalized = (data.formSlug || "").toLowerCase().trim();
+      const { data: formDef } = await supabaseAdmin
+        .from("pt_notifications")
+        .select("user_id")
+        .eq("type", "custom_form_definition")
+        .filter("metadata->>slug", "eq", normalized)
+        .maybeSingle();
+
+      if (formDef?.user_id) {
+        targetUserId = formDef.user_id;
+      }
+    } catch {}
+
+    // Fallback: se formulário default ou anônimo, associa ao treinador administrador principal
+    if (!targetUserId) {
+      try {
+        const { data: adminUser } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        targetUserId = adminUser?.id || "b75fc258-7809-4861-b52f-55877117cc92";
+      } catch {
+        targetUserId = "b75fc258-7809-4861-b52f-55877117cc92";
+      }
+    }
+
     const { error } = await supabaseAdmin.from("pt_notifications" as any).insert({
+      user_id: targetUserId,
       title: `📋 Novo Envio: ${data.formTitle} (${data.respondentName})`,
       message: `${data.respondentName} (${data.respondentContact || "Sem contato"}) preencheu o formulário "${data.formTitle}".`,
       type: "form_submission",

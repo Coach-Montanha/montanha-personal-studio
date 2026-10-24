@@ -76,6 +76,8 @@ export function MobileNotificationsCard() {
         .from("pt_notifications" as any)
         .delete()
         .eq("user_id", user.id)
+        .neq("type", "custom_form_definition")
+        .neq("type", "form_submission")
         .catch(() => null);
 
       toast.success("Todas as notificações antigas foram limpas!");
