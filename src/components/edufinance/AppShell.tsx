@@ -26,6 +26,7 @@ import {
   Library,
   Timer,
   Trophy,
+  FileText,
 } from "lucide-react";
 
 import { useTheme } from "@/hooks/use-theme";
@@ -100,6 +101,7 @@ const nav: NavItem[] = [
 
   { to: "/financeiro", label: "Financeiro", icon: Wallet, section: "Gestão", module: "financeiro" },
   { to: "/crm", label: "CRM", icon: Megaphone, section: "Gestão", module: "crm" },
+  { to: "/formularios", label: "Formulários", icon: FileText, section: "Gestão" },
   { to: "/desafios", label: "Desafios", icon: Trophy, section: "Gestão" },
 ];
 

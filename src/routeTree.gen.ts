@@ -27,6 +27,7 @@ import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedDiagnosticsRouteImport } from './routes/_authenticated/diagnostics'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
+import { Route as AuthenticatedFormulariosRouteImport } from './routes/_authenticated/formularios'
 import { Route as AuthenticatedImportExportRouteImport } from './routes/_authenticated/import-export'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
@@ -36,6 +37,7 @@ import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTrashRouteImport } from './routes/_authenticated/trash'
 import { Route as AuthenticatedTreinoRouteImport } from './routes/_authenticated/treino'
 import { Route as AuthenticatedTreinosRouteImport } from './routes/_authenticated/treinos'
+import { Route as FSlugRouteImport } from './routes/f.$slug'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedAdminTenantsRouteImport } from './routes/_authenticated/admin/tenants'
@@ -47,6 +49,7 @@ import { Route as AuthenticatedPersonalTrainerCheckinRouteImport } from './route
 import { Route as AuthenticatedPersonalTrainerImportarTreinoRouteImport } from './routes/_authenticated/personal-trainer/importar-treino'
 import { Route as AuthenticatedPersonalTrainerPlansRouteImport } from './routes/_authenticated/personal-trainer/plans'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal/index'
+import { Route as AuthenticatedPortalFormulariosRouteImport } from './routes/_authenticated/portal/formularios'
 import { Route as AuthenticatedPortalPerfilRouteImport } from './routes/_authenticated/portal/perfil'
 import { Route as AuthenticatedStudentsIndexRouteImport } from './routes/_authenticated/students.index'
 import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
@@ -148,6 +151,12 @@ const AuthenticatedFinanceiroRoute = AuthenticatedFinanceiroRouteImport.update({
   path: '/financeiro',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFormulariosRoute =
+  AuthenticatedFormulariosRouteImport.update({
+    id: '/formularios',
+    path: '/formularios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedImportExportRoute =
   AuthenticatedImportExportRouteImport.update({
     id: '/import-export',
@@ -193,6 +202,11 @@ const AuthenticatedTreinosRoute = AuthenticatedTreinosRouteImport.update({
   id: '/treinos',
   path: '/treinos',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const FSlugRoute = FSlugRouteImport.update({
+  id: '/f/$slug',
+  path: '/f/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
@@ -259,6 +273,12 @@ const AuthenticatedPortalIndexRoute =
     path: '/portal/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPortalFormulariosRoute =
+  AuthenticatedPortalFormulariosRouteImport.update({
+    id: '/portal/formularios',
+    path: '/portal/formularios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPortalPerfilRoute =
   AuthenticatedPortalPerfilRouteImport.update({
     id: '/portal/perfil',
@@ -323,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/crm': typeof AuthenticatedCrmRoute
   '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/formularios': typeof AuthenticatedFormulariosRoute
   '/import-export': typeof AuthenticatedImportExportRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
@@ -332,6 +353,7 @@ export interface FileRoutesByFullPath {
   '/trash': typeof AuthenticatedTrashRoute
   '/treino': typeof AuthenticatedTreinoRoute
   '/treinos': typeof AuthenticatedTreinosRoute
+  '/f/$slug': typeof FSlugRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/tenants': typeof AuthenticatedAdminTenantsRoute
@@ -340,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/personal-trainer/checkin': typeof AuthenticatedPersonalTrainerCheckinRoute
   '/personal-trainer/importar-treino': typeof AuthenticatedPersonalTrainerImportarTreinoRoute
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
+  '/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
@@ -369,6 +392,7 @@ export interface FileRoutesByTo {
   '/crm': typeof AuthenticatedCrmRoute
   '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/formularios': typeof AuthenticatedFormulariosRoute
   '/import-export': typeof AuthenticatedImportExportRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
@@ -378,6 +402,7 @@ export interface FileRoutesByTo {
   '/trash': typeof AuthenticatedTrashRoute
   '/treino': typeof AuthenticatedTreinoRoute
   '/treinos': typeof AuthenticatedTreinosRoute
+  '/f/$slug': typeof FSlugRoute
   '/': typeof AuthenticatedIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -387,6 +412,7 @@ export interface FileRoutesByTo {
   '/personal-trainer/checkin': typeof AuthenticatedPersonalTrainerCheckinRoute
   '/personal-trainer/importar-treino': typeof AuthenticatedPersonalTrainerImportarTreinoRoute
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
+  '/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
@@ -418,6 +444,7 @@ export interface FileRoutesById {
   '/_authenticated/crm': typeof AuthenticatedCrmRoute
   '/_authenticated/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
+  '/_authenticated/formularios': typeof AuthenticatedFormulariosRoute
   '/_authenticated/import-export': typeof AuthenticatedImportExportRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
@@ -427,6 +454,7 @@ export interface FileRoutesById {
   '/_authenticated/trash': typeof AuthenticatedTrashRoute
   '/_authenticated/treino': typeof AuthenticatedTreinoRoute
   '/_authenticated/treinos': typeof AuthenticatedTreinosRoute
+  '/f/$slug': typeof FSlugRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -436,6 +464,7 @@ export interface FileRoutesById {
   '/_authenticated/personal-trainer/checkin': typeof AuthenticatedPersonalTrainerCheckinRoute
   '/_authenticated/personal-trainer/importar-treino': typeof AuthenticatedPersonalTrainerImportarTreinoRoute
   '/_authenticated/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
+  '/_authenticated/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
   '/_authenticated/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
@@ -468,6 +497,7 @@ export interface FileRouteTypes {
     | '/crm'
     | '/diagnostics'
     | '/financeiro'
+    | '/formularios'
     | '/import-export'
     | '/payments'
     | '/plans'
@@ -477,6 +507,7 @@ export interface FileRouteTypes {
     | '/trash'
     | '/treino'
     | '/treinos'
+    | '/f/$slug'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/tenants'
@@ -485,6 +516,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/checkin'
     | '/personal-trainer/importar-treino'
     | '/personal-trainer/plans'
+    | '/portal/formularios'
     | '/portal/perfil'
     | '/students/$id'
     | '/api/cron/pre-class'
@@ -514,6 +546,7 @@ export interface FileRouteTypes {
     | '/crm'
     | '/diagnostics'
     | '/financeiro'
+    | '/formularios'
     | '/import-export'
     | '/payments'
     | '/plans'
@@ -523,6 +556,7 @@ export interface FileRouteTypes {
     | '/trash'
     | '/treino'
     | '/treinos'
+    | '/f/$slug'
     | '/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -532,6 +566,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/checkin'
     | '/personal-trainer/importar-treino'
     | '/personal-trainer/plans'
+    | '/portal/formularios'
     | '/portal/perfil'
     | '/students/$id'
     | '/api/cron/pre-class'
@@ -562,6 +597,7 @@ export interface FileRouteTypes {
     | '/_authenticated/crm'
     | '/_authenticated/diagnostics'
     | '/_authenticated/financeiro'
+    | '/_authenticated/formularios'
     | '/_authenticated/import-export'
     | '/_authenticated/payments'
     | '/_authenticated/plans'
@@ -571,6 +607,7 @@ export interface FileRouteTypes {
     | '/_authenticated/trash'
     | '/_authenticated/treino'
     | '/_authenticated/treinos'
+    | '/f/$slug'
     | '/_authenticated/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -580,6 +617,7 @@ export interface FileRouteTypes {
     | '/_authenticated/personal-trainer/checkin'
     | '/_authenticated/personal-trainer/importar-treino'
     | '/_authenticated/personal-trainer/plans'
+    | '/_authenticated/portal/formularios'
     | '/_authenticated/portal/perfil'
     | '/_authenticated/students/$id'
     | '/api/cron/pre-class'
@@ -605,6 +643,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  FSlugRoute: typeof FSlugRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiCronPreClassRoute: typeof ApiCronPreClassRoute
@@ -739,6 +778,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceiroRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/formularios': {
+      id: '/_authenticated/formularios'
+      path: '/formularios'
+      fullPath: '/formularios'
+      preLoaderRoute: typeof AuthenticatedFormulariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/import-export': {
       id: '/_authenticated/import-export'
       path: '/import-export'
@@ -801,6 +847,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/treinos'
       preLoaderRoute: typeof AuthenticatedTreinosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/f/$slug': {
+      id: '/f/$slug'
+      path: '/f/$slug'
+      fullPath: '/f/$slug'
+      preLoaderRoute: typeof FSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
@@ -879,6 +932,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortalIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/portal/formularios': {
+      id: '/_authenticated/portal/formularios'
+      path: '/portal/formularios'
+      fullPath: '/portal/formularios'
+      preLoaderRoute: typeof AuthenticatedPortalFormulariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/portal/perfil': {
       id: '/_authenticated/portal/perfil'
       path: '/portal/perfil'
@@ -945,6 +1005,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRoute
   AuthenticatedDiagnosticsRoute: typeof AuthenticatedDiagnosticsRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
+  AuthenticatedFormulariosRoute: typeof AuthenticatedFormulariosRoute
   AuthenticatedImportExportRoute: typeof AuthenticatedImportExportRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
@@ -961,6 +1022,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonalTrainerCheckinRoute: typeof AuthenticatedPersonalTrainerCheckinRoute
   AuthenticatedPersonalTrainerImportarTreinoRoute: typeof AuthenticatedPersonalTrainerImportarTreinoRoute
   AuthenticatedPersonalTrainerPlansRoute: typeof AuthenticatedPersonalTrainerPlansRoute
+  AuthenticatedPortalFormulariosRoute: typeof AuthenticatedPortalFormulariosRoute
   AuthenticatedPortalPerfilRoute: typeof AuthenticatedPortalPerfilRoute
   AuthenticatedStudentsIdRoute: typeof AuthenticatedStudentsIdRoute
   AuthenticatedDesafiosIndexRoute: typeof AuthenticatedDesafiosIndexRoute
@@ -979,6 +1041,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCrmRoute: AuthenticatedCrmRoute,
   AuthenticatedDiagnosticsRoute: AuthenticatedDiagnosticsRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
+  AuthenticatedFormulariosRoute: AuthenticatedFormulariosRoute,
   AuthenticatedImportExportRoute: AuthenticatedImportExportRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedPlansRoute: AuthenticatedPlansRoute,
@@ -1000,6 +1063,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPersonalTrainerImportarTreinoRoute,
   AuthenticatedPersonalTrainerPlansRoute:
     AuthenticatedPersonalTrainerPlansRoute,
+  AuthenticatedPortalFormulariosRoute: AuthenticatedPortalFormulariosRoute,
   AuthenticatedPortalPerfilRoute: AuthenticatedPortalPerfilRoute,
   AuthenticatedStudentsIdRoute: AuthenticatedStudentsIdRoute,
   AuthenticatedDesafiosIndexRoute: AuthenticatedDesafiosIndexRoute,
@@ -1029,6 +1093,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  FSlugRoute: FSlugRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiCronPreClassRoute: ApiCronPreClassRoute,
