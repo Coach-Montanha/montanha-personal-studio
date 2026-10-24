@@ -1,15 +1,21 @@
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   FileText,
   Download,
-  Calendar,
   CheckCircle2,
   Clock,
   ExternalLink,
   ChevronDown,
   ChevronUp,
+  User,
+  Phone,
+  ShieldCheck,
+  FileCheck2,
+  Printer,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadFormSubmissionPdf } from "@/lib/form-submission-pdf";
@@ -52,7 +58,6 @@ export function StudentFormsTab({
   const getFieldLabel = (key: string, formSlug?: string) => {
     let clean = key.replace(/^f_/, "");
 
-    // 1. Procura na lista de formulários carregados
     const allForms = [...forms, ...DEFAULT_STUDIO_FORMS];
     const matchedForm = allForms.find(
       (f) =>
@@ -94,7 +99,7 @@ export function StudentFormsTab({
           return acc;
         }, {} as Record<string, string>),
       });
-      toast.success("PDF da ficha gerado com sucesso!");
+      toast.success("PDF oficial gerado com sucesso!");
     } catch (err: any) {
       toast.error(`Erro ao gerar PDF: ${err?.message || "tente novamente"}`);
     } finally {
@@ -133,26 +138,25 @@ export function StudentFormsTab({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <FileText className="h-4 w-4 text-primary" />
-            Formulários & Anamneses de {studentName}
+          <h2 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+            <FileCheck2 className="h-5 w-5 text-primary" />
+            Prontuário & Fichas de {studentName}
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {studentSubmissions.length}{" "}
-            {studentSubmissions.length === 1 ? "ficha respondida" : "fichas respondidas"} registradas.
+            Documento com histórico de declarações de saúde, anamnese e consentimentos para acompanhamento seguro.
           </p>
         </div>
         {onRefresh && (
-          <Button size="sm" variant="outline" onClick={onRefresh} className="text-xs h-8">
+          <Button size="sm" variant="outline" onClick={onRefresh} className="text-xs h-8 self-start sm:self-auto">
             Atualizar
           </Button>
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {studentSubmissions.map((sub) => {
           const isExpanded = expandedSubIds[sub.id] ?? true;
           const date = new Date(sub.createdAt).toLocaleDateString("pt-BR", {
@@ -168,63 +172,74 @@ export function StudentFormsTab({
           );
 
           return (
-            <Card key={sub.id} className="overflow-hidden border border-border shadow-xs">
-              {/* Header da Ficha */}
-              <div className="p-4 sm:p-5 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/70">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="h-3 w-3" /> Ficha Concluída
+            <div
+              key={sub.id}
+              className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden transition-all duration-200"
+            >
+              {/* Cabeçalho do Prontuário */}
+              <div className="p-4 sm:p-6 bg-muted/20 border-b border-border/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1.5 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <ShieldCheck className="h-3.5 w-3.5" /> Ficha Validada no Sistema
                     </span>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                    <span className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                      <Clock className="h-3.5 w-3.5" />
                       {date}
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-foreground">{sub.formTitle}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Respondido por <strong>{sub.respondentName}</strong>
-                    {sub.respondentContact ? ` • ${sub.respondentContact}` : ""}
-                  </p>
+
+                  <h3 className="text-lg font-extrabold text-foreground tracking-tight">
+                    {sub.formTitle}
+                  </h3>
+
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <User className="h-3.5 w-3.5 text-primary" />
+                      Respondente: <strong className="text-foreground ml-0.5">{sub.respondentName}</strong>
+                    </span>
+                    {sub.respondentContact && (
+                      <span className="flex items-center gap-1">
+                        <Phone className="h-3.5 w-3.5 text-primary" />
+                        Contato: <strong className="text-foreground ml-0.5">{sub.respondentContact}</strong>
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="h-8 text-xs gap-1.5"
+                    className="h-9 px-3.5 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
                     disabled={downloadingId === sub.id}
                     onClick={() => handleDownloadPdf(sub)}
                   >
-                    <Download className="h-3.5 w-3.5 text-primary" />
-                    {downloadingId === sub.id ? "Gerando PDF..." : "Baixar PDF"}
+                    <Download className="h-4 w-4" />
+                    {downloadingId === sub.id ? "Gerando..." : "Baixar PDF Oficial"}
                   </Button>
+
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 w-8 p-0"
+                    className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
                     onClick={() => toggleExpand(sub.id)}
-                    title={isExpanded ? "Recolher perguntas" : "Expandir perguntas"}
+                    title={isExpanded ? "Recolher prontuário" : "Expandir prontuário"}
                   >
-                    {isExpanded ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
+                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
                 </div>
               </div>
 
-              {/* Corpo de Perguntas e Respostas */}
+              {/* Corpo em Texto Organizado e Contínuo (Formato Ficha Médica / Prontuário) */}
               {isExpanded && (
-                <div className="p-4 sm:p-5 bg-muted/10 space-y-3">
+                <div className="p-5 sm:p-7 space-y-6 bg-card text-foreground">
                   {answersEntries.length === 0 ? (
                     <p className="text-xs text-muted-foreground italic">
-                      Nenhum campo adicional registrado nesta submissão.
+                      Nenhuma resposta registrada para esta ficha.
                     </p>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {answersEntries.map(([key, val]) => {
+                    <div className="space-y-5 divide-y divide-border/40">
+                      {answersEntries.map(([key, val], idx) => {
                         const displayLabel = getFieldLabel(key, sub.formSlug);
                         let formattedVal = "";
 
@@ -239,22 +254,42 @@ export function StudentFormsTab({
                         return (
                           <div
                             key={key}
-                            className="bg-card border border-border/80 rounded-xl p-3.5 text-xs space-y-1.5 shadow-xs"
+                            className={`space-y-1.5 ${idx > 0 ? "pt-4" : ""}`}
                           >
-                            <span className="font-semibold text-muted-foreground text-[11px] block leading-tight">
-                              {displayLabel}
-                            </span>
-                            <p className="text-foreground font-semibold text-sm whitespace-pre-wrap leading-snug">
-                              {formattedVal}
-                            </p>
+                            <div className="flex items-start gap-2">
+                              <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground shrink-0 mt-0.5">
+                                {idx + 1}.
+                              </span>
+                              <div className="space-y-1 flex-1">
+                                <h4 className="text-xs sm:text-sm font-bold text-muted-foreground leading-snug">
+                                  {displayLabel}
+                                </h4>
+                                <div className="text-foreground text-sm sm:text-base font-medium leading-relaxed bg-muted/20 p-3 rounded-xl border border-border/50">
+                                  {formattedVal}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
                     </div>
                   )}
+
+                  {/* Rodapé Jurídico de Autenticidade */}
+                  <div className="mt-8 pt-4 border-t border-dashed border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-muted-foreground bg-muted/10 p-4 rounded-xl">
+                    <div className="flex items-center gap-1.5">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                      <span>
+                        Registro arquivado com autenticidade eletrônica no banco de dados do Studio.
+                      </span>
+                    </div>
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      ID: {sub.id.slice(0, 18)}...
+                    </span>
+                  </div>
                 </div>
               )}
-            </Card>
+            </div>
           );
         })}
       </div>
