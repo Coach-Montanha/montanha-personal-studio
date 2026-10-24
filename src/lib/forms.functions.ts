@@ -14,12 +14,20 @@ export const getFormBySlugServerFn = createServerFn({ method: "GET" })
 
     // 2. Busca customizações no Supabase
     try {
-      const { data: dbForm } = await supabaseAdmin
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normalized);
+      
+      let query = supabaseAdmin
         .from("pt_notifications")
         .select("id, user_id, title, metadata, created_at")
-        .eq("type", "custom_form_definition")
-        .or(`metadata->>slug.eq.${normalized},id.eq.${normalized}`)
-        .maybeSingle();
+        .eq("type", "custom_form_definition");
+
+      if (isUuid) {
+        query = query.or(`id.eq.${normalized},metadata->>slug.eq.${normalized}`);
+      } else {
+        query = query.filter("metadata->>slug", "eq", normalized);
+      }
+
+      const { data: dbForm } = await query.maybeSingle();
 
       if (dbForm) {
         const meta = dbForm.metadata as any;
@@ -118,6 +126,85 @@ export const submitFormServerFn = createServerFn({ method: "POST" })
     return { ok: true, message: "Resposta gravada com sucesso!" };
   });
 
+async function parseGoogleFormQuestions(url: string) {
+  try {
+    if (!url || !url.includes("docs.google.com/forms")) return null;
+    const https = await import("https");
+
+    const fetchHtml = (target: string): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        https.get(target, { headers: { "User-Agent": "Mozilla/5.0" } }, (res) => {
+          if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+            return resolve(fetchHtml(res.headers.location));
+          }
+          let data = "";
+          res.on("data", (chunk) => (data += chunk));
+          res.on("end", () => resolve(data));
+        }).on("error", reject);
+      });
+    };
+
+    const html = await fetchHtml(url);
+    const match = html.match(/FB_PUBLIC_LOAD_DATA_\s*=\s*(\[[\s\S]*?\]);<\/script>/);
+    if (!match) return null;
+
+    const raw = JSON.parse(match[1]);
+    const title = raw[1]?.[8] || raw[8] || "";
+    const description = raw[1]?.[0] || "";
+    const questionsRaw = raw[1]?.[1] || [];
+
+    const fields = [];
+    for (const q of questionsRaw) {
+      const id = q[0];
+      const qTitle = q[1];
+      const qDesc = q[2];
+      const typeCode = q[3];
+      const sub = q[4]?.[0] || [];
+      const rawChoices = sub[1];
+      const required = sub[2] === 1;
+
+      let type: any = "text";
+      let options = undefined;
+
+      if (typeCode === 0) {
+        if (/email|e-mail/i.test(qTitle)) type = "email";
+        else if (/telefone|whatsapp|celular/i.test(qTitle)) type = "tel";
+        else type = "text";
+      } else if (typeCode === 1) {
+        type = "textarea";
+      } else if (typeCode === 2) {
+        type = "radio";
+        if (Array.isArray(rawChoices)) {
+          options = rawChoices.map((c: any) => c[0]).filter(Boolean);
+        }
+      } else if (typeCode === 4) {
+        type = "checkbox";
+        if (Array.isArray(rawChoices)) {
+          options = rawChoices.map((c: any) => c[0]).filter(Boolean);
+        }
+      } else if (typeCode === 5) {
+        type = "scale";
+      } else if (typeCode === 9) {
+        type = "text";
+      }
+
+      fields.push({
+        id: "f_" + id,
+        label: qTitle,
+        type,
+        required: !!required,
+        placeholder: qDesc || "",
+        options: options && options.length > 0 ? options : undefined,
+      });
+    }
+
+    return { title, description, fields };
+  } catch (err: any) {
+    console.warn("[parseGoogleFormQuestions] Falha ao extrair perguntas:", err?.message);
+    return null;
+  }
+}
+
 export const saveFormServerFn = createServerFn({ method: "POST" })
   .validator((input: any) => input)
   .handler(async ({ data: form }) => {
@@ -130,26 +217,41 @@ export const saveFormServerFn = createServerFn({ method: "POST" })
       .replace(/[^a-z0-9_-]/g, "-")
       .replace(/^-+|-+$/g, "");
 
+    let resolvedFields = form.fields || [];
+    let resolvedTitle = form.title;
+    let resolvedDesc = form.description || "";
+
+    // Se o usuário forneceu uma URL do Google Forms e não há campos ou a URL foi alterada
+    if (form.googleFormUrl && (!resolvedFields.length || form.googleFormUrl.includes("docs.google.com/forms"))) {
+      const parsed = await parseGoogleFormQuestions(form.googleFormUrl);
+      if (parsed && parsed.fields.length > 0) {
+        resolvedFields = parsed.fields;
+        if (!resolvedDesc && parsed.description) resolvedDesc = parsed.description;
+        if (!resolvedTitle && parsed.title) resolvedTitle = parsed.title;
+      }
+    }
+
     const formPayload = {
       slug,
-      title: form.title,
+      title: resolvedTitle,
       category: form.category || "geral",
-      description: form.description || "",
+      description: resolvedDesc,
       badge: form.badge || "Oficial",
       estimatedMinutes: Number(form.estimatedMinutes) || 3,
       visibleToStudents: form.visibleToStudents ?? true,
       isPublicLead: form.isPublicLead ?? true,
-      fields: form.fields || [],
+      fields: resolvedFields,
       googleFormUrl: form.googleFormUrl || "",
     };
 
-    // Busca por id direto ou pelo slug gravado
+    // Busca por id direto se for UUID válido ou pelo slug gravado
     let existingQuery = supabaseAdmin
       .from("pt_notifications")
       .select("id")
       .eq("type", "custom_form_definition");
 
-    if (form.id) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(form.id || "");
+    if (isUuid) {
       existingQuery = existingQuery.eq("id", form.id);
     } else {
       existingQuery = existingQuery.filter("metadata->>slug", "eq", slug);
@@ -161,15 +263,15 @@ export const saveFormServerFn = createServerFn({ method: "POST" })
       await supabaseAdmin
         .from("pt_notifications")
         .update({
-          title: form.title,
+          title: resolvedTitle,
           metadata: formPayload,
         })
         .eq("id", existing.id);
     } else {
       await supabaseAdmin.from("pt_notifications" as any).insert({
         user_id: form.userId || null,
-        title: form.title,
-        message: form.description || "Definição de formulário customizado",
+        title: resolvedTitle,
+        message: resolvedDesc || "Definição de formulário customizado",
         type: "custom_form_definition",
         metadata: formPayload,
       });
