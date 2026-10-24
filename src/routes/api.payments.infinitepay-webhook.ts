@@ -15,7 +15,6 @@ export const Route = createFileRoute("/api/payments/infinitepay-webhook")({
             });
           }
 
-          // Identificadores comuns da InfinitePay (order_nsu / transaction status)
           const orderNsu = body.order_nsu || body.data?.order_nsu || body.nsu;
           const status = (body.status || body.data?.status || body.event || "").toLowerCase();
 
@@ -26,11 +25,9 @@ export const Route = createFileRoute("/api/payments/infinitepay-webhook")({
             });
           }
 
-          // Verificar se é status de aprovação/pago
           const isPaid = status === "approved" || status === "paid" || status === "payment.approved" || status === "success";
 
           if (!isPaid) {
-            // Pode ser pendente, expirado ou falho
             if (status === "failed" || status === "cancelled") {
               await supabaseAdmin
                 .from("payment_orders")
@@ -44,10 +41,10 @@ export const Route = createFileRoute("/api/payments/infinitepay-webhook")({
             });
           }
 
-          // 1. Localizar o pedido de pagamento
+          // 1. Localizar o pedido
           const { data: order, error: orderErr } = await supabaseAdmin
             .from("payment_orders")
-            .select("id, student_id, plan_id, amount, status, user_id")
+            .select("id, student_id, pt_student_id, plan_id, pt_plan_id, plan_type, amount, status, user_id")
             .eq("order_nsu", orderNsu)
             .maybeSingle();
 
@@ -58,7 +55,6 @@ export const Route = createFileRoute("/api/payments/infinitepay-webhook")({
             });
           }
 
-          // Idempotência: se já processado, retornar 200 imediatamente
           if (order.status === "paid") {
             return new Response(JSON.stringify({ message: "Order already processed" }), {
               status: 200,
@@ -66,13 +62,18 @@ export const Route = createFileRoute("/api/payments/infinitepay-webhook")({
             });
           }
 
+          const planType = order.plan_type || "studio";
+          const studentId = planType === "pt" ? order.pt_student_id : order.student_id;
+          const planId = planType === "pt" ? order.pt_plan_id : order.plan_id;
+
           // 2. Chamar RPC para efetivar o pagamento e a migração de plano
           const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc("apply_plan_migration_and_payment", {
-            p_student_id: order.student_id,
-            p_plan_id: order.plan_id,
+            p_student_id: studentId,
+            p_plan_id: planId,
             p_amount: order.amount,
             p_payment_method: "infinitepay",
             p_order_nsu: orderNsu,
+            p_plan_type: planType,
           });
 
           if (rpcErr) {
