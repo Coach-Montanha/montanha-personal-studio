@@ -94,10 +94,22 @@ export function FormSubmissionsDialog({
     return clean.replace(/_/g, " ");
   };
 
-  // Coleta todas as perguntas únicas em todas as submissões
+  // Coleta todas as perguntas definidas no formulário e cruza com as submissões
   const questionSummaries = useMemo(() => {
     const map = new Map<string, { label: string; responses: Array<{ respondent: string; answer: any; contact?: string; date: string }> }>();
 
+    // 1. Inicializa com todos os campos oficiais de cada formulário
+    for (const f of forms) {
+      if (Array.isArray(f.fields)) {
+        for (const fld of f.fields) {
+          if (fld.label && !map.has(fld.label)) {
+            map.set(fld.label, { label: fld.label, responses: [] });
+          }
+        }
+      }
+    }
+
+    // 2. Preenche as respostas registradas
     for (const sub of submissions) {
       const date = new Date(sub.createdAt).toLocaleDateString("pt-BR");
       for (const [key, val] of Object.entries(sub.answers || {})) {
