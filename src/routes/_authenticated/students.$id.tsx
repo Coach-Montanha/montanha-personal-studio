@@ -264,7 +264,7 @@ function StudentDetail() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="space-y-6">
+      <div className="space-y-6 w-full max-w-full min-w-0 overflow-x-hidden">
         <Link
           to="/students"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -389,8 +389,8 @@ function StudentDetail() {
           }
           className="space-y-4"
         >
-          <div className="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <TabsList className="inline-flex w-max justify-start gap-1">
+          <div className="-mx-1 overflow-x-auto px-1 pb-1.5 touch-pan-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <TabsList className="inline-flex w-max max-w-full justify-start gap-1 p-1 bg-muted/60 backdrop-blur rounded-xl border border-border/50">
               <TabsTrigger value="overview" className="gap-1.5 transition-all duration-200">
                 <TrendingUp className="h-3.5 w-3.5" /> Visão Geral
               </TabsTrigger>

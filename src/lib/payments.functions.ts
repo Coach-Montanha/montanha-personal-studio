@@ -73,7 +73,8 @@ export const getMyAvailablePlans = createServerFn({ method: "GET" })
     if (studioStudent) {
       let q = supabaseAdmin
         .from("plans")
-        .select("id, name, price, billing_cycle, sessions_per_week, description")
+        .select("id, name, price, billing_cycle, checkin_quota_amount, description, is_active")
+        .eq("is_active", true)
         .order("price", { ascending: true });
 
       if (studioStudent.user_id) {
@@ -86,7 +87,7 @@ export const getMyAvailablePlans = createServerFn({ method: "GET" })
         name: p.name,
         price: Number(p.price),
         billing_cycle: p.billing_cycle || "monthly",
-        sessions_count: p.sessions_per_week,
+        sessions_count: p.checkin_quota_amount,
         description: p.description,
         type: "studio",
       }));
@@ -116,23 +117,29 @@ export const getMyAvailablePlans = createServerFn({ method: "GET" })
     if (ptStudent) {
       let qPt = supabaseAdmin
         .from("pt_plans")
-        .select("id, name, price, billing_cycle, sessions_per_cycle, description")
-        .order("price", { ascending: true });
+        .select("id, name, price_per_month, package_price, billing_type, sessions_per_month, package_sessions, description, is_active")
+        .eq("is_active", true)
+        .order("price_per_month", { ascending: true });
 
       if (ptStudent.user_id) {
         qPt = qPt.eq("user_id", ptStudent.user_id);
       }
 
       const { data: ptPlansData } = await qPt;
-      ptPlans = (ptPlansData || []).map((p) => ({
-        id: p.id,
-        name: p.name,
-        price: Number(p.price),
-        billing_cycle: p.billing_cycle || "monthly",
-        sessions_count: p.sessions_per_cycle,
-        description: p.description,
-        type: "pt",
-      }));
+      ptPlans = (ptPlansData || []).map((p) => {
+        const price = Number(p.billing_type === "package" ? p.package_price : p.price_per_month || p.package_price || 0);
+        const cycle = p.billing_type === "package" ? "pacote" : "monthly";
+        const sessions = p.sessions_per_month || p.package_sessions || null;
+        return {
+          id: p.id,
+          name: p.name,
+          price,
+          billing_cycle: cycle,
+          sessions_count: sessions,
+          description: p.description,
+          type: "pt" as const,
+        };
+      });
 
       // Se não tinha plano do studio, verificar se tem plano de PT ativo
       if (!currentPlan && ptStudent.training_plan) {
