@@ -269,21 +269,13 @@ function PortalHome() {
             }
 
             if (!hasWorkouts && studio.data?.id) {
-              const { data: ptLinked } = await supabase
-                .from("pt_students")
-                .select("id,training_plan")
-                .eq("account_user_id", user!.id)
-                .maybeSingle();
-              if (ptLinked?.training_plan) {
-                hasWorkouts = true;
-              } else if (ptLinked?.id) {
-                const { count } = await supabase
-                  .from("pt_programs" as never)
-                  .select("id", { count: "exact", head: true })
-                  .eq("pt_student_id", ptLinked.id)
-                  .eq("is_deleted", false);
-                hasWorkouts = (count ?? 0) > 0;
-              }
+              // Verifica se há programas vinculados ao ID do aluno do Studio
+              const { count } = await supabase
+                .from("pt_programs" as never)
+                .select("id", { count: "exact", head: true })
+                .eq("pt_student_id", studio.data.id)
+                .eq("is_deleted", false);
+              hasWorkouts = (count ?? 0) > 0;
             }
 
             return { hasWorkouts };

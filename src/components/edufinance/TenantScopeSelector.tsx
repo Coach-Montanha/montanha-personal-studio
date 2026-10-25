@@ -49,7 +49,7 @@ export function TenantScopeSelector() {
           qc.invalidateQueries();
         }}
       >
-        <SelectTrigger className="h-8 text-xs">
+        <SelectTrigger className="h-8 text-xs bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

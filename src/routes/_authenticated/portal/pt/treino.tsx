@@ -116,12 +116,29 @@ function PTTreinoPage() {
     queryKey: ["pt-portal-treino", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase
+      // 1. Tenta aluno Personal Trainer
+      const { data: ptData } = await supabase
         .from("pt_students")
         .select("id,name,training_plan,user_id")
         .eq("account_user_id", user!.id)
         .maybeSingle();
-      return data;
+      if (ptData) return ptData;
+
+      // 2. Se for aluno Studio, busca na tabela students
+      const { data: studioData } = await supabase
+        .from("students")
+        .select("id,name,user_id")
+        .eq("account_user_id", user!.id)
+        .maybeSingle();
+      if (studioData) {
+        return {
+          id: studioData.id,
+          name: studioData.name,
+          training_plan: null,
+          user_id: studioData.user_id,
+        };
+      }
+      return null;
     },
   });
 

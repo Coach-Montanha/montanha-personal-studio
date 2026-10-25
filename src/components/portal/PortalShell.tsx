@@ -223,7 +223,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
         <div
           className={cn(
             "flex items-center gap-2 border-b border-sidebar-border transition-[padding] duration-200",
-            "min-h-16 h-[calc(4rem+var(--safe-area-inset-top,0px))] pt-[var(--safe-area-inset-top,0px)]",
+            "min-h-16 h-16 py-2",
             collapsed ? "md:justify-center md:px-2 px-5" : "px-5",
           )}
         >
@@ -408,10 +408,16 @@ export function PortalShell({ children }: { children: ReactNode }) {
           {children}
         </main>
 
+        {/* Faixa superior fixa (notch / status bar) preservando a área do topo */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[var(--safe-area-inset-top,0px)] bg-background border-b border-border/40 md:hidden"
+        />
+
         {/* Faixa ultra-fina em Liquid Glass cobrindo exatamente a área dos botões de navegação Android + 2px */}
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-[calc(env(safe-area-inset-bottom,48px)+2px)] max-h-[50px] bg-background/85 backdrop-blur-md border-t border-border/40 md:hidden"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-50 h-[calc(var(--safe-area-inset-bottom,40px)+2px)] max-h-[50px] bg-background/85 backdrop-blur-md border-t border-border/40 md:hidden"
         />
       </div>
 

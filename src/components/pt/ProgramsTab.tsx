@@ -97,8 +97,6 @@ type ViewFilter = "active" | "archived" | "deleted";
 
 export function ProgramsTab({ studentId, studioStudentId }: { studentId: string; studioStudentId?: string }) {
   const qc = useQueryClient();
-  // When studioStudentId is present, filter/insert by studio_student_id instead of pt_student_id
-  const filterCol = studioStudentId ? "studio_student_id" : "pt_student_id";
   const filterVal = studioStudentId ?? studentId;
   const [view, setView] = useState<ViewFilter>("active");
   const [programOpen, setProgramOpen] = useState(false);
@@ -179,12 +177,8 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
     queryFn: async () => {
       let q = supabase
         .from("pt_programs" as never)
-        .select("*");
-      if (studioStudentId) {
-        q = q.or(`studio_student_id.eq.${filterVal},pt_student_id.eq.${filterVal}`);
-      } else {
-        q = q.eq(filterCol as never, filterVal);
-      }
+        .select("*")
+        .eq("pt_student_id" as never, filterVal);
       if (view === "active") q = q.eq("is_archived", false).eq("is_deleted", false);
       else if (view === "archived") q = q.eq("is_archived", true).eq("is_deleted", false);
       else q = q.eq("is_deleted", true);
@@ -215,7 +209,7 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
       const { data } = await supabase
         .from("pt_training_executions" as never)
         .select("*")
-        .eq(filterCol as never, filterVal)
+        .eq("pt_student_id" as never, filterVal)
         .order("executed_at", { ascending: false });
       return (data ?? []) as unknown as Execution[];
     },
@@ -366,7 +360,7 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
     const { error } = await supabase.from("pt_training_executions" as never).insert({
       user_id: userId,
       training_day_id: day.id,
-      [filterCol]: filterVal,
+      pt_student_id: filterVal,
       executed_at: new Date().toISOString().slice(0, 10),
     } as never);
     if (error) return toast.error(error.message);
@@ -915,7 +909,6 @@ function ProgramDialog({
   studioStudentId?: string;
 }) {
   const qc = useQueryClient();
-  const filterCol = studioStudentId ? "studio_student_id" : "pt_student_id";
   const filterVal = studioStudentId ?? studentId;
   const [form, setForm] = useState<ProgramForm>({});
   const [currentStep, setCurrentStep] = useState(0);
@@ -966,9 +959,7 @@ function ProgramDialog({
     if (!userId) return;
     const payload = {
       user_id: userId,
-      [filterCol]: filterVal,
-      studio_student_id: studioStudentId || (filterCol === "studio_student_id" ? filterVal : null),
-      pt_student_id: (filterCol === "pt_student_id" ? filterVal : studentId) || null,
+      pt_student_id: filterVal,
       name: form.name,
       start_date: form.start_date,
       end_date: form.end_date || null,
@@ -1284,7 +1275,6 @@ function FeedbackDialog({
   executions: Execution[];
 }) {
   const qc = useQueryClient();
-  const filterCol = studioStudentId ? "studio_student_id" : "pt_student_id";
   const filterVal = studioStudentId ?? studentId;
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState<number>(0);
@@ -1312,7 +1302,7 @@ function FeedbackDialog({
       ({ error } = await supabase.from("pt_training_executions" as never).insert({
         user_id: userId,
         training_day_id: day.id,
-        [filterCol]: filterVal,
+        pt_student_id: filterVal,
         executed_at: new Date().toISOString().slice(0, 10),
         feedback,
         rating: rating || null,

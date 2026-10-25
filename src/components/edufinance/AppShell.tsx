@@ -241,7 +241,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-52 max-h-dvh overflow-y-auto md:overflow-visible flex-col bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 md:translate-x-0 scrollbar-none",
+          "fixed left-0 z-40 flex w-52 overflow-y-auto md:overflow-visible flex-col bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 md:translate-x-0 scrollbar-none",
+          "top-[var(--safe-area-inset-top,0px)] md:top-0 h-[calc(100dvh-var(--safe-area-inset-top,0px)-var(--safe-area-inset-bottom,0px))] md:h-dvh max-h-dvh",
           asideWidth,
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           collapsed && hoverExpand && hovering && "md:shadow-2xl",
@@ -249,7 +250,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       >
         <div
           className={cn(
-            "flex min-h-12 items-center gap-2 border-b border-sidebar-border py-2 pt-[calc(0.5rem+var(--safe-area-inset-top,0px))]",
+            "flex min-h-12 items-center gap-2 border-b border-sidebar-border py-2.5",
             iconOnly ? "justify-center px-1.5" : "px-3",
           )}
         >
@@ -360,7 +361,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div
           className={cn(
-            "border-t border-sidebar-border pb-[calc(3.5rem+var(--safe-area-inset-bottom,0px))] md:pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]",
+            "border-t border-sidebar-border pb-2 md:pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]",
             iconOnly ? "p-1.5" : "p-2.5",
           )}
         >
@@ -542,10 +543,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </main>
 
-        {/* Barra ultra-fina em Liquid Glass cobrindo exatamente a área dos botões de navegação Android + 2px */}
+        {/* Faixa superior cobrindo notch/status bar como limitador superior */}
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-[calc(env(safe-area-inset-bottom,48px)+2px)] max-h-[50px] bg-background/85 backdrop-blur-md border-t border-border/40 md:hidden"
+          className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[var(--safe-area-inset-top,0px)] bg-background border-b border-border/40 md:hidden"
+        />
+
+        {/* Barra ultra-fina em Liquid Glass cobrindo exatamente a área dos botões de navegação Android */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-50 h-[calc(var(--safe-area-inset-bottom,40px)+2px)] max-h-[50px] bg-background/85 backdrop-blur-md border-t border-border/40 md:hidden"
         />
       </div>
     </div>

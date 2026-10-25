@@ -203,7 +203,7 @@ export function TreinosPage() {
         p.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
         (!p.studio_student_id && !p.pt_student_id);
       const isStudio =
-        !isTemplate && (!!p.studio_student_id || (p.pt_students as any)?.notes?.includes("[Studio]"));
+        !isTemplate && (!!p.studio_student_id || (p.pt_students as any)?.notes?.includes("[Studio]") || (p.pt_students as any)?.notes?.includes("[Aluno Studio]"));
       const isPt = !isTemplate && !isStudio;
 
       // Filtro por tipo de aluno
@@ -224,13 +224,14 @@ export function TreinosPage() {
   const totalStudio = programs.filter(
     (p) =>
       p.pt_student_id !== "00000000-0000-0000-0000-000000000001" &&
-      (!!p.studio_student_id || (p.pt_students as any)?.notes?.includes("[Studio]"))
+      (!!p.studio_student_id || (p.pt_students as any)?.notes?.includes("[Studio]") || (p.pt_students as any)?.notes?.includes("[Aluno Studio]"))
   ).length;
   const totalPt = programs.filter(
     (p) =>
       p.pt_student_id !== "00000000-0000-0000-0000-000000000001" &&
       !p.studio_student_id &&
-      !(p.pt_students as any)?.notes?.includes("[Studio]")
+      !(p.pt_students as any)?.notes?.includes("[Studio]") &&
+      !(p.pt_students as any)?.notes?.includes("[Aluno Studio]")
   ).length;
   const totalModelos = programs.filter(
     (p) =>
@@ -519,7 +520,7 @@ export function TreinosPage() {
                   prog.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
                   (!prog.studio_student_id && !prog.pt_student_id);
                 const isStudio =
-                  !isTemplate && (!!prog.studio_student_id || (prog.pt_students as any)?.notes?.includes("[Studio]"));
+                  !isTemplate && (!!prog.studio_student_id || (prog.pt_students as any)?.notes?.includes("[Studio]") || (prog.pt_students as any)?.notes?.includes("[Aluno Studio]"));
                 const isPt = !isTemplate && !isStudio;
                 const aluno = isTemplate ? null : (prog.students || prog.pt_students);
                 const isExpanded = expandedProgramId === prog.id;
@@ -535,7 +536,7 @@ export function TreinosPage() {
                         <div className="space-y-1 min-w-0 flex-1">
                           <h3 className="font-semibold text-sm text-foreground line-clamp-1">{prog.name}</h3>
                           {aluno ? (
-                            <div className="flex items-center justify-between gap-1 max-w-full">
+                            <div className="flex items-center justify-between gap-1 max-w-full min-w-0">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -548,7 +549,7 @@ export function TreinosPage() {
                                   });
                                   setAlunoPerfilOpen(true);
                                 }}
-                                className="text-xs text-primary hover:underline font-semibold flex items-center gap-1.5 group text-left cursor-pointer transition-colors truncate"
+                                className="text-xs text-primary hover:underline font-semibold flex items-center gap-1.5 group text-left cursor-pointer transition-colors truncate min-w-0 flex-1"
                                 title="Clique para ver o perfil do aluno vinculado"
                               >
                                 <Link2 className="h-3 w-3 text-primary shrink-0" />
@@ -606,7 +607,7 @@ export function TreinosPage() {
                     </div>
 
                     {/* Ações da Rotina — Design sem estouro com dropdown de mais ações */}
-                    <div className="border-t border-border/60 pt-3 flex items-center justify-between gap-1">
+                    <div className="border-t border-border/60 pt-3 flex items-center justify-between gap-1 flex-wrap sm:flex-nowrap">
                       <div className="flex items-center gap-1.5 shrink-0">
                         <Button
                           type="button"
