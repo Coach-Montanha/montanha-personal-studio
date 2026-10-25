@@ -128,6 +128,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
         { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
         { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
+        { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
       ]
     : studioNav;
@@ -137,6 +138,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     : [
         { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
+        { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
       ];
 
@@ -146,6 +148,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
         { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
         { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
+        { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
       ];
 
@@ -305,7 +308,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           </div>
         </nav>
 
-        <div className={cn("border-t border-sidebar-border pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]", collapsed ? "md:p-2 p-3" : "p-3")}>
+        <div className={cn("border-t border-sidebar-border pb-[calc(3.5rem+var(--safe-area-inset-bottom,0px))] md:pb-[calc(1.25rem+var(--safe-area-inset-bottom,0px))]", collapsed ? "md:p-2 p-3" : "p-3")}>
           <div
             className={cn(
               "flex items-center gap-2 rounded-lg bg-sidebar-accent transition-[padding] duration-200",
@@ -412,6 +415,12 @@ export function PortalShell({ children }: { children: ReactNode }) {
         <main className="min-w-0 max-w-full flex-1 p-3 pb-[calc(5.5rem+var(--safe-area-inset-bottom,0px))] sm:p-6 sm:pb-8 lg:p-8 overflow-x-clip">
           {children}
         </main>
+
+        {/* Faixa ultra-fina em Liquid Glass cobrindo exatamente a área dos botões de navegação Android + 2px */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-30 h-[calc(env(safe-area-inset-bottom,48px)+2px)] max-h-[50px] bg-background/85 backdrop-blur-md border-t border-border/40 md:hidden"
+        />
       </div>
 
       <PortalAnnouncementPopup />
