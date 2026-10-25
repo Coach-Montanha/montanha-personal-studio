@@ -23,10 +23,12 @@ import {
   Users2,
   ChevronLeft,
   ChevronRight,
+  Trash2,
+  Unlink,
 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadFormSubmissionPdf } from "@/lib/form-submission-pdf";
-import { linkSubmissionToStudentServerFn, importGoogleFormSubmissionsServerFn } from "@/lib/forms.functions";
+import { linkSubmissionToStudentServerFn, importGoogleFormSubmissionsServerFn, deleteSubmissionServerFn } from "@/lib/forms.functions";
 
 export interface FormSubmissionItem {
   id: string;
@@ -239,6 +241,44 @@ export function FormSubmissionsDialog({
       toast.error(`Erro ao gerar PDF: ${err?.message || "falha inesperada"}`);
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleUnlinkStudent = async (submissionId: string) => {
+    setLinking(true);
+    try {
+      await linkSubmissionToStudentServerFn({
+        data: {
+          submissionId,
+          studentId: null,
+        },
+      });
+      toast.success("Vínculo desfeito com sucesso! A resposta agora está livre.");
+      onRefresh();
+    } catch (err: any) {
+      toast.error(`Erro ao desvincular: ${err?.message || "tente novamente"}`);
+    } finally {
+      setLinking(false);
+    }
+  };
+
+  const handleDeleteSubmission = async (submissionId: string) => {
+    if (!confirm("Tem certeza que deseja apagar permanentemente esta resposta do formulário?")) {
+      return;
+    }
+    setLinking(true);
+    try {
+      await deleteSubmissionServerFn({
+        data: { submissionId },
+      });
+      toast.success("Resposta do formulário apagada permanentemente!");
+      setSelectedSubmission(null);
+      setIndividualIdx(0);
+      onRefresh();
+    } catch (err: any) {
+      toast.error(`Erro ao apagar resposta: ${err?.message || "tente novamente"}`);
+    } finally {
+      setLinking(false);
     }
   };
 
@@ -672,13 +712,37 @@ export function FormSubmissionsDialog({
 
                     {/* Vínculo de Aluno */}
                     <div className="bg-card border border-border rounded-xl p-4 shadow-xs space-y-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Vínculo com Aluno Cadastrado
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Vínculo com Aluno Cadastrado
+                        </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive gap-1"
+                          onClick={() => handleDeleteSubmission(activeSubmission.id)}
+                          disabled={linking}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Apagar Resposta
+                        </Button>
+                      </div>
                       {activeSubmission.studentId ? (
-                        <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 p-2.5 rounded-lg border border-emerald-500/20">
-                          <CheckCircle2 className="h-4 w-4" />
-                          Esta resposta já está vinculada e sincronizada ao histórico do aluno no Studio.
+                        <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-xs">
+                          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
+                            <CheckCircle2 className="h-4 w-4 shrink-0" />
+                            <span>Vinculada ao aluno cadastrado no sistema.</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 gap-1"
+                            onClick={() => handleUnlinkStudent(activeSubmission.id)}
+                            disabled={linking}
+                          >
+                            <Unlink className="h-3 w-3" />
+                            Desvincular
+                          </Button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">

@@ -116,15 +116,20 @@ function StudentDetail() {
     loadStudentForms();
   }, [loadStudentForms]);
 
-  const { data: student } = useQuery({
+  const { data: student, isLoading: loadingStudent } = useQuery({
     queryKey: ["student", id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("students")
         .select("*, student_plan_history(*, plans(*))")
         .eq("id", id)
         .is("deleted_at", null)
-        .single();
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Erro ao buscar aluno:", error);
+        return null;
+      }
       return data;
     },
   });
@@ -230,8 +235,37 @@ function StudentDetail() {
       .map(([k, v]) => ({ month: formatMonthLabel(k), value: v }));
   }, [paid]);
 
+  if (loadingStudent) {
+    return (
+      <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-3">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <span className="text-xs">Carregando dados do aluno...</span>
+      </div>
+    );
+  }
+
   if (!student) {
-    return <div className="text-sm text-muted-foreground">Carregando…</div>;
+    return (
+      <div className="py-16 text-center max-w-md mx-auto space-y-4">
+        <div className="mx-auto h-12 w-12 rounded-2xl bg-muted/50 grid place-items-center text-muted-foreground">
+          <UserRound className="h-6 w-6" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-base font-bold text-foreground">Aluno não localizado no Studio</h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Este aluno pode ter sido migrado para o módulo de <strong>Personal Trainer</strong> ou o cadastro foi desativado.
+          </p>
+        </div>
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <Button asChild size="sm" variant="outline" className="text-xs">
+            <Link to="/students">Voltar para Alunos Studio</Link>
+          </Button>
+          <Button asChild size="sm" className="text-xs">
+            <Link to="/personal-trainer">Ver Alunos Personal Trainer</Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const currentPlan = student.student_plan_history?.find((h: any) => h.is_current);

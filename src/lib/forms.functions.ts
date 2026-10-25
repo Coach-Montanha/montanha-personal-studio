@@ -358,7 +358,7 @@ export const listSubmissionsServerFn = createServerFn({ method: "GET" }).handler
 });
 
 export const linkSubmissionToStudentServerFn = createServerFn({ method: "POST" })
-  .validator((input: { submissionId: string; studentId: string }) => input)
+  .validator((input: { submissionId: string; studentId: string | null }) => input)
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -377,7 +377,7 @@ export const linkSubmissionToStudentServerFn = createServerFn({ method: "POST" }
     const updatedMeta = {
       ...currentMeta,
       student_id: data.studentId,
-      linked_at: new Date().toISOString(),
+      linked_at: data.studentId ? new Date().toISOString() : null,
     };
 
     const { error: updateErr } = await supabaseAdmin
@@ -386,7 +386,25 @@ export const linkSubmissionToStudentServerFn = createServerFn({ method: "POST" }
       .eq("id", data.submissionId);
 
     if (updateErr) {
-      throw new Error(`Erro ao vincular resposta: ${updateErr.message}`);
+      throw new Error(`Erro ao atualizar vínculo: ${updateErr.message}`);
+    }
+
+    return { ok: true };
+  });
+
+export const deleteSubmissionServerFn = createServerFn({ method: "POST" })
+  .validator((input: { submissionId: string }) => input)
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error } = await supabaseAdmin
+      .from("pt_notifications")
+      .delete()
+      .eq("id", data.submissionId)
+      .eq("type", "form_submission");
+
+    if (error) {
+      throw new Error(`Erro ao excluir resposta: ${error.message}`);
     }
 
     return { ok: true };
