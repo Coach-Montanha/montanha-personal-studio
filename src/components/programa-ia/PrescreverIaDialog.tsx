@@ -465,11 +465,15 @@ export function PrescreverIaDialog({
     queryFn: async () => {
       const { data } = await supabase
         .from("pt_students" as never)
-        .select("id, name, email, status")
+        .select("id, name, email, status, notes")
+        .eq("status" as never, "active")
         .is("deleted_at" as never, null)
         .neq("id" as never, "00000000-0000-0000-0000-000000000001")
         .order("name" as never);
-      return (data || []) as Array<{ id: string; name: string; email: string | null }>;
+      const raw = (data || []) as Array<{ id: string; name: string; email: string | null; notes?: string | null }>;
+      return raw.filter(
+        (s) => !s.notes || (!s.notes.includes("[Studio]") && !s.notes.includes("[Aluno Studio]"))
+      );
     },
   });
 

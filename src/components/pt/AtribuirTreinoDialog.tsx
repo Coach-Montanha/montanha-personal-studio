@@ -62,13 +62,16 @@ export function AtribuirTreinoDialog({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pt_students" as never)
-        .select("id, name, email, status, deleted_at" as never)
+        .select("id, name, email, status, notes, deleted_at" as never)
         .eq("status" as never, "active")
         .neq("id" as never, "00000000-0000-0000-0000-000000000001")
         .is("deleted_at" as never, null)
         .order("name" as never);
       if (error) throw error;
-      return (data || []) as Array<{ id: string; name: string; email: string | null }>;
+      const raw = (data || []) as Array<{ id: string; name: string; email: string | null; notes?: string | null }>;
+      return raw.filter(
+        (s) => !s.notes || (!s.notes.includes("[Studio]") && !s.notes.includes("[Aluno Studio]"))
+      );
     },
   });
 
