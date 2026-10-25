@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { getAiKeyServerFn, saveAiKeyServerFn } from "@/lib/ai-key.functions";
 import {
   ChevronDown,
   Info,
@@ -436,6 +437,8 @@ export function PrescreverIaDialog({
   const qc = useQueryClient();
   const gerar = useServerFn(prescribeTrainingWithAi);
   const prepararUpload = useServerFn(gerarUploadTreinoUrl);
+  const persistAiKey = useServerFn(saveAiKeyServerFn);
+  const fetchServerAiKey = useServerFn(getAiKeyServerFn);
 
   // Estados para criação avulsa / sem programa prévio
   const [nomePrograma, setNomePrograma] = useState(programa?.titulo || (programa as any)?.name || "Nova Rotina de Treino");
@@ -535,11 +538,13 @@ export function PrescreverIaDialog({
   const [isExtractingPlanilha, setIsExtractingPlanilha] = useState(false);
   const [showPlanilhaPreview, setShowPlanilhaPreview] = useState(false);
 
-  // Chave local do Google Gemini (BYOK - Bring Your Own Key para casos sem chave no servidor)
+  // Chave do Google Gemini (BYOK consolidada e sincronizada com banco e múltiplos storages)
   const [geminiApiKey, setGeminiApiKey] = useState(() => {
     if (typeof window !== "undefined") {
       return (
         localStorage.getItem("montanha_gemini_api_key") ||
+        localStorage.getItem("edufinance.aiApiKey") ||
+        localStorage.getItem("gemini_api_key") ||
         (import.meta as any)?.env?.VITE_GEMINI_API_KEY ||
         ""
       );
@@ -548,6 +553,22 @@ export function PrescreverIaDialog({
   });
   const [tempApiKey, setTempApiKey] = useState(geminiApiKey);
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+
+  // Auto-hidratação a partir do banco Supabase ao abrir o diálogo
+  useEffect(() => {
+    if (isOpen && !geminiApiKey) {
+      fetchServerAiKey().then((res) => {
+        if (res?.apiKey) {
+          setGeminiApiKey(res.apiKey);
+          setTempApiKey(res.apiKey);
+          localStorage.setItem("montanha_gemini_api_key", res.apiKey);
+          localStorage.setItem("edufinance.aiApiKey", res.apiKey);
+          localStorage.setItem("gemini_api_key", res.apiKey);
+        }
+      }).catch(() => {});
+    }
+  }, [isOpen, geminiApiKey, fetchServerAiKey]);
+
   useEffect(() => {
     const envKey = (import.meta as any)?.env?.VITE_GEMINI_API_KEY;
     if (!geminiApiKey && envKey) {
@@ -555,16 +576,23 @@ export function PrescreverIaDialog({
     }
   }, [geminiApiKey]);
 
-
   const salvarApiKey = (novaChave: string) => {
     const limpa = novaChave.trim();
     setGeminiApiKey(limpa);
     if (typeof window !== "undefined") {
       if (limpa) {
         localStorage.setItem("montanha_gemini_api_key", limpa);
-        toast.success("Chave Gemini salva localmente com sucesso!");
+        localStorage.setItem("edufinance.aiApiKey", limpa);
+        localStorage.setItem("gemini_api_key", limpa);
+        persistAiKey({ data: { apiKey: limpa } }).catch((err) => {
+          console.warn("Erro ao salvar chave no Supabase:", err);
+        });
+        toast.success("Chave Gemini salva e consolidada permanentemente!");
       } else {
         localStorage.removeItem("montanha_gemini_api_key");
+        localStorage.removeItem("edufinance.aiApiKey");
+        localStorage.removeItem("gemini_api_key");
+        persistAiKey({ data: { apiKey: "" } }).catch(() => {});
         toast.info("Chave Gemini removida.");
       }
     }
@@ -962,7 +990,15 @@ export function PrescreverIaDialog({
       try {
         const res = await gerar({
           data: {
-            apiKey: geminiApiKey.trim() || (import.meta as any)?.env?.VITE_GEMINI_API_KEY || undefined,
+            apiKey: geminiApiKey.trim() ||
+              (typeof window !== "undefined"
+                ? localStorage.getItem("montanha_gemini_api_key") ||
+                  localStorage.getItem("edufinance.aiApiKey") ||
+                  localStorage.getItem("gemini_api_key") ||
+                  ""
+                : "") ||
+              (import.meta as any)?.env?.VITE_GEMINI_API_KEY ||
+              undefined,
             programId: programa?.id || "novo-programa",
             studentId: selectedStudentId || assignedStudent?.id || null,
             prompt: prompt.trim(),
@@ -1960,6 +1996,48 @@ export function PrescreverIaDialog({
                 </Button>
               </div>
             ) : (
+              <div className="space-y-3">
+                {(!geminiApiKey || showApiKeyInput) && (
+                  <div className="rounded-xl border border-primary/40 bg-primary/10 p-3.5 space-y-2 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                        <Key className="h-4 w-4 text-primary" />
+                        <span>Configurar Chave Google Gemini</span>
+                      </div>
+                      <a
+                        href="https://aistudio.google.com/app/apikey"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-primary hover:underline font-semibold"
+                      >
+                        Obter Chave Gratuita ↗
+                      </a>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-tight">
+                      Insira sua chave do Google Gemini. Ela será consolidada e salva permanentemente neste e em todos os seus dispositivos.
+                    </p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="password"
+                        value={tempApiKey}
+                        onChange={(e) => setTempApiKey(e.target.value)}
+                        placeholder="Cole sua chave AIzaSy..."
+                        className="flex-1 h-9 rounded-lg border border-border bg-background px-3 text-xs font-mono"
+                        autoFocus={showApiKeyInput}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="default"
+                        onClick={() => salvarApiKey(tempApiKey)}
+                        className="h-9 px-4 text-xs font-semibold"
+                      >
+                        Salvar Chave
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
               <Button
                 onClick={() => gerarMut.mutate()}
                 disabled={!podeGerar}
@@ -1979,6 +2057,7 @@ export function PrescreverIaDialog({
                   </>
                 )}
               </Button>
+              </div>
             )}
           </div>
 

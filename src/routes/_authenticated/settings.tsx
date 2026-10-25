@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getEmailSettings, saveEmailSettings } from "@/lib/email.functions";
+import { getAiKeyServerFn, saveAiKeyServerFn } from "@/lib/ai-key.functions";
 import { PaymentMethodsSettings } from "@/components/edufinance/PaymentMethodsSettings";
 import { useFontSize, FONT_SIZE_LABEL, FONT_SIZE_PX, type FontSizeKey } from "@/hooks/use-font-size";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -169,11 +170,33 @@ function GeneralSettings() {
       ? localStorage.getItem("edufinance.gcalClientId") ?? ""
       : "",
   );
-  const [aiApiKey, setAiApiKey] = useState(
-    typeof window !== "undefined" ? localStorage.getItem("edufinance.aiApiKey") ?? "" : "",
-  );
+  const persistAiKey = useServerFn(saveAiKeyServerFn);
+  const fetchServerAiKey = useServerFn(getAiKeyServerFn);
+
+  const [aiApiKey, setAiApiKey] = useState(() => {
+    if (typeof window !== "undefined") {
+      return (
+        localStorage.getItem("montanha_gemini_api_key") ||
+        localStorage.getItem("edufinance.aiApiKey") ||
+        localStorage.getItem("gemini_api_key") ||
+        ""
+      );
+    }
+    return "";
+  });
   const [showAiApiKey, setShowAiApiKey] = useState(false);
   const { theme, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    fetchServerAiKey().then((res) => {
+      if (res?.apiKey) {
+        setAiApiKey(res.apiKey);
+        localStorage.setItem("edufinance.aiApiKey", res.apiKey);
+        localStorage.setItem("montanha_gemini_api_key", res.apiKey);
+        localStorage.setItem("gemini_api_key", res.apiKey);
+      }
+    }).catch(() => {});
+  }, [fetchServerAiKey]);
 
   function saveGcal() {
     localStorage.setItem("edufinance.gcalApiKey", gcalApiKey);
@@ -182,13 +205,22 @@ function GeneralSettings() {
     toast.success("Configurações do Google Calendar salvas!");
   }
 
-  function saveAiKey() {
-    if (aiApiKey.trim()) {
-      localStorage.setItem("edufinance.aiApiKey", aiApiKey.trim());
-      toast.success("Chave da IA salva localmente!");
+  async function saveAiKey() {
+    const limpa = aiApiKey.trim();
+    if (limpa) {
+      localStorage.setItem("edufinance.aiApiKey", limpa);
+      localStorage.setItem("montanha_gemini_api_key", limpa);
+      localStorage.setItem("gemini_api_key", limpa);
+      await persistAiKey({ data: { apiKey: limpa } }).catch((err) => {
+        console.warn("Erro ao consolidar chave no servidor:", err);
+      });
+      toast.success("Chave da IA salva e consolidada permanentemente!");
     } else {
       localStorage.removeItem("edufinance.aiApiKey");
-      toast.success("Chave da IA removida.");
+      localStorage.removeItem("montanha_gemini_api_key");
+      localStorage.removeItem("gemini_api_key");
+      await persistAiKey({ data: { apiKey: "" } }).catch(() => {});
+      toast.info("Chave da IA removida.");
     }
   }
 

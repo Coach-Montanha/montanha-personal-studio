@@ -351,9 +351,50 @@ function getAiKey(): { geminiKey?: string; lovableKey?: string } {
  *  2. Lovable AI Gateway (LOVABLE_API_KEY)
  *  3. Ecosystem Fallback Router (Groq, Cerebras, OpenRouter, SambaNova)
  */
+async function fetchDbAiKey(): Promise<string | undefined> {
+  try {
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !serviceKey) return undefined;
+
+    // 1. Tenta studio_settings (campo logo_studio_base64 que guarda AI_KEY:xxx)
+    const res = await fetch(`${supabaseUrl}/rest/v1/studio_settings?select=logo_studio_base64&limit=1`, {
+      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+    });
+    if (res.ok) {
+      const data: any = await res.json();
+      const val = data?.[0]?.logo_studio_base64;
+      if (typeof val === "string" && val.startsWith("AI_KEY:")) {
+        const parsed = val.replace("AI_KEY:", "").trim();
+        if (parsed.length > 0) return parsed;
+      }
+    }
+
+    // 2. Tenta ai_image_cache (onde prompt_hash = 'gemini_api_key')
+    const cacheRes = await fetch(`${supabaseUrl}/rest/v1/ai_image_cache?select=image_path&prompt_hash=eq.gemini_api_key&limit=1`, {
+      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+    });
+    if (cacheRes.ok) {
+      const data: any = await cacheRes.json();
+      const val = data?.[0]?.image_path;
+      if (typeof val === "string" && val.trim().length > 0) {
+        return val.trim();
+      }
+    }
+  } catch (err) {
+    console.warn("[ai-gateway] Erro ao buscar chave no banco:", err);
+  }
+  return undefined;
+}
+
 export async function callLovableAiJson<T = any>(args: CallAiJsonArgs): Promise<CallAiJsonResult<T>> {
   const { geminiKey, lovableKey } = getAiKey();
-  const effectiveGeminiKey = args.apiKey?.trim() || geminiKey;
+  let effectiveGeminiKey = args.apiKey?.trim() || geminiKey;
+
+  if (!effectiveGeminiKey) {
+    const dbKey = await fetchDbAiKey();
+    if (dbKey) effectiveGeminiKey = dbKey;
+  }
 
   const promptChars = args.prompt.length + (args.system?.length ?? 0);
   if (promptChars > MAX_PROMPT_CHARS) {
