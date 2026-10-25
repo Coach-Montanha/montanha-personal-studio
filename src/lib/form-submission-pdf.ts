@@ -1,12 +1,17 @@
+import { DEFAULT_STUDIO_FORMS } from "@/lib/forms-definitions";
+
 export type FormSubmissionPdfData = {
   formTitle: string;
-  formSlug: string;
+  formSlug?: string;
   respondentName: string;
   respondentContact?: string;
-  submittedAt: string;
-  protocol: string;
+  submittedAt?: string;
+  createdAt?: string;
+  protocol?: string;
+  submissionId?: string;
   answers: Record<string, any>;
   businessName?: string;
+  fieldLabels?: Record<string, string>;
 };
 
 export async function downloadFormSubmissionPdf(data: FormSubmissionPdfData) {
@@ -57,8 +62,11 @@ export async function downloadFormSubmissionPdf(data: FormSubmissionPdfData) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(71, 85, 105);
-  doc.text(`Protocolo: ${data.protocol}`, margin + 14, y + 38);
-  doc.text(`Data/Hora: ${new Date(data.submittedAt).toLocaleString("pt-BR")}`, margin + 260, y + 38);
+  const protocolNumber = data.protocol || (data.submissionId ? `SUB-${data.submissionId.slice(0, 8).toUpperCase()}` : "SUB-OFICIAL");
+  const submissionDate = data.submittedAt || data.createdAt || new Date().toISOString();
+
+  doc.text(`Protocolo: ${protocolNumber}`, margin + 14, y + 38);
+  doc.text(`Data/Hora: ${new Date(submissionDate).toLocaleString("pt-BR")}`, margin + 260, y + 38);
 
   y += 68;
 
@@ -96,13 +104,37 @@ export async function downloadFormSubmissionPdf(data: FormSubmissionPdfData) {
   doc.text("RESPOSTAS REGISTRADAS:", margin, y);
   y += 14;
 
+  // Helper para resolver o nome legível da pergunta
+  const resolveFieldLabel = (rawKey: string): string => {
+    if (data.fieldLabels) {
+      if (data.fieldLabels[rawKey]) return data.fieldLabels[rawKey];
+      const withoutF = rawKey.replace(/^f_/, "");
+      if (data.fieldLabels[withoutF]) return data.fieldLabels[withoutF];
+    }
+
+    // Busca nas definições padrão
+    for (const form of DEFAULT_STUDIO_FORMS) {
+      const match = form.fields.find(
+        (f) =>
+          f.id === rawKey ||
+          f.id === "f_" + rawKey ||
+          f.id.replace(/^f_/, "") === rawKey.replace(/^f_/, "")
+      );
+      if (match?.label) return match.label;
+    }
+
+    const clean = rawKey.replace(/^f_/, "");
+    if (/^\d+$/.test(clean)) {
+      return `Pergunta ${clean}`;
+    }
+    return clean.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
   const tableRows: string[][] = [];
   for (const [key, value] of Object.entries(data.answers)) {
     if (key.startsWith("_")) continue; // ignora metadados internos como _protocol
 
-    const labelFormatted = key
-      .replace(/_/g, " ")
-      .replace(/\b\w/g, (l) => l.toUpperCase());
+    const labelFormatted = resolveFieldLabel(key);
 
     let valStr = "";
     if (typeof value === "boolean") {
@@ -149,7 +181,7 @@ export async function downloadFormSubmissionPdf(data: FormSubmissionPdfData) {
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
   doc.text(
-    `Documento gerado eletronicamente pelo Montanha Personal Studio em ${new Date().toLocaleString("pt-BR")}. Protocolo de Validade: ${data.protocol}`,
+    `Documento gerado eletronicamente pelo Montanha Personal Studio em ${new Date().toLocaleString("pt-BR")}. Protocolo de Validade: ${protocolNumber}`,
     margin,
     footerY + 12
   );
