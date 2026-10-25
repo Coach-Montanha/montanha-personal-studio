@@ -163,7 +163,7 @@ function PerfilPage() {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="w-full max-w-2xl space-y-6 min-w-0 overflow-x-hidden">
       <header>
         <p className="text-overline mb-1.5 text-muted-foreground">
           {userTypes?.studio && userTypes?.pt ? "Portal Híbrido" : "Área do aluno"}
@@ -177,11 +177,11 @@ function PerfilPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <Label className="text-overline text-muted-foreground">Nome</Label>
-            <div className="text-body text-foreground">{me?.name ?? "—"}</div>
+            <div className="text-body text-foreground break-words">{me?.name ?? "—"}</div>
           </div>
           <div>
             <Label className="text-overline text-muted-foreground">Email</Label>
-            <div className="text-body text-foreground">{me?.email ?? "—"}</div>
+            <div className="text-body text-foreground break-all">{me?.email ?? "—"}</div>
           </div>
           <div>
             <Label className="text-overline text-muted-foreground">Telefone</Label>

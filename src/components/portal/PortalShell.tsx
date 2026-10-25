@@ -223,7 +223,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
       <aside
         aria-label="Navegação principal"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-60 max-h-dvh flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 ease-out md:sticky md:top-0 md:h-dvh md:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-60 max-h-dvh flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 ease-out md:sticky md:top-0 md:h-dvh md:translate-x-0 overflow-hidden",
+          "top-[var(--safe-area-inset-top,0px)] md:top-0 h-[calc(100dvh-var(--safe-area-inset-top,0px)-var(--safe-area-inset-bottom,0px))] md:h-dvh",
           collapsed ? "md:w-14" : "md:w-60",
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}

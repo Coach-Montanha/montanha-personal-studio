@@ -2,7 +2,7 @@
 // Atualização 100% silenciosa e automática.
 // Navegação de páginas (HTML) sempre busca direto da rede para garantir que o aluno veja sempre a versão mais recente.
 
-const CACHE_NAME = "coach-montanha-pwa-v5";
+const CACHE_NAME = "coach-montanha-pwa-v6";
 
 const STATIC_SHELL = [
   "/manifest.webmanifest",
