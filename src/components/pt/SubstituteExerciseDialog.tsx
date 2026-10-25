@@ -176,7 +176,7 @@ export function SubstituteExerciseDialog({
               </div>
             ) : (
               <div className="space-y-1">
-                {filtered.map((item) => {
+                {filtered.slice(0, 50).map((item) => {
                   const isCurrent = item.name.toLowerCase().trim() === currentExerciseName.toLowerCase().trim();
                   return (
                     <div

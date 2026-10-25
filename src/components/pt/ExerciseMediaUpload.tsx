@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, Play, VideoOff, X, Loader2, Search, AlertCircle } from "lucide-react";
+import { Upload, Play, VideoOff, X, Loader2, Search, AlertCircle, RotateCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { uploadVideoThumbnail } from "@/lib/thumbnail-utils";
