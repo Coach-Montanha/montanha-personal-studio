@@ -1155,7 +1155,8 @@ export function PrescreverIaDialog({
 
         const newProgPayload: any = {
           user_id: userId,
-          pt_student_id: finalStudentId,
+          pt_student_id: isStudioStudent ? (studioStudentId || selectedStudentId || finalStudentId) : finalStudentId,
+          studio_student_id: isStudioStudent ? (studioStudentId || selectedStudentId) : null,
           name: progTitle,
           category: "hypertrophy",
           level: "intermediate",

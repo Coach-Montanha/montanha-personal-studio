@@ -967,6 +967,8 @@ function ProgramDialog({
     const payload = {
       user_id: userId,
       [filterCol]: filterVal,
+      studio_student_id: studioStudentId || (filterCol === "studio_student_id" ? filterVal : null),
+      pt_student_id: (filterCol === "pt_student_id" ? filterVal : studentId) || null,
       name: form.name,
       start_date: form.start_date,
       end_date: form.end_date || null,
