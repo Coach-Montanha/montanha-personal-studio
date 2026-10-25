@@ -44,7 +44,15 @@ export function parseDayMeta(
     .replace(/\[PRESENCIAL\]/gi, "")
     .replace(/\[COACH\]/gi, "")
     .replace(/\[SEMANA:\d+\]/gi, "")
+    .replace(/\[SEMANA_LABEL:[^\]]+\]/gi, "")
     .trim();
+
+  // 2. Identificar se há rótulo customizado de semana
+  let customWeekLabel: string | undefined = undefined;
+  const labelCustomMatch = desc.match(/\[SEMANA_LABEL:([^\]]+)\]/i);
+  if (labelCustomMatch && labelCustomMatch[1].trim()) {
+    customWeekLabel = labelCustomMatch[1].trim();
+  }
 
   // 2. Identificar o número da Semana
   let weekNumber = 1;
@@ -73,6 +81,7 @@ export function parseDayMeta(
   }
 
   return {
+    customWeekLabel,
     weekNumber: Math.max(1, weekNumber),
     isWithCoach,
     cleanDescription,
@@ -144,11 +153,15 @@ export function buildDayDescription(options: {
   description?: string | null;
   isWithCoach?: boolean;
   weekNumber?: number;
+  customWeekLabel?: string;
 }): string {
   const parts: string[] = [];
 
   if (options.isWithCoach) {
     parts.push("[COM_COACH]");
+  }
+  if (options.customWeekLabel && options.customWeekLabel.trim()) {
+    parts.push(`[SEMANA_LABEL:${options.customWeekLabel.trim()}]`);
   }
   if (options.weekNumber && options.weekNumber > 0) {
     parts.push(`[SEMANA:${options.weekNumber}]`);
@@ -160,6 +173,7 @@ export function buildDayDescription(options: {
     .replace(/\[PRESENCIAL\]/gi, "")
     .replace(/\[COACH\]/gi, "")
     .replace(/\[SEMANA:\d+\]/gi, "")
+    .replace(/\[SEMANA_LABEL:[^\]]+\]/gi, "")
     .trim();
 
   if (clean) {

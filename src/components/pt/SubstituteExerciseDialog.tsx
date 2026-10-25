@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Video, Dumbbell, Check, Loader2, ArrowLeftRight } from "lucide-react";
 import {
@@ -47,6 +47,12 @@ export function SubstituteExerciseDialog({
   const [search, setSearch] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("Todos");
   const [substituting, setSubstituting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setSearch(currentExerciseName || "");
+    }
+  }, [open, currentExerciseName]);
 
   const { data: library = [], isLoading } = useQuery({
     queryKey: ["exercise-library-full"],

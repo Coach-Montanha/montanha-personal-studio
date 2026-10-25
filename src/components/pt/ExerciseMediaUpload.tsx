@@ -112,6 +112,15 @@ export function ExerciseMediaUpload({
           <p className="text-xs font-semibold text-foreground">Demonstração indisponível</p>
           <p className="text-[10px] text-muted-foreground mb-2">O arquivo não respondeu ou o link expirou.</p>
           <div className="flex flex-wrap items-center justify-center gap-1.5">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setMediaError(false)}
+              className="h-7 text-xs px-2.5 bg-background/50 hover:bg-background"
+            >
+              <RotateCw className="h-3 w-3 mr-1" /> Tentar Novamente
+            </Button>
             {onOpenLibrary && (
               <Button
                 type="button"
@@ -149,10 +158,11 @@ export function ExerciseMediaUpload({
         ) : isVideo ? (
           <video
             src={mediaUrl}
-            poster={thumbnailUrl || `${mediaUrl}#t=0.001`}
+            poster={thumbnailUrl || undefined}
             controls
             playsInline
             preload="metadata"
+            crossOrigin="anonymous"
             className="h-full w-full object-cover"
             onError={() => setMediaError(true)}
           />
