@@ -13,6 +13,7 @@ import {
   Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWakeLock } from "@/hooks/use-wake-lock";
 
 export type TimerMode = "EMOM" | "AMRAP" | "Tabata" | "Livre";
 
@@ -70,6 +71,7 @@ export function TrainingTimerDialog({
 
   // Running state
   const [running, setRunning] = useState(false);
+  useWakeLock(running);
   const [secondsLeft, setSecondsLeft] = useState(60); // current countdown
   const [amrapRounds, setAmrapRounds] = useState(0);
 
@@ -81,6 +83,28 @@ export function TrainingTimerDialog({
   const [livreSeconds, setLivreSeconds] = useState(0);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const workerRef = useRef<Worker | null>(null);
+  const lastTickTimeRef = useRef<number>(Date.now());
+  const emomIntervalMinutesRef = useRef(emomIntervalMinutes);
+  emomIntervalMinutesRef.current = emomIntervalMinutes;
+  const totalBlocksRef = useRef(totalBlocks);
+  totalBlocksRef.current = totalBlocks;
+  const currentBlockRef = useRef(currentBlock);
+  currentBlockRef.current = currentBlock;
+  const tabataWorkSecRef = useRef(tabataWorkSec);
+  tabataWorkSecRef.current = tabataWorkSec;
+  const tabataRestSecRef = useRef(tabataRestSec);
+  tabataRestSecRef.current = tabataRestSec;
+  const tabataRoundsRef = useRef(tabataRounds);
+  tabataRoundsRef.current = tabataRounds;
+  const currentTabataRoundRef = useRef(currentTabataRound);
+  currentTabataRoundRef.current = currentTabataRound;
+  const isTabataWorkRef = useRef(isTabataWork);
+  isTabataWorkRef.current = isTabataWork;
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const runningRef = useRef(running);
+  runningRef.current = running;
 
   // Computed total blocks for EMOM
   const totalBlocks = Math.max(1, Math.ceil(totalMinutes / emomIntervalMinutes));
@@ -116,79 +140,157 @@ export function TrainingTimerDialog({
     resetTimer();
   }, [mode, totalMinutes, emomIntervalMinutes, tabataRounds, tabataWorkSec, tabataRestSec]);
 
-  // Main Timer tick
+  // Main Timer tick - Web Worker + VisibilitySync para rodar em segundo plano
   useEffect(() => {
-    if (!running) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+    // Inicializa Web Worker inline para evitar estrangulamento de timer pelo navegador quando fora de tela
+    try {
+      if (typeof window !== "undefined" && window.Worker && !workerRef.current) {
+        const workerBlob = new Blob([
+          `
+          let timer = null;
+          self.onmessage = function(e) {
+            if (e.data === "start") {
+              if (timer) clearInterval(timer);
+              timer = setInterval(() => self.postMessage("tick"), 1000);
+            } else if (e.data === "stop") {
+              if (timer) clearInterval(timer);
+              timer = null;
+            }
+          };
+          `
+        ], { type: "application/javascript" });
+        const workerUrl = URL.createObjectURL(workerBlob);
+        workerRef.current = new Worker(workerUrl);
+      }
+    } catch {
+      // Fallback gracioso se Workers forem restritos
+    }
+
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
+        workerRef.current = null;
+      }
+    };
+  }, []);
+
+  const tickStep = (elapsedSeconds = 1) => {
+    if (elapsedSeconds <= 0) return;
+
+    if (modeRef.current === "Livre") {
+      setLivreSeconds((prev) => prev + elapsedSeconds);
       return;
     }
 
-    intervalRef.current = setInterval(() => {
-      if (mode === "Livre") {
-        setLivreSeconds((prev) => prev + 1);
-        return;
-      }
-
-      setSecondsLeft((prev) => {
+    setSecondsLeft((prev) => {
+      let remaining = prev;
+      for (let s = 0; s < elapsedSeconds; s++) {
         // Countdown beeps at 3, 2, 1
-        if (prev <= 4 && prev > 1) {
+        if (remaining <= 4 && remaining > 1) {
           triggerBeep(600, 0.1);
         }
 
-        if (prev <= 1) {
-          // Transition logic
-          if (mode === "EMOM") {
-            if (currentBlock >= totalBlocks) {
-              // EMOM Finished!
+        if (remaining <= 1) {
+          if (modeRef.current === "EMOM") {
+            if (currentBlockRef.current >= totalBlocksRef.current) {
               triggerBeep(1200, 0.5);
               setRunning(false);
               return 0;
             }
-            // Next block
             triggerBeep(950, 0.35);
             setCurrentBlock((b) => b + 1);
-            return emomIntervalMinutes * 60;
+            remaining = emomIntervalMinutesRef.current * 60;
+            continue;
           }
 
-          if (mode === "AMRAP") {
-            // AMRAP Finished!
+          if (modeRef.current === "AMRAP") {
             triggerBeep(1200, 0.6);
             setRunning(false);
             return 0;
           }
 
-          if (mode === "Tabata") {
-            if (isTabataWork) {
-              // Switch to rest
+          if (modeRef.current === "Tabata") {
+            if (isTabataWorkRef.current) {
               triggerBeep(800, 0.3);
               setIsTabataWork(false);
-              return tabataRestSec;
+              remaining = tabataRestSecRef.current;
+              continue;
             } else {
-              // Rest ended, check if last round
-              if (currentTabataRound >= tabataRounds) {
+              if (currentTabataRoundRef.current >= tabataRoundsRef.current) {
                 triggerBeep(1200, 0.6);
                 setRunning(false);
                 return 0;
               }
-              // Next round work
               triggerBeep(1000, 0.35);
               setIsTabataWork(true);
               setCurrentTabataRound((r) => r + 1);
-              return tabataWorkSec;
+              remaining = tabataWorkSecRef.current;
+              continue;
             }
           }
         }
 
-        return prev - 1;
-      });
-    }, 1000);
+        remaining -= 1;
+      }
+      return remaining;
+    });
+  };
+
+  // Sincronização do temporizador ativo (Worker + Interval fallback + Page Visibility)
+  useEffect(() => {
+    if (!running) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (workerRef.current) workerRef.current.postMessage("stop");
+      return;
+    }
+
+    lastTickTimeRef.current = Date.now();
+
+    const handleTick = () => {
+      const now = Date.now();
+      const deltaSec = Math.floor((now - lastTickTimeRef.current) / 1000);
+      if (deltaSec >= 1) {
+        lastTickTimeRef.current = now;
+        tickStep(deltaSec);
+      }
+    };
+
+    // 1. Worker (executa com precisão mesmo se a aba estiver oculta ou tela minimizada)
+    if (workerRef.current) {
+      workerRef.current.onmessage = () => {
+        handleTick();
+      };
+      workerRef.current.postMessage("start");
+    } else {
+      // 2. Fallback de intervalo tradicional
+      intervalRef.current = setInterval(() => {
+        handleTick();
+      }, 1000);
+    }
+
+    // 3. Listener de retorno de visibilidade (Page Visibility API)
+    // Se o SO colocou a aba em sleep profundo, calcula os segundos perdidos e avança o timer imediatamente
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && runningRef.current) {
+        handleTick();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleVisibilityChange);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (workerRef.current) {
+        workerRef.current.postMessage("stop");
+        workerRef.current.onmessage = null;
+      }
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleVisibilityChange);
     };
-  }, [running, mode, currentBlock, totalBlocks, emomIntervalMinutes, isTabataWork, currentTabataRound, tabataRounds, tabataWorkSec, tabataRestSec, soundEnabled]);
+  }, [running]);
 
-  // Format MM : SS
+    // Format MM : SS
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;

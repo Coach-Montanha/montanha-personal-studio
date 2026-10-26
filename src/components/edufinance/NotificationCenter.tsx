@@ -376,6 +376,7 @@ export function NotificationCenter() {
       case "checkin":
         return <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />;
       case "class_reminder_20m":
+      case "class_reminder_19m30s":
         return <Calendar className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />;
       case "training_complete":
         return <Dumbbell className="h-4 w-4 text-primary shrink-0 mt-0.5" />;

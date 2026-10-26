@@ -134,7 +134,7 @@ export const Route = createFileRoute("/api/cron/pre-class")({
             JSON.stringify({
               ok: true,
               date: todayIso,
-              time: nowBrt.toISOString(),
+              time: new Date().toISOString(),
               notified: notifiedList,
             }),
             {
