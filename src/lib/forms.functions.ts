@@ -107,6 +107,7 @@ export const submitFormServerFn = createServerFn({ method: "POST" })
       formTitle: string;
       respondentName: string;
       respondentContact: string;
+      studentId?: string | null;
       answers: Record<string, any>;
     }) => input
   )
@@ -155,6 +156,7 @@ export const submitFormServerFn = createServerFn({ method: "POST" })
         form_title: data.formTitle,
         respondent_name: data.respondentName,
         respondent_contact: data.respondentContact,
+        student_id: data.studentId || null,
         answers: data.answers,
         submitted_at: new Date().toISOString(),
       },

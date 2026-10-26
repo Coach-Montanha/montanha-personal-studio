@@ -43,7 +43,30 @@ function PublicFormViewPage() {
   const [submitted, setSubmitted] = useState(false);
   const [protocol, setProtocol] = useState("");
   const [copied, setCopied] = useState(false);
+  const [studentInfo, setStudentInfo] = useState<{ id: string; name: string; email?: string; phone?: string } | null>(null);
   const { theme, toggleTheme } = useTheme();
+
+  // Carrega aluno autenticado se houver sessao ativa
+  useEffect(() => {
+    async function checkStudentSession() {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const uId = sessionData?.session?.user?.id;
+        if (uId) {
+          const { data: st } = await supabase.from('students').select('id, name, phone, email').eq('account_user_id', uId).maybeSingle();
+          if (st) {
+            setStudentInfo({ id: st.id, name: st.name, email: st.email || sessionData.session.user.email, phone: st.phone || '' });
+          } else {
+            const { data: ptSt } = await supabase.from('pt_students').select('id, name, phone, email').eq('account_user_id', uId).maybeSingle();
+            if (ptSt) {
+              setStudentInfo({ id: ptSt.id, name: ptSt.name, email: ptSt.email || sessionData.session.user.email, phone: ptSt.phone || '' });
+            }
+          }
+        }
+      } catch {}
+    }
+    checkStudentSession();
+  }, []);
 
   // Busca definição atualizada no backend se não estiver nos defaults
   useEffect(() => {
@@ -126,12 +149,14 @@ function PublicFormViewPage() {
           formTitle: form.title,
           respondentName,
           respondentContact,
+          studentId: studentInfo?.id || null,
           answers: { ...answers, _protocol: proto },
         },
       });
 
       setProtocol(proto);
       setSubmitted(true);
+      if (studentInfo) { try { const u = new URL(window.location.href); u.searchParams.set('saved', '1'); window.history.replaceState({}, '', u.toString()); } catch {} }
       window.scrollTo({ top: 0, behavior: "smooth" });
       toast.success("Formulário enviado com sucesso!");
     } catch (err: any) {

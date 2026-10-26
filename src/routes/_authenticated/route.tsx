@@ -36,7 +36,7 @@ function AuthenticatedLayout() {
   const { mode, loading: modeLoading } = usePortalMode();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
-  const isPortalPath = pathname === "/portal" || pathname.startsWith("/portal/");
+  const isPortalPath = pathname === "/portal" || pathname.startsWith("/portal/") || pathname.startsWith("/f/");
   const isPTPortalPath = pathname === "/portal/pt" || pathname.startsWith("/portal/pt/");
   const { isOpen: timerOpen, defaultMode: timerMode, setOpen: setTimerOpen } = useTrainingTimer();
 

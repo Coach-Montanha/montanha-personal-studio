@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { downloadFormSubmissionPdf } from "@/lib/form-submission-pdf";
 import { toast } from "sonner";
+import { StudentFormAnsweringModal } from "@/components/portal/StudentFormAnsweringModal";
 
 export const Route = createFileRoute("/_authenticated/portal/formularios")({
   head: () => ({ meta: [{ title: "Meus Formulários e Anamnese — Portal do Aluno" }] }),
@@ -33,50 +34,54 @@ function PortalFormulariosPage() {
   const [activeTab, setActiveTab] = useState<"disponiveis" | "respondidos">("disponiveis");
   const [forms, setForms] = useState<StudioFormItem[]>(() => listStudioForms());
   const [mySubmissions, setMySubmissions] = useState<any[]>([]);
-  const [studentInfo, setStudentInfo] = useState<{ id: string; name: string } | null>(null);
+  const [studentInfo, setStudentInfo] = useState<{ id: string; name: string; email?: string; phone?: string } | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [expandedSubIds, setExpandedSubIds] = useState<Record<string, boolean>>({});
+  const [selectedFormToAnswer, setSelectedFormToAnswer] = useState<StudioFormItem | null>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        // 1. Busca dados do aluno autenticado
-        if (user?.id) {
-          const { data: st } = await supabase
-            .from("students")
-            .select("id, name")
+  const loadData = async () => {
+    try {
+      // 1. Busca dados do aluno autenticado
+      if (user?.id) {
+        const { data: st } = await supabase
+          .from("students")
+          .select("id, name, phone, email")
+          .eq("account_user_id", user.id)
+          .maybeSingle();
+
+        if (st) {
+          setStudentInfo({ id: st.id, name: st.name, email: st.email || user.email, phone: st.phone || "" });
+        } else {
+          // Tenta pt_students
+          const { data: ptSt } = await supabase
+            .from("pt_students")
+            .select("id, name, phone, email")
             .eq("account_user_id", user.id)
             .maybeSingle();
-
-          if (st) {
-            setStudentInfo(st);
-          } else {
-            // Tenta pt_students
-            const { data: ptSt } = await supabase
-              .from("pt_students")
-              .select("id, name")
-              .eq("account_user_id", user.id)
-              .maybeSingle();
-            if (ptSt) setStudentInfo(ptSt);
+          if (ptSt) {
+            setStudentInfo({ id: ptSt.id, name: ptSt.name, email: ptSt.email || user.email, phone: ptSt.phone || "" });
           }
         }
-
-        // 2. Busca formulários disponíveis e submissões
-        const [formsData, subsData] = await Promise.all([
-          listFormsServerFn(),
-          listSubmissionsServerFn(),
-        ]);
-
-        if (Array.isArray(formsData) && formsData.length > 0) {
-          setForms(formsData);
-        }
-        if (Array.isArray(subsData)) {
-          setMySubmissions(subsData);
-        }
-      } catch (err) {
-        console.warn("Erro ao carregar dados do portal de formulários:", err);
       }
+
+      // 2. Busca formulários disponíveis e submissões
+      const [formsData, subsData] = await Promise.all([
+        listFormsServerFn(),
+        listSubmissionsServerFn(),
+      ]);
+
+      if (Array.isArray(formsData) && formsData.length > 0) {
+        setForms(formsData);
+      }
+      if (Array.isArray(subsData)) {
+        setMySubmissions(subsData);
+      }
+    } catch (err) {
+      console.warn("Erro ao carregar dados do portal de formulários:", err);
     }
+  };
+
+  useEffect(() => {
     loadData();
   }, [user?.id]);
 
@@ -219,14 +224,13 @@ function PortalFormulariosPage() {
 
                   <div className="mt-5 pt-3 border-t border-border flex items-center justify-between gap-2">
                     <Button
-                      asChild
+                      type="button"
                       size="sm"
+                      onClick={() => setSelectedFormToAnswer(item)}
                       className="font-bold text-xs gap-1.5 shadow-sm"
                     >
-                      <Link to="/f/$slug" params={{ slug: item.slug || item.id }}>
-                        Preencher Agora
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
+                      Preencher Agora
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </Button>
 
                     {item.googleFormUrl && item.googleFormUrl.includes("docs.google.com") && (
@@ -353,6 +357,20 @@ function PortalFormulariosPage() {
           )}
         </div>
       )}
+
+      {/* Modal Interativa e Segura para Preenchimento do Aluno */}
+      <StudentFormAnsweringModal
+        open={Boolean(selectedFormToAnswer)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setSelectedFormToAnswer(null);
+        }}
+        form={selectedFormToAnswer}
+        studentInfo={studentInfo}
+        onSubmitted={() => {
+          loadData();
+          setActiveTab("respondidos");
+        }}
+      />
     </div>
   );
 }
