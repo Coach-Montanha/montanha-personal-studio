@@ -82,6 +82,9 @@ export function TrainingTimerDialog({
   // Livre specific (stopwatch count up)
   const [livreSeconds, setLivreSeconds] = useState(0);
 
+  // Computed total blocks for EMOM
+  const totalBlocks = Math.max(1, Math.ceil(totalMinutes / emomIntervalMinutes));
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const lastTickTimeRef = useRef<number>(Date.now());
@@ -105,9 +108,6 @@ export function TrainingTimerDialog({
   modeRef.current = mode;
   const runningRef = useRef(running);
   runningRef.current = running;
-
-  // Computed total blocks for EMOM
-  const totalBlocks = Math.max(1, Math.ceil(totalMinutes / emomIntervalMinutes));
 
   // Audio helper
   const triggerBeep = (freq: number, dur = 0.15) => {
