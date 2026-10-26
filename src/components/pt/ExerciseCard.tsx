@@ -445,165 +445,179 @@ export function ExerciseCard({
                     <SelectItem value="time_inclination">Tempo e inclinação</SelectItem>
                     <SelectItem value="run">Corrida</SelectItem>
                     <SelectItem value="cadence">Cadência</SelectItem>
+                    <SelectItem value="observation_only">Apenas observação / orientação</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {(form.series_type === "reps_load" ||
-                  form.series_type === "sets_time" ||
-                  form.series_type === "reps_load_time" ||
-                  form.series_type === "reps_time") && (
-                  <div className="space-y-1">
-                    <Label className="text-xs font-medium text-muted-foreground">Série/rep</Label>
-                    <Input
-                      value={form.sets_reps}
-                      onChange={(e) => setForm((f) => ({ ...f, sets_reps: e.target.value }))}
-                      onBlur={(e) => autoSave({ sets_reps: e.target.value || null })}
-                      placeholder="4x12"
-                      className="h-9"
-                    />
-                    <div className="flex flex-wrap gap-1 pt-1">
-                      {["3x10-12", "4x8-10", "4x12-15", "3x Falha"].map((preset) => (
-                        <button
-                          key={preset}
-                          type="button"
-                          onClick={() => {
-                            setForm((f) => ({ ...f, sets_reps: preset }));
-                            autoSave({ sets_reps: preset });
-                          }}
-                          className={cn(
-                            "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
-                            form.sets_reps === preset
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
-                          )}
-                        >
-                          {preset}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {(form.series_type === "reps_load" || form.series_type === "reps_load_time") && (
-                  <div className="space-y-1">
-                    <Label className="text-xs font-bold text-primary">Carga (Sugerida)</Label>
-                    <Input
-                      value={form.load}
-                      onChange={(e) => setForm((f) => ({ ...f, load: e.target.value }))}
-                      onBlur={(e) => autoSave({ load: e.target.value || null })}
-                      placeholder="ex: 20kg"
-                      className="h-9 border-primary/30 focus-visible:ring-primary/50"
-                    />
-                  </div>
-                )}
-                {(form.series_type === "reps_load_time" ||
-                  form.series_type === "reps_time" ||
-                  form.series_type === "sets_time" ||
-                  form.series_type === "time_inclination") && (
-                  <div className="space-y-1">
-                    <Label className="text-xs font-medium text-muted-foreground">Tempo (s)</Label>
-                    <Input
-                      type="number"
-                      value={form.time_seconds}
-                      onChange={(e) => setForm((f) => ({ ...f, time_seconds: e.target.value }))}
-                      onBlur={(e) =>
-                        autoSave({ time_seconds: e.target.value ? parseInt(e.target.value) : null })
-                      }
-                      placeholder="60"
-                      className="h-9"
-                    />
-                  </div>
-                )}
-                {form.series_type === "time_inclination" && (
-                  <div className="space-y-1">
-                    <Label className="text-xs font-medium text-muted-foreground">Inclinação</Label>
-                    <Input
-                      value={form.inclination}
-                      onChange={(e) => setForm((f) => ({ ...f, inclination: e.target.value }))}
-                      onBlur={(e) => autoSave({ inclination: e.target.value || null })}
-                      placeholder="2%"
-                      className="h-9"
-                    />
-                  </div>
-                )}
-                {form.series_type === "run" && (
-                  <>
+              {form.series_type !== "observation_only" && (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {(form.series_type === "reps_load" ||
+                    form.series_type === "sets_time" ||
+                    form.series_type === "reps_load_time" ||
+                    form.series_type === "reps_time") && (
                     <div className="space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">Distância</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Série/rep</Label>
+                      <Input
+                        value={form.sets_reps}
+                        onChange={(e) => setForm((f) => ({ ...f, sets_reps: e.target.value }))}
+                        onBlur={(e) => autoSave({ sets_reps: e.target.value || null })}
+                        placeholder="4x12"
+                        className="h-9"
+                      />
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {["3x10-12", "4x8-10", "4x12-15", "3x Falha"].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => {
+                              setForm((f) => ({ ...f, sets_reps: preset }));
+                              autoSave({ sets_reps: preset });
+                            }}
+                            className={cn(
+                              "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                              form.sets_reps === preset
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            )}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {(form.series_type === "reps_load" || form.series_type === "reps_load_time") && (
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-primary">Carga (Sugerida)</Label>
                       <Input
                         value={form.load}
                         onChange={(e) => setForm((f) => ({ ...f, load: e.target.value }))}
                         onBlur={(e) => autoSave({ load: e.target.value || null })}
-                        placeholder="5km"
-                        className="h-9"
+                        placeholder="ex: 20kg"
+                        className="h-9 border-primary/30 focus-visible:ring-primary/50"
                       />
                     </div>
+                  )}
+                  {(form.series_type === "reps_load_time" ||
+                    form.series_type === "reps_time" ||
+                    form.series_type === "sets_time" ||
+                    form.series_type === "time_inclination") && (
                     <div className="space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">Ritmo (Pace)</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Tempo (s)</Label>
                       <Input
-                        value={form.pace}
-                        onChange={(e) => setForm((f) => ({ ...f, pace: e.target.value }))}
-                        onBlur={(e) => autoSave({ pace: e.target.value || null })}
-                        placeholder="5:00 min/km"
+                        type="number"
+                        value={form.time_seconds}
+                        onChange={(e) => setForm((f) => ({ ...f, time_seconds: e.target.value }))}
+                        onBlur={(e) =>
+                          autoSave({ time_seconds: e.target.value ? parseInt(e.target.value) : null })
+                        }
+                        placeholder="60"
                         className="h-9"
                       />
                     </div>
-                  </>
-                )}
-                {form.series_type === "cadence" && (
+                  )}
+                  {form.series_type === "time_inclination" && (
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">Inclinação</Label>
+                      <Input
+                        value={form.inclination}
+                        onChange={(e) => setForm((f) => ({ ...f, inclination: e.target.value }))}
+                        onBlur={(e) => autoSave({ inclination: e.target.value || null })}
+                        placeholder="2%"
+                        className="h-9"
+                      />
+                    </div>
+                  )}
+                  {form.series_type === "run" && (
+                    <>
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-muted-foreground">Distância</Label>
+                        <Input
+                          value={form.load}
+                          onChange={(e) => setForm((f) => ({ ...f, load: e.target.value }))}
+                          onBlur={(e) => autoSave({ load: e.target.value || null })}
+                          placeholder="5km"
+                          className="h-9"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs font-medium text-muted-foreground">Ritmo (Pace)</Label>
+                        <Input
+                          value={form.pace}
+                          onChange={(e) => setForm((f) => ({ ...f, pace: e.target.value }))}
+                          onBlur={(e) => autoSave({ pace: e.target.value || null })}
+                          placeholder="5:00 min/km"
+                          className="h-9"
+                        />
+                      </div>
+                    </>
+                  )}
+                  {form.series_type === "cadence" && (
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">Cadência</Label>
+                      <Input
+                        value={form.cadence}
+                        onChange={(e) => setForm((f) => ({ ...f, cadence: e.target.value }))}
+                        onBlur={(e) => autoSave({ cadence: e.target.value || null })}
+                        placeholder="2010"
+                        className="h-9"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-1">
-                    <Label className="text-xs font-medium text-muted-foreground">Cadência</Label>
+                    <Label className="text-xs font-medium text-muted-foreground">Intervalo (s)</Label>
                     <Input
-                      value={form.cadence}
-                      onChange={(e) => setForm((f) => ({ ...f, cadence: e.target.value }))}
-                      onBlur={(e) => autoSave({ cadence: e.target.value || null })}
-                      placeholder="2010"
+                      type="number"
+                      value={form.rest_seconds}
+                      onChange={(e) => setForm((f) => ({ ...f, rest_seconds: e.target.value }))}
+                      onBlur={(e) => autoSave({ rest_seconds: e.target.value || null })}
+                      placeholder="60"
                       className="h-9"
                     />
-                  </div>
-                )}
-                <div className="space-y-1">
-                  <Label className="text-xs font-medium text-muted-foreground">Intervalo (s)</Label>
-                  <Input
-                    type="number"
-                    value={form.rest_seconds}
-                    onChange={(e) => setForm((f) => ({ ...f, rest_seconds: e.target.value }))}
-                    onBlur={(e) => autoSave({ rest_seconds: e.target.value || null })}
-                    placeholder="60"
-                    className="h-9"
-                  />
-                  <div className="flex flex-wrap gap-1 pt-1">
-                    {["30", "45", "60", "90", "120"].map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => {
-                          setForm((f) => ({ ...f, rest_seconds: preset }));
-                          autoSave({ rest_seconds: preset });
-                        }}
-                        className={cn(
-                          "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
-                          form.rest_seconds === preset
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
-                        )}
-                      >
-                        {preset}s
-                      </button>
-                    ))}
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {["30", "45", "60", "90", "120"].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => {
+                            setForm((f) => ({ ...f, rest_seconds: preset }));
+                            autoSave({ rest_seconds: preset });
+                          }}
+                          className={cn(
+                            "rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                            form.rest_seconds === preset
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          )}
+                        >
+                          {preset}s
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-1">
-                <Label className="text-xs font-medium text-muted-foreground">Observações</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    {form.series_type === "observation_only" ? "Instruções / Observações do Treinador" : "Observações"}
+                  </Label>
+                  {form.series_type === "observation_only" && (
+                    <span className="text-[10px] font-semibold text-primary">Modo apenas observação</span>
+                  )}
+                </div>
                 <Textarea
-                  rows={2}
+                  rows={form.series_type === "observation_only" ? 4 : 2}
                   value={form.observations}
                   onChange={(e) => setForm((f) => ({ ...f, observations: e.target.value }))}
                   onBlur={(e) => autoSave({ observations: e.target.value || null })}
-                  placeholder="Instruções específicas para este exercício…"
+                  placeholder={
+                    form.series_type === "observation_only"
+                      ? "Digite aqui as instruções, dicas de postura, orientações de aquecimento ou mobilidade para o aluno…"
+                      : "Instruções específicas para este exercício…"
+                  }
                 />
               </div>
 

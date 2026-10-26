@@ -90,9 +90,13 @@ export function extractLoadNumber(loadStr: string): number | null {
 }
 
 /**
- * Varre o histórico de execuções de treinos e identifica os Recordes Pessoais (PRs)
+ * Varre o histórico de execuções de treinos e identifica os Recordes Pessoais (PRs).
+ * Aceita opcionalmente um mapa exerciseNamesMap { [exId]: string } para resolver o nome real dos exercícios.
  */
-export function detectPersonalRecords(executions: any[]): PersonalRecord[] {
+export function detectPersonalRecords(
+  executions: any[],
+  exerciseNamesMap?: Record<string, string>,
+): PersonalRecord[] {
   const prMap = new Map<string, PersonalRecord>();
 
   for (const exec of executions) {
@@ -104,6 +108,8 @@ export function detectPersonalRecords(executions: any[]): PersonalRecord[] {
     }
 
     const loads = notes.loads || {};
+    const embeddedNames = notes.exerciseNames || {};
+
     for (const [exId, rawLoad] of Object.entries(loads)) {
       if (typeof rawLoad !== "string" && typeof rawLoad !== "number") continue;
       const numLoad = extractLoadNumber(String(rawLoad));
@@ -111,14 +117,28 @@ export function detectPersonalRecords(executions: any[]): PersonalRecord[] {
 
       const current = prMap.get(exId);
       if (!current || numLoad > current.maxLoad) {
+        const resolvedName =
+          embeddedNames[exId] ||
+          exerciseNamesMap?.[exId] ||
+          `Exercício #${exId.slice(-4)}`;
+
         prMap.set(exId, {
           exerciseId: exId,
-          exerciseName: `Exercício #${exId.slice(-4)}`,
+          exerciseName: resolvedName,
           maxLoad: numLoad,
           rawLoad: String(rawLoad),
           achievedAt: exec.executed_at,
           executionId: exec.id,
         });
+      }
+    }
+  }
+
+  // Atualiza com nomes que chegarem depois via mapa externo caso estivessem como fallback
+  if (exerciseNamesMap) {
+    for (const [exId, pr] of prMap.entries()) {
+      if (exerciseNamesMap[exId] && pr.exerciseName.startsWith("Exercício #")) {
+        pr.exerciseName = exerciseNamesMap[exId];
       }
     }
   }

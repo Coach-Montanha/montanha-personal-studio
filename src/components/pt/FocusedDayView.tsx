@@ -46,6 +46,7 @@ function parseSetCount(setsReps?: string | null): number {
 
 type ExecNotes = {
   loads?: Record<string, string>;
+  exerciseNames?: Record<string, string>;
   doneExercises?: string[];
   timerSeconds?: number;
   excludedExercises?: string[];
@@ -327,6 +328,7 @@ export function FocusedDayView({
 
       const notes: ExecNotes = {
         loads: Object.fromEntries(Object.entries(loads).filter(([, v]) => v && v.trim())),
+        exerciseNames: Object.fromEntries(exercises.map((e) => [e.id, e.name])),
         doneExercises: performedExerciseIds,
         completedSets,
         timerSeconds,
@@ -644,7 +646,11 @@ export function FocusedDayView({
                       </div>
 
                       <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        {ex.series_type === "run" ? (
+                        {ex.series_type === "observation_only" ? (
+                          <span className="inline-flex items-center gap-1 rounded-lg bg-primary/10 border border-primary/20 px-2.5 py-1 text-xs font-bold text-primary">
+                            Orientação / Observação
+                          </span>
+                        ) : ex.series_type === "run" ? (
                           <>
                             {ex.load && (
                               <span className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
@@ -746,7 +752,7 @@ export function FocusedDayView({
                     </div>
                   </div>
 
-                  {ex.series_type !== "run" && (
+                  {ex.series_type !== "run" && ex.series_type !== "observation_only" && (
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/30 border border-border/60 p-2.5">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
@@ -827,82 +833,84 @@ export function FocusedDayView({
                     </div>
                   )}
 
-                  <div className="mt-3.5 rounded-xl border border-border/70 bg-muted/20 p-3 sm:p-3.5 space-y-2.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Carga realizada hoje
-                      </label>
-                      {onOpenProgression && (
-                        <button
-                          type="button"
-                          onClick={() => onOpenProgression(ex.name)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                        >
-                          <TrendingUp className="h-3.5 w-3.5" /> Ver evolução
-                        </button>
-                      )}
-                    </div>
+                  {ex.series_type !== "observation_only" && (
+                    <div className="mt-3.5 rounded-xl border border-border/70 bg-muted/20 p-3 sm:p-3.5 space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                          Carga realizada hoje
+                        </label>
+                        {onOpenProgression && (
+                          <button
+                            type="button"
+                            onClick={() => onOpenProgression(ex.name)}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                          >
+                            <TrendingUp className="h-3.5 w-3.5" /> Ver evolução
+                          </button>
+                        )}
+                      </div>
 
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="ex: 22.5 kg"
-                        value={loads[ex.id] ?? ""}
-                        onChange={(e) => setLoads((l) => ({ ...l, [ex.id]: e.target.value }))}
-                        className="h-11 flex-1 rounded-xl text-sm font-semibold tabular-nums bg-background border-border/80"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          const currentVal = loads[ex.id] || ex.load || last?.load || 60;
-                          setPlateCalcWeight(currentVal);
-                          setPlateCalcExName(ex.name);
-                          setPlateCalcOpen(true);
-                        }}
-                        title="Calculadora visual de anilhas na barra"
-                        className="h-11 w-11 shrink-0 rounded-xl border-border/80 hover:border-primary/50 text-muted-foreground hover:text-primary transition-all active:scale-95"
-                      >
-                        <Dumbbell className="h-4 w-4" />
-                      </Button>
-                      {last?.load && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="ex: 22.5 kg"
+                          value={loads[ex.id] ?? ""}
+                          onChange={(e) => setLoads((l) => ({ ...l, [ex.id]: e.target.value }))}
+                          className="h-11 flex-1 rounded-xl text-sm font-semibold tabular-nums bg-background border-border/80"
+                        />
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
-                          onClick={() => setLoads((l) => ({ ...l, [ex.id]: last.load }))}
-                          title={`Copiar última carga (${last.load})`}
-                          className="h-11 shrink-0 gap-1.5 px-3 rounded-xl border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary font-semibold text-xs transition-all active:scale-95"
+                          size="icon"
+                          onClick={() => {
+                            const currentVal = loads[ex.id] || ex.load || last?.load || 60;
+                            setPlateCalcWeight(currentVal);
+                            setPlateCalcExName(ex.name);
+                            setPlateCalcOpen(true);
+                          }}
+                          title="Calculadora visual de anilhas na barra"
+                          className="h-11 w-11 shrink-0 rounded-xl border-border/80 hover:border-primary/50 text-muted-foreground hover:text-primary transition-all active:scale-95"
                         >
-                          <ClipboardList className="h-3.5 w-3.5 shrink-0" />
-                          <span className="hidden xs:inline">Usar última</span> ({last.load})
+                          <Dumbbell className="h-4 w-4" />
                         </Button>
+                        {last?.load && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setLoads((l) => ({ ...l, [ex.id]: last.load }))}
+                            title={`Copiar última carga (${last.load})`}
+                            className="h-11 shrink-0 gap-1.5 px-3 rounded-xl border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary font-semibold text-xs transition-all active:scale-95"
+                          >
+                            <ClipboardList className="h-3.5 w-3.5 shrink-0" />
+                            <span className="hidden xs:inline">Usar última</span> ({last.load})
+                          </Button>
+                        )}
+                      </div>
+
+                      {last && (
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <History className="h-3 w-3 shrink-0" />
+                          <span>
+                            Última carga registrada: <strong className="text-foreground">{last.load}</strong> em {formatDateBR(last.date)}
+                          </span>
+                        </div>
+                      )}
+
+                      {plateauByExercise[ex.id] && (
+                        <div className="mt-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+                          <Zap className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+                          <div className="space-y-0.5">
+                            <span className="font-bold">Alerta de Platô ({plateauByExercise[ex.id].load} por 3 sessões):</span>
+                            <p className="text-[11px] leading-tight opacity-90">
+                              Carga inalterada recentemente. Experimente variar a pegada, usar halteres ou aplicar rest-pause para destravar a evolução.
+                            </p>
+                          </div>
+                        </div>
                       )}
                     </div>
-
-                    {last && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <History className="h-3 w-3 shrink-0" />
-                        <span>
-                          Última carga registrada: <strong className="text-foreground">{last.load}</strong> em {formatDateBR(last.date)}
-                        </span>
-                      </div>
-                    )}
-
-                    {plateauByExercise[ex.id] && (
-                      <div className="mt-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
-                        <Zap className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
-                        <div className="space-y-0.5">
-                          <span className="font-bold">Alerta de Platô ({plateauByExercise[ex.id].load} por 3 sessões):</span>
-                          <p className="text-[11px] leading-tight opacity-90">
-                            Carga inalterada recentemente. Experimente variar a pegada, usar halteres ou aplicar rest-pause para destravar a evolução.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
 
                   {ex.observations && (
                     <div className="mt-3 rounded-xl border-l-4 border-primary/70 bg-primary/5 p-3 text-xs leading-relaxed text-foreground/90">

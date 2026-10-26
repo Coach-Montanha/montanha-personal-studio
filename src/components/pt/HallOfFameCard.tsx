@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Trophy, Dumbbell, Calculator, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDateBR } from "@/lib/format";
 import { detectPersonalRecords, type PersonalRecord } from "@/lib/one-rep-max";
 import { OneRepMaxDialog } from "./OneRepMaxDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 export function HallOfFameCard({
   executions,
@@ -15,10 +16,46 @@ export function HallOfFameCard({
 }) {
   const [oneRmOpen, setOneRmOpen] = useState(false);
   const [selectedWeight, setSelectedWeight] = useState<number>(60);
+  const [exerciseNamesMap, setExerciseNamesMap] = useState<Record<string, string>>({});
 
   const personalRecords = useMemo(() => {
-    return detectPersonalRecords(executions);
-  }, [executions]);
+    return detectPersonalRecords(executions, exerciseNamesMap);
+  }, [executions, exerciseNamesMap]);
+
+  // Carrega nomes reais dos exercícios caso algum PR ainda esteja sem nome
+  useEffect(() => {
+    const unknownExIds = personalRecords
+      .filter((pr) => pr.exerciseName.startsWith("Exercício #") && !exerciseNamesMap[pr.exerciseId])
+      .map((pr) => pr.exerciseId);
+
+    if (unknownExIds.length === 0) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("pt_training_exercises" as any)
+          .select("id, name")
+          .in("id", unknownExIds);
+
+        if (!error && data && isMounted) {
+          const map: Record<string, string> = {};
+          for (const item of data as { id: string; name: string }[]) {
+            if (item.name) map[item.id] = item.name;
+          }
+          if (Object.keys(map).length > 0) {
+            setExerciseNamesMap((prev) => ({ ...prev, ...map }));
+          }
+        }
+      } catch {
+        // silencioso
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [personalRecords, exerciseNamesMap]);
 
   const handleOpenCalc = (load?: number) => {
     if (load && load > 0) setSelectedWeight(load);
