@@ -679,9 +679,9 @@ export function FocusedDayView({
                         ) : (
                           <>
                             {ex.sets_reps && (
-                              <span className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-                                <Dumbbell className="h-3.5 w-3.5 shrink-0" />
-                                {ex.sets_reps}
+                              <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/20 border border-primary/40 px-3 py-1.5 text-sm sm:text-base font-extrabold text-white tracking-wide shadow-sm">
+                                <Dumbbell className="h-4 w-4 shrink-0 text-white" />
+                                <span className="text-white drop-shadow-xs">{ex.sets_reps}</span>
                               </span>
                             )}
                             {ex.load && (
@@ -760,10 +760,10 @@ export function FocusedDayView({
                               type="button"
                               onClick={() => toggleSet(ex, sNum, totalSetsCount)}
                               className={cn(
-                                "flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all active:scale-95",
+                                "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all active:scale-95",
                                 isSetDone
                                   ? "bg-emerald-500 text-white shadow-xs shadow-emerald-500/25"
-                                  : "border border-border/80 bg-background hover:border-primary/60 text-foreground/80",
+                                  : "border border-border/80 bg-background hover:border-primary/60 text-white",
                               )}
                               title={
                                 isSetDone
