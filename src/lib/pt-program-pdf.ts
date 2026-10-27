@@ -1,5 +1,3 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateBR } from "@/lib/format";
 import { groupDaysByWeek, parseDayMeta } from "@/lib/training-weeks";
@@ -51,6 +49,12 @@ export async function downloadProgramPdf(programId: string, studentName?: string
     : { data: [] as any[], error: null };
 
   if (exErr) throw new Error(`Erro ao buscar exercícios: ${exErr.message}`);
+
+  const [{ jsPDF }, autoTableModule] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
+  const autoTable = autoTableModule.default || autoTableModule;
 
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();

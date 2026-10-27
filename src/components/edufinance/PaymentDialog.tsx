@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { z } from "zod";
 import { currentMonthKey } from "@/lib/format";
 import { usePaymentMethods } from "@/hooks/use-payment-methods";
 import { format } from "date-fns";
@@ -121,8 +122,24 @@ export function PaymentDialog({
 
 
   async function save() {
-    if (!form.student_id || !form.amount || !form.payment_date || !form.reference_month) {
-      toast.error("Preencha os campos obrigatórios");
+    const paymentSchema = z.object({
+      student_id: z.string().min(1, "Selecione o aluno"),
+      amount: z.number().positive("O valor deve ser maior que zero").max(1000000, "Valor excessivo"),
+      payment_date: z.string().min(1, "Informe a data do pagamento"),
+      reference_month: z.string().min(1, "Informe o mês de referência"),
+    });
+
+    const parsed = paymentSchema.safeParse({
+      student_id: form.student_id,
+      amount: Number(form.amount),
+      payment_date: form.payment_date,
+      reference_month: form.reference_month,
+    });
+
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues?.[0];
+      const err = firstIssue ? firstIssue.message : "Preencha os campos obrigatórios";
+      toast.error(err);
       return;
     }
     const { data: userData } = await supabase.auth.getUser();
