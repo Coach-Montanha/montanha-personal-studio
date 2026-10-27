@@ -31,17 +31,78 @@ import { RestCountdownTimer, parseSafeSeconds } from "@/components/pt/RestCountd
 import { PlateCalculatorDialog } from "@/components/pt/PlateCalculatorDialog";
 import { MuscleHeatmap } from "@/components/pt/MuscleHeatmap";
 import { resolveExerciseThumbnail } from "@/lib/thumbnail-utils";
+import { useWakeLock } from "@/hooks/use-wake-lock";
 
 export { resolveExerciseThumbnail };
 
-function parseSetCount(setsReps?: string | null): number {
-  if (!setsReps) return 3;
-  const match = setsReps.match(/^(\d+)\s*[xX]/);
-  if (match) {
-    const num = parseInt(match[1], 10);
-    if (!isNaN(num) && num > 0 && num <= 10) return num;
+export interface SetBreakdownItem {
+  setNum: number;
+  label: string;
+}
+
+/**
+ * Faz parse de strings complexas de séries/repetições, permitindo múltiplos formatos:
+ * Ex: "1x10, 1x8, 1x8, 1x20" -> [{ setNum: 1, label: "1x10" }, { setNum: 2, label: "1x8" }, ...]
+ * Ex: "4x12" -> [{ setNum: 1, label: "1x12" }, { setNum: 2, label: "1x12" }, ...]
+ * Ex: "3x2min" -> [{ setNum: 1, label: "1x2min" }, { setNum: 2, label: "1x2min" }, ...]
+ * Ex: "1x15 + 2x10" -> [{ setNum: 1, label: "1x15" }, { setNum: 2, label: "1x10" }, { setNum: 3, label: "1x10" }]
+ */
+export function parseSetItems(setsReps?: string | null): SetBreakdownItem[] {
+  if (!setsReps || !setsReps.trim()) {
+    return [
+      { setNum: 1, label: "S1" },
+      { setNum: 2, label: "S2" },
+      { setNum: 3, label: "S3" },
+    ];
   }
-  return 3;
+
+  const raw = setsReps.trim();
+
+  // Caso 1: Separado por vírgula, ponto-e-vírgula ou barra (ex: "1x10, 1x8, 1x8, 1x20" ou "10, 8, 8, 20")
+  if (raw.includes(",") || raw.includes(";") || (raw.includes("/") && !raw.includes("min/km"))) {
+    const parts = raw.split(/[,;/]+/).map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 0) {
+      const items: SetBreakdownItem[] = [];
+      let currentSet = 1;
+      for (const part of parts) {
+        const multiMatch = part.match(/^(\d+)\s*[xX]\s*(.+)$/);
+        if (multiMatch) {
+          const count = Math.min(10, parseInt(multiMatch[1], 10) || 1);
+          const reps = multiMatch[2].trim();
+          for (let i = 0; i < count; i++) {
+            items.push({ setNum: currentSet++, label: `1x${reps}` });
+          }
+        } else {
+          // Se for só número (ex: "10"), formata como "1x10"
+          const cleanPart = /^\d+$/.test(part) ? `1x${part}` : part.startsWith("1x") ? part : `1x${part}`;
+          items.push({ setNum: currentSet++, label: cleanPart });
+        }
+      }
+      if (items.length > 0) return items.slice(0, 12);
+    }
+  }
+
+  // Caso 2: Padrão "NxReps" (ex: "4x12", "3x2min", "3x Falha", "4 x 8-10")
+  const standardMatch = raw.match(/^(\d+)\s*[xX]\s*(.+)$/);
+  if (standardMatch) {
+    const count = Math.min(12, parseInt(standardMatch[1], 10) || 3);
+    const repsDesc = standardMatch[2].trim();
+    return Array.from({ length: count }, (_, i) => ({
+      setNum: i + 1,
+      label: `1x${repsDesc}`,
+    }));
+  }
+
+  // Fallback seguro
+  return [
+    { setNum: 1, label: "S1" },
+    { setNum: 2, label: "S2" },
+    { setNum: 3, label: "S3" },
+  ];
+}
+
+function parseSetCount(setsReps?: string | null): number {
+  return parseSetItems(setsReps).length;
 }
 
 type ExecNotes = {
@@ -90,6 +151,9 @@ export function FocusedDayView({
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+
+  // Mantém a tela 100% ligada e ativa enquanto o cronômetro estiver correndo no treino
+  useWakeLock(timerRunning);
   const [feedback, setFeedback] = useState("");
   const [saving, setSaving] = useState(false);
   const [activeSubstitutes, setActiveSubstitutes] = useState<Record<string, string>>({});
@@ -558,7 +622,8 @@ export function FocusedDayView({
               const isDone = !!done[ex.id];
               const last = lastByExercise[ex.id];
               const isExcluded = excludedExerciseIds.includes(parentEx.id);
-              const totalSetsCount = parseSetCount(ex.sets_reps);
+              const setItems = parseSetItems(ex.sets_reps);
+              const totalSetsCount = setItems.length;
 
               if (isExcluded) {
                 return (
@@ -685,9 +750,14 @@ export function FocusedDayView({
                         ) : (
                           <>
                             {ex.sets_reps && (
-                              <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/20 border border-primary/40 px-3 py-1.5 text-sm sm:text-base font-extrabold text-white tracking-wide shadow-sm">
+                              <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/25 border-2 border-primary/60 px-3 py-1.5 text-sm sm:text-base font-black text-white tracking-wide shadow-md shadow-primary/20">
                                 <Dumbbell className="h-4 w-4 shrink-0 text-white" />
-                                <span className="text-white drop-shadow-xs">{ex.sets_reps}</span>
+                                <span
+                                  className="text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]"
+                                  style={{ textShadow: "0 0 2px #000, 0 1px 2px #000, -1px 0 1px #000, 1px 0 1px #000" }}
+                                >
+                                  {ex.sets_reps}
+                                </span>
                               </span>
                             )}
                             {ex.load && (
@@ -753,32 +823,42 @@ export function FocusedDayView({
                   </div>
 
                   {ex.series_type !== "run" && ex.series_type !== "observation_only" && (
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/30 border border-border/60 p-2.5">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2.5 rounded-xl bg-muted/30 border border-border/60 p-2.5 sm:p-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-muted-foreground mr-1">
                           Séries:
                         </span>
-                        {Array.from({ length: totalSetsCount }, (_, i) => i + 1).map((sNum) => {
-                          const isSetDone = (completedSets[ex.id] || []).includes(sNum);
+                        {setItems.map((item) => {
+                          const isSetDone = (completedSets[ex.id] || []).includes(item.setNum);
                           return (
                             <button
-                              key={sNum}
+                              key={item.setNum}
                               type="button"
-                              onClick={() => toggleSet(ex, sNum, totalSetsCount)}
+                              onClick={() => toggleSet(ex, item.setNum, totalSetsCount)}
                               className={cn(
-                                "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all active:scale-95",
+                                "flex items-center justify-center gap-1.5 min-w-[3.5rem] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all active:scale-95 shadow-sm",
                                 isSetDone
-                                  ? "bg-emerald-500 text-white shadow-xs shadow-emerald-500/25"
-                                  : "border border-border/80 bg-background hover:border-primary/60 text-white",
+                                  ? "bg-emerald-500 border-2 border-emerald-400 text-white shadow-emerald-500/30"
+                                  : "border-2 border-foreground/30 bg-background/95 hover:border-primary text-white hover:text-white"
                               )}
                               title={
                                 isSetDone
-                                  ? `Série ${sNum} concluída`
-                                  : `Concluir série ${sNum} e descansar ${parseSafeSeconds(ex.rest_seconds, 60)}s`
+                                  ? `Série ${item.setNum} (${item.label}) concluída`
+                                  : `Concluir série ${item.setNum} (${item.label}) e descansar ${parseSafeSeconds(ex.rest_seconds, 60)}s`
                               }
                             >
-                              {isSetDone ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
-                              <span>S{sNum}</span>
+                              {isSetDone ? (
+                                <Check className="h-4 w-4 shrink-0 text-white stroke-[3.5]" />
+                              ) : null}
+                              <span
+                                className="font-black tracking-wide text-white"
+                                style={{
+                                  textShadow:
+                                    "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 2px #000",
+                                }}
+                              >
+                                {item.label}
+                              </span>
                             </button>
                           );
                         })}
