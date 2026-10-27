@@ -86,7 +86,7 @@ export function AtribuirTreinoDialog({
       const userId = userData.user?.id;
       if (!userId) throw new Error("Usuário não autenticado.");
 
-      // 1. Garante que se for aluno do Studio, ele existe em pt_students
+      // 1. Garante que se for aluno do Studio, ele existe em pt_students com account_user_id sincronizado
       if (tipoAluno === "studio") {
         const targetStudent = studioStudents.find((s) => s.id === selectedStudentId);
         if (targetStudent) {
@@ -96,6 +96,9 @@ export function AtribuirTreinoDialog({
               user_id: userId,
               name: targetStudent.name,
               email: targetStudent.email,
+              phone: (targetStudent as any).phone ?? null,
+              account_user_id: (targetStudent as any).account_user_id ?? null,
+              temp_password: (targetStudent as any).temp_password ?? null,
               status: "active",
               notes: "[Aluno Studio]",
             } as never,

@@ -1168,7 +1168,7 @@ export function PrescreverIaDialog({
         const TEMPLATE_STUDENT_ID = "00000000-0000-0000-0000-000000000001";
         const finalStudentId = selectedStudentId || TEMPLATE_STUDENT_ID;
 
-        // Se for aluno do Studio, garante upsert preventivo em pt_students para respeitar a foreign key
+        // Se for aluno do Studio, garante upsert preventivo em pt_students para respeitar a foreign key e RLS
         if (selectedStudentId) {
           const st = studioStudents.find((s) => s.id === selectedStudentId);
           if (st) {
@@ -1177,6 +1177,9 @@ export function PrescreverIaDialog({
               user_id: userId,
               name: st.name,
               email: st.email,
+              phone: (st as any).phone ?? null,
+              account_user_id: (st as any).account_user_id ?? null,
+              temp_password: (st as any).temp_password ?? null,
               status: "active",
               notes: "[Aluno Studio]",
             } as never, { onConflict: "id" } as never);

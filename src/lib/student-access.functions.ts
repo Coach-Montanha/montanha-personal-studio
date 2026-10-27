@@ -174,6 +174,23 @@ export const createStudentAccount = createServerFn({ method: "POST" })
       throw new Error(linkErr.message);
     }
 
+    // Sincroniza também no registro correspondente de pt_students se existir
+    try {
+      await supabaseAdmin
+        .from("pt_students")
+        .update({ account_user_id: authUserId, temp_password: tempPassword })
+        .eq("id", data.studentId);
+
+      if (data.email) {
+        await supabaseAdmin
+          .from("pt_students")
+          .update({ account_user_id: authUserId, temp_password: tempPassword })
+          .ilike("email", data.email);
+      }
+    } catch {
+      // Ignora caso não exista
+    }
+
     return { email: data.email, tempPassword, reset: false };
   });
 
