@@ -750,14 +750,9 @@ export function FocusedDayView({
                         ) : (
                           <>
                             {ex.sets_reps && (
-                              <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/25 border-2 border-primary/60 px-3 py-1.5 text-sm sm:text-base font-black text-white tracking-wide shadow-md shadow-primary/20">
-                                <Dumbbell className="h-4 w-4 shrink-0 text-white" />
-                                <span
-                                  className="text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.9)]"
-                                  style={{ textShadow: "0 0 2px #000, 0 1px 2px #000, -1px 0 1px #000, 1px 0 1px #000" }}
-                                >
-                                  {ex.sets_reps}
-                                </span>
+                              <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1 text-xs sm:text-sm font-bold text-primary-foreground shadow-xs">
+                                <Dumbbell className="h-3.5 w-3.5 shrink-0" />
+                                <span className="tabular-nums tracking-wide">{ex.sets_reps}</span>
                               </span>
                             )}
                             {ex.load && (
@@ -836,10 +831,10 @@ export function FocusedDayView({
                               type="button"
                               onClick={() => toggleSet(ex, item.setNum, totalSetsCount)}
                               className={cn(
-                                "flex items-center justify-center gap-1.5 min-w-[3.5rem] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-black transition-all active:scale-95 shadow-sm",
+                                "flex items-center justify-center gap-1.5 min-w-[3.25rem] px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold tabular-nums transition-all active:scale-95",
                                 isSetDone
-                                  ? "bg-emerald-500 border-2 border-emerald-400 text-white shadow-emerald-500/30"
-                                  : "border-2 border-foreground/30 bg-background/95 hover:border-primary text-white hover:text-white"
+                                  ? "bg-emerald-600 dark:bg-emerald-500 text-white shadow-xs shadow-emerald-500/20"
+                                  : "border border-border/90 bg-muted/50 hover:bg-muted text-foreground hover:border-primary/50 shadow-xs"
                               )}
                               title={
                                 isSetDone
@@ -848,15 +843,9 @@ export function FocusedDayView({
                               }
                             >
                               {isSetDone ? (
-                                <Check className="h-4 w-4 shrink-0 text-white stroke-[3.5]" />
+                                <Check className="h-3.5 w-3.5 shrink-0 text-white stroke-[2.5]" />
                               ) : null}
-                              <span
-                                className="font-black tracking-wide text-white"
-                                style={{
-                                  textShadow:
-                                    "-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 2px #000",
-                                }}
-                              >
+                              <span className="tracking-tight">
                                 {item.label}
                               </span>
                             </button>
