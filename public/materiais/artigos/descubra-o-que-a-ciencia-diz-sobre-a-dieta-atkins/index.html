@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Descubra o que a ciência diz sobre a dieta Atkins | Coach Montanha</title>
+  <meta name="description" content="ARTIGO 144 - Descubra o que a ciência diz sobre a dieta Atkins Artigo 27 do acervo original do Blog do Montanha. Painel Systeme.io: 10855655(https://s...">
+  
+  <!-- OpenGraph Meta Tags para WhatsApp e Redes -->
+  <meta property="og:title" content="Descubra o que a ciência diz sobre a dieta Atkins | Coach Montanha">
+  <meta property="og:description" content="ARTIGO 144 - Descubra o que a ciência diz sobre a dieta Atkins Artigo 27 do acervo original do Blog do Montanha. Painel Systeme.io: 10855655(https://s...">
+  <meta property="og:url" content="https://montanha-personal-studio.vercel.app/materiais/artigos/descubra-o-que-a-ciencia-diz-sobre-a-dieta-atkins">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/logo_dark.png">
+  <meta property="og:site_name" content="Coach Montanha • Studio Personal">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Descubra o que a ciência diz sobre a dieta Atkins">
+  <meta name="twitter:description" content="ARTIGO 144 - Descubra o que a ciência diz sobre a dieta Atkins Artigo 27 do acervo original do Blog do Montanha. Painel Systeme.io: 10855655(https://s...">
+
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090b">
+  <link rel="icon" type="image/png" href="/logo_dark.png">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --card-hover: #1c1c21;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --primary-soft: rgba(245, 158, 11, 0.12);
+      --accent-red: #ef4444;
+      --accent-green: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    
+    /* Top Bar */
+    .topbar {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 9, 11, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--card-border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background: var(--card-border);
+    }
+    .btn-vip {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    
+    /* Alert / Student Banner */
+    .banner-vip {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #6ee7b7;
+      display: none;
+    }
+    .banner-visitor {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
+      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #fcd34d;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 14px;
+      max-width: 440px;
+      width: 100%;
+      padding: 28px;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid #3f3f46;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .modal-input:focus {
+      border-color: var(--primary);
+    }
+  </style>
+
+  
+<script>
+  (function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('student') === '1') {
+      localStorage.setItem('montanha_is_student', '1');
+    }
+    const isStudent = localStorage.getItem('montanha_is_student') === '1';
+    window.IS_STUDENT = isStudent;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      if (isStudent) {
+        const vipBanners = document.querySelectorAll('.banner-vip');
+        const visitorBanners = document.querySelectorAll('.banner-visitor');
+        vipBanners.forEach(b => b.style.display = 'block');
+        visitorBanners.forEach(b => b.style.display = 'none');
+        
+        const loginBtns = document.querySelectorAll('.btn-login-action');
+        loginBtns.forEach(btn => {
+          btn.textContent = 'App Studio Conectado';
+          btn.classList.remove('btn-outline');
+          btn.classList.add('btn-vip');
+        });
+      }
+    });
+  })();
+</script>
+
+
+  <style>
+    .article-wrap {
+      max-width: 780px;
+      margin: 40px auto 80px auto;
+      padding: 0 20px;
+    }
+    .breadcrumbs {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumbs a:hover { color: var(--text); }
+    .article-header {
+      margin-bottom: 36px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 28px;
+    }
+    .article-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .article-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    
+    /* Typography */
+    .prose {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #d4d4d8;
+    }
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+      color: #fff;
+      font-weight: 700;
+      margin: 40px 0 16px 0;
+      letter-spacing: -0.01em;
+    }
+    .prose h1 { font-size: 26px; }
+    .prose h2 { font-size: 22px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+    .prose h3 { font-size: 19px; }
+    .prose p { margin-bottom: 20px; }
+    .prose ul, .prose ol { margin: 0 0 20px 24px; }
+    .prose li { margin-bottom: 8px; }
+    .prose blockquote {
+      border-left: 4px solid var(--primary);
+      background: var(--card-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+      color: #e4e4e7;
+      font-style: italic;
+    }
+    .prose code {
+      background: #27272a;
+      color: #fcd34d;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .prose pre {
+      background: #18181b;
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+    .prose hr {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 40px 0;
+    }
+    .prose a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .prose table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14.5px;
+    }
+    .prose th, .prose td {
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .prose th { background: var(--card-bg); color: #fff; }
+
+    /* Share & CTA */
+    .share-box {
+      margin: 48px 0;
+      padding: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .nav-carousel {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      gap: 16px;
+    }
+    .nav-prev, .nav-next {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      max-width: 48%;
+    }
+    .nav-next { text-align: right; }
+
+    /* Conversion Box */
+    .conversion-box {
+      margin-top: 60px;
+      padding: 32px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.1) 0%, rgba(20, 20, 23, 0.8) 100%);
+      border-radius: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <a href="/materiais" style="display:flex; align-items:center; gap:10px;">
+          <img src="/logo_dark.png" alt="Coach Montanha">
+          <span>COACH MONTANHA</span>
+        </a>
+      </div>
+      <div class="topbar-actions">
+        <a href="/materiais" class="btn btn-outline">← Ver Todos os Materiais</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20li%20o%20artigo%20'Descubra o que a ciência diz sobre a dieta Atkins'%20e%20quero%20conhecer%20a%20Consultoria" class="btn btn-primary" target="_blank">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </header>
+
+  <article class="article-wrap">
+    <div class="breadcrumbs">
+      <a href="/materiais">Cofre de Materiais</a>
+      <span>›</span>
+      <a href="/materiais?cat=Nutrição & Suplementação">Nutrição & Suplementação</a>
+      <span>›</span>
+      <span>Descubra o que a ciência diz sobre a die...</span>
+    </div>
+
+    <div class="article-header">
+      <span class="article-badge">Nutrição & Suplementação</span>
+      <h1 class="article-title">Descubra o que a ciência diz sobre a dieta Atkins</h1>
+      <div class="article-meta">
+        <span>Por <strong>Coach Montanha</strong></span>
+        <span>•</span>
+        <span>⏱️ 2 min de leitura</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <blockquote>
+<p><strong>Artigo #27</strong> do acervo original do <em>Blog do Montanha</em>.<br />
+<strong>Painel Systeme.io:</strong> <a href="https://systeme.io/dashboard/page/10855655/edit"><code>10855655</code></a></p>
+</blockquote>
+<hr />
+<h3>Conteúdo do Artigo</h3>
+<p>Artigo indexado a partir do sistema central do Coach Montanha. Conteúdo completo editável em: <a href="https://systeme.io/dashboard/page/10855655/edit">ARTIGO 144 - Descubra o que a ciência diz sobre a dieta Atkins</a></p>
+<hr />
+<h2>🧭 Conexões do Ecossistema Montanha</h2>
+<h3>🔄 Navegação entre Artigos</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">⬅️ Anterior</th>
+<th style="text-align: center;">📚 Catálogo do Blog</th>
+<th style="text-align: right;">➡️ Próximo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">[[026_ARTIGO_145_-_Cuidado_com_o_que_você_vê</td>
+<td style="text-align: center;">Artigo Anterior]]</td>
+<td style="text-align: right;">[[CATALOGO_170_ARTIGOS|Catálogo Completo]]</td>
+</tr>
+</tbody>
+</table>
+<h3>🔗 Artigos Relacionados (Pilar: <code>Nutrição &amp; Suplementação</code>)</h3>
+<ul>
+<li>[[021_ARTIGO_150_-_Aprenda_tudo_sobre_peixes_e_frutos_do_mar_para_evitar_armadilhas]]</li>
+<li>[[025_ARTIGO_146_-_Desvendando_os_mitos_dos_laticínios]]</li>
+<li>[[029_ARTIGO_142_-_Berberina_Um_substituto_seguro_ao_Ozempic_ou_uma_farsa]]</li>
+<li>[[040_ARTIGO_131_-_O_poder_antidepressivo_da_dieta_cetogênica]]</li>
+</ul>
+<h3>📖 E-books Recomendados para Aprofundamento</h3>
+<ul>
+<li>[[EbookGETeMacros-Comocalcular_]]</li>
+<li>[[00-Indice-Ebooks-e-Blog|Índice Geral de E-books &amp; Blog]]</li>
+</ul>
+    </div>
+
+    <!-- Compartilhamento -->
+    <div class="share-box">
+      <div>
+        <strong style="color:#fff; display:block; margin-bottom:4px;">Gostou deste conteúdo?</strong>
+        <span style="font-size:13px; color:var(--text-muted);">Envie para um amigo ou no grupo de treino.</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="https://api.whatsapp.com/send?text=Artigo: Descubra o que a ciência diz sobre a dieta Atkins — Coach Montanha%20https://montanha-personal-studio.vercel.app/materiais/artigos/descubra-o-que-a-ciencia-diz-sobre-a-dieta-atkins" target="_blank" class="btn btn-primary" style="background:#25d366; color:#000;">
+          📲 Compartilhar no WhatsApp
+        </a>
+        <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copiado com sucesso!');" class="btn btn-outline">
+          🔗 Copiar Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegação Sequencial -->
+    <div class="nav-carousel">
+      <a href="/materiais/artigos/cuidado-com-o-que-voce-ve" class="nav-prev">← Cuidado com o que você vê...</a>
+      <a href="/materiais/artigos/venca-seus-bloqueios-e-supere-seus-limites-internos" class="nav-next">Vença seus bloqueios e supere seus limites in... →</a>
+    </div>
+
+    <!-- Caixa de Conversão -->
+    <div class="conversion-box">
+      <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--primary); letter-spacing:0.08em;">Studio Personal & Consultoria</span>
+      <h3 style="font-size:22px; font-weight:800; color:#fff; margin:8px 0 12px 0;">Treine com o Coach Montanha</h3>
+      <p style="font-size:14.5px; color:var(--text-muted); max-width:540px; margin:0 auto 20px auto;">
+        Chega de seguir treino genérico de aplicativo e continuar travado. Receba periodização individualizada, acompanhamento biomecânico e métricas reais.
+      </p>
+      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20vim%20pelo%20artigo%20'Descubra o que a ciência diz sobre a dieta Atkins'%20e%20quero%20vagas%20no%20Studio%20ou%20Consultoria" class="btn btn-primary" target="_blank" style="padding:12px 24px; font-size:15px;">
+        Solicitar Triagem no WhatsApp ➔
+      </a>
+    </div>
+  </article>
+
+  <footer class="hub-footer">
+    <div class="container">
+      <p>© 2026 Ecossistema Montanha • Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

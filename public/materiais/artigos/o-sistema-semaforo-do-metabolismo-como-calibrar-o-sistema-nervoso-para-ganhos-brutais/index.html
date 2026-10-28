@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS | Coach Montanha</title>
+  <meta name="description" content="O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS O corpo humano não é uma máquina estática de queimar calorias; ...">
+  
+  <!-- OpenGraph Meta Tags para WhatsApp e Redes -->
+  <meta property="og:title" content="O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS | Coach Montanha">
+  <meta property="og:description" content="O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS O corpo humano não é uma máquina estática de queimar calorias; ...">
+  <meta property="og:url" content="https://montanha-personal-studio.vercel.app/materiais/artigos/o-sistema-semaforo-do-metabolismo-como-calibrar-o-sistema-nervoso-para-ganhos-brutais">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/logo_dark.png">
+  <meta property="og:site_name" content="Coach Montanha • Studio Personal">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS">
+  <meta name="twitter:description" content="O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS O corpo humano não é uma máquina estática de queimar calorias; ...">
+
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090b">
+  <link rel="icon" type="image/png" href="/logo_dark.png">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --card-hover: #1c1c21;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --primary-soft: rgba(245, 158, 11, 0.12);
+      --accent-red: #ef4444;
+      --accent-green: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    
+    /* Top Bar */
+    .topbar {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 9, 11, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--card-border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background: var(--card-border);
+    }
+    .btn-vip {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    
+    /* Alert / Student Banner */
+    .banner-vip {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #6ee7b7;
+      display: none;
+    }
+    .banner-visitor {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
+      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #fcd34d;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 14px;
+      max-width: 440px;
+      width: 100%;
+      padding: 28px;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid #3f3f46;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .modal-input:focus {
+      border-color: var(--primary);
+    }
+  </style>
+
+  
+<script>
+  (function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('student') === '1') {
+      localStorage.setItem('montanha_is_student', '1');
+    }
+    const isStudent = localStorage.getItem('montanha_is_student') === '1';
+    window.IS_STUDENT = isStudent;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      if (isStudent) {
+        const vipBanners = document.querySelectorAll('.banner-vip');
+        const visitorBanners = document.querySelectorAll('.banner-visitor');
+        vipBanners.forEach(b => b.style.display = 'block');
+        visitorBanners.forEach(b => b.style.display = 'none');
+        
+        const loginBtns = document.querySelectorAll('.btn-login-action');
+        loginBtns.forEach(btn => {
+          btn.textContent = 'App Studio Conectado';
+          btn.classList.remove('btn-outline');
+          btn.classList.add('btn-vip');
+        });
+      }
+    });
+  })();
+</script>
+
+
+  <style>
+    .article-wrap {
+      max-width: 780px;
+      margin: 40px auto 80px auto;
+      padding: 0 20px;
+    }
+    .breadcrumbs {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumbs a:hover { color: var(--text); }
+    .article-header {
+      margin-bottom: 36px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 28px;
+    }
+    .article-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .article-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    
+    /* Typography */
+    .prose {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #d4d4d8;
+    }
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+      color: #fff;
+      font-weight: 700;
+      margin: 40px 0 16px 0;
+      letter-spacing: -0.01em;
+    }
+    .prose h1 { font-size: 26px; }
+    .prose h2 { font-size: 22px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+    .prose h3 { font-size: 19px; }
+    .prose p { margin-bottom: 20px; }
+    .prose ul, .prose ol { margin: 0 0 20px 24px; }
+    .prose li { margin-bottom: 8px; }
+    .prose blockquote {
+      border-left: 4px solid var(--primary);
+      background: var(--card-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+      color: #e4e4e7;
+      font-style: italic;
+    }
+    .prose code {
+      background: #27272a;
+      color: #fcd34d;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .prose pre {
+      background: #18181b;
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+    .prose hr {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 40px 0;
+    }
+    .prose a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .prose table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14.5px;
+    }
+    .prose th, .prose td {
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .prose th { background: var(--card-bg); color: #fff; }
+
+    /* Share & CTA */
+    .share-box {
+      margin: 48px 0;
+      padding: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .nav-carousel {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      gap: 16px;
+    }
+    .nav-prev, .nav-next {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      max-width: 48%;
+    }
+    .nav-next { text-align: right; }
+
+    /* Conversion Box */
+    .conversion-box {
+      margin-top: 60px;
+      padding: 32px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.1) 0%, rgba(20, 20, 23, 0.8) 100%);
+      border-radius: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <a href="/materiais" style="display:flex; align-items:center; gap:10px;">
+          <img src="/logo_dark.png" alt="Coach Montanha">
+          <span>COACH MONTANHA</span>
+        </a>
+      </div>
+      <div class="topbar-actions">
+        <a href="/materiais" class="btn btn-outline">← Ver Todos os Materiais</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20li%20o%20artigo%20'O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS'%20e%20quero%20conhecer%20a%20Consultoria" class="btn btn-primary" target="_blank">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </header>
+
+  <article class="article-wrap">
+    <div class="breadcrumbs">
+      <a href="/materiais">Cofre de Materiais</a>
+      <span>›</span>
+      <a href="/materiais?cat=BIOHACKING & PERFORMANCE">BIOHACKING & PERFORMANCE</a>
+      <span>›</span>
+      <span>O SISTEMA SEMÁFORO DO METABOLISMO: COMO ...</span>
+    </div>
+
+    <div class="article-header">
+      <span class="article-badge">BIOHACKING & PERFORMANCE</span>
+      <h1 class="article-title">O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS</h1>
+      <div class="article-meta">
+        <span>Por <strong>Coach Montanha</strong></span>
+        <span>•</span>
+        <span>⏱️ 8 min de leitura</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>O corpo humano não é uma máquina estática de queimar calorias; ele se comporta como um motor de alto deslocamento. E, assim como qualquer bólido de corrida, o seu <strong>metabolismo opera em velocidades distintas</strong>: ele pode girar no limite da linha vermelha em rotação máxima, navegar com estabilidade em velocidade de cruzeiro na rodovia, ou repousar na garagem enquanto a engenharia interna se regenera.</p>
+<p>No ambiente moderno do treinamento de força, a grande maioria dos praticantes comete um erro fatal de calibragem: aceleram o pedal no fundo dia após dia, cortam carboidratos sem critério e acumulam horas de fadiga crônica. ==O resultado dessa negligência não é hipertrofia nem queima de gordura acelerada: é o colapso do sistema nervoso autônomo e o temido estado de resistência metabólica.==</p>
+<h3>AS TRÊS CORES DA ENGRENAGEM METABÓLICA</h3>
+<p>Para assumir o controle dos seus resultados e blindar sua imunidade, você precisa classificar seus treinos através de um <strong>modelo semafórico operacional</strong>:</p>
+<ol>
+<li><strong>A Zona Vermelha (Giro Máximo):</strong> Sprints em subida, protocolos de <em>MetCon</em> (condicionamento metabólico denso), sessões pesadas de CrossFit, remadores em ritmo frenético ou corridas de longa distância. Exigem demanda extrema do sistema cardiovascular e muscular, sem pausas ou com intervalos curtíssimos. É o território da liberação maciça de <strong>adrenalina e cortisol</strong>, mobilizando estoques imediatos de glicose e ácidos graxos no sangue.</li>
+<li><strong>A Zona Amarela (Velocidade de Cruzeiro):</strong> A tradicional <strong>musculação pesada e o treino de força pura</strong>. Aqui, você atinge picos de esforço de alta intensidade, mas desfruta de descanso generoso e restaurador entre cada série. Poucos percebem, mas o treino tradicional de hipertrofia é o grande moderador metabólico: enquanto você levanta a carga, ativa o sistema simpático; enquanto descansa no banco, seu organismo tenta resgatar a calma.</li>
+<li><strong>A Zona Verde (Descompressão e Cura):</strong> O estado de marcha lenta. Engloba caminhadas lentas e regenerativas ao ar livre (<em>LISS</em>), mobilidade articular, liberação miofascial com rolo de espuma, banhos de contraste e sono profundo. É aqui que o cortisol desaba, a frequência cardíaca se estabiliza e o corpo libera <strong>hormônio do crescimento (GH) e testosterona</strong> para reconstruir as fibras lesionadas.</li>
+</ol>
+<h3>O PREÇO DE FICAR PRESO NA ZONA VERMELHA</h3>
+<p>O verdadeiro <em>overtraining</em> não é apenas dor muscular tardia nas coxas; é uma <strong>paralisia do sistema simpático</strong>. Quando você passa semanas forçando o motor sem fornecer lastro verde, seu organismo entra em modo de emergência (<em>fight, flight or freeze</em>).</p>
+<p>O sinal clássico desse descompasso é estar <strong>exausto por fora, mas acelerado por dentro</strong>. Você se deita na cama à meia-noite com o corpo quebrado, mas a mente parece plugada em uma tomada de duzentos volts. O sono não vem, as ereções matinais desaparecem, a imunidade despenca e a menor frustração diária se transforma em irritação desmedida. Você tem adrenalina residual circulando nas veias, mas zero energia funcional para aplicar na barra.</p>
+<h3>O PROTOCOLO PRÁTICO DE RECALIBRAGEM</h3>
+<p>Se você reconhece esses sintomas, pare de cavar o próprio buraco. A solução não é abandonar a intensidade, mas estruturar uma hierarquia inteligente:</p>
+<ul>
+<li><strong>Aplique a Proporção 2:1:</strong> Para cada treino que você fizer na Zona Vermelha durante a semana, garanta duas sessões dedicadas à Zona Verde. Se fez 30 minutos de tiros no ergômetro na terça-feira, reserve 60 minutos de caminhada tranquila e descompressão na quarta-feira.</li>
+<li><strong>O Retorno à Zona Amarela:</strong> Se o seu corpo estiver travado e fadigado, abandone os circuitos metabólicos exaustivos por três a quatro semanas. Concentre-se no treinamento de força clássico (3 a 5 repetições, descansos de 2 a 3 minutos). O descanso forçado entre séries reensina seu sistema nervoso a oscilar entre ativação e recuperação.</li>
+<li><strong>Nutrição Condizente com a Cor:</strong> Se o dia é Vermelho, você precisa de substrato glicolítico — cortar carboidratos a zero enquanto treina em alta densidade é receita certa para hipotireoidismo funcional. Deixe os protocolos de jejum intermitente ou restrição calórica severa para os dias dominados pela Zona Verde.</li>
+</ul>
+<p>O guerreiro experiente não é aquele que apenas suporta a dor extrema da Zona Vermelha, mas aquele que desenvolveu a frieza de dominar a Zona Verde. Quem governa o próprio sistema nervoso governa o ferro.</p>
+<hr />
+<h2>DERIVADOS DE REDES SOCIAIS</h2>
+<h3>Carrossel para Instagram &amp; LinkedIn (8 Slides)</h3>
+<ul>
+<li><strong>Slide 1:</strong> [CAPA] Cansado o dia todo, mas ligado à noite? Você está preso na Zona Vermelha do metabolismo.</li>
+<li><strong>Slide 2:</strong> O Sintoma Invisível: Estar exausto por fora, mas agitado por dentro. Isso não é falta de café: é saturação do sistema simpático (adrenalina e cortisol cronicamente altos).</li>
+<li><strong>Slide 3:</strong> O Sistema Semáforo: Seu metabolismo é um motor de corrida com 3 marchas.</li>
+<li><strong>Slide 4:</strong> Zona Vermelha: Sprints, metcons, circuitos até vomitar. Ótimo estímulo, mas altamente tóxico se repetido sem pausas.</li>
+<li><strong>Slide 5:</strong> Zona Amarela (O Moderador): Musculação pesada tradicional. Você ativa o simpático durante a série e o parassimpático no descanso.</li>
+<li><strong>Slide 6:</strong> Zona Verde (O Crescimento Real): Caminhadas ao ar livre, sono profundo, banhos de contraste. É aqui que o GH e a testosterona reconstroem você.</li>
+<li><strong>Slide 7:</strong> A Regra 2:1: Para cada sessão Vermelha na semana, acumule pelo menos 2 sessões Verdes de recuperação ativa.</li>
+<li><strong>Slide 8:</strong> [CTA] Quer aprender a dosar seu sistema nervoso e blindar seus hormônios? Leia a matéria completa na Montanha Magazine.</li>
+</ul>
+<h3>Thread para X / Twitter (6 Tweets)</h3>
+<ol>
+<li>Estar "exausto por fora, mas elétrico por dentro" não é sinal de dedicação: é sinal de que seu sistema nervoso entrou em colapso. Entenda o Sistema Semáforo do Metabolismo 🧵👇</li>
+<li>Quando você treina pesado demais sem recuperação, fica preso no modo de sobrevivência (Luta, Fuga ou Paralisia). Cortisol e adrenalina disparam, mas sua força real despenca.</li>
+<li>Zona Vermelha (sprints/metcon): Queima rápido e gasta glicogênio. Não viva aqui mais de 2x por semana.</li>
+<li>Zona Amarela (musculação clássica): O melhor estabilizador. A série estressa o corpo, o descanso entre séries reensina seu cérebro a desacelerar.</li>
+<li>Zona Verde (caminhadas, mobilidade, sono): Onde o músculo realmente se reconstrói. Aplique a proporção de 2 sessões verdes para cada sessão vermelha.</li>
+<li>Domine a marcha lenta para poder acelerar com segurança. Matéria completa disponível na Montanha Magazine.</li>
+</ol>
+<hr />
+<h2>🧭 Conexões do Ecossistema Montanha</h2>
+<h3>🔄 Navegação entre Artigos</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">⬅️ Anterior</th>
+<th style="text-align: center;">📚 Catálogo do Blog</th>
+<th style="text-align: right;">➡️ Próximo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">[[CATALOGO_170_ARTIGOS</td>
+<td style="text-align: center;">Catálogo 170 Artigos]]</td>
+<td style="text-align: right;">[[CATALOGO_170_ARTIGOS|Catálogo Completo]]</td>
+</tr>
+</tbody>
+</table>
+<h3>🔗 Artigos Relacionados (Pilar: <code>Corrida &amp; Endurance</code>)</h3>
+<ul>
+<li>[[165_ARTIGO_6_-_4_Razões_para_começar_a_correr!]]</li>
+<li>[[001_ARTIGO_170_-_O_treino_nórdico_de_remo]]</li>
+<li>[[009_ARTIGO_162_-_O_Método_MAF_de_treinamento_de_endurance]]</li>
+<li>[[020_ARTIGO_151_-_Domine_a_cadência_na_sua_corrida]]</li>
+</ul>
+<h3>📖 E-books Recomendados para Aprofundamento</h3>
+<ul>
+<li>[[EbookRevolucioneasuacorridaPrograma5k]]</li>
+<li>[[EbookRevolucioneasuacorridaPrograma15k]]</li>
+<li>[[00-Indice-Ebooks-e-Blog|Índice Geral de E-books &amp; Blog]]</li>
+</ul>
+    </div>
+
+    <!-- Compartilhamento -->
+    <div class="share-box">
+      <div>
+        <strong style="color:#fff; display:block; margin-bottom:4px;">Gostou deste conteúdo?</strong>
+        <span style="font-size:13px; color:var(--text-muted);">Envie para um amigo ou no grupo de treino.</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="https://api.whatsapp.com/send?text=Artigo: O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS — Coach Montanha%20https://montanha-personal-studio.vercel.app/materiais/artigos/o-sistema-semaforo-do-metabolismo-como-calibrar-o-sistema-nervoso-para-ganhos-brutais" target="_blank" class="btn btn-primary" style="background:#25d366; color:#000;">
+          📲 Compartilhar no WhatsApp
+        </a>
+        <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copiado com sucesso!');" class="btn btn-outline">
+          🔗 Copiar Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegação Sequencial -->
+    <div class="nav-carousel">
+      <a href="/materiais/artigos/o-protocolo-de-densidade-como-dobrar-suas-repeticoes-na-barra-fixa-sem-tocar-na-falha" class="nav-prev">← O PROTOCOLO DE DENSIDADE: COMO DOBRAR SUAS RE...</a>
+      <a href="/materiais/artigos/prompts-oficiais-gemini-30-dias-de-conteudo" class="nav-next">Prompts Oficiais Gemini // 30 Dias de Conteúd... →</a>
+    </div>
+
+    <!-- Caixa de Conversão -->
+    <div class="conversion-box">
+      <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--primary); letter-spacing:0.08em;">Studio Personal & Consultoria</span>
+      <h3 style="font-size:22px; font-weight:800; color:#fff; margin:8px 0 12px 0;">Treine com o Coach Montanha</h3>
+      <p style="font-size:14.5px; color:var(--text-muted); max-width:540px; margin:0 auto 20px auto;">
+        Chega de seguir treino genérico de aplicativo e continuar travado. Receba periodização individualizada, acompanhamento biomecânico e métricas reais.
+      </p>
+      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20vim%20pelo%20artigo%20'O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIBRAR O SISTEMA NERVOSO PARA GANHOS BRUTAIS'%20e%20quero%20vagas%20no%20Studio%20ou%20Consultoria" class="btn btn-primary" target="_blank" style="padding:12px 24px; font-size:15px;">
+        Solicitar Triagem no WhatsApp ➔
+      </a>
+    </div>
+  </article>
+
+  <footer class="hub-footer">
+    <div class="container">
+      <p>© 2026 Ecossistema Montanha • Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

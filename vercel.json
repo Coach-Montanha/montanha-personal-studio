@@ -15,6 +15,9 @@
     }
   ],
   "redirects": [
+    { "source": "/blog", "destination": "/materiais", "permanent": true },
+    { "source": "/artigos", "destination": "/materiais", "permanent": true },
+    { "source": "/ebooks", "destination": "/materiais", "permanent": true },
     { "source": "/hibrido", "destination": "/materiais/treinamento-hibrido", "permanent": true },
     { "source": "/mobilidade", "destination": "/materiais/mobilidade", "permanent": true },
     { "source": "/hibrido-pdf", "destination": "/materiais/treinamento-hibrido/Protocolo_Atleta_Hibrido_30_Dias_Coach_Montanha.pdf", "permanent": true },

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORTES COLETIVOS: O PROTOCOLO DE ALTA PERFORMANCE | Coach Montanha</title>
+  <meta name="description" content="Em modalidades coletivas de alta intensidade — futebol, basquete, rugby, futsal ou handebol — a diferença entre a vitória nos minutos finais e o colap...">
+  
+  <!-- OpenGraph Meta Tags para WhatsApp e Redes -->
+  <meta property="og:title" content="PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORTES COLETIVOS: O PROTOCOLO DE ALTA PERFORMANCE | Coach Montanha">
+  <meta property="og:description" content="Em modalidades coletivas de alta intensidade — futebol, basquete, rugby, futsal ou handebol — a diferença entre a vitória nos minutos finais e o colap...">
+  <meta property="og:url" content="https://montanha-personal-studio.vercel.app/materiais/artigos/periodizacao-de-carboidratos-para-esportes-coletivos-o-protocolo-de-alta-performance">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/logo_dark.png">
+  <meta property="og:site_name" content="Coach Montanha • Studio Personal">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORTES COLETIVOS: O PROTOCOLO DE ALTA PERFORMANCE">
+  <meta name="twitter:description" content="Em modalidades coletivas de alta intensidade — futebol, basquete, rugby, futsal ou handebol — a diferença entre a vitória nos minutos finais e o colap...">
+
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090b">
+  <link rel="icon" type="image/png" href="/logo_dark.png">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --card-hover: #1c1c21;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --primary-soft: rgba(245, 158, 11, 0.12);
+      --accent-red: #ef4444;
+      --accent-green: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    
+    /* Top Bar */
+    .topbar {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 9, 11, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--card-border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background: var(--card-border);
+    }
+    .btn-vip {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    
+    /* Alert / Student Banner */
+    .banner-vip {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #6ee7b7;
+      display: none;
+    }
+    .banner-visitor {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
+      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #fcd34d;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 14px;
+      max-width: 440px;
+      width: 100%;
+      padding: 28px;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid #3f3f46;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .modal-input:focus {
+      border-color: var(--primary);
+    }
+  </style>
+
+  
+<script>
+  (function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('student') === '1') {
+      localStorage.setItem('montanha_is_student', '1');
+    }
+    const isStudent = localStorage.getItem('montanha_is_student') === '1';
+    window.IS_STUDENT = isStudent;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      if (isStudent) {
+        const vipBanners = document.querySelectorAll('.banner-vip');
+        const visitorBanners = document.querySelectorAll('.banner-visitor');
+        vipBanners.forEach(b => b.style.display = 'block');
+        visitorBanners.forEach(b => b.style.display = 'none');
+        
+        const loginBtns = document.querySelectorAll('.btn-login-action');
+        loginBtns.forEach(btn => {
+          btn.textContent = 'App Studio Conectado';
+          btn.classList.remove('btn-outline');
+          btn.classList.add('btn-vip');
+        });
+      }
+    });
+  })();
+</script>
+
+
+  <style>
+    .article-wrap {
+      max-width: 780px;
+      margin: 40px auto 80px auto;
+      padding: 0 20px;
+    }
+    .breadcrumbs {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumbs a:hover { color: var(--text); }
+    .article-header {
+      margin-bottom: 36px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 28px;
+    }
+    .article-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .article-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    
+    /* Typography */
+    .prose {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #d4d4d8;
+    }
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+      color: #fff;
+      font-weight: 700;
+      margin: 40px 0 16px 0;
+      letter-spacing: -0.01em;
+    }
+    .prose h1 { font-size: 26px; }
+    .prose h2 { font-size: 22px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+    .prose h3 { font-size: 19px; }
+    .prose p { margin-bottom: 20px; }
+    .prose ul, .prose ol { margin: 0 0 20px 24px; }
+    .prose li { margin-bottom: 8px; }
+    .prose blockquote {
+      border-left: 4px solid var(--primary);
+      background: var(--card-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+      color: #e4e4e7;
+      font-style: italic;
+    }
+    .prose code {
+      background: #27272a;
+      color: #fcd34d;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .prose pre {
+      background: #18181b;
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+    .prose hr {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 40px 0;
+    }
+    .prose a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .prose table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14.5px;
+    }
+    .prose th, .prose td {
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .prose th { background: var(--card-bg); color: #fff; }
+
+    /* Share & CTA */
+    .share-box {
+      margin: 48px 0;
+      padding: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .nav-carousel {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      gap: 16px;
+    }
+    .nav-prev, .nav-next {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      max-width: 48%;
+    }
+    .nav-next { text-align: right; }
+
+    /* Conversion Box */
+    .conversion-box {
+      margin-top: 60px;
+      padding: 32px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.1) 0%, rgba(20, 20, 23, 0.8) 100%);
+      border-radius: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <a href="/materiais" style="display:flex; align-items:center; gap:10px;">
+          <img src="/logo_dark.png" alt="Coach Montanha">
+          <span>COACH MONTANHA</span>
+        </a>
+      </div>
+      <div class="topbar-actions">
+        <a href="/materiais" class="btn btn-outline">← Ver Todos os Materiais</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20li%20o%20artigo%20'PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORTES COLETIVOS: O PROTOCOLO DE ALTA PERFORMANCE'%20e%20quero%20conhecer%20a%20Consultoria" class="btn btn-primary" target="_blank">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </header>
+
+  <article class="article-wrap">
+    <div class="breadcrumbs">
+      <a href="/materiais">Cofre de Materiais</a>
+      <span>›</span>
+      <a href="/materiais?cat=NUTRIÇÃO DE PRECISÃO & PERFORMANCE">NUTRIÇÃO DE PRECISÃO & PERFORMANCE</a>
+      <span>›</span>
+      <span>PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORT...</span>
+    </div>
+
+    <div class="article-header">
+      <span class="article-badge">NUTRIÇÃO DE PRECISÃO & PERFORMANCE</span>
+      <h1 class="article-title">PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORTES COLETIVOS: O PROTOCOLO DE ALTA PERFORMANCE</h1>
+      <div class="article-meta">
+        <span>Por <strong>Coach Montanha</strong></span>
+        <span>•</span>
+        <span>⏱️ 11 min de leitura</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>Em modalidades coletivas de alta intensidade — futebol, basquete, rugby, futsal ou handebol — a diferença entre a vitória nos minutos finais e o colapso físico reside quase inteiramente na <strong>disponibilidade de glicogênio muscular e hepático</strong>.</p>
+<p>Muitos atletas ainda cometem o erro primário de tratar a nutrição como uma linha reta: consomem a mesma quantidade de comida nos dias de folga, nos treinos regenerativos e nas vésperas de decisões cruciais. Essa abordagem linear destrói a sensibilidade à insulina nos períodos de baixo gasto e deixa os tanques vazios quando a demanda metabólica atinge o pico.</p>
+<p>==Abasteça para a demanda. Recupere para o que vem a seguir.==</p>
+<p>A seguir, dissecamos o protocolo de <strong>Periodização de Carboidratos em 5 Fases</strong> adotado pelo <strong>Coach Montanha</strong> e pelos maiores centros de alta performance do mundo.</p>
+<hr />
+<h3>1. DAY OFF (DIA DE FOLGA): MANTER (MAINTAIN)</h3>
+<p>O objetivo do dia sem treino não é jejuar nem realizar compensações absurdas, mas sim alinhar a ingestão energética à <strong>taxa metabólica de repouso</strong> e aos processos de cicatrização tecidual.<br />
+* <strong>Foco Metabólico:</strong> Sensibilidade à insulina e reparo de microlesões.<br />
+* <strong>Diretriz de Carboidratos:</strong> Ingestão moderada e estável, compatível com a demanda basal (<strong>2 a 3g/kg</strong>).<br />
+* <strong>Fontes:</strong> Carboidratos densos em micronutrientes e fibras — tubérculos, legumes, verduras variadas e frutas ricas em polifenóis (frutas vermelhas, maçã, cítricos).</p>
+<hr />
+<h3>2. MD−2 (2 DIAS ANTES DO JOGO): CONSTRUIR (BUILD)</h3>
+<p>Quarenta e oito horas antes da partida, a chave anabólica vira: começamos a encher os reservatórios miofibrilares de forma progressiva, sem sobrecarregar o trato gastrointestinal.<br />
+* <strong>Foco Metabólico:</strong> Aumento da disponibilidade de glicogênio e otimização da eficiência mitocondrial.<br />
+* <strong>Diretriz de Carboidratos:</strong> Elevação planejada para <strong>4 a 6g/kg</strong>.<br />
+* <strong>Estratégia de Nitratos:</strong> Introdução de alimentos ricos em nitratos inorgânicos ($NO_3^-$), como o <strong>suco de beterraba concentrado</strong> (300 a 400mg de nitrato). Os nitratos reduzem o custo de oxigênio do exercício submáximo e aumentam o fluxo sanguíneo muscular através da conversão em óxido nítrico ($NO$).<br />
+* <strong>Hidratação:</strong> Manutenção rigorosa de água e eletrólitos (sódio e magnésio) para permitir que cada grama de glicogênio carregue cerca de <strong>3g de água intracelular</strong>.</p>
+<hr />
+<h3>3. MD−1 (VÉSPERA DO JOGO): CARREGAR (LOAD)</h3>
+<p>Vinte e quatro horas antes do apito inicial. Aqui não há espaço para testes ou aventuras gastronômicas. O foco é a <strong>supercompensação de glicogênio</strong> com mínima fermentação intestinal.<br />
+* <strong>Foco Metabólico:</strong> Carga máxima de substrato energético e conforto digestivo absoluto.<br />
+* <strong>Diretriz de Carboidratos:</strong> <strong>6 a 8g/kg</strong> distribuídos em refeições frequentes e familiares ao atleta.<br />
+* <strong>Ajuste Cirúrgico:</strong> <strong>Reduzir drasticamente o consumo de fibras insolúveis e gorduras densas</strong>. Gorduras atrasam o esvaziamento gástrico e fibras em excesso aumentam o bolo fecal, gerando peso desnecessário e desconforto abdominal durante sprints repetidos.<br />
+* <strong>Fontes:</strong> Arroz branco, batata inglesa cozida, purê de mandioca, macarrão tradicional, aveia e frutas sem casca.</p>
+<hr />
+<h3>4. MATCH DAY (DIA DO JOGO): PERFORM (PERFORMAR)</h3>
+<p>O dia da batalha. O foco é garantir glicemia estável, estômago leve e fornecimento constante de glicose durante os períodos de maior exigência neuromotora.<br />
+* <strong>Pré-Jogo (3 a 4 horas antes):</strong> Refeição rica em carboidratos complexos de fácil digestão, proteína magra moderada e quase zero gordura (ex: arroz branco, frango desfiado, banana com canela).<br />
+* <strong>Toque Final (60 a 90 min antes):</strong> Pequeno aporte de carboidratos simples (ex: bananinha sem açúcar, geleia real ou bebida isotônica).<br />
+* <strong>Intra-Jogo (Intervalos):</strong> Reposição de <strong>30 a 60g de carboidratos por hora</strong> através de géis isotônicos com eletrólitos, mantendo a oxidação de glicose exógena e poupando o glicogênio endógeno.<br />
+* <strong>Imediatamente Pós-Jogo (0 a 45 min):</strong> Abertura da janela de ressíntese rápida via transportadores <strong>GLUT-4</strong> independentes de insulina. Consumir <strong>1,0 a 1,2g/kg de carboidratos de alto índice glicêmico</strong> combinados com <strong>0,3 a 0,4g/kg de proteína de rápida absorção</strong> (whey protein isolado) e reposição hídrica de 150% do peso perdido no suor.</p>
+<hr />
+<h3>5. MD+1 (DIA SEGUINTE): RECUPERAR (RECOVER)</h3>
+<p>Após 90 minutos de acelerações, desacelerações excêntricas e choques mecânicos, o músculo está depletado e inflamado. O objetivo do MD+1 é acelerar o retorno à homeostase.<br />
+* <strong>Foco Metabólico:</strong> Reabastecimento completo de estoques residuais e interrupção do catabolismo proteico.<br />
+* <strong>Diretriz de Carboidratos:</strong> Manter ingestão generosa (<strong>4 a 5g/kg</strong>) para garantir a restauração do glicogênio nos dias seguintes.<br />
+* <strong>Eletrólitos e Fluidos:</strong> Reposição focada em água rica em sódio, potássio e água de coco para restaurar a osmolalidade plasmática.<br />
+* <strong>Síntese Miofibrilar:</strong> Doses fracionadas de proteína de alto valor biológico (<strong>20 a 40g a cada 3-4 horas</strong>) ricas em leucina para estimular a via <strong>mTORC1</strong>.</p>
+<hr />
+<h2>CONTEÚDO DERIVADO PARA REDES SOCIAIS</h2>
+<h3>CARROSSEL PARA INSTAGRAM &amp; LINKEDIN (8 SLIDES — FORMATO 1:1)</h3>
+<ul>
+<li><strong>Slide 01/08 [CAPA]:</strong></li>
+<li><strong>Tag:</strong> NUTRIÇÃO DE ALTA PERFORMANCE</li>
+<li><strong>Título:</strong> PERIODIZAÇÃO DE CARBOIDRATOS EM ESPORTES COLETIVOS</li>
+<li><strong>Subtítulo:</strong> Da folga ao dia do jogo: o protocolo de 5 fases para manter a velocidade e a explosão até o apito final.</li>
+<li>
+<p><strong>Rodapé:</strong> Coach Montanha // Montanha Magazine | ARRASTE PARA O LADO ➔</p>
+</li>
+<li>
+<p><strong>Slide 02/08 [O ERRO COMUM]:</strong></p>
+</li>
+<li><strong>Tag:</strong> A ILUSÃO LINEAR</li>
+<li><strong>Título:</strong> O ERRO DO PRATO IGUAL TODO DIA</li>
+<li><strong>Texto:</strong> Tratar dia de descanso como dia de jogo destrói a sensibilidade à insulina. E comer pouco na véspera faz você quebrar no segundo tempo.</li>
+<li><strong>Box:</strong> O músculo não é estático. Abasteça para a demanda, recupere para o que vem a seguir.</li>
+<li>
+<p><strong>Rodapé:</strong> Coach Montanha // Montanha Magazine | CONTINUE ➔</p>
+</li>
+<li>
+<p><strong>Slide 03/08 [FASE 1]:</strong></p>
+</li>
+<li><strong>Tag:</strong> DAY OFF (FOLGA)</li>
+<li><strong>Título:</strong> 🛌 FASE 1: MANTER (MAINTAIN)</li>
+<li><strong>Texto:</strong> Adequar os carboidratos à demanda basal de repouso (2 a 3g/kg). Refeições equilibradas com vegetais, folhas e frutas ricas em antioxidantes.</li>
+<li><strong>Box:</strong> O objetivo aqui é reparação celular e restauração da sensibilidade à insulina.</li>
+<li>
+<p><strong>Rodapé:</strong> Coach Montanha // Montanha Magazine | CONTINUE ➔</p>
+</li>
+<li>
+<p><strong>Slide 04/08 [FASE 2]:</strong></p>
+</li>
+<li><strong>Tag:</strong> MD−2 (2 DIAS ANTES)</li>
+<li><strong>Título:</strong> 🔋 FASE 2: CONSTRUIR (BUILD)</li>
+<li><strong>Texto:</strong> Aumente os carboidratos para 4 a 6g/kg e hidrate-se com eletrólitos. Introduza a estratégia de nitratos (suco de beterraba).</li>
+<li><strong>Box:</strong> O nitrato melhora a oxigenação muscular e a eficiência energética dos sprints.</li>
+<li>
+<p><strong>Rodapé:</strong> Coach Montanha // Montanha Magazine | CONTINUE ➔</p>
+</li>
+<li>
+<p><strong>Slide 05/08 [FASE 3]:</strong></p>
+</li>
+<li><strong>Tag:</strong> MD−1 (VÉSPERA)</li>
+<li><strong>Título:</strong> ⛽️ FASE 3: CARREGAR (LOAD)</li>
+<li><strong>Texto:</strong> Supercompensação de glicogênio (6 a 8g/kg). Priorize alimentos familiares e de fácil digestão (arroz, batata, aveia).</li>
+<li><strong>Box:</strong> Reduza fibras e gorduras para evitar peso e desconforto estomacal no dia seguinte.</li>
+<li>
+<p><strong>Rodapé:</strong> Coach Montanha // Montanha Magazine | CONTINUE ➔</p>
+</li>
+<li>
+<p><strong>Slide 06/08 [FASE 4]:</strong></p>
+</li>
+<li><strong>Tag:</strong> MATCH DAY (JOGO)</li>
+<li><strong>Título:</strong> 🏟️ FASE 4: PERFORMAR (PERFORM)</li>
+<li><strong>Texto:</strong> Pré-jogo leve 3-4h antes. Reabasteça 30-60g/h de carboidratos nos intervalos. No pós-jogo imediato: carbo rápido + proteína de alto valor biológico.</li>
+<li><strong>Box:</strong> O timing do pós-jogo determina a velocidade da sua recuperação muscular.</li>
+<li>
+<p><strong>Rodapé:</strong> Coach Montanha // Montanha Magazine | CONTINUE ➔</p>
+</li>
+<li>
+<p><strong>Slide 07/08 [FASE 5]:</strong></p>
+</li>
+<li><strong>Tag:</strong> MD+1 (PÓS-JOGO)</li>
+<li><strong>Título:</strong> ♻️ FASE 5: RECUPERAR (RECOVER)</li>
+<li><strong>Texto:</strong> Reponha estoques depletados de glicogênio, substitua fluidos e eletrólitos perdidos e mantenha proteína constante para reparo muscular.</li>
+<li><strong>Box:</strong> Quem não se recupera no MD+1 chega inflamado e lento no próximo confronto.</li>
+<li>
+<p><strong>Rodapé:</strong> Coach Montanha // Montanha Magazine | ÚLTIMO SLIDE ➔</p>
+</li>
+<li>
+<p><strong>Slide 08/08 [FECHAMENTO &amp; CTA]:</strong></p>
+</li>
+<li><strong>Tag:</strong> MENTALIDADE DE CAMPEÃO</li>
+<li><strong>Título:</strong> ENERGIA NÃO É ACASO.<br>É ESTRATÉGIA.</li>
+<li><strong>Texto:</strong> Domine a bioquímica do seu rendimento. Artigo completo com dosagens e diretrizes práticas na Montanha Magazine.</li>
+<li><strong>Card de Ação:</strong> Edição Digital Disponível // LEIA NA MONTANHA MAGAZINE</li>
+<li><strong>Rodapé:</strong> SALVE ESTE POST 📌 // COMPARTILHE ➔</li>
+</ul>
+<hr />
+<h3>THREAD PARA X / TWITTER (6 TWEETS DE ALTO IMPACTO)</h3>
+<p><strong>Tweet 1/6 (Hook):</strong><br />
+Comer o mesmo prato de macarrão todo dia não é nutrição esportiva.<br />
+Se você joga futebol, basquete, rugby ou qualquer esporte coletivo, o que define a sua explosão no 2º tempo é a PERIODIZAÇÃO DE CARBOIDRATOS.<br />
+O protocolo de 5 fases do @CoachMontanha 👇🧵</p>
+<p><strong>Tweet 2/6:</strong><br />
+🛌 DAY OFF (Folga): MANTER.<br />
+Alinhe os carboidratos ao repouso (2-3g/kg). Não faça compensações extremas. Use vegetais densos e frutas ricas em polifenóis para restaurar a sensibilidade à insulina.</p>
+<p><strong>Tweet 3/6:</strong><br />
+🔋 MD−2 (2 dias antes): CONSTRUIR.<br />
+Comece a elevar o glicogênio (4-6g/kg). Hidratação pesada com sódio e estratégia de nitratos (suco de beterraba) para otimizar o fluxo de oxigênio muscular.</p>
+<p><strong>Tweet 4/6:</strong><br />
+⛽️ MD−1 (Véspera): CARREGAR.<br />
+Supercompensação máxima (6-8g/kg). Comidas familiares e de fácil digestão (arroz, batata).<br />
+Dica de ouro: CORTE fibras e gorduras para não entrar em campo pesado ou com desconforto gástrico.</p>
+<p><strong>Tweet 5/6:</strong><br />
+🏟️ MATCH DAY (Dia do Jogo): PERFORMAR.<br />
+Pré-jogo limpo 3h antes. Reponha 30-60g/h de carbo nos intervalos.<br />
+Acabou a partida? Janela imediata de carbo simples + proteína para iniciar o reparo no minuto zero.</p>
+<p><strong>Tweet 6/6 (CTA):</strong><br />
+♻️ MD+1 (Pós-Jogo): RECUPERAR.<br />
+Reponha fluidos, eletrólitos e glicogênio residual.<br />
+Abasteça para a demanda. Recupere para o que vem a seguir.<br />
+Confira o guia completo na Montanha Magazine:<br />
+[montanha.com.br/artigos/carboidratos-esportes-coletivos]</p>
+<hr />
+<h2>🧭 Conexões do Ecossistema Montanha</h2>
+<h3>🔄 Navegação entre Artigos</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">⬅️ Anterior</th>
+<th style="text-align: center;">📚 Catálogo do Blog</th>
+<th style="text-align: right;">➡️ Próximo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">[[CATALOGO_170_ARTIGOS</td>
+<td style="text-align: center;">Catálogo 170 Artigos]]</td>
+<td style="text-align: right;">[[CATALOGO_170_ARTIGOS|Catálogo Completo]]</td>
+</tr>
+</tbody>
+</table>
+<h3>🔗 Artigos Relacionados (Pilar: <code>Nutrição &amp; Suplementação</code>)</h3>
+<ul>
+<li>[[156_ARTIGO_15_-_Umas_poucas_palavras_sobre_a_vitamina_C]]</li>
+<li>[[157_ARTIGO_14_-_Será_que_você_produz_ácido_o_suficiente]]</li>
+<li>[[016_ARTIGO_155_-_Legumes,_verduras_e_frutas_Como_maximizar_os_benefícios_e_minimizar_os_riscos]]</li>
+<li>[[021_ARTIGO_150_-_Aprenda_tudo_sobre_peixes_e_frutos_do_mar_para_evitar_armadilhas]]</li>
+</ul>
+<h3>📖 E-books Recomendados para Aprofundamento</h3>
+<ul>
+<li>[[EbookGETeMacros-Comocalcular_]]</li>
+<li>[[00-Indice-Ebooks-e-Blog|Índice Geral de E-books &amp; Blog]]</li>
+</ul>
+    </div>
+
+    <!-- Compartilhamento -->
+    <div class="share-box">
+      <div>
+        <strong style="color:#fff; display:block; margin-bottom:4px;">Gostou deste conteúdo?</strong>
+        <span style="font-size:13px; color:var(--text-muted);">Envie para um amigo ou no grupo de treino.</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="https://api.whatsapp.com/send?text=Artigo: PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORTES COLETIVOS: O PROTOCOLO DE ALTA PERFORMANCE — Coach Montanha%20https://montanha-personal-studio.vercel.app/materiais/artigos/periodizacao-de-carboidratos-para-esportes-coletivos-o-protocolo-de-alta-performance" target="_blank" class="btn btn-primary" style="background:#25d366; color:#000;">
+          📲 Compartilhar no WhatsApp
+        </a>
+        <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copiado com sucesso!');" class="btn btn-outline">
+          🔗 Copiar Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegação Sequencial -->
+    <div class="nav-carousel">
+      <a href="/materiais/artigos/a-historia-oculta-das-calorias-por-que-o-balanco-energetico-nao-conta-toda-a-verdade" class="nav-prev">← A HISTÓRIA OCULTA DAS CALORIAS: POR QUE O BAL...</a>
+      <a href="/materiais/artigos/esteira-editorial-30-dias-montanha-magazine" class="nav-next">Esteira Editorial 30 Dias // Montanha Magazin... →</a>
+    </div>
+
+    <!-- Caixa de Conversão -->
+    <div class="conversion-box">
+      <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--primary); letter-spacing:0.08em;">Studio Personal & Consultoria</span>
+      <h3 style="font-size:22px; font-weight:800; color:#fff; margin:8px 0 12px 0;">Treine com o Coach Montanha</h3>
+      <p style="font-size:14.5px; color:var(--text-muted); max-width:540px; margin:0 auto 20px auto;">
+        Chega de seguir treino genérico de aplicativo e continuar travado. Receba periodização individualizada, acompanhamento biomecânico e métricas reais.
+      </p>
+      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20vim%20pelo%20artigo%20'PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORTES COLETIVOS: O PROTOCOLO DE ALTA PERFORMANCE'%20e%20quero%20vagas%20no%20Studio%20ou%20Consultoria" class="btn btn-primary" target="_blank" style="padding:12px 24px; font-size:15px;">
+        Solicitar Triagem no WhatsApp ➔
+      </a>
+    </div>
+  </article>
+
+  <footer class="hub-footer">
+    <div class="container">
+      <p>© 2026 Ecossistema Montanha • Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

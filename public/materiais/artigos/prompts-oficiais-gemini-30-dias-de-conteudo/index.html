@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Prompts Oficiais Gemini // 30 Dias de Conteúdo | Coach Montanha</title>
+  <meta name="description" content="Prompts Oficiais Gemini // 30 Dias de Conteúdo Montanha Magazine // Modo @eco // Otimizado para Gemini (Image & Video Engine) Padrão Estético: Brutali...">
+  
+  <!-- OpenGraph Meta Tags para WhatsApp e Redes -->
+  <meta property="og:title" content="Prompts Oficiais Gemini // 30 Dias de Conteúdo | Coach Montanha">
+  <meta property="og:description" content="Prompts Oficiais Gemini // 30 Dias de Conteúdo Montanha Magazine // Modo @eco // Otimizado para Gemini (Image & Video Engine) Padrão Estético: Brutali...">
+  <meta property="og:url" content="https://montanha-personal-studio.vercel.app/materiais/artigos/prompts-oficiais-gemini-30-dias-de-conteudo">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/logo_dark.png">
+  <meta property="og:site_name" content="Coach Montanha • Studio Personal">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Prompts Oficiais Gemini // 30 Dias de Conteúdo">
+  <meta name="twitter:description" content="Prompts Oficiais Gemini // 30 Dias de Conteúdo Montanha Magazine // Modo @eco // Otimizado para Gemini (Image & Video Engine) Padrão Estético: Brutali...">
+
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090b">
+  <link rel="icon" type="image/png" href="/logo_dark.png">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --card-hover: #1c1c21;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --primary-soft: rgba(245, 158, 11, 0.12);
+      --accent-red: #ef4444;
+      --accent-green: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    
+    /* Top Bar */
+    .topbar {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 9, 11, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--card-border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background: var(--card-border);
+    }
+    .btn-vip {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    
+    /* Alert / Student Banner */
+    .banner-vip {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #6ee7b7;
+      display: none;
+    }
+    .banner-visitor {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
+      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #fcd34d;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 14px;
+      max-width: 440px;
+      width: 100%;
+      padding: 28px;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid #3f3f46;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .modal-input:focus {
+      border-color: var(--primary);
+    }
+  </style>
+
+  
+<script>
+  (function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('student') === '1') {
+      localStorage.setItem('montanha_is_student', '1');
+    }
+    const isStudent = localStorage.getItem('montanha_is_student') === '1';
+    window.IS_STUDENT = isStudent;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      if (isStudent) {
+        const vipBanners = document.querySelectorAll('.banner-vip');
+        const visitorBanners = document.querySelectorAll('.banner-visitor');
+        vipBanners.forEach(b => b.style.display = 'block');
+        visitorBanners.forEach(b => b.style.display = 'none');
+        
+        const loginBtns = document.querySelectorAll('.btn-login-action');
+        loginBtns.forEach(btn => {
+          btn.textContent = 'App Studio Conectado';
+          btn.classList.remove('btn-outline');
+          btn.classList.add('btn-vip');
+        });
+      }
+    });
+  })();
+</script>
+
+
+  <style>
+    .article-wrap {
+      max-width: 780px;
+      margin: 40px auto 80px auto;
+      padding: 0 20px;
+    }
+    .breadcrumbs {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumbs a:hover { color: var(--text); }
+    .article-header {
+      margin-bottom: 36px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 28px;
+    }
+    .article-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .article-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    
+    /* Typography */
+    .prose {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #d4d4d8;
+    }
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+      color: #fff;
+      font-weight: 700;
+      margin: 40px 0 16px 0;
+      letter-spacing: -0.01em;
+    }
+    .prose h1 { font-size: 26px; }
+    .prose h2 { font-size: 22px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+    .prose h3 { font-size: 19px; }
+    .prose p { margin-bottom: 20px; }
+    .prose ul, .prose ol { margin: 0 0 20px 24px; }
+    .prose li { margin-bottom: 8px; }
+    .prose blockquote {
+      border-left: 4px solid var(--primary);
+      background: var(--card-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+      color: #e4e4e7;
+      font-style: italic;
+    }
+    .prose code {
+      background: #27272a;
+      color: #fcd34d;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .prose pre {
+      background: #18181b;
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+    .prose hr {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 40px 0;
+    }
+    .prose a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .prose table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14.5px;
+    }
+    .prose th, .prose td {
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .prose th { background: var(--card-bg); color: #fff; }
+
+    /* Share & CTA */
+    .share-box {
+      margin: 48px 0;
+      padding: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .nav-carousel {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      gap: 16px;
+    }
+    .nav-prev, .nav-next {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      max-width: 48%;
+    }
+    .nav-next { text-align: right; }
+
+    /* Conversion Box */
+    .conversion-box {
+      margin-top: 60px;
+      padding: 32px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.1) 0%, rgba(20, 20, 23, 0.8) 100%);
+      border-radius: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <a href="/materiais" style="display:flex; align-items:center; gap:10px;">
+          <img src="/logo_dark.png" alt="Coach Montanha">
+          <span>COACH MONTANHA</span>
+        </a>
+      </div>
+      <div class="topbar-actions">
+        <a href="/materiais" class="btn btn-outline">← Ver Todos os Materiais</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20li%20o%20artigo%20'Prompts Oficiais Gemini // 30 Dias de Conteúdo'%20e%20quero%20conhecer%20a%20Consultoria" class="btn btn-primary" target="_blank">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </header>
+
+  <article class="article-wrap">
+    <div class="breadcrumbs">
+      <a href="/materiais">Cofre de Materiais</a>
+      <span>›</span>
+      <a href="/materiais?cat=Mentalidade & Disciplina">Mentalidade & Disciplina</a>
+      <span>›</span>
+      <span>Prompts Oficiais Gemini // 30 Dias de Co...</span>
+    </div>
+
+    <div class="article-header">
+      <span class="article-badge">Mentalidade & Disciplina</span>
+      <h1 class="article-title">Prompts Oficiais Gemini // 30 Dias de Conteúdo</h1>
+      <div class="article-meta">
+        <span>Por <strong>Coach Montanha</strong></span>
+        <span>•</span>
+        <span>⏱️ 16 min de leitura</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p><strong>Montanha Magazine // Modo @eco // Otimizado para Gemini (Image &amp; Video Engine)</strong><br />
+<strong>Padrão Estético:</strong> Brutalismo Atlântico, Chiaroscuro Dramático, Preto Titânio (#0B0F19) e Amarelo Solar (#FACC15).</p>
+<hr />
+<h2>📅 SEMANA 1</h2>
+<h3>Post 01 | Intensidade Cega vs. Trabalho Duro (Carrossel)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Capa Carrossel):</strong><blockquote>
+<p><code>High-contrast brutalist sports editorial photography. Extreme close-up of a heavy cast-iron kettlebell resting on worn dark concrete floor, chalk dust particles suspended in air, dramatic single overhead key light, deep shadows, titanium black tones (#0B0F19), subtle rim light in electric yellow (#FACC15), cinematic texture, shot on Hasselblad H6D-100c 80mm f/2.8, volumetric gym atmosphere, 8k resolution, raw aesthetics --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero Cinematográfico):</strong><blockquote>
+<p><code>Cinematic wide 16:9 shot, solitary male athlete sitting exhausted on a wooden plyo box in a dimly lit warehouse gym, looking down at his chalked hands, intense breathing, volumetric sunbeams piercing through high industrial windows, moody chiaroscuro lighting, anamorphic lens flare, editorial Iron Man style --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Atue como Coach Montanha. Gere um roteiro dinâmico de 30 segundos refutando a ideia de que ficar jogado no chão é sinal de bom treino. Use tom sério, biomecânico e firme. Destaque a citação de James FitzGerald sobre trabalho insustentável e encerre com chamada para comentar DOSE.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 02 | O Efeito What The Hell dos Kettlebells (Reels)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Thumbnail Reels):</strong><blockquote>
+<p><code>Aggressive close-up of athlete's hands gripping a pair of heavy competition kettlebells at chest rack position, veins visible, chalked skin, muscular forearms, dramatic 3-point studio lighting, deep black background with gold-yellow edge highlight (#FACC15), brutalist aesthetic, f/2.0 --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Slow-motion freeze-frame effect, male athlete at the peak of a 32kg kettlebell snatch, arm locked overhead, perfect hip extension, gym dust caught in shafts of tungsten light, cinematic athletic magazine cover style, 16:9 aspect ratio --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Gere um roteiro de Reels de 30s explicando o fenômeno 'What The Hell Effect'. Explique como o kettlebell fecha buracos de mobilidade de ombro e extensão de quadril que destravam o agachamento e o supino. CTA: Comente KETTLEBELL.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 03 | O Banquete da Periodização (Carrossel)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Capa Carrossel):</strong><blockquote>
+<p><code>Editorial still-life conceptual photography: a massive Olympic barbell loaded with steel plates placed on a dark steel dining table like a centerpiece, harsh spotlight from above, minimalist dark aesthetic, high contrast, industrial dining room atmosphere, black and yellow tones, shot on 50mm lens --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Atmospheric shot of a powerlifter loading a calibrated steel plate onto a barbell, hands coated in white magnesium chalk, dark powerlifting club, sharp rim lighting accentuating back musculature, cinematic 16:9 --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Escreva uma metáfora ácida comparando quem enche o treino de exercícios inúteis com quem come todos os aperitivos antes do rodízio. Mostre por que o composto pesado é o prato principal e tudo mais é tempero. CTA: Comente PLANILHA.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 04 | Você Não é Preguiçoso: Seu Treino é Insustentável (Reels)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Thumbnail):</strong><blockquote>
+<p><code>Close-up portrait of focused disciplined athlete with sweat dripping down temple, intense calm gaze straight into camera, chiaroscuro lighting half-face shadow, dark raw gym background, cinematic color grading, brutalist sports style --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Early morning 5 AM warehouse gym, silhouette of a runner tying shoes on a bench under a single hanging warm industrial bulb, cool blue ambient light outside, cinematic atmosphere, 16:9 --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro direto de 30s quebrando a culpa do praticante comum. Explique que o problema não é falta de disciplina, mas o atrito biomecânico e a sobrecarga de volume diário. CTA: Comente MENTE.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h2>📅 SEMANA 2</h2>
+<h3>Post 05 | O Teste dos 10 Minutos na AirBike (Reels)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Thumbnail):</strong><blockquote>
+<p><code>Extreme macro focus on the fan wheel and steel chain of an Assault AirBike in high-speed motion, motion blur on fan blades, dramatic golden backlighting through the grill, dark matte black gym floor, intense conditioning mood --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Athlete pushing full power on an AirBike, motion blur in arms and legs, face expressing maximum aerobic grit, volumetric stadium lighting from behind, dark gritty sports photography, 16:9 ratio --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro de 30s descrevendo os 3 estágios dos 10 min de AirBike: Min 1-3 (Ego), Min 4-7 (Acidose), Min 8-10 (Cérebro). Finalize com padrão de watts por quilo. CTA: Comente VO2.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 06 | Efeito Nocebo: As Palavras que Destroem sua Força (Carrossel)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Capa):</strong><blockquote>
+<p><code>Conceptual brutalist sports graphic. Close-up profile of a coach whispering intensely into an athlete's ear at the squat rack, harsh directional lighting, dramatic high-contrast black and titanium palette, intense psychological tension, f/2.8 --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Wide shot of athlete standing under a loaded squat bar, deep breath before unrack, spotlight cutting through darkness, heavy psychological atmosphere, 16:9 cinematic frame --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Explique em 30 segundos o efeito Nocebo no treino de força. Demonstre como advertências de fragilidade inibem o recrutamento neural e como comandos externos geram mais watts. CTA: Comente COACH.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 07 | Pirâmide 1/3/5/3/1 min e a Ciência do Pacing (Reels)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Thumbnail):</strong><blockquote>
+<p><code>High-contrast close-up of a Concept2 PM5 monitor displaying split times and watt output, glowing LCD digits in dark erg room, water droplets on flywheel casing, athletic precision aesthetic --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Athlete mid-drive on Concept2 indoor rower, full leg drive and hip opening, water/sweat misting under cool blue lighting, cinematic sports documentary style --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro de 30s ensinando a estratégia de Pacing em pirâmide. Explique por que quem queima nos primeiros 60s não treina capacidade aeróbica, apenas desespero. CTA: Comente PACING.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 08 | A Traição da Falha Concêntrica Diária (Carrossel)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Capa):</strong><blockquote>
+<p><code>Barbell pinned across heavy safety pins of a squat cage, dropped chalk block on rubber flooring, harsh side lighting carving texture into the knurling, moody dark monochrome gym scene with yellow accent glow --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Tired powerlifter sitting on bench pressing his brow against his fist, bar racked safely behind him, high ceiling industrial beams, moody chiaroscuro lighting, 16:9 cinematic shot --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro de 30s desmistificando o 'treinar até a falha em toda série'. Apresente o conceito de RIR 1-2 (Repetições em Reserva) e preservação do córtex motor. CTA: Comente FORCA.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h2>📅 SEMANA 3</h2>
+<h3>Post 09 | Como a Barra Fixa em Casa Triplicou Minha Força (Carrossel)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Capa):</strong><blockquote>
+<p><code>Brutalist black and white interior shot: rugged steel doorway pull-up bar mounted in industrial apartment doorway, morning directional light casting hard graphic shadow on raw concrete wall, minimalist athletic aesthetic --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Back view of athlete hanging from pull-up bar with lat muscles completely flared, deep definition, golden morning sunlight clipping the shoulders, high texture, 16:9 --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Explique o método Grease the Groove de Pavel Tsatsouline adaptado para barra fixa em casa: submáximas frequentes ao longo do dia gerando 200 barras perfeitas por semana. CTA: Comente DENSIDADE.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 10 | Tabata Real vs. Teatro de Academia (Reels)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Thumbnail):</strong><blockquote>
+<p><code>Digital stopwatch frozen at 03:59 on dark textured rubber mat, chalk footprints around it, harsh dramatic overhead downlight, moody cinematic sports color grade --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Athlete collapsed onto his knees after true 4-minute maximum test, head down, intense steam rising from body in cold gym air, dramatic backlight, 16:9 cinematic frame --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro ácido de 30s refutando aulas de 'Tabata de 45 minutos'. Mostre que o protocolo original do Dr. Izumi Tabata exige 170% do VO2max e é fisiologicamente impossível passar de 4 minutos. CTA: Comente TABATA.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 11 | Os 3 Buracos Biomecânicos que Destroem seu Agachamento (Carrossel)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Capa):</strong><blockquote>
+<p><code>Low angle macro shot focused on weightlifter shoes rooted to wooden platform, knee tracking over toe, perfect ankle flexion under heavy load, dramatic side lighting, dark moody weight room --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Biomechanic motion analysis style photo of deep barbell back squat at the hole, clean vertical spine, tension in glutes and quads, volumetric lighting, 16:9 --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Identifique em 30 segundos os 3 maiores sabotadores do agachamento: falta de dorsiflexão, core frouxo e joelho em valgo. Dê a correção imediata com agachamento taça. CTA: Comente CORRECAO.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 12 | Construindo um Físico para os Próximos 20 Anos (Reels)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Thumbnail):</strong><blockquote>
+<p><code>Portrait of a 55-year-old lean muscular veteran athlete with silver hair and weathered hands, calm commanding expression, wearing dark athletic tank, studio key light, brutalist editorial cover --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Mature athlete running uphill on dirt trail at sunrise, muscular calves and upright posture, wide angle cinematic mountain landscape, inspiring longevity tone, 16:9 --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro filosófico e visceral de 30s sobre longevidade. Treine para não quebrar suas juntas hoje e continuar levantando cargas pesadas com seus netos. CTA: Comente LEGADO.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h2>📅 SEMANA 4</h2>
+<h3>Post 13 | A Ilusão dos WODs de 20 Minutos (Reels)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Thumbnail):</strong><blockquote>
+<p><code>Chalkboard in cross-training box with messy chalk writing: '20 MIN AMRAP', large red 'X' drawn over it, harsh studio lighting, dark dramatic background, editorial critique style --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Empty functional training box with barbells and rowers idle after class, volumetric smoke and shafts of warm sunlight, cinematic solitude, 16:9 aspect ratio --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro de 30s abordando por que treinos de 20 minutos all-out aleatórios geram colapso motor em 99% das pessoas. Apresente a regra da intenção biomecânica. CTA: Comente RESILIENCIA.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 14 | Extensão Balística de Quadril: A Cura do Deadlift Travado (Carrossel)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Capa):</strong><blockquote>
+<p><code>Dynamic action freeze of athlete at full lockout of heavy deadlift, glutes and traps clamped in isometric tension, chalk cloud bursting from hands, aggressive chiaroscuro rim light --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Side angle freeze of kettlebell swing at chest height, athlete forming a rigid steel plank from heels to crown of head, dark atmospheric gym background, 16:9 --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro de 30s explicando a taxa de desenvolvimento de força (RFD). Mostre como o swing de kettlebell destrava o bloqueio final do terra sem dano na coluna. CTA: Comente SWING.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 15 | Intervalos 2/3/2/3 min: Depuração Real de Lactato (Reels)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Thumbnail):</strong><blockquote>
+<p><code>Macro close-up of rower handle being gripped tightly, blistered calloused hands, sweat flying off fingers, stark studio key light, black titanium background --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Rowing ergometer flywheel in motion with light trails, athlete in silhouette executing high-rate drive, cool blue cinematic lighting, 16:9 --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Explique em 30 segundos a reciclagem do lactato via transportadores MCT em treinos de esforço alternado (2 min forte / 3 min moderado). CTA: Comente LACTATO.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h3>Post 16 | A Conta que Você Paga em Casa: Overtraining Subclínico (Carrossel)</h3>
+<ul>
+<li><strong>Prompt Gemini Imagem 1:1 (Capa):</strong><blockquote>
+<p><code>Athlete sitting on edge of bed at 3 AM looking at his phone, room in dark blue shadows, screen light illuminating tired eyes, conceptual psychological fitness photography --ar 1:1</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Imagem 16:9 (Hero):</strong><blockquote>
+<p><code>Man drinking black coffee at kitchen counter at dawn, muscular physique, contemplative calm expression, soft morning kitchen light, editorial health lifestyle, 16:9 --ar 16:9</code></p>
+</blockquote>
+</li>
+<li><strong>Prompt Gemini Omni (Vídeo / Roteiro):</strong><blockquote>
+<p><code>Roteiro reflexivo e técnico de 30s detalhando os 3 sintomas do overtraining subclínico: insônia às 3h, compulsão por açúcar e pavio curto com quem ama. CTA: Comente REVISTA.</code></p>
+</blockquote>
+</li>
+</ul>
+<hr />
+<h2>🧭 Conexões do Ecossistema Montanha</h2>
+<h3>🔄 Navegação entre Artigos</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">⬅️ Anterior</th>
+<th style="text-align: center;">📚 Catálogo do Blog</th>
+<th style="text-align: right;">➡️ Próximo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">[[CATALOGO_170_ARTIGOS</td>
+<td style="text-align: center;">Catálogo 170 Artigos]]</td>
+<td style="text-align: right;">[[CATALOGO_170_ARTIGOS|Catálogo Completo]]</td>
+</tr>
+</tbody>
+</table>
+<h3>🔗 Artigos Relacionados (Pilar: <code>Planejamento &amp; Estratégia Editorial</code>)</h3>
+<ul>
+<li>[[056_ARTIGO_115_-_Alta_intensidade_Vs._Baixa_intensidade]]</li>
+<li>[[057_ARTIGO_114_-_Os_benefícios_dos_métodos_de_autoregulação]]</li>
+<li>[[061_ARTIGO_110_-_Benefícios_do_Relaxamento_Muscular_Progressivo_Abreviado]]</li>
+<li>[[062_ARTIGO_109_-_O_segredo_de_um_treinamento_de_resultado]]</li>
+</ul>
+<h3>📖 E-books Recomendados para Aprofundamento</h3>
+<ul>
+<li>[[esteira-30-dias-master]]</li>
+<li>[[grade-editorial-30-dias-completa]]</li>
+<li>[[00-Indice-Ebooks-e-Blog|Índice Geral de E-books &amp; Blog]]</li>
+</ul>
+    </div>
+
+    <!-- Compartilhamento -->
+    <div class="share-box">
+      <div>
+        <strong style="color:#fff; display:block; margin-bottom:4px;">Gostou deste conteúdo?</strong>
+        <span style="font-size:13px; color:var(--text-muted);">Envie para um amigo ou no grupo de treino.</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="https://api.whatsapp.com/send?text=Artigo: Prompts Oficiais Gemini // 30 Dias de Conteúdo — Coach Montanha%20https://montanha-personal-studio.vercel.app/materiais/artigos/prompts-oficiais-gemini-30-dias-de-conteudo" target="_blank" class="btn btn-primary" style="background:#25d366; color:#000;">
+          📲 Compartilhar no WhatsApp
+        </a>
+        <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copiado com sucesso!');" class="btn btn-outline">
+          🔗 Copiar Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegação Sequencial -->
+    <div class="nav-carousel">
+      <a href="/materiais/artigos/o-sistema-semaforo-do-metabolismo-como-calibrar-o-sistema-nervoso-para-ganhos-brutais" class="nav-prev">← O SISTEMA SEMÁFORO DO METABOLISMO: COMO CALIB...</a>
+      <span></span>
+    </div>
+
+    <!-- Caixa de Conversão -->
+    <div class="conversion-box">
+      <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--primary); letter-spacing:0.08em;">Studio Personal & Consultoria</span>
+      <h3 style="font-size:22px; font-weight:800; color:#fff; margin:8px 0 12px 0;">Treine com o Coach Montanha</h3>
+      <p style="font-size:14.5px; color:var(--text-muted); max-width:540px; margin:0 auto 20px auto;">
+        Chega de seguir treino genérico de aplicativo e continuar travado. Receba periodização individualizada, acompanhamento biomecânico e métricas reais.
+      </p>
+      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20vim%20pelo%20artigo%20'Prompts Oficiais Gemini // 30 Dias de Conteúdo'%20e%20quero%20vagas%20no%20Studio%20ou%20Consultoria" class="btn btn-primary" target="_blank" style="padding:12px 24px; font-size:15px;">
+        Solicitar Triagem no WhatsApp ➔
+      </a>
+    </div>
+  </article>
+
+  <footer class="hub-footer">
+    <div class="container">
+      <p>© 2026 Ecossistema Montanha • Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

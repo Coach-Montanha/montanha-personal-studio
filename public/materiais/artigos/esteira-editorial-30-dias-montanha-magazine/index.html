@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Esteira Editorial 30 Dias // Montanha Magazine | Coach Montanha</title>
+  <meta name="description" content="Esteira Editorial 30 Dias // Montanha Magazine Metodologia: /esteira-30-dias-conteudo Autor: Coach Montanha Fontes: Vault Técnico Outlook via WithOne ...">
+  
+  <!-- OpenGraph Meta Tags para WhatsApp e Redes -->
+  <meta property="og:title" content="Esteira Editorial 30 Dias // Montanha Magazine | Coach Montanha">
+  <meta property="og:description" content="Esteira Editorial 30 Dias // Montanha Magazine Metodologia: /esteira-30-dias-conteudo Autor: Coach Montanha Fontes: Vault Técnico Outlook via WithOne ...">
+  <meta property="og:url" content="https://montanha-personal-studio.vercel.app/materiais/artigos/esteira-editorial-30-dias-montanha-magazine">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/logo_dark.png">
+  <meta property="og:site_name" content="Coach Montanha • Studio Personal">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Esteira Editorial 30 Dias // Montanha Magazine">
+  <meta name="twitter:description" content="Esteira Editorial 30 Dias // Montanha Magazine Metodologia: /esteira-30-dias-conteudo Autor: Coach Montanha Fontes: Vault Técnico Outlook via WithOne ...">
+
+  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09090b">
+  <link rel="icon" type="image/png" href="/logo_dark.png">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --card-hover: #1c1c21;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --primary: #f59e0b;
+      --primary-hover: #d97706;
+      --primary-soft: rgba(245, 158, 11, 0.12);
+      --accent-red: #ef4444;
+      --accent-green: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    
+    /* Top Bar */
+    .topbar {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 9, 11, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--card-border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background: var(--card-border);
+    }
+    .btn-vip {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+    
+    /* Alert / Student Banner */
+    .banner-vip {
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #6ee7b7;
+      display: none;
+    }
+    .banner-visitor {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
+      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      padding: 10px 0;
+      font-size: 13px;
+      text-align: center;
+      color: #fcd34d;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 14px;
+      max-width: 440px;
+      width: 100%;
+      padding: 28px;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid #3f3f46;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .modal-input:focus {
+      border-color: var(--primary);
+    }
+  </style>
+
+  
+<script>
+  (function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('student') === '1') {
+      localStorage.setItem('montanha_is_student', '1');
+    }
+    const isStudent = localStorage.getItem('montanha_is_student') === '1';
+    window.IS_STUDENT = isStudent;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      if (isStudent) {
+        const vipBanners = document.querySelectorAll('.banner-vip');
+        const visitorBanners = document.querySelectorAll('.banner-visitor');
+        vipBanners.forEach(b => b.style.display = 'block');
+        visitorBanners.forEach(b => b.style.display = 'none');
+        
+        const loginBtns = document.querySelectorAll('.btn-login-action');
+        loginBtns.forEach(btn => {
+          btn.textContent = 'App Studio Conectado';
+          btn.classList.remove('btn-outline');
+          btn.classList.add('btn-vip');
+        });
+      }
+    });
+  })();
+</script>
+
+
+  <style>
+    .article-wrap {
+      max-width: 780px;
+      margin: 40px auto 80px auto;
+      padding: 0 20px;
+    }
+    .breadcrumbs {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .breadcrumbs a:hover { color: var(--text); }
+    .article-header {
+      margin-bottom: 36px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 28px;
+    }
+    .article-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--primary-soft);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .article-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    
+    /* Typography */
+    .prose {
+      font-size: 17px;
+      line-height: 1.8;
+      color: #d4d4d8;
+    }
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+      color: #fff;
+      font-weight: 700;
+      margin: 40px 0 16px 0;
+      letter-spacing: -0.01em;
+    }
+    .prose h1 { font-size: 26px; }
+    .prose h2 { font-size: 22px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+    .prose h3 { font-size: 19px; }
+    .prose p { margin-bottom: 20px; }
+    .prose ul, .prose ol { margin: 0 0 20px 24px; }
+    .prose li { margin-bottom: 8px; }
+    .prose blockquote {
+      border-left: 4px solid var(--primary);
+      background: var(--card-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+      color: #e4e4e7;
+      font-style: italic;
+    }
+    .prose code {
+      background: #27272a;
+      color: #fcd34d;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .prose pre {
+      background: #18181b;
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+    .prose hr {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 40px 0;
+    }
+    .prose a {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .prose table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 14.5px;
+    }
+    .prose th, .prose td {
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .prose th { background: var(--card-bg); color: #fff; }
+
+    /* Share & CTA */
+    .share-box {
+      margin: 48px 0;
+      padding: 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .nav-carousel {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+      gap: 16px;
+    }
+    .nav-prev, .nav-next {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      max-width: 48%;
+    }
+    .nav-next { text-align: right; }
+
+    /* Conversion Box */
+    .conversion-box {
+      margin-top: 60px;
+      padding: 32px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.1) 0%, rgba(20, 20, 23, 0.8) 100%);
+      border-radius: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <a href="/materiais" style="display:flex; align-items:center; gap:10px;">
+          <img src="/logo_dark.png" alt="Coach Montanha">
+          <span>COACH MONTANHA</span>
+        </a>
+      </div>
+      <div class="topbar-actions">
+        <a href="/materiais" class="btn btn-outline">← Ver Todos os Materiais</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20li%20o%20artigo%20'Esteira Editorial 30 Dias // Montanha Magazine'%20e%20quero%20conhecer%20a%20Consultoria" class="btn btn-primary" target="_blank">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </header>
+
+  <article class="article-wrap">
+    <div class="breadcrumbs">
+      <a href="/materiais">Cofre de Materiais</a>
+      <span>›</span>
+      <a href="/materiais?cat=Mentalidade & Disciplina">Mentalidade & Disciplina</a>
+      <span>›</span>
+      <span>Esteira Editorial 30 Dias // Montanha Ma...</span>
+    </div>
+
+    <div class="article-header">
+      <span class="article-badge">Mentalidade & Disciplina</span>
+      <h1 class="article-title">Esteira Editorial 30 Dias // Montanha Magazine</h1>
+      <div class="article-meta">
+        <span>Por <strong>Coach Montanha</strong></span>
+        <span>•</span>
+        <span>⏱️ 12 min de leitura</span>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p><strong>Metodologia:</strong> <code>/esteira-30-dias-conteudo</code><br />
+<strong>Autor:</strong> Coach Montanha<br />
+<strong>Fontes:</strong> Vault Técnico Outlook via WithOne CLI (<code>OPEX Fitness</code>, <code>Tony Gentilcore</code>, <code>Pat Damiano</code>, <code>Concept2</code>)<br />
+<strong>Status do Ciclo:</strong> Ativo (Outubro / Novembro 2026) | Ciclo 01 de Produção Contínua</p>
+<hr />
+<h2>🗺️ FLUXO 1: Calendário Editorial (4 Semanas / 16 Publicações Pilares)</h2>
+<p>A esteira opera no ritmo de 4 publicações principais por semana no Feed (Reels ou Carrossel) sustentadas por Stories diários de suporte.</p>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────────┐
+│ SEGUNDA-FEIRA  │ Choque de Realidade &amp; Mito Desmascarado (Retenção Bruta)   │
+│ QUARTA-FEIRA   │ Estudo de Caso Real ou Erro Crítico de Treinador           │
+│ SEXTA-FEIRA    │ Tutorial Prático &amp; Demonstração Biomecânica                │
+│ DOMINGO        │ Filosofia da Disciplina &amp; Conversão (Consultoria/Revista)  │
+└─────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<h3>Grade Semanal de Conteúdo</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dia</th>
+<th style="text-align: left;">Tipo</th>
+<th style="text-align: left;">Tema / Tese</th>
+<th style="text-align: left;">Fonte Base (Email)</th>
+<th style="text-align: left;">Palavra-Chave DM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Sem 1 - Seg</strong></td>
+<td style="text-align: left;">Carrossel</td>
+<td style="text-align: left;"><em>Intensidade Cega vs. Trabalho Duro</em> (A falácia de sair rastejando)</td>
+<td style="text-align: left;">OPEX (Reframe 03)</td>
+<td style="text-align: left;"><code>DOSE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 1 - Qua</strong></td>
+<td style="text-align: left;">Reels 30s</td>
+<td style="text-align: left;"><em>O Paradoxo do Buraco Oculto</em> (Por que você estagna nas cargas)</td>
+<td style="text-align: left;">Pat Damiano (What The Hell)</td>
+<td style="text-align: left;"><code>KETTLEBELL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 1 - Sex</strong></td>
+<td style="text-align: left;">Carrossel</td>
+<td style="text-align: left;"><em>O Banquete da Periodização</em> (Volume lixo vs. prato principal)</td>
+<td style="text-align: left;">Tony Gentilcore (Dinner Party)</td>
+<td style="text-align: left;"><code>PLANILHA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 1 - Dom</strong></td>
+<td style="text-align: left;">Reels 30s</td>
+<td style="text-align: left;"><em>Você não é preguiçoso, seu treino é insustentável</em></td>
+<td style="text-align: left;">Pat Damiano (Consistency)</td>
+<td style="text-align: left;"><code>MENTE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 2 - Seg</strong></td>
+<td style="text-align: left;">Reels 30s</td>
+<td style="text-align: left;"><em>O Teste dos 10 Minutos de AirBike</em> (A dura verdade do seu VO2max)</td>
+<td style="text-align: left;">OPEX (AirBike Test)</td>
+<td style="text-align: left;"><code>VO2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 2 - Qua</strong></td>
+<td style="text-align: left;">Carrossel</td>
+<td style="text-align: left;"><em>As Palavras que Destroem seu Atleta</em> (Efeito Nocebo no Treino)</td>
+<td style="text-align: left;">Tony Gentilcore (Words Matter)</td>
+<td style="text-align: left;"><code>COACH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 2 - Sex</strong></td>
+<td style="text-align: left;">Reels 30s</td>
+<td style="text-align: left;"><em>Pirâmide 1/3/5/3/1 min</em> (A ciência do Pacing no Ergômetro)</td>
+<td style="text-align: left;">Concept2 (Workout Oct 14)</td>
+<td style="text-align: left;"><code>PACING</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 2 - Dom</strong></td>
+<td style="text-align: left;">Carrossel</td>
+<td style="text-align: left;"><em>A Traição da Falha Concêntrica Diária</em></td>
+<td style="text-align: left;">OPEX (Five Questions)</td>
+<td style="text-align: left;"><code>FORCA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 3 - Seg</strong></td>
+<td style="text-align: left;">Carrossel</td>
+<td style="text-align: left;"><em>Por que Treinar em Casa Triplicou a Força da Barra Fixa</em></td>
+<td style="text-align: left;">Pat Damiano (Gym Funk)</td>
+<td style="text-align: left;"><code>DENSIDADE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 3 - Qua</strong></td>
+<td style="text-align: left;">Reels 30s</td>
+<td style="text-align: left;"><em>O Tabata que Ninguém Faz Direito</em> (20s/10s real vs. teatro)</td>
+<td style="text-align: left;">Concept2 (Triple Tabata)</td>
+<td style="text-align: left;"><code>TABATA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 3 - Sex</strong></td>
+<td style="text-align: left;">Carrossel</td>
+<td style="text-align: left;"><em>Os 3 Buracos Biomecânicos que Destroem o Supino e Agachamento</em></td>
+<td style="text-align: left;">Pat Damiano (KBs Lifts)</td>
+<td style="text-align: left;"><code>CORRECAO</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 3 - Dom</strong></td>
+<td style="text-align: left;">Reels 30s</td>
+<td style="text-align: left;"><em>Construindo um Físico para os Próximos 20 Anos</em></td>
+<td style="text-align: left;">OPEX (Retreat / Longevity)</td>
+<td style="text-align: left;"><code>LEGADO</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 4 - Seg</strong></td>
+<td style="text-align: left;">Reels 30s</td>
+<td style="text-align: left;"><em>A Ilusão dos WODs de 20 Minutos</em> (Por que apenas 1% sobrevive)</td>
+<td style="text-align: left;">OPEX (AMRAP Fallacy)</td>
+<td style="text-align: left;"><code>RESILIENCIA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 4 - Qua</strong></td>
+<td style="text-align: left;">Carrossel</td>
+<td style="text-align: left;"><em>Extensão Balística de Quadril: A Cura do Deadlift Travado</em></td>
+<td style="text-align: left;">Pat Damiano (Hip Extension)</td>
+<td style="text-align: left;"><code>SWING</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 4 - Sex</strong></td>
+<td style="text-align: left;">Reels 30s</td>
+<td style="text-align: left;"><em>Intervalos 2/3/2/3 min: O Segredo da Depuração de Lactato</em></td>
+<td style="text-align: left;">Concept2 (Workout Oct 18)</td>
+<td style="text-align: left;"><code>LACTATO</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sem 4 - Dom</strong></td>
+<td style="text-align: left;">Carrossel</td>
+<td style="text-align: left;"><em>A Conta que Você Paga em Casa: Overtraining Subclínico</em></td>
+<td style="text-align: left;">OPEX (Diminishing Returns)</td>
+<td style="text-align: left;"><code>REVISTA</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>🧲 FLUXO 2: 20 Ganchos Magnéticos de 3 Segundos (Anti-Scroll)</h2>
+<ol>
+<li><em>"Se você precisa terminar o treino deitado na poça de suor para achar que valeu a pena, você não está treinando: está pedindo socorro."</em></li>
+<li><em>"A razão pela qual seu supino travou nos 100kg não tem nada a ver com o seu peitoral."</em></li>
+<li><em>"James FitzGerald venceu o CrossFit Games e disse algo que 99% dos boxes odeiam ouvir."</em></li>
+<li><em>"Você não é frango e não é preguiçoso. Seu treino é que foi desenhado para te destruir em 4 semanas."</em></li>
+<li><em>"Se o seu treinador usa a palavra 'queimar' mais do que 'dose', fuja dele hoje mesmo."</em></li>
+<li><em>"O que acontece quando você troca 3 semanas de supino pesado por kettlebell swings? A ciência chama de Efeito What The Hell."</em></li>
+<li><em>"A maioria das pessoas falha no aeróbico porque confunde falta de ar com melhora mitocondrial."</em></li>
+<li><em>"Existe um teste de 10 minutos na AirBike que separa atletas reais de quem só faz barulho."</em></li>
+<li><em>"Se a potência do seu último round despenca 30% em relação ao primeiro, você acabou de jogar seu treino no lixo."</em></li>
+<li><em>"Montar um treino de hipertrofia é exatamente como organizar um jantar de gala: se exagerar nos acompanhamentos, ninguém come a carne."</em></li>
+<li><em>"As palavras que você diz antes de uma série pesada podem reduzir sua força neural em até 12%."</em></li>
+<li><em>"Você não está em overtraining muscular. Seu sistema nervoso simpático é que está gritando por socorro."</em></li>
+<li><em>"O motivo do seu sono picado às 3 da manhã pode ser aquele treino 'insano' das 19h."</em></li>
+<li><em>"99% das pessoas que fazem Tabata estão apenas fazendo aeróbico medíocre com gritaria."</em></li>
+<li><em>"Quer testar seu limiar de lactato sem exame de sangue? Faça este intervalo no remo."</em></li>
+<li><em>"Treinar duro ensina o cérebro. Intensidade cega só cobra o seu casamento e a sua paciência com os filhos."</em></li>
+<li><em>"Por que atletas russos passam meses sem encostar na falha concêntrica e levantam 3 vezes o próprio peso?"</em></li>
+<li><em>"A consistência não é um ato de força de vontade; é uma equação biomecânica de atrito."</em></li>
+<li><em>"Se o seu treino não tem uma linha explicando o que cada bloco ensina, corte ele da planilha agora."</em></li>
+<li><em>"Você quer impressionar o espelho na sexta-feira ou continuar levantando peso pesado aos 60 anos?"</em></li>
+</ol>
+<hr />
+<h2>🎬 FLUXO 3: Roteiros de 30s &amp; Estrutura de Carrosséis</h2>
+<h3>Roteiro Modelo (Reels 30s — Limite 65 palavras // Voz Coach Montanha)</h3>
+<blockquote>
+<p><strong>Gancho (0-3s):</strong> Se você ainda sai rastejando da academia achando que destruição é hipertrofia, pare agora.<br />
+<strong>Desenvolvimento (4-20s):</strong> O corpo não cresce com humilhação mecânica. Ele responde à tensão precisa e restauração neural. Quando seu rendimento despenca entre os rounds, você só está treinando seu cérebro para falhar.<br />
+<strong>Chamada (21-30s):</strong> Dose antes da exaustão. Comente <code>DOSE</code> e receba o guia de periodização da Montanha Magazine.</p>
+</blockquote>
+<h3>Carrossel Modelo (1 Ideia Forte por Lâmina)</h3>
+<ul>
+<li><strong>Lâmina 1:</strong> Headline em caixa alta preta sobre amarelo titânio (#FACC15).</li>
+<li><strong>Lâmina 2:</strong> O erro universal que 90% cometem.</li>
+<li><strong>Lâmina 3:</strong> A citação ou fundamento fisiológico incontestável.</li>
+<li><strong>Lâmina 4:</strong> Os sintomas invisíveis fora da academia.</li>
+<li><strong>Lâmina 5:</strong> O contraponto anatômico/biomecânico.</li>
+<li><strong>Lâmina 6:</strong> A solução em 3 passos pragmáticos.</li>
+<li><strong>Lâmina 7:</strong> O teste de autoavaliação para a próxima sessão.</li>
+<li><strong>Lâmina 8:</strong> CTA definitivo para comentar a palavra-chave.</li>
+</ul>
+<hr />
+<h2>🎨 FLUXO 4: Prompts de Geração Visual &amp; Vídeo Neural</h2>
+<h3>Prompts de Imagem (Estética Brutalista // Montanha Magazine)</h3>
+<ul>
+<li><strong>Capa 1:1 (Carrossel):</strong><blockquote>
+<p><code>Ultra-dramatic close-up of heavy cast iron kettlebell resting on dark weathered concrete, chalk dust hovering in air, stark high-contrast chiaroscuro lighting, deep black shadows, raw titanium textures, industrial powerlifting gym, shot on Hasselblad H6D-100c 80mm f/2.8, brutalist athletic aesthetics, yellow accent beam #FACC15 --ar 1:1 --c 10</code></p>
+</blockquote>
+</li>
+<li><strong>Hero 16:9 (Matéria &amp; YouTube):</strong><blockquote>
+<p><code>Cinematic wide angle 16:9, solitary male athlete resting between heavy barbell deadlift sets, focused intense breathing, sweat droplets, volumetric morning light rays cutting through dark atmospheric gym warehouse, anamorphic lens flare, moody editorial sports photography style --ar 16:9</code></p>
+</blockquote>
+</li>
+</ul>
+<h3>Prompts para Renderizador Local (<code>pixelle_engine.py</code> / Hyperframes)</h3>
+<ul>
+<li><strong>Formato:</strong> 1080x1920 (9:16 vertical)</li>
+<li><strong>Tipografia:</strong> Bebas Neue (headlines 84px) + Inter Bold (legendas dinâmicas amarelas com destaque palavra a palavra)</li>
+<li><strong>Áudio:</strong> Narração neural masculina brasileira profunda, ritmo pausado, sem música pop genérica de fundo — apenas ambientação de ferro e respiração.</li>
+</ul>
+<hr />
+<h2>✍️ FLUXO 5: Legendas &amp; Copys de Conversão</h2>
+<h3>Estrutura de Legenda Padrão (Feed):</h3>
+<ol>
+<li><strong>Gancho:</strong> 2 linhas visíveis antes do "ver mais" com quebra de mito.</li>
+<li><strong>Desenvolvimento Fisiológico:</strong> 3 parágrafos curtos explicando a mecânica.</li>
+<li><strong>Checklist Prático:</strong> 3 pontos marcados com bullets.</li>
+<li><strong>CTA Conversor:</strong> "Comente <code>[PALAVRA]</code> para receber o protocolo no seu direct."</li>
+<li><strong>Hashtags de Alta Relevância:</strong> 8 a 10 tags segmentadas.</li>
+</ol>
+<hr />
+<h2>🤖 FLUXO 6: Automação OpenReply (DMs com Entrega Instantânea)</h2>
+<p>Configuração de disparos automáticos via OpenReply para quando o usuário comentar no post:</p>
+<pre><code class="language-json">{
+  &quot;triggerWords&quot;: {
+    &quot;DOSE&quot;: {
+      &quot;replyComment&quot;: &quot;Material enviado no seu direct, guerreiro. Confira lá!&quot;,
+      &quot;dmMessage&quot;: &quot;Fala! Aqui é o Coach Montanha. Como prometido, aqui está o protocolo 'Intensidade com Intenção vs. Destruição Cega' da Montanha Magazine:\n\n👉 https://montanha.app/artigos/intensidade-cega\n\nLeia a regra da Linha de Intenção na página 3 antes do seu treino de amanhã.&quot;
+    },
+    &quot;KETTLEBELL&quot;: {
+      &quot;replyComment&quot;: &quot;Acabei de te enviar a análise biomecânica na DM!&quot;,
+      &quot;dmMessage&quot;: &quot;Coach Montanha por aqui. O Efeito What The Hell explicado em 4 páginas de biomecânica pura:\n\n👉 https://montanha.app/artigos/efeito-what-the-hell-kettlebell\n\nAplique os 3 exercícios nos seus dias de descanso ativo.&quot;
+    },
+    &quot;VO2&quot;: {
+      &quot;replyComment&quot;: &quot;Dá uma olhada na sua DM agora!&quot;,
+      &quot;dmMessage&quot;: &quot;Aqui está a tabela de pacing do teste de 10 minutos na AirBike e os padrões de watts por peso corporal:\n\n👉 https://montanha.app/artigos/airbike-test-10min\n\nDepois me conta quantos watts você sustentou.&quot;
+    }
+  }
+}
+</code></pre>
+<hr />
+<h2>⏰ FLUXO 7: Agendamento nos Melhores Horários</h2>
+<ul>
+<li><strong>06:30 (Despertar do Guerreiro):</strong> Reels de impacto / motivação técnica para quem treina de manhã cedo.</li>
+<li><strong>12:15 (Horário de Almoço):</strong> Carrossel denso de estudo para leitura detalhada e salvamento.</li>
+<li><strong>18:45 (Fim de Tarde / Pós-Treino):</strong> Stories interativos com enquetes de verificação de treino e reflexão de consistência.</li>
+</ul>
+<hr />
+<h2>🔄 ARQUITETURA PERPÉTUA: Como Nunca Ficar Sem Conteúdo</h2>
+<p>Para garantir que o fluxo de 30 dias se renove automaticamente a partir dos milhares de emails do seu WithOne Outlook:</p>
+<ol>
+<li><strong>Catálogo Centralizado (<code>catalogo-conteudo-emails.json</code>):</strong></li>
+<li>O script <code>node scripts/scan-vault.js</code> escaneia a caixa de entrada em blocos de 100 mensagens, ignora notas fiscais e alertas, e extrai remetentes técnicos (OPEX, Pat Damiano, Tony Gentilcore, Dan John, Concept2).</li>
+<li><strong>Gerenciador de Estado (<code>esteira-state.json</code>):</strong></li>
+<li>O motor <code>node scripts/esteira-continua.js</code> armazena os IDs dos emails já utilizados e avança o ponteiro automaticamente para o próximo lote de 12 a 16 newsletters.</li>
+<li><strong>Geração Automática do Próximo Ciclo:</strong></li>
+<li>Quando o mês corrente estiver no 20º dia, basta rodar:<br />
+<code>bash
+     node scripts/esteira-continua.js --next-month</code></li>
+<li>O sistema automaticamente compila os 16 novos temas, ganchos e carrosséis sem repetição de assunto.</li>
+</ol>
+<hr />
+<h2>🧭 Conexões do Ecossistema Montanha</h2>
+<h3>🔄 Navegação entre Artigos</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">⬅️ Anterior</th>
+<th style="text-align: center;">📚 Catálogo do Blog</th>
+<th style="text-align: right;">➡️ Próximo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">[[CATALOGO_170_ARTIGOS</td>
+<td style="text-align: center;">Catálogo 170 Artigos]]</td>
+<td style="text-align: right;">[[CATALOGO_170_ARTIGOS|Catálogo Completo]]</td>
+</tr>
+</tbody>
+</table>
+<h3>🔗 Artigos Relacionados (Pilar: <code>Planejamento &amp; Estratégia Editorial</code>)</h3>
+<ul>
+<li>[[056_ARTIGO_115_-_Alta_intensidade_Vs._Baixa_intensidade]]</li>
+<li>[[057_ARTIGO_114_-_Os_benefícios_dos_métodos_de_autoregulação]]</li>
+<li>[[061_ARTIGO_110_-_Benefícios_do_Relaxamento_Muscular_Progressivo_Abreviado]]</li>
+<li>[[062_ARTIGO_109_-_O_segredo_de_um_treinamento_de_resultado]]</li>
+</ul>
+<h3>📖 E-books Recomendados para Aprofundamento</h3>
+<ul>
+<li>[[esteira-30-dias-master]]</li>
+<li>[[grade-editorial-30-dias-completa]]</li>
+<li>[[00-Indice-Ebooks-e-Blog|Índice Geral de E-books &amp; Blog]]</li>
+</ul>
+    </div>
+
+    <!-- Compartilhamento -->
+    <div class="share-box">
+      <div>
+        <strong style="color:#fff; display:block; margin-bottom:4px;">Gostou deste conteúdo?</strong>
+        <span style="font-size:13px; color:var(--text-muted);">Envie para um amigo ou no grupo de treino.</span>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="https://api.whatsapp.com/send?text=Artigo: Esteira Editorial 30 Dias // Montanha Magazine — Coach Montanha%20https://montanha-personal-studio.vercel.app/materiais/artigos/esteira-editorial-30-dias-montanha-magazine" target="_blank" class="btn btn-primary" style="background:#25d366; color:#000;">
+          📲 Compartilhar no WhatsApp
+        </a>
+        <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copiado com sucesso!');" class="btn btn-outline">
+          🔗 Copiar Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegação Sequencial -->
+    <div class="nav-carousel">
+      <a href="/materiais/artigos/periodizacao-de-carboidratos-para-esportes-coletivos-o-protocolo-de-alta-performance" class="nav-prev">← PERIODIZAÇÃO DE CARBOIDRATOS PARA ESPORTES CO...</a>
+      <a href="/materiais/artigos/grade-operacional-30-dias-montanha-magazine-16-publicacoes" class="nav-next">Grade Operacional 30 Dias // Montanha Magazin... →</a>
+    </div>
+
+    <!-- Caixa de Conversão -->
+    <div class="conversion-box">
+      <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--primary); letter-spacing:0.08em;">Studio Personal & Consultoria</span>
+      <h3 style="font-size:22px; font-weight:800; color:#fff; margin:8px 0 12px 0;">Treine com o Coach Montanha</h3>
+      <p style="font-size:14.5px; color:var(--text-muted); max-width:540px; margin:0 auto 20px auto;">
+        Chega de seguir treino genérico de aplicativo e continuar travado. Receba periodização individualizada, acompanhamento biomecânico e métricas reais.
+      </p>
+      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20vim%20pelo%20artigo%20'Esteira Editorial 30 Dias // Montanha Magazine'%20e%20quero%20vagas%20no%20Studio%20ou%20Consultoria" class="btn btn-primary" target="_blank" style="padding:12px 24px; font-size:15px;">
+        Solicitar Triagem no WhatsApp ➔
+      </a>
+    </div>
+  </article>
+
+  <footer class="hub-footer">
+    <div class="container">
+      <p>© 2026 Ecossistema Montanha • Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
