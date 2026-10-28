@@ -2,6 +2,18 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "bun run build",
   "framework": null,
+  "redirects": [
+    {
+      "source": "/materiais",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/materiais/",
+      "destination": "/",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
