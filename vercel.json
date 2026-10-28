@@ -14,6 +14,12 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/hibrido", "destination": "/materiais/treinamento-hibrido", "permanent": true },
+    { "source": "/mobilidade", "destination": "/materiais/mobilidade", "permanent": true },
+    { "source": "/hibrido-pdf", "destination": "/materiais/treinamento-hibrido/Protocolo_Atleta_Hibrido_30_Dias_Coach_Montanha.pdf", "permanent": true },
+    { "source": "/mobilidade-pdf", "destination": "/materiais/mobilidade/Programa_Mobilidade_30_Dias_Coach_Montanha_Clean.pdf", "permanent": true }
+  ],
   "crons": [
     {
       "path": "/api/cron/pre-class",
