@@ -31,26 +31,34 @@ import { openTrainingTimer } from "@/hooks/use-training-timer";
 
 type PortalMode = "studio" | "pt" | "both";
 
-const studioNav = [
+type NavItem = {
+  to?: string;
+  href?: string;
+  label: string;
+  icon: any;
+  exact?: boolean;
+};
+
+const studioNav: NavItem[] = [
   { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
-  { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
+  { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
   { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
   { to: "/portal/perfil", label: "Meus dados", icon: User },
 ];
 
-const ptNav = [
+const ptNav: NavItem[] = [
   { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
   { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
-  { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
+  { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
   { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
 ];
 
-const bothNav = [
+const bothNav: NavItem[] = [
   { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
   { to: "/portal/pt/treino", label: "Treino Personal", icon: ClipboardList },
-  { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
+  { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
   { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
   { to: "/portal/perfil", label: "Meus dados", icon: User },
@@ -118,33 +126,33 @@ export function PortalShell({ children }: { children: ReactNode }) {
   // Só exibe links de treino se o aluno tiver treinos cadastrados!
   const hasWorkouts = !!userTypes?.hasWorkouts;
 
-  const dynamicStudioNav = hasWorkouts
+  const dynamicStudioNav: NavItem[] = hasWorkouts
     ? [
         { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
         { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
-        { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
+        { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
       ]
     : studioNav;
 
-  const dynamicPtNav = hasWorkouts
+  const dynamicPtNav: NavItem[] = hasWorkouts
     ? ptNav
     : [
         { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
-        { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
+        { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
       ];
 
-  const dynamicBothNav = hasWorkouts
+  const dynamicBothNav: NavItem[] = hasWorkouts
     ? bothNav
     : [
         { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
         { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
-        { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
+        { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
@@ -183,8 +191,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
   const { theme, toggleTheme } = useTheme();
 
-  const isActive = (to: string, exact?: boolean) =>
-    exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
+  const isActive = (to?: string, exact?: boolean) =>
+    !to ? false : exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
   async function signOut() {
     await qc.cancelQueries();
@@ -248,11 +256,34 @@ export function PortalShell({ children }: { children: ReactNode }) {
         <nav className={cn("flex-1 space-y-1 overflow-y-auto py-4", collapsed ? "md:px-2 px-3" : "px-3")}>
           {nav.map((item) => {
             const Icon = item.icon;
+            if (item.href) {
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  title={collapsed ? item.label : undefined}
+                  className={cn(
+                    "group relative flex items-center rounded-xl text-sm font-semibold outline-hidden transition-ui focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar active:scale-[0.99]",
+                    collapsed ? "md:h-11 md:justify-center md:px-2 min-h-11 gap-3 px-3 py-2.5" : "min-h-11 gap-3 px-3 py-2.5",
+                    "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "h-[1.125rem] w-[1.125rem] shrink-0 transition-ui text-sidebar-foreground/55 group-hover:text-sidebar-foreground"
+                    )}
+                  />
+                  <span className={cn("truncate", collapsed && "md:hidden")}>{item.label}</span>
+                  {collapsed && <span className="sr-only md:not-sr-only md:hidden">{item.label}</span>}
+                </a>
+              );
+            }
             const active = isActive(item.to, item.exact);
             return (
               <Link
                 key={item.to}
-                to={item.to}
+                to={item.to!}
                 onClick={() => setOpen(false)}
                 preload="intent"
                 title={collapsed ? item.label : undefined}
