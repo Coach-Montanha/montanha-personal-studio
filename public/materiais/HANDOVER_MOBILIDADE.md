@@ -16,7 +16,7 @@ Este documento preserva todo o histórico técnico, decisões arquiteturais, arq
 ## 2. Arquitetura de Segurança: Cofre de Materiais (`/materiais/`)
 - **Localização:** `Montanha Personal Studio/public/materiais/`
 - **Isolamento Total:** Arquivos puramente estáticos servidos pela Edge CDN da Vercel. Não tocam no Supabase, não utilizam cookies de autenticação e não possuem ligação visível no menu principal do app.
-- **Anti-Varredura:** A rota raiz `/materiais/` possui proteção contra indexação de busca (`noindex`) e redireciona automaticamente para a home `/`, impedindo que pessoas externas descubram outros arquivos.
+- **Bloqueio Travado na Raiz (403 Forbidden):** A rota raiz `/materiais` exibe permanentemente uma tela travada de **Acesso Bloqueado / Diretório Protegido** com `noindex, nofollow`, sem redirecionamentos automáticos e sem botões de escape. Quem tenta varrer ou acessar a pasta raiz fica retido nessa tela de segurança.
 - **Regra de Domínio Vercel:** **NUNCA usar `www.`** em domínios `.vercel.app`. Os certificados SSL wildcard só cobrem 3º nível (`*.vercel.app`). Com `www.` ocorre o erro `NET::ERR_CERT_COMMON_NAME_INVALID`.
 
 ---
@@ -24,7 +24,7 @@ Este documento preserva todo o histórico técnico, decisões arquiteturais, arq
 ## 3. URLs Oficiais de Produção (Ativas com HTTP 200)
 - 🌐 **Web App do Aluno:** `https://montanha-personal-studio.vercel.app/materiais/mobilidade`
 - 📄 **Download do PDF:** `https://montanha-personal-studio.vercel.app/materiais/mobilidade/Programa_Mobilidade_30_Dias_Coach_Montanha_Clean.pdf`
-- 🔒 **Barreira de Proteção:** `https://montanha-personal-studio.vercel.app/materiais` (Redirecionamento seguro)
+- 🔒 **Tela de Aviso Travada:** `https://montanha-personal-studio.vercel.app/materiais` (403 • Acesso Bloqueado)
 
 ---
 
@@ -32,15 +32,12 @@ Este documento preserva todo o histórico técnico, decisões arquiteturais, arq
 
 ### Montanha Personal Studio:
 - Pasta do Cofre: `C:\Users\Administrator\Documents\Projetos\Ecossistema Montanha\Montanha Personal Studio\public\materiais`
-- Web App: `C:\Users\Administrator\Documents\Projetos\Ecossistema Montanha\Montanha Personal Studio\public\materiais\mobilidade\index.html`
-- PDF: `C:\Users\Administrator\Documents\Projetos\Ecossistema Montanha\Montanha Personal Studio\public\materiais\mobilidade\Programa_Mobilidade_30_Dias_Coach_Montanha_Clean.pdf`
+- Tela Travada de Segurança: `public/materiais/index.html`
+- Web App: `public/materiais/mobilidade/index.html`
+- PDF: `public/materiais/mobilidade/Programa_Mobilidade_30_Dias_Coach_Montanha_Clean.pdf`
 
 ### Montanha Hybrid Training (Espelho):
 - Pasta do Cofre: `C:\Users\Administrator\Documents\Projetos\Ecossistema Montanha\Montanha Hybrid Training\public\materiais`
-
-### Scripts Geradores (Mail Conection):
-- Gerador do PDF Interativo: `C:\Users\Administrator\Documents\Projetos\Mail Conection\generate_interactive_pdf.py`
-- Construtor do Web App: `C:\Users\Administrator\Documents\Projetos\Mail Conection\build_mobilidade_site.py`
 
 ---
 
