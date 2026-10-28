@@ -299,7 +299,8 @@ STUDENT_DETECTION_SCRIPT = """
         
         const loginBtns = document.querySelectorAll('.btn-login-action');
         loginBtns.forEach(btn => {
-          btn.textContent = 'App Studio Conectado';
+          btn.textContent = '← Voltar ao Studio';
+          btn.href = '/portal';
           btn.classList.remove('btn-outline');
           btn.classList.add('btn-vip');
         });

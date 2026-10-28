@@ -122,6 +122,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     ? [
         { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
         { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
+        { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
@@ -132,6 +133,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     ? ptNav
     : [
         { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
+        { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
@@ -142,6 +144,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     : [
         { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
         { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
+        { to: "/biblioteca", label: "Artigos & E-books", icon: BookOpen },
         { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
         { to: "/portal/formularios", label: "Formulários", icon: FileText },
         { to: "/portal/perfil", label: "Meus dados", icon: User },
