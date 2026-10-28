@@ -242,22 +242,41 @@ export function NotificationCenter() {
               ? `${count} aluno(s) com check-in: ${attendees.join(", ")}.`
               : "Nenhum aluno realizou check-in até o momento.";
 
-          // Canal Único: Disparo imediato se estiver na janela de 19 minutos e 30 segundos (<= 1170s e >= 0s)
+          const notifId = hashStringToInt(`class_19m30s_${session.id}_${today}`);
+
+          // Pré-agendamento nativo no sistema do celular para disparar mesmo com o app fechado:
+          // triggerSeconds = horário da aula - 19m 30s (1170 segundos)
+          const reminderTriggerSeconds = sessionDaySeconds - 1170;
+          if (reminderTriggerSeconds > currentDaySeconds) {
+            const triggerDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, reminderTriggerSeconds);
+            const scheduledKey = `scheduled_class_19m30s_${session.id}_${today}`;
+            if (!localStorage.getItem(scheduledKey)) {
+              localStorage.setItem(scheduledKey, "true");
+              await scheduleClassReminderNotification({
+                id: notifId,
+                title: `📋 Turma em 19m 30s (${timeFormatted} - ${className})`,
+                body,
+                triggerAt: triggerDate,
+                url: "/agenda",
+              });
+            }
+          }
+
+          // Se o app estiver aberto exatamente na janela (<= 1170s e >= 0s)
           if (diffSeconds <= 1170 && diffSeconds >= 0) {
             const storageKey = `notified_class_19m30s_${session.id}_${today}`;
             if (!localStorage.getItem(storageKey)) {
               localStorage.setItem(storageKey, "true");
 
               playNotificationSound();
-              const notifId = hashStringToInt(`class_19m30s_${session.id}_${today}`);
               await triggerDeviceNotification({
                 id: notifId,
-                title: `⏰ Aula em 19m 30s (${timeFormatted} - ${className})`,
+                title: `📋 Turma em 19m 30s (${timeFormatted} - ${className})`,
                 body,
                 url: "/agenda",
               });
 
-              toast.info(`⏰ Aula em 19m 30s (${timeFormatted} - ${className})`, {
+              toast.info(`📋 Turma em 19m 30s (${timeFormatted} - ${className})`, {
                 description: body,
                 duration: 12000,
                 action: {
@@ -268,7 +287,7 @@ export function NotificationCenter() {
 
               await supabase.from("pt_notifications" as any).insert({
                 user_id: user.id,
-                title: `⏰ Aula em 19m 30s (${timeFormatted} - ${className})`,
+                title: `📋 Turma em 19m 30s (${timeFormatted} - ${className})`,
                 message: body,
                 type: "class_reminder_19m30s",
                 metadata: {
