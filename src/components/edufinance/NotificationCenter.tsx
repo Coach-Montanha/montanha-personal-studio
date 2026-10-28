@@ -133,70 +133,7 @@ export function NotificationCenter() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // 1. Escuta Realtime para novos check-ins e avisos imediatos
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase
-      .channel(`pt_notifications:${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "pt_notifications",
-          filter: `user_id=eq.${user.id}`,
-        },
-        async (payload: any) => {
-          qc.invalidateQueries({ queryKey: ["notifications", user.id] });
-          playNotificationSound();
-
-          const notif = payload.new;
-          const title = notif.title || (notif.type === "checkin" ? "🔔 Novo Check-in!" : "⏰ Studio");
-          const message = notif.message || "";
-
-          // Disparo de notificação nativa no sistema operacional (Android APK e Web)
-          await triggerDeviceNotification({
-            id: hashStringToInt(notif.id || (title + message)),
-            title,
-            body: message,
-            url: "/agenda",
-          });
-
-          if (notif.type === "checkin") {
-            toast.success("🔔 Novo Check-in!", {
-              description: notif.message,
-              duration: 8000,
-              action: {
-                label: "Ver Agenda",
-                onClick: () => navigate({ to: "/agenda" }),
-              },
-            });
-          } else if (notif.type === "class_reminder_20m") {
-            toast.info("⏰ Aula em 20 Minutos!", {
-              description: notif.message,
-              duration: 10000,
-              action: {
-                label: "Ver Turma",
-                onClick: () => navigate({ to: "/agenda" }),
-              },
-            });
-          } else {
-            toast.info(notif.title, {
-              description: notif.message,
-              duration: 6000,
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, qc, navigate]);
-
-  // 2. Alerta preventivo automático 19 minutos e 30 segundos antes de cada aula do dia
+  // 1 e 2. Monitoramento de turmas e sincronização em tempo real de check-ins
   useEffect(() => {
     if (!user?.id) return;
 
@@ -244,14 +181,17 @@ export function NotificationCenter() {
 
           const notifId = hashStringToInt(`class_19m30s_${session.id}_${today}`);
 
-          // Pré-agendamento nativo no sistema do celular para disparar mesmo com o app fechado:
+          // Pré-agendamento nativo no celular:
           // triggerSeconds = horário da aula - 19m 30s (1170 segundos)
           const reminderTriggerSeconds = sessionDaySeconds - 1170;
           if (reminderTriggerSeconds > currentDaySeconds) {
             const triggerDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, reminderTriggerSeconds);
-            const scheduledKey = `scheduled_class_19m30s_${session.id}_${today}`;
-            if (!localStorage.getItem(scheduledKey)) {
-              localStorage.setItem(scheduledKey, "true");
+            const scheduledHashKey = `scheduled_hash_${session.id}_${today}`;
+            const currentHash = `${count}_${attendees.join(",")}`;
+            
+            // Sempre que o aluno alterar/fazer check-in, o hash muda e a notificação é re-agendada com os dados atualizados!
+            if (localStorage.getItem(scheduledHashKey) !== currentHash) {
+              localStorage.setItem(scheduledHashKey, currentHash);
               await scheduleClassReminderNotification({
                 id: notifId,
                 title: `📋 Turma em 19m 30s (${timeFormatted} - ${className})`,
@@ -308,8 +248,79 @@ export function NotificationCenter() {
 
     checkUpcomingClasses();
     const interval = setInterval(checkUpcomingClasses, 30000);
-    return () => clearInterval(interval);
-  }, [user?.id, navigate]);
+
+    // Escuta Realtime: sincroniza notificações E atualizações de check-in instantaneamente
+    const channel = supabase
+      .channel(`pt_notifications_and_attendance:${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "class_attendance",
+        },
+        () => {
+          // Quando qualquer aluno confirma, altera ou cancela o check-in, atualiza imediatamente a notificação pré-agendada
+          checkUpcomingClasses();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "pt_notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        async (payload: any) => {
+          qc.invalidateQueries({ queryKey: ["notifications", user.id] });
+          playNotificationSound();
+
+          const notif = payload.new;
+          const title = notif.title || (notif.type === "checkin" ? "🔔 Novo Check-in!" : "⏰ Studio");
+          const message = notif.message || "";
+
+          // Disparo de notificação nativa no sistema operacional (Android APK e Web)
+          await triggerDeviceNotification({
+            id: hashStringToInt(notif.id || (title + message)),
+            title,
+            body: message,
+            url: "/agenda",
+          });
+
+          if (notif.type === "checkin") {
+            toast.success("🔔 Novo Check-in!", {
+              description: notif.message,
+              duration: 8000,
+              action: {
+                label: "Ver Agenda",
+                onClick: () => navigate({ to: "/agenda" }),
+              },
+            });
+          } else if (notif.type === "class_reminder_20m") {
+            toast.info("⏰ Aula em 20 Minutos!", {
+              description: notif.message,
+              duration: 10000,
+              action: {
+                label: "Ver Turma",
+                onClick: () => navigate({ to: "/agenda" }),
+              },
+            });
+          } else {
+            toast.info(notif.title, {
+              description: notif.message,
+              duration: 6000,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, qc, navigate]);
 
   async function markAsRead(id: string) {
     await supabase
