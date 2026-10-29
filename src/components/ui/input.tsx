@@ -4,9 +4,13 @@ import { cn } from "@/lib/utils";
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
+    const isTextLike = !type || type === "text" || type === "search";
     return (
       <input
         type={type}
+        autoCorrect={props.autoCorrect ?? (isTextLike ? "on" : undefined)}
+        autoCapitalize={props.autoCapitalize ?? (isTextLike ? "sentences" : undefined)}
+        spellCheck={props.spellCheck ?? (isTextLike ? true : undefined)}
         className={cn(
           [
             "flex h-11 w-full rounded-lg border border-input bg-card px-3 py-1 text-base shadow-card sm:h-9 md:text-sm",

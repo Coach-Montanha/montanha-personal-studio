@@ -114,6 +114,13 @@ export async function scheduleClassReminderNotification({
   if (isNativeApp()) {
     try {
       await setupNativeNotificationChannel();
+      // Cancela agendamento anterior para o mesmo ID antes de re-agendar,
+      // garantindo que o Android nunca envie o texto antigo desatualizado caso um aluno faça check-in depois
+      try {
+        await LocalNotifications.cancel({ notifications: [{ id }] });
+      } catch {
+        // ignore
+      }
       await LocalNotifications.schedule({
         notifications: [
           {

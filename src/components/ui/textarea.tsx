@@ -6,6 +6,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<"tex
   ({ className, ...props }, ref) => {
     return (
       <textarea
+        autoCorrect={props.autoCorrect ?? "on"}
+        autoCapitalize={props.autoCapitalize ?? "sentences"}
+        spellCheck={props.spellCheck ?? true}
         className={cn(
           [
             "flex min-h-[76px] w-full rounded-lg border border-input bg-card px-3 py-2 text-base shadow-card md:text-sm",
