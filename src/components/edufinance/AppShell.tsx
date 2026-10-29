@@ -27,6 +27,7 @@ import {
   Timer,
   Trophy,
   FileText,
+  Newspaper,
 } from "lucide-react";
 
 import { useTheme } from "@/hooks/use-theme";
@@ -103,6 +104,7 @@ const nav: NavItem[] = [
   { to: "/crm", label: "CRM", icon: Megaphone, section: "Gestão", module: "crm" },
   { to: "/formularios", label: "Formulários", icon: FileText, section: "Gestão" },
   { to: "/desafios", label: "Desafios", icon: Trophy, section: "Gestão" },
+  { to: "/blog-editor", label: "Blog & Artigos", icon: Newspaper, section: "Gestão" },
 ];
 
 const LS_COLLAPSED = "edufinance:sidebar-collapsed";

@@ -24,6 +24,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
+import { Route as AuthenticatedBlogEditorRouteImport } from './routes/_authenticated/blog-editor'
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedDiagnosticsRouteImport } from './routes/_authenticated/diagnostics'
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
@@ -136,6 +137,11 @@ const AuthenticatedAnalyticsRoute = AuthenticatedAnalyticsRouteImport.update({
 const AuthenticatedBibliotecaRoute = AuthenticatedBibliotecaRouteImport.update({
   id: '/biblioteca',
   path: '/biblioteca',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBlogEditorRoute = AuthenticatedBlogEditorRouteImport.update({
+  id: '/blog-editor',
+  path: '/blog-editor',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
@@ -360,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AuthenticatedAgendaRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
+  '/blog-editor': typeof AuthenticatedBlogEditorRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
@@ -412,6 +419,7 @@ export interface FileRoutesByTo {
   '/agenda': typeof AuthenticatedAgendaRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
+  '/blog-editor': typeof AuthenticatedBlogEditorRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/financeiro': typeof AuthenticatedFinanceiroRoute
@@ -467,6 +475,7 @@ export interface FileRoutesById {
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
+  '/_authenticated/blog-editor': typeof AuthenticatedBlogEditorRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRoute
   '/_authenticated/diagnostics': typeof AuthenticatedDiagnosticsRoute
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
@@ -523,6 +532,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/analytics'
     | '/biblioteca'
+    | '/blog-editor'
     | '/crm'
     | '/diagnostics'
     | '/financeiro'
@@ -575,6 +585,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/analytics'
     | '/biblioteca'
+    | '/blog-editor'
     | '/crm'
     | '/diagnostics'
     | '/financeiro'
@@ -629,6 +640,7 @@ export interface FileRouteTypes {
     | '/_authenticated/agenda'
     | '/_authenticated/analytics'
     | '/_authenticated/biblioteca'
+    | '/_authenticated/blog-editor'
     | '/_authenticated/crm'
     | '/_authenticated/diagnostics'
     | '/_authenticated/financeiro'
@@ -795,6 +807,13 @@ declare module '@tanstack/react-router' {
       path: '/biblioteca'
       fullPath: '/biblioteca'
       preLoaderRoute: typeof AuthenticatedBibliotecaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/blog-editor': {
+      id: '/_authenticated/blog-editor'
+      path: '/blog-editor'
+      fullPath: '/blog-editor'
+      preLoaderRoute: typeof AuthenticatedBlogEditorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/crm': {
@@ -1063,6 +1082,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedBibliotecaRoute: typeof AuthenticatedBibliotecaRoute
+  AuthenticatedBlogEditorRoute: typeof AuthenticatedBlogEditorRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRoute
   AuthenticatedDiagnosticsRoute: typeof AuthenticatedDiagnosticsRoute
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
@@ -1100,6 +1120,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedBibliotecaRoute: AuthenticatedBibliotecaRoute,
+  AuthenticatedBlogEditorRoute: AuthenticatedBlogEditorRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRoute,
   AuthenticatedDiagnosticsRoute: AuthenticatedDiagnosticsRoute,
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
