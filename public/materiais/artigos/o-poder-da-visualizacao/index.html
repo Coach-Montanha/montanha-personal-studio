@@ -2,25 +2,25 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>O poder da visualização | Coach Montanha</title>
+  <title>ARTIGO 80 - O poder da visualização | Coach Montanha</title>
   <meta name="description" content="ARTIGO 80 - O poder da visualização Artigo 91 do acervo original do Blog do Montanha. Painel Systeme.io: 7455513(https://systeme.io/dashboard/page/745...">
   
   <!-- OpenGraph Meta Tags para WhatsApp e Redes -->
-  <meta property="og:title" content="O poder da visualização | Coach Montanha">
+  <meta property="og:title" content="ARTIGO 80 - O poder da visualização | Coach Montanha">
   <meta property="og:description" content="ARTIGO 80 - O poder da visualização Artigo 91 do acervo original do Blog do Montanha. Painel Systeme.io: 7455513(https://systeme.io/dashboard/page/745...">
   <meta property="og:url" content="https://montanha-personal-studio.vercel.app/materiais/artigos/o-poder-da-visualizacao">
   <meta property="og:type" content="article">
-  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/materiais/logo_montanha.png">
-  <meta property="og:site_name" content="Coach Montanha • Blog Oficial">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/materiais/logo_blog_montanha.png">
+  <meta property="og:site_name" content="Blog do Montanha • Oficial">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="O poder da visualização">
+  <meta name="twitter:title" content="ARTIGO 80 - O poder da visualização">
   <meta name="twitter:description" content="ARTIGO 80 - O poder da visualização Artigo 91 do acervo original do Blog do Montanha. Painel Systeme.io: 7455513(https://systeme.io/dashboard/page/745...">
 
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#09090b">
-  <link rel="icon" type="image/png" href="/materiais/logo_montanha.png">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="/materiais/logo_blog_montanha.png">
   
   <!-- Fontes Oficiais do Blog: Fira Sans (Títulos) & Montserrat (Corpo) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,10 +29,10 @@
   
   <style>
     :root {
-      --bg: #09090b;
-      --card-bg: #141417;
-      --card-border: #27272a;
-      --card-hover: #1c1c21;
+      --bg: #000000;
+      --card-bg: #111114;
+      --card-border: #222226;
+      --card-hover: #18181d;
       --text: #f4f4f5;
       --text-muted: #a1a1aa;
       --text-dim: #71717a;
@@ -47,7 +47,7 @@
       background-color: var(--bg);
       color: var(--text);
       font-family: var(--font-body);
-      line-height: 1.7;
+      line-height: 1.75;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
@@ -58,83 +58,171 @@
       letter-spacing: -0.01em;
     }
     a { color: inherit; text-decoration: none; }
-    .container { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
     
-    /* Topbar Original do Blog */
-    .topbar {
+    /* ========================================================
+       TOPBAR OFICIAL FIEL AO SYSTEME.IO (2 NÍVEIS)
+       ======================================================== */
+    .topbar-blog {
+      background: #000000;
       border-bottom: 1px solid var(--card-border);
-      background: rgba(9, 9, 11, 0.95);
-      backdrop-filter: blur(14px);
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 60;
     }
-    .topbar-inner {
+    
+    /* Linha 1: Redes Sociais | Logo Central | Contador */
+    .topbar-utility {
+      border-bottom: 1px solid #1a1a1e;
+      padding: 14px 0;
+      background: #050507;
+    }
+    .utility-flex {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 72px;
     }
-    .brand {
+    .top-socials {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-family: var(--font-title);
-      font-weight: 800;
-      font-size: 18px;
-      letter-spacing: -0.02em;
+      gap: 14px;
+      width: 250px;
     }
-    .brand img {
-      width: 44px;
-      height: 44px;
-      object-fit: contain;
+    .top-socials a {
+      color: #71717a;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .top-socials a:hover {
+      color: var(--primary);
+      transform: translateY(-1px);
     }
     
-    /* Menu Central do Blog Original */
-    .nav-menu {
+    /* Logo Central com Kettlebell */
+    .top-logo-center {
+      text-align: center;
+      flex: 1;
+    }
+    .top-logo-center a {
+      display: inline-block;
+    }
+    .blog-logo-img {
+      height: 52px;
+      width: auto;
+      max-width: 260px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));
+      transition: opacity 0.2s;
+    }
+    .blog-logo-img:hover {
+      opacity: 0.9;
+    }
+    
+    /* Contador Odometer Digital Retro */
+    .top-counter {
       display: flex;
       align-items: center;
-      gap: 20px;
+      justify-content: flex-end;
+      gap: 10px;
+      width: 250px;
     }
-    .nav-menu a {
+    .counter-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      font-family: var(--font-title);
+    }
+    .odometer-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: #111115;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #27272a;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+    }
+    .odometer-box .digit {
+      background: #1c1c22;
+      color: #e4e4e7;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: 800;
       font-size: 14px;
-      font-weight: 600;
-      color: var(--text-muted);
-      transition: color 0.2s;
-    }
-    .nav-menu a:hover {
-      color: var(--primary);
-    }
-    @media (max-width: 900px) {
-      .nav-menu { display: none; }
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #33333a;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
 
-    .topbar-actions {
+    /* Linha 2: Navegação Centralizada */
+    .topbar-nav {
+      padding: 12px 0;
+      background: rgba(0, 0, 0, 0.96);
+      backdrop-filter: blur(12px);
+    }
+    .nav-flex {
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: space-between;
     }
-    .social-icons-top {
+    .nav-links {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-right: 6px;
+      gap: 28px;
+      margin: 0 auto;
     }
-    .social-icons-top a {
-      color: var(--text-muted);
-      font-size: 15px;
-      transition: color 0.2s;
+    .nav-item {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #d4d4d8;
+      text-transform: capitalize;
+      transition: color 0.2s ease;
+      position: relative;
     }
-    .social-icons-top a:hover { color: var(--primary); }
-    
+    .nav-item:hover {
+      color: var(--primary);
+    }
+    .nav-cta {
+      display: flex;
+      align-items: center;
+    }
+    .btn-student-pill {
+      font-size: 12.5px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+    }
+
+    @media (max-width: 900px) {
+      .top-socials { display: none; }
+      .top-counter { display: none; }
+      .blog-logo-img { height: 44px; }
+      .nav-links {
+        gap: 16px;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 4px;
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .nav-flex {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .nav-cta { display: none; }
+    }
+
+    /* Botões Padrão */
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 8px 16px;
+      padding: 8px 18px;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -164,7 +252,7 @@
       font-weight: 700;
     }
     
-    /* Banners */
+    /* Banners VIP e Visitante */
     .banner-vip {
       background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.06));
       border-bottom: 1px solid rgba(16, 185, 129, 0.3);
@@ -186,7 +274,7 @@
     /* Rodapé Oficial de 4 Colunas */
     .blog-footer {
       border-top: 1px solid var(--card-border);
-      background: #0d0d10;
+      background: #070709;
       padding: 60px 0 30px 0;
       margin-top: 80px;
     }
@@ -203,20 +291,14 @@
       color: var(--primary);
       margin-bottom: 18px;
     }
-    .footer-col ul {
-      list-style: none;
-    }
-    .footer-col li {
-      margin-bottom: 10px;
-    }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 10px; }
     .footer-col a {
       font-size: 13.5px;
       color: var(--text-muted);
       transition: color 0.2s;
     }
-    .footer-col a:hover {
-      color: #fff;
-    }
+    .footer-col a:hover { color: #fff; }
     .footer-newsletter p {
       font-size: 13px;
       color: var(--text-muted);
@@ -247,7 +329,7 @@
       color: var(--text-dim);
     }
 
-    /* Modal de Lead */
+    /* Modal de Lead para Visitantes */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -260,8 +342,8 @@
       padding: 20px;
     }
     .modal-box {
-      background: #18181b;
-      border: 1px solid #3f3f46;
+      background: #141418;
+      border: 1px solid #33333a;
       border-radius: 14px;
       max-width: 440px;
       width: 100%;
@@ -296,6 +378,11 @@
   
 <script>
   (function() {
+    // Incremento do contador de visitas local
+    let visits = parseInt(localStorage.getItem('montanha_blog_visits') || '4575');
+    visits += 1;
+    localStorage.setItem('montanha_blog_visits', visits.toString());
+
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('student') === '1') {
       localStorage.setItem('montanha_is_student', '1');
@@ -304,15 +391,21 @@
     window.IS_STUDENT = isStudent;
     
     document.addEventListener('DOMContentLoaded', function() {
+      // Atualizar dígitos do odometer
+      const digitsBox = document.querySelector('.odometer-box');
+      if (digitsBox) {
+        const strVisits = visits.toString().padStart(4, '0');
+        digitsBox.innerHTML = strVisits.split('').map(d => `<span class="digit">${d}</span>`).join('');
+      }
+
       if (isStudent) {
-        const vipBanners = document.querySelectorAll('.banner-vip');
-        const visitorBanners = document.querySelectorAll('.banner-visitor');
-        vipBanners.forEach(b => b.style.display = 'block');
-        visitorBanners.forEach(b => b.style.display = 'none');
-        
-        const loginBtns = document.querySelectorAll('.btn-login-action');
-        loginBtns.forEach(btn => {
-          btn.textContent = '← Voltar ao Studio';
+        const vipBanner = document.getElementById('vipBanner');
+        const visitorBanner = document.getElementById('visitorBanner');
+        if (vipBanner) vipBanner.style.display = 'block';
+        if (visitorBanner) visitorBanner.style.display = 'none';
+
+        document.querySelectorAll('.btn-student-pill').forEach(btn => {
+          btn.innerHTML = '👤 Painel do Aluno';
           btn.href = '/portal';
           btn.classList.remove('btn-outline');
           btn.classList.add('btn-vip');
@@ -325,7 +418,7 @@
 
   <style>
     .article-wrap {
-      max-width: 820px;
+      max-width: 860px;
       margin: 40px auto 60px auto;
       padding: 0 20px;
     }
@@ -336,156 +429,102 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
     }
-    .breadcrumbs a:hover { color: var(--text); }
+    .breadcrumbs a:hover { color: var(--primary); }
+    
     .article-header {
+      text-align: center;
       margin-bottom: 36px;
-      border-bottom: 1px solid var(--card-border);
       padding-bottom: 28px;
+      border-bottom: 1px solid var(--card-border);
     }
     .article-badge {
       display: inline-block;
       font-size: 11px;
-      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: var(--primary-soft);
+      letter-spacing: 0.12em;
+      font-weight: 800;
       color: var(--primary);
-      padding: 4px 10px;
-      border-radius: 6px;
+      background: var(--primary-soft);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 4px 14px;
+      border-radius: 9999px;
       margin-bottom: 16px;
-      border: 1px solid rgba(245, 158, 11, 0.25);
       font-family: var(--font-title);
     }
     .article-title {
-      font-size: 38px;
+      font-size: 36px;
       font-weight: 800;
-      color: #fff;
       line-height: 1.25;
-      letter-spacing: -0.02em;
       margin-bottom: 14px;
+      color: #ffffff;
     }
     .article-meta {
       display: flex;
       align-items: center;
-      gap: 16px;
-      font-size: 14px;
+      justify-content: center;
+      gap: 14px;
+      font-size: 13.5px;
       color: var(--text-muted);
+      flex-wrap: wrap;
     }
+    .article-meta span { display: flex; align-items: center; gap: 4px; }
     
+    /* Corpo do Texto Tipografia Fiel Systeme.io */
     .prose {
       font-size: 18.5px;
-      line-height: 1.8;
-      color: #d4d4d8;
+      line-height: 1.85;
+      color: #e4e4e7;
     }
-    .prose h1, .prose h2, .prose h3, .prose h4 {
-      color: #fff;
-      font-weight: 700;
-      margin: 40px 0 16px 0;
-      letter-spacing: -0.01em;
-    }
-    .prose h1 { font-size: 28px; }
-    .prose h2 { font-size: 23px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
-    .prose h3 { font-size: 20px; }
     .prose p { margin-bottom: 22px; }
-    .prose ul, .prose ol { margin: 0 0 22px 24px; }
+    .prose h2, .prose h3, .prose h4 {
+      margin: 40px 0 18px 0;
+      color: #fff;
+    }
+    .prose h2 { font-size: 26px; border-bottom: 1px solid #1f1f23; padding-bottom: 8px; }
+    .prose h3 { font-size: 21px; }
+    .prose h4 { font-size: 18px; color: var(--primary); }
+    .prose ul, .prose ol {
+      margin: 0 0 24px 28px;
+    }
     .prose li { margin-bottom: 8px; }
+    .prose strong { color: #ffffff; font-weight: 700; }
     .prose blockquote {
       border-left: 4px solid var(--primary);
-      background: var(--card-bg);
+      background: #111115;
       padding: 16px 20px;
-      margin: 26px 0;
       border-radius: 0 8px 8px 0;
-      color: #e4e4e7;
+      margin: 24px 0;
+      color: #d4d4d8;
       font-style: italic;
-    }
-    .prose code {
-      background: #27272a;
-      color: #fcd34d;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    .prose pre {
-      background: #18181b;
-      border: 1px solid var(--card-border);
-      padding: 16px;
-      border-radius: 8px;
-      overflow-x: auto;
-      margin-bottom: 24px;
     }
     .prose hr {
       border: none;
       border-top: 1px solid var(--card-border);
       margin: 40px 0;
     }
-    .prose a {
-      color: var(--primary);
-      text-decoration: underline;
-    }
     .prose table {
       width: 100%;
       border-collapse: collapse;
-      margin: 24px 0;
-      font-size: 14.5px;
+      margin: 28px 0;
+      font-size: 15px;
     }
     .prose th, .prose td {
+      padding: 12px 14px;
       border: 1px solid var(--card-border);
-      padding: 10px 14px;
-      text-align: left;
     }
-    .prose th { background: var(--card-bg); color: #fff; font-family: var(--font-title); }
-
-    /* Artigos Populares Box */
-    .popular-posts-box {
-      margin: 50px 0 30px 0;
-      padding: 28px;
-      background: #121215;
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
-    }
-    .popular-title {
-      font-size: 22px;
-      font-weight: 700;
+    .prose th {
+      background: #18181c;
       color: var(--primary);
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--card-border);
-      padding-bottom: 10px;
-    }
-    .popular-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-    }
-    .pop-item {
-      background: var(--card-bg);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 14px 16px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      transition: all 0.2s;
-    }
-    .pop-item:hover {
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
-    .pop-item strong {
-      font-size: 14px;
-      color: #fff;
-      line-height: 1.4;
-    }
-    .pop-item span {
-      font-size: 11.5px;
-      color: var(--text-dim);
+      font-weight: 700;
     }
 
-    /* Share & Feedback Box */
+    /* Compartilhamento */
     .share-box {
-      margin: 40px 0;
-      padding: 24px;
-      background: var(--card-bg);
+      margin-top: 48px;
+      padding: 22px;
+      background: #0d0d10;
       border: 1px solid var(--card-border);
       border-radius: 12px;
       display: flex;
@@ -494,6 +533,65 @@
       flex-wrap: wrap;
       gap: 16px;
     }
+
+    /* Artigos Populares */
+    .popular-posts-box {
+      margin-top: 50px;
+      padding: 30px;
+      background: #0d0d10;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+    }
+    .popular-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .popular-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .pop-item {
+      display: block;
+      padding: 14px 16px;
+      background: #141418;
+      border: 1px solid #222227;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .pop-item:hover {
+      border-color: var(--primary);
+      background: #18181e;
+      transform: translateY(-2px);
+    }
+    .pop-item strong {
+      display: block;
+      font-size: 14.5px;
+      color: #fff;
+      font-family: var(--font-title);
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+    .pop-item span {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    /* Caixa de Comentário / WhatsApp */
+    .comment-box {
+      margin-top: 48px;
+      padding: 28px;
+      background: radial-gradient(circle at 100% 0%, rgba(37, 211, 102, 0.1) 0%, rgba(13, 13, 16, 0.9) 100%);
+      border: 1px solid rgba(37, 211, 102, 0.3);
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    /* Navegação Sequencial */
     .nav-carousel {
       display: flex;
       justify-content: space-between;
@@ -510,44 +608,67 @@
       max-width: 48%;
     }
     .nav-next { text-align: right; }
-
-    /* Caixa de Comentário / WhatsApp */
-    .comment-box {
-      margin-top: 48px;
-      padding: 28px;
-      background: radial-gradient(circle at 100% 0%, rgba(37, 211, 102, 0.1) 0%, rgba(20, 20, 23, 0.8) 100%);
-      border: 1px solid rgba(37, 211, 102, 0.3);
-      border-radius: 14px;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
 
-  <!-- Topbar Original -->
-  <header class="topbar">
-    <div class="container topbar-inner">
-      <div class="brand">
-        <a href="/materiais" style="display:flex; align-items:center; gap:12px;">
-          <img src="/materiais/logo_montanha.png" alt="Coach Montanha">
-          <span>COACH MONTANHA</span>
-        </a>
+  
+  <!-- Topbar Oficial em 2 Níveis -->
+  <header class="topbar-blog">
+    <!-- Nível 1: Redes Sociais, Logo Blog do Montanha e Contador -->
+    <div class="topbar-utility">
+      <div class="container utility-flex">
+        <div class="top-socials">
+          <a href="https://www.facebook.com/albertosarly.coutinho" target="_blank" title="Facebook" aria-label="Facebook">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/coachmontanha1/" target="_blank" title="Instagram" aria-label="Instagram">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="https://twitter.com/coachmontanha1" target="_blank" title="Twitter / X" aria-label="Twitter">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://www.youtube.com/channel/UCy29z1eRp_GPFAVFHJfmg_A" target="_blank" title="YouTube" aria-label="YouTube">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </a>
+        </div>
+
+        <div class="top-logo-center">
+          <a href="/materiais">
+            <img src="/materiais/logo_blog_montanha.png" alt="Blog do Montanha" class="blog-logo-img">
+          </a>
+        </div>
+
+        <div class="top-counter">
+          <span class="counter-tag">VISITAS</span>
+          <div class="odometer-box" title="Contador de Acessos">
+            <span class="digit">4</span>
+            <span class="digit">5</span>
+            <span class="digit">7</span>
+            <span class="digit">5</span>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <nav class="nav-menu">
-        <a href="/materiais">Início</a>
-        <a href="/materiais#artigosSection">Meus Artigos</a>
-        <a href="/materiais#ebooksSection">Livros/Ebooks</a>
-        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20quero%20conhecer%20os%20Cursos%20Online" target="_blank">Cursos Online</a>
-        <a href="https://coachmontanha1.systeme.io/amazon" target="_blank">Links Amazon</a>
-        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20artigo%20'O poder da visualização'" target="_blank">Contato</a>
-      </nav>
-
-      <div class="topbar-actions">
-        <a href="/materiais" class="btn btn-outline">← Todos os Artigos</a>
+    <!-- Nível 2: Menu Principal Centralizado -->
+    <div class="topbar-nav">
+      <div class="container nav-flex">
+        <nav class="nav-links">
+          <a href="/materiais" class="nav-item">Início</a>
+          <a href="/materiais#artigosSection" class="nav-item">Meus Artigos</a>
+          <a href="/materiais#ebooksSection" class="nav-item">Livros/Ebooks</a>
+          <a href="/materiais#cursosSection" class="nav-item">Cursos Online</a>
+          <a href="/materiais#amazonSection" class="nav-item">Links Amazon</a>
+          <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank" class="nav-item">Contato</a>
+        </nav>
+        <div class="nav-cta">
+          <a href="/portal" class="btn btn-outline btn-student-pill">Portal do Aluno ➔</a>
+        </div>
       </div>
     </div>
   </header>
+
 
   <article class="article-wrap">
     <div class="breadcrumbs">
@@ -559,9 +680,11 @@
     </div>
 
     <div class="article-header">
-      <span class="article-badge">Fitness</span>
-      <h1 class="article-title">O poder da visualização</h1>
+      <span class="article-badge">Fitness • Nutrição & Jejum</span>
+      <h1 class="article-title">ARTIGO 80 - O poder da visualização</h1>
       <div class="article-meta">
+        <span>📅 sexta-feira, 22 de março de 2024</span>
+        <span>•</span>
         <span>Por <strong>Coach Montanha</strong></span>
         <span>•</span>
         <span>⏱️ 2 min de leitura</span>
@@ -570,7 +693,7 @@
 
     <div class="prose">
       <blockquote>
-<p><strong>Artigo #91</strong> do acervo original do <em>Blog do Montanha</em>.<br />
+<p><strong>Artigo #91</strong> do acervo original do <em>Blog do Montanha</em>.
 <strong>Painel Systeme.io:</strong> <a href="https://systeme.io/dashboard/page/7455513/edit"><code>7455513</code></a></p>
 </blockquote>
 <hr />
@@ -617,7 +740,7 @@
         <span style="font-size:13px; color:var(--text-muted);">Compartilhe com quem treina com você.</span>
       </div>
       <div style="display:flex; gap:10px;">
-        <a href="https://api.whatsapp.com/send?text=Artigo: O poder da visualização — Coach Montanha%20https://montanha-personal-studio.vercel.app/materiais/artigos/o-poder-da-visualizacao" target="_blank" class="btn btn-primary" style="background:#25d366; color:#000;">
+        <a href="https://api.whatsapp.com/send?text=ARTIGO 80 - O poder da visualização%20%E2%80%94%20Coach%20Montanha%20https://montanha-personal-studio.vercel.app/materiais/artigos/o-poder-da-visualizacao" target="_blank" class="btn btn-primary" style="background:#25d366; color:#000;">
           📲 Compartilhar no WhatsApp
         </a>
         <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copiado com sucesso!');" class="btn btn-outline">
@@ -627,43 +750,48 @@
     </div>
 
     <!-- Seção de Artigos Populares Clássicos -->
-    
     <div class="popular-posts-box">
-      <h3 class="popular-title">Artigos populares</h3>
+      <h3 class="popular-title">Artigos Populares</h3>
       <div class="popular-list">
+        
         <a href="/materiais/artigos/o-segredo-do-meu-emagrecimento-e-o-neat" class="pop-item">
           <strong>O segredo do meu emagrecimento é o NEAT!</strong>
           <span>Por Coach Montanha</span>
         </a>
+    
         <a href="/materiais/artigos/o-que-fazer-para-ter-um-envelhecimento-saudavel" class="pop-item">
           <strong>O que fazer para ter um envelhecimento saudável</strong>
           <span>Por Coach Montanha</span>
         </a>
+    
         <a href="/materiais/artigos/a-balanca-a-maquina-maligna-da-industria-fitness" class="pop-item">
           <strong>Balança: A Máquina Maligna da Indústria Fitness</strong>
           <span>Por Coach Montanha</span>
         </a>
+    
         <a href="/materiais/artigos/sera-que-a-fadiga-mental-influencia-a-performance" class="pop-item">
           <strong>Será que a fadiga mental influencia a performance?</strong>
           <span>Por Coach Montanha</span>
         </a>
+    
         <a href="/materiais/artigos/alguns-beneficios-do-jejum-intermitente" class="pop-item">
           <strong>Alguns benefícios do Jejum Intermitente</strong>
           <span>Por Coach Montanha</span>
         </a>
+    
         <a href="/materiais/artigos/quer-emagrecer-muito-rapido-invista-no-epoc" class="pop-item">
           <strong>Quer emagrecer muito rápido? Invista no EPOC!</strong>
           <span>Por Coach Montanha</span>
         </a>
+    
       </div>
     </div>
-    
 
     <!-- Caixa de Interação / Comentário via WhatsApp -->
     <div class="comment-box">
       <h3 style="font-size:20px; font-weight:800; color:#fff; margin-bottom:8px; font-family:var(--font-title);">Deixe seu comentário ou tire sua dúvida</h3>
       <p style="font-size:14px; color:var(--text-muted); max-width:540px; margin:0 auto 18px auto;">
-        Quer feedback sobre sua execução ou sugestão para um próximo artigo? Fale diretamente com o Coach Montanha.
+        Quer feedback sobre sua rotina ou sugestão para o próximo artigo? Fale direto com o Coach Montanha.
       </p>
       <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20li%20o%20artigo%20'O poder da visualização'%20e%20gostaria%20de%20comentar" class="btn btn-primary" target="_blank" style="background:#25d366; color:#000; padding:12px 24px; font-size:15px;">
         Enviar Mensagem no WhatsApp ➔
@@ -677,7 +805,8 @@
     </div>
   </article>
 
-  <!-- Rodapé Oficial de 4 Colunas -->
+  
+  <!-- Rodapé Oficial de 4 Colunas do Blog -->
   <footer class="blog-footer">
     <div class="container">
       <div class="footer-grid">
@@ -687,8 +816,8 @@
             <li><a href="/materiais">Início</a></li>
             <li><a href="/materiais#artigosSection">Meus Artigos</a></li>
             <li><a href="/materiais#ebooksSection">Livros/Ebooks</a></li>
-            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20quero%20conhecer%20os%20Cursos%20Online" target="_blank">Cursos Online</a></li>
-            <li><a href="https://coachmontanha1.systeme.io/amazon" target="_blank">Links Amazon</a></li>
+            <li><a href="/materiais#cursosSection">Cursos Online</a></li>
+            <li><a href="/materiais#amazonSection">Links Amazon</a></li>
             <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank">Contato</a></li>
             <li><a href="/portal">Portal do Aluno</a></li>
           </ul>
@@ -697,13 +826,12 @@
         <div class="footer-col">
           <h4>CATEGORIAS</h4>
           <ul>
-            <li><a href="/materiais?cat=Fitness">Fitness</a></li>
-            <li><a href="/materiais?cat=Desenvolvimento+Pessoal">Desenvolvimento Pessoal</a></li>
-            <li><a href="/materiais?cat=Mindset">Mindset</a></li>
-            <li><a href="/materiais?cat=Treinamento+H%C3%ADbrido">Treinamento Híbrido</a></li>
-            <li><a href="/materiais?cat=Corrida+%26+Endurance">Corrida & Endurance</a></li>
-            <li><a href="/materiais?cat=Mobilidade+Articular">Mobilidade Articular</a></li>
-            <li><a href="/materiais?cat=Nutri%C3%A7%C3%A3o+%26+Jejum">Nutrição & Jejum</a></li>
+            <li><a href="/materiais?cat=Fitness">Fitness (137 Artigos)</a></li>
+            <li><a href="/materiais?cat=Desenvolvimento+Pessoal">Desenvolvimento Pessoal (33 Artigos)</a></li>
+            <li><a href="/materiais?theme=Treinamento+Híbrido">Treinamento Híbrido</a></li>
+            <li><a href="/materiais?theme=Corrida+&+Endurance">Corrida & Endurance</a></li>
+            <li><a href="/materiais?theme=Mobilidade+Articular">Mobilidade Articular</a></li>
+            <li><a href="/materiais?theme=Nutrição+&+Jejum">Nutrição & Jejum</a></li>
           </ul>
         </div>
 
@@ -728,11 +856,12 @@
       </div>
 
       <div class="footer-bottom">
-        <div>© 2026 Ecossistema Montanha • Coach Montanha. Todos os direitos reservados.</div>
+        <div>© 2026 Blog do Montanha • Coach Montanha. Todos os direitos reservados.</div>
         <div>Hospedado no Vercel Edge CDN com máxima velocidade e zero atrito.</div>
       </div>
     </div>
   </footer>
+
 
 </body>
 </html>
