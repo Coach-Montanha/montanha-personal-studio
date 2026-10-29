@@ -2,18 +2,24 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Cofre de Materiais & Blog Oficial | Coach Montanha</title>
-  <meta name="description" content="Acesse todos os 182 artigos do blog, e-books e protocolos interativos do Coach Montanha. Força, corrida, mobilidade e performance sem atrito.">
-  <meta property="og:title" content="Cofre de Materiais & Blog Oficial | Coach Montanha">
-  <meta property="og:description" content="Artigos publicados, e-books com caixas de marcação e web apps de treino abertos para você.">
-  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/logo_dark.png">
+  <title>Blog do Montanha • Artigos, E-books & Protocolos Oficiais</title>
+  <meta name="description" content="Acesse todos os 182 artigos do blog, e-books e protocolos interativos do Coach Montanha. Fitness, força, corrida em Zona 2, desenvolvimento pessoal e mindset.">
+  <meta property="og:title" content="Blog do Montanha • Artigos, E-books & Protocolos Oficiais">
+  <meta property="og:description" content="O acervo oficial do Coach Montanha: artigos publicados, e-books e ferramentas interativas.">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/materiais/logo_montanha.png">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://montanha-personal-studio.vercel.app/materiais">
   
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#09090b">
-  <link rel="icon" type="image/png" href="/logo_dark.png">
+  <link rel="icon" type="image/png" href="/materiais/logo_montanha.png">
+  
+  <!-- Fontes Oficiais do Blog: Fira Sans (Títulos) & Montserrat (Corpo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+  
   <style>
     :root {
       --bg: #09090b;
@@ -26,26 +32,32 @@
       --primary: #f59e0b;
       --primary-hover: #d97706;
       --primary-soft: rgba(245, 158, 11, 0.12);
-      --accent-red: #ef4444;
-      --accent-green: #10b981;
+      --font-title: 'Fira Sans', sans-serif;
+      --font-body: 'Montserrat', sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background-color: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
+      font-family: var(--font-body);
+      line-height: 1.7;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-title);
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
     a { color: inherit; text-decoration: none; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
     
-    /* Top Bar */
+    /* Topbar Original do Blog */
     .topbar {
       border-bottom: 1px solid var(--card-border);
-      background: rgba(9, 9, 11, 0.9);
-      backdrop-filter: blur(12px);
+      background: rgba(9, 9, 11, 0.95);
+      backdrop-filter: blur(14px);
       position: sticky;
       top: 0;
       z-index: 50;
@@ -54,26 +66,60 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
+      height: 72px;
     }
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
+      font-family: var(--font-title);
       font-weight: 800;
-      font-size: 16px;
+      font-size: 18px;
       letter-spacing: -0.02em;
     }
     .brand img {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
     }
+    
+    /* Menu Central do Blog Original */
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-menu a {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .nav-menu a:hover {
+      color: var(--primary);
+    }
+    @media (max-width: 900px) {
+      .nav-menu { display: none; }
+    }
+
     .topbar-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
+    .social-icons-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-right: 6px;
+    }
+    .social-icons-top a {
+      color: var(--text-muted);
+      font-size: 15px;
+      transition: color 0.2s;
+    }
+    .social-icons-top a:hover { color: var(--primary); }
+    
     .btn {
       display: inline-flex;
       align-items: center;
@@ -86,10 +132,12 @@
       cursor: pointer;
       transition: all 0.2s ease;
       border: 1px solid transparent;
+      font-family: var(--font-title);
     }
     .btn-primary {
       background: var(--primary);
       color: #000;
+      font-weight: 700;
     }
     .btn-primary:hover {
       background: var(--primary-hover);
@@ -106,12 +154,13 @@
       background: rgba(16, 185, 129, 0.15);
       border-color: rgba(16, 185, 129, 0.3);
       color: #34d399;
+      font-weight: 700;
     }
     
-    /* Alert / Student Banner */
+    /* Banners */
     .banner-vip {
-      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
-      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.06));
+      border-bottom: 1px solid rgba(16, 185, 129, 0.3);
       padding: 10px 0;
       font-size: 13px;
       text-align: center;
@@ -119,19 +168,83 @@
       display: none;
     }
     .banner-visitor {
-      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
-      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.02));
+      border-bottom: 1px solid rgba(245, 158, 11, 0.25);
       padding: 10px 0;
       font-size: 13px;
       text-align: center;
       color: #fcd34d;
     }
 
-    /* Modal */
+    /* Rodapé Oficial de 4 Colunas */
+    .blog-footer {
+      border-top: 1px solid var(--card-border);
+      background: #0d0d10;
+      padding: 60px 0 30px 0;
+      margin-top: 80px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 36px;
+      margin-bottom: 40px;
+    }
+    .footer-col h4 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      margin-bottom: 18px;
+    }
+    .footer-col ul {
+      list-style: none;
+    }
+    .footer-col li {
+      margin-bottom: 10px;
+    }
+    .footer-col a {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .footer-col a:hover {
+      color: #fff;
+    }
+    .footer-newsletter p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .footer-input {
+      width: 100%;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    .footer-input:focus { border-color: var(--primary); }
+    .footer-bottom {
+      border-top: 1px solid var(--card-border);
+      padding-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 12.5px;
+      color: var(--text-dim);
+    }
+
+    /* Modal de Lead */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(8px);
       z-index: 100;
       display: none;
@@ -170,9 +283,7 @@
       margin-bottom: 12px;
       outline: none;
     }
-    .modal-input:focus {
-      border-color: var(--primary);
-    }
+    .modal-input:focus { border-color: var(--primary); }
   </style>
 
   
@@ -205,45 +316,44 @@
 </script>
 
   <style>
-    /* Banners */
     .hero-section {
-      padding: 48px 0 32px 0;
+      padding: 56px 0 36px 0;
       text-align: center;
       border-bottom: 1px solid var(--card-border);
-      background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+      background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.09) 0%, transparent 70%);
     }
     .hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 11px;
+      font-size: 11.5px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       font-weight: 700;
       color: var(--primary);
       background: var(--primary-soft);
       border: 1px solid rgba(245, 158, 11, 0.25);
-      padding: 4px 12px;
+      padding: 4px 14px;
       border-radius: 9999px;
       margin-bottom: 16px;
+      font-family: var(--font-title);
     }
     .hero-title {
-      font-size: 36px;
+      font-size: 42px;
       font-weight: 800;
-      letter-spacing: -0.03em;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       color: #fff;
+      line-height: 1.15;
     }
     .hero-subtitle {
-      font-size: 16px;
+      font-size: 16.5px;
       color: var(--text-muted);
-      max-width: 680px;
+      max-width: 720px;
       margin: 0 auto;
     }
     
-    /* Search & Filter Bar */
     .controls-wrap {
-      margin: 32px 0 24px 0;
+      margin: 36px 0 28px 0;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -257,18 +367,17 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 14px 20px 14px 44px;
+      padding: 16px 20px 16px 46px;
       color: #fff;
       font-size: 15px;
       outline: none;
+      font-family: var(--font-body);
       transition: border-color 0.2s;
     }
-    .search-input:focus {
-      border-color: var(--primary);
-    }
+    .search-input:focus { border-color: var(--primary); }
     .search-icon {
       position: absolute;
-      left: 16px;
+      left: 18px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-dim);
@@ -286,62 +395,58 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       color: var(--text-muted);
-      padding: 8px 14px;
+      padding: 8px 16px;
       border-radius: 9999px;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       white-space: nowrap;
       cursor: pointer;
+      font-family: var(--font-title);
       transition: all 0.2s;
     }
-    .cat-pill:hover {
-      color: #fff;
-      border-color: #3f3f46;
-    }
+    .cat-pill:hover { color: #fff; border-color: #3f3f46; }
     .cat-pill.active {
       background: var(--primary);
       color: #000;
       border-color: var(--primary);
-      font-weight: 700;
+      font-weight: 800;
     }
     
-    /* Tabs */
     .section-tabs {
       display: flex;
       border-bottom: 1px solid var(--card-border);
-      margin-bottom: 28px;
-      gap: 24px;
+      margin-bottom: 32px;
+      gap: 28px;
     }
     .tab-btn {
       background: transparent;
       border: none;
       color: var(--text-dim);
-      font-size: 15px;
-      font-weight: 600;
-      padding: 12px 0;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: var(--font-title);
+      padding: 14px 0;
       cursor: pointer;
       position: relative;
       transition: color 0.2s;
     }
     .tab-btn:hover { color: var(--text); }
-    .tab-btn.active {
-      color: var(--primary);
-    }
+    .tab-btn.active { color: var(--primary); }
     .tab-btn.active::after {
       content: '';
       position: absolute;
       bottom: -1px;
       left: 0;
       right: 0;
-      height: 2px;
+      height: 3px;
       background: var(--primary);
+      border-radius: 3px 3px 0 0;
     }
     
-    /* Grids */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
+      gap: 22px;
       margin-bottom: 60px;
     }
     .article-card, .ebook-card {
@@ -357,7 +462,7 @@
     .article-card:hover, .ebook-card:hover {
       transform: translateY(-3px);
       border-color: #3f3f46;
-      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.6);
     }
     .card-top {
       display: flex;
@@ -369,25 +474,26 @@
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 3px 8px;
+      letter-spacing: 0.06em;
+      padding: 4px 9px;
       border-radius: 6px;
+      font-family: var(--font-title);
     }
     .badge-artigo { background: #27272a; color: #a1a1aa; }
     .badge-app { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
     .badge-pdf { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
     .meta-tag { font-size: 12px; color: var(--text-dim); }
     .card-title {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 700;
       color: #fff;
-      line-height: 1.4;
+      line-height: 1.35;
       margin-bottom: 10px;
     }
     .card-desc {
       font-size: 13.5px;
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.55;
       margin-bottom: 20px;
       flex-grow: 1;
     }
@@ -400,23 +506,15 @@
     }
     .read-link {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--primary);
-    }
-    
-    /* Footer */
-    .hub-footer {
-      border-top: 1px solid var(--card-border);
-      padding: 40px 0;
-      text-align: center;
-      font-size: 13px;
-      color: var(--text-dim);
+      font-family: var(--font-title);
     }
   </style>
 </head>
 <body>
 
-  <!-- Banners de Notificação -->
+  <!-- Banners de Reconhecimento -->
   <div class="banner-vip">
     <div class="container">
       <strong>✅ Área do Aluno Conectada:</strong> Acesso irrestrito a todos os e-books e protocolos com download imediato em 1 toque.
@@ -429,54 +527,73 @@
     </div>
   </div>
 
-  <!-- Barra Superior -->
+  <!-- Barra Superior Original do Blog -->
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
-        <img src="/logo_dark.png" alt="Coach Montanha">
-        <span>COACH MONTANHA • COFRE</span>
+        <a href="/materiais" style="display:flex; align-items:center; gap:12px;">
+          <img src="/materiais/logo_montanha.png" alt="Coach Montanha">
+          <span>COACH MONTANHA</span>
+        </a>
       </div>
+
+      <!-- Links do Menu Original -->
+      <nav class="nav-menu">
+        <a href="/materiais">Início</a>
+        <a href="#artigosSection">Meus Artigos</a>
+        <a href="#ebooksSection">Livros/Ebooks</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20quero%20conhecer%20os%20Cursos%20Online" target="_blank">Cursos Online</a>
+        <a href="https://coachmontanha1.systeme.io/amazon" target="_blank">Links Amazon</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog%20e%20gostaria%20de%20falar%20com%20voc%C3%AA" target="_blank">Contato</a>
+      </nav>
+
       <div class="topbar-actions">
-        <a href="/auth" class="btn btn-outline btn-login-action">Entrar no Studio</a>
-        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20vim%20pelo%20Cofre%20de%20Materiais%20e%20quero%20conhecer%20a%20Consultoria" class="btn btn-primary" target="_blank">Consultoria WhatsApp</a>
+        <!-- Ícones Sociais -->
+        <div class="social-icons-top">
+          <a href="https://www.instagram.com/coachmontanha1/" target="_blank" title="Instagram">📸</a>
+          <a href="https://www.youtube.com/channel/UCy29z1eRp_GPFAVFHJfmg_A" target="_blank" title="YouTube">📺</a>
+          <a href="https://twitter.com/coachmontanha1" target="_blank" title="Twitter/X">🐦</a>
+          <a href="https://www.facebook.com/albertosarly.coutinho" target="_blank" title="Facebook">📘</a>
+        </div>
+        <a href="/portal" class="btn btn-outline btn-login-action">Entrar no Studio</a>
       </div>
     </div>
   </header>
 
-  <!-- Hero -->
+  <!-- Hero Section -->
   <section class="hero-section">
     <div class="container">
-      <span class="hero-badge">Biblioteca Digital Aberta</span>
-      <h1 class="hero-title">Cofre de Conhecimento & Treinamento</h1>
+      <span class="hero-badge">Acervo Oficial de Treinamento & Artigos</span>
+      <h1 class="hero-title">Blog do Montanha</h1>
       <p class="hero-subtitle">
-        182 artigos técnicos, protocolos de força, corrida em Zona 2 e e-books completos com ferramentas interativas diretas no navegador.
+        182 artigos sobre treinamento de força, corrida em Zona 2, emagrecimento sustentável, desenvolvimento pessoal e mentalidade, além de e-books e web apps interativos.
       </p>
     </div>
   </section>
 
-  <!-- Conteúdo Principal -->
+  <!-- Main Catalog -->
   <main class="container">
     <div class="controls-wrap">
       <div class="search-input-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por tema (ex: barra fixa, remo, 5k, hipertrofia, sono)...">
+        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por tema (ex: remo, barra fixa, corrida, neat, epoc, jejum, sono)...">
       </div>
       
       <div class="cat-scroll">
-        <button class="cat-pill active" data-category="Todos">Todos</button><button class="cat-pill " data-category="Corrida & Endurance">Corrida & Endurance</button><button class="cat-pill " data-category="Hipertrofia & Força">Hipertrofia & Força</button><button class="cat-pill " data-category="Emagrecimento & Metabolismo">Emagrecimento & Metabolismo</button><button class="cat-pill " data-category="Mobilidade & Híbrido">Mobilidade & Híbrido</button><button class="cat-pill " data-category="Nutrição & Suplementação">Nutrição & Suplementação</button><button class="cat-pill " data-category="Saúde & Fisiologia">Saúde & Fisiologia</button><button class="cat-pill " data-category="Mentalidade & Disciplina">Mentalidade & Disciplina</button>
+        <button class="cat-pill active" data-category="Todas">Todas</button><button class="cat-pill " data-category="Fitness">Fitness</button><button class="cat-pill " data-category="Desenvolvimento Pessoal">Desenvolvimento Pessoal</button><button class="cat-pill " data-category="Mindset">Mindset</button><button class="cat-pill " data-category="Treinamento Híbrido">Treinamento Híbrido</button><button class="cat-pill " data-category="Corrida & Endurance">Corrida & Endurance</button><button class="cat-pill " data-category="Mobilidade Articular">Mobilidade Articular</button><button class="cat-pill " data-category="Nutrição & Jejum">Nutrição & Jejum</button>
       </div>
     </div>
 
     <!-- Abas -->
     <div class="section-tabs">
       <button class="tab-btn active" data-tab="todos">Todos os Conteúdos (194)</button>
-      <button class="tab-btn" data-tab="artigos">Artigos Publicados (182)</button>
-      <button class="tab-btn" data-tab="ebooks">E-books & Protocolos (12)</button>
+      <button class="tab-btn" data-tab="artigos">Meus Artigos (182)</button>
+      <button class="tab-btn" data-tab="ebooks">Livros & E-books (12)</button>
     </div>
 
     <!-- Grid de E-books -->
     <div id="ebooksSection" class="tab-section">
-      <h2 style="font-size:20px; font-weight:700; margin-bottom:18px; color:#fff;">E-books & Protocolos Interativos</h2>
+      <h2 style="font-size:22px; font-weight:700; margin-bottom:20px; color:#fff;">Livros, E-books & Protocolos Interativos</h2>
       <div class="cards-grid">
         
         <div class="ebook-card">
@@ -554,7 +671,7 @@
         <div class="ebook-card">
           <div class="card-top">
             <span class="badge badge-pdf">PDF AcroForm</span>
-            <span class="meta-tag">Hipertrofia & Força</span>
+            <span class="meta-tag">Fitness</span>
           </div>
           <h3 class="card-title">Treinamento Específico de Hipertrofia (HST)</h3>
           <p class="card-desc">Guia completo de aplicação do método Hypertrophy-Specific Training (frequência mecânica e descondicionamento estratégico).</p>
@@ -566,7 +683,7 @@
         <div class="ebook-card">
           <div class="card-top">
             <span class="badge badge-pdf">PDF AcroForm</span>
-            <span class="meta-tag">Hipertrofia & Força</span>
+            <span class="meta-tag">Fitness</span>
           </div>
           <h3 class="card-title">Treinar Duas Vezes por Dia para Ganhar Músculo</h3>
           <p class="card-desc">Como fracionar o volume diário de musculação para aumentar síntese proteica sem saturar o sistema nervoso.</p>
@@ -578,7 +695,7 @@
         <div class="ebook-card">
           <div class="card-top">
             <span class="badge badge-pdf">PDF AcroForm</span>
-            <span class="meta-tag">Mobilidade & Híbrido</span>
+            <span class="meta-tag">Mobilidade Articular</span>
           </div>
           <h3 class="card-title">Desafio 30 Dias de Cócoras</h3>
           <p class="card-desc">Restauração da mobilidade de tornozelo e quadril através do padrão primordial de agachamento profundo diário.</p>
@@ -590,7 +707,7 @@
         <div class="ebook-card">
           <div class="card-top">
             <span class="badge badge-pdf">PDF AcroForm</span>
-            <span class="meta-tag">Nutrição & Suplementação</span>
+            <span class="meta-tag">Nutrição & Jejum</span>
           </div>
           <h3 class="card-title">Cálculo de TDEE e Macronutrientes</h3>
           <p class="card-desc">A matemática exata para calcular seu gasto calórico total e estruturar proteínas, gorduras e carboidratos para recomposição.</p>
@@ -602,7 +719,7 @@
         <div class="ebook-card">
           <div class="card-top">
             <span class="badge badge-pdf">PDF AcroForm</span>
-            <span class="meta-tag">Emagrecimento & Metabolismo</span>
+            <span class="meta-tag">Mindset</span>
           </div>
           <h3 class="card-title">Reprograme sua Mente para Emagrecer</h3>
           <p class="card-desc">Quebra de hábitos compulsivos, gatilhos de estresse e mecanismos de saciedade hormonal.</p>
@@ -614,7 +731,7 @@
         <div class="ebook-card">
           <div class="card-top">
             <span class="badge badge-pdf">PDF AcroForm</span>
-            <span class="meta-tag">Saúde & Fisiologia</span>
+            <span class="meta-tag">Desenvolvimento Pessoal</span>
           </div>
           <h3 class="card-title">O Sono Eficiente Sem Neura</h3>
           <p class="card-desc">Higiene do sono baseada em ritmo circadiano, temperatura ambiente e regulação de melatonina para atletas.</p>
@@ -628,12 +745,12 @@
 
     <!-- Grid de Artigos -->
     <div id="articlesSection" class="tab-section">
-      <h2 style="font-size:20px; font-weight:700; margin-bottom:18px; color:#fff;">Artigos Publicados</h2>
+      <h2 style="font-size:22px; font-weight:700; margin-bottom:20px; color:#fff;">Artigos Publicados</h2>
       <div id="articlesGrid" class="cards-grid">
         
-        <a href="/materiais/artigos/o-treino-nordico-de-remo" class="article-card" data-category="Hipertrofia & Força" data-title="o treino nórdico de remo" data-excerpt="artigo 170 - o treino nórdico de remo artigo 1 do acervo original do blog do montanha. painel systeme.io: 36360925(https://systeme.io/dashboard/page/3...">
+        <a href="/materiais/artigos/o-treino-nordico-de-remo" class="article-card" data-category="Fitness" data-title="o treino nórdico de remo" data-excerpt="artigo 170 - o treino nórdico de remo artigo 1 do acervo original do blog do montanha. painel systeme.io: 36360925(https://systeme.io/dashboard/page/3...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">3 min de leitura</span>
           </div>
           <h3 class="card-title">O treino nórdico de remo</h3>
@@ -655,9 +772,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/por-que-mulheres-deveriam-levantar-peso" class="article-card" data-category="Hipertrofia & Força" data-title="por que mulheres deveriam levantar peso" data-excerpt="artigo 168 - por que mulheres deveriam levantar peso artigo 3 do acervo original do blog do montanha. painel systeme.io: 36318113(https://systeme.io/d...">
+        <a href="/materiais/artigos/por-que-mulheres-deveriam-levantar-peso" class="article-card" data-category="Fitness" data-title="por que mulheres deveriam levantar peso" data-excerpt="artigo 168 - por que mulheres deveriam levantar peso artigo 3 do acervo original do blog do montanha. painel systeme.io: 36318113(https://systeme.io/d...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Por que mulheres deveriam levantar peso</h3>
@@ -667,9 +784,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/os-fundamentos-que-guiam-o-treinamento-de-forca-pt-1" class="article-card" data-category="Hipertrofia & Força" data-title="os fundamentos que guiam o treinamento de força pt. 1" data-excerpt="artigo 167 - os fundamentos que guiam o treinamento de força pt. 1 artigo 4 do acervo original do blog do montanha. painel systeme.io: 35366015(https:...">
+        <a href="/materiais/artigos/os-fundamentos-que-guiam-o-treinamento-de-forca-pt-1" class="article-card" data-category="Fitness" data-title="os fundamentos que guiam o treinamento de força pt. 1" data-excerpt="artigo 167 - os fundamentos que guiam o treinamento de força pt. 1 artigo 4 do acervo original do blog do montanha. painel systeme.io: 35366015(https:...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Os fundamentos que guiam o treinamento de força pt. 1</h3>
@@ -679,9 +796,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/por-que-voce-sente-fome-o-tempo-todo" class="article-card" data-category="Hipertrofia & Força" data-title="por que você sente fome o tempo todo?" data-excerpt="artigo 166 - por que você sente fome o tempo todo? artigo 5 do acervo original do blog do montanha. painel systeme.io: 35174601(https://systeme.io/das...">
+        <a href="/materiais/artigos/por-que-voce-sente-fome-o-tempo-todo" class="article-card" data-category="Fitness" data-title="por que você sente fome o tempo todo?" data-excerpt="artigo 166 - por que você sente fome o tempo todo? artigo 5 do acervo original do blog do montanha. painel systeme.io: 35174601(https://systeme.io/das...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Por que você sente fome o tempo todo?</h3>
@@ -691,9 +808,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/psyllium-a-fibra-que-controla-a-fome-e-ajuda-a-emagrecer" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="psyllium: a fibra que controla a fome e ajuda a emagrecer" data-excerpt="artigo 165 - psyllium: a fibra que controla a fome e ajuda a emagrecer artigo 6 do acervo original do blog do montanha. painel systeme.io: 34694949(ht...">
+        <a href="/materiais/artigos/psyllium-a-fibra-que-controla-a-fome-e-ajuda-a-emagrecer" class="article-card" data-category="Fitness" data-title="psyllium: a fibra que controla a fome e ajuda a emagrecer" data-excerpt="artigo 165 - psyllium: a fibra que controla a fome e ajuda a emagrecer artigo 6 do acervo original do blog do montanha. painel systeme.io: 34694949(ht...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Psyllium: A fibra que controla a fome e ajuda a emagrecer</h3>
@@ -703,9 +820,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/descubra-a-arte-da-autodisciplina" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="descubra a arte da autodisciplina" data-excerpt="artigo 164 - descubra a arte da autodisciplina artigo 7 do acervo original do blog do montanha. painel systeme.io: 15924554(https://systeme.io/dashboa...">
+        <a href="/materiais/artigos/descubra-a-arte-da-autodisciplina" class="article-card" data-category="Fitness" data-title="descubra a arte da autodisciplina" data-excerpt="artigo 164 - descubra a arte da autodisciplina artigo 7 do acervo original do blog do montanha. painel systeme.io: 15924554(https://systeme.io/dashboa...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Descubra a arte da autodisciplina</h3>
@@ -739,9 +856,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/hormonios-menstruacao-e-o-desempenho-fisico" class="article-card" data-category="Corrida & Endurance" data-title="hormônios, menstruação e o desempenho físico" data-excerpt="artigo 161 - hormônios, menstruação e o desempenho físico artigo 10 do acervo original do blog do montanha. painel systeme.io: 12657702(https://system...">
+        <a href="/materiais/artigos/hormonios-menstruacao-e-o-desempenho-fisico" class="article-card" data-category="Treinamento Híbrido" data-title="hormônios, menstruação e o desempenho físico" data-excerpt="artigo 161 - hormônios, menstruação e o desempenho físico artigo 10 do acervo original do blog do montanha. painel systeme.io: 12657702(https://system...">
           <div class="card-top">
-            <span class="badge badge-artigo">Corrida & Endurance</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Hormônios, menstruação e o desempenho físico</h3>
@@ -751,9 +868,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-treinamento-hibrido-e-a-artrite-reumatoide" class="article-card" data-category="Mobilidade & Híbrido" data-title="o treinamento híbrido e a artrite reumatoide" data-excerpt="artigo 160 - o treinamento híbrido e a artrite reumatoide artigo 11 do acervo original do blog do montanha. painel systeme.io: 12596174(https://system...">
+        <a href="/materiais/artigos/o-treinamento-hibrido-e-a-artrite-reumatoide" class="article-card" data-category="Treinamento Híbrido" data-title="o treinamento híbrido e a artrite reumatoide" data-excerpt="artigo 160 - o treinamento híbrido e a artrite reumatoide artigo 11 do acervo original do blog do montanha. painel systeme.io: 12596174(https://system...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mobilidade & Híbrido</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O Treinamento Híbrido e a artrite reumatoide</h3>
@@ -763,9 +880,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/a-beta-glucana-uma-potente-estimuladora-natural-da-imunidade" class="article-card" data-category="Mobilidade & Híbrido" data-title="a beta-glucana: uma potente estimuladora natural da imunidade" data-excerpt="artigo 159 - a beta-glucana: uma potente estimuladora natural da imunidade artigo 12 do acervo original do blog do montanha. painel systeme.io: 124956...">
+        <a href="/materiais/artigos/a-beta-glucana-uma-potente-estimuladora-natural-da-imunidade" class="article-card" data-category="Treinamento Híbrido" data-title="a beta-glucana: uma potente estimuladora natural da imunidade" data-excerpt="artigo 159 - a beta-glucana: uma potente estimuladora natural da imunidade artigo 12 do acervo original do blog do montanha. painel systeme.io: 124956...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mobilidade & Híbrido</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">A Beta-Glucana: Uma potente estimuladora natural da imunidade</h3>
@@ -811,9 +928,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/legumes-verduras-e-frutas-como-maximizar-os-beneficios-e-minimizar-os-riscos" class="article-card" data-category="Hipertrofia & Força" data-title="legumes, verduras e frutas: como maximizar os benefícios e minimizar os riscos" data-excerpt="artigo 155 - legumes, verduras e frutas: como maximizar os benefícios e minimizar os riscos artigo 16 do acervo original do blog do montanha. painel s...">
+        <a href="/materiais/artigos/legumes-verduras-e-frutas-como-maximizar-os-beneficios-e-minimizar-os-riscos" class="article-card" data-category="Fitness" data-title="legumes, verduras e frutas: como maximizar os benefícios e minimizar os riscos" data-excerpt="artigo 155 - legumes, verduras e frutas: como maximizar os benefícios e minimizar os riscos artigo 16 do acervo original do blog do montanha. painel s...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Legumes, verduras e frutas: Como maximizar os benefícios e minimizar os riscos</h3>
@@ -823,9 +940,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/emagreca-comendo-pipoca" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="emagreça comendo pipoca!" data-excerpt="artigo 154 - emagreça comendo pipoca! artigo 17 do acervo original do blog do montanha. painel systeme.io: 11946538(https://systeme.io/dashboard/page/...">
+        <a href="/materiais/artigos/emagreca-comendo-pipoca" class="article-card" data-category="Fitness" data-title="emagreça comendo pipoca!" data-excerpt="artigo 154 - emagreça comendo pipoca! artigo 17 do acervo original do blog do montanha. painel systeme.io: 11946538(https://systeme.io/dashboard/page/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Emagreça comendo pipoca!</h3>
@@ -835,9 +952,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/venca-o-medo-e-a-ansiedade" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="vença o medo e a ansiedade" data-excerpt="artigo 153 - vença o medo e a ansiedade artigo 18 do acervo original do blog do montanha. painel systeme.io: 11910420(https://systeme.io/dashboard/pag...">
+        <a href="/materiais/artigos/venca-o-medo-e-a-ansiedade" class="article-card" data-category="Fitness" data-title="vença o medo e a ansiedade" data-excerpt="artigo 153 - vença o medo e a ansiedade artigo 18 do acervo original do blog do montanha. painel systeme.io: 11910420(https://systeme.io/dashboard/pag...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Vença o medo e a ansiedade</h3>
@@ -883,9 +1000,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/supere-seus-vicios-com-a-regra-do-nada" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="supere seus vícios com a regra do nada" data-excerpt="artigo 149 - supere seus vícios com a regra do nada artigo 22 do acervo original do blog do montanha. painel systeme.io: 11386863(https://systeme.io/d...">
+        <a href="/materiais/artigos/supere-seus-vicios-com-a-regra-do-nada" class="article-card" data-category="Fitness" data-title="supere seus vícios com a regra do nada" data-excerpt="artigo 149 - supere seus vícios com a regra do nada artigo 22 do acervo original do blog do montanha. painel systeme.io: 11386863(https://systeme.io/d...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Supere seus vícios com a Regra do Nada</h3>
@@ -895,9 +1012,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/por-que-ter-um-deficit-calorico-pode-ser-uma-das-formas-mais-saudaveis-de-fazer-dieta" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="por que ter um déficit calórico pode ser uma das formas mais saudáveis de fazer dieta?" data-excerpt="artigo 148 - por que ter um déficit calórico pode ser uma das formas mais saudáveis de fazer dieta? artigo 23 do acervo original do blog do montanha. ...">
+        <a href="/materiais/artigos/por-que-ter-um-deficit-calorico-pode-ser-uma-das-formas-mais-saudaveis-de-fazer-dieta" class="article-card" data-category="Fitness" data-title="por que ter um déficit calórico pode ser uma das formas mais saudáveis de fazer dieta?" data-excerpt="artigo 148 - por que ter um déficit calórico pode ser uma das formas mais saudáveis de fazer dieta? artigo 23 do acervo original do blog do montanha. ...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Por que ter um déficit calórico pode ser uma das formas mais saudáveis de fazer dieta?</h3>
@@ -907,9 +1024,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/manipulacoes-da-coluna-melhoram-o-desempenho-esportivo" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="manipulações da coluna melhoram o desempenho esportivo?" data-excerpt="artigo 147 – manipulações da coluna melhoram o desempenho esportivo? artigo 24 do acervo original do blog do montanha. painel systeme.io: 11116129(htt...">
+        <a href="/materiais/artigos/manipulacoes-da-coluna-melhoram-o-desempenho-esportivo" class="article-card" data-category="Fitness" data-title="manipulações da coluna melhoram o desempenho esportivo?" data-excerpt="artigo 147 – manipulações da coluna melhoram o desempenho esportivo? artigo 24 do acervo original do blog do montanha. painel systeme.io: 11116129(htt...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Manipulações da coluna melhoram o desempenho esportivo?</h3>
@@ -919,9 +1036,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/desvendando-os-mitos-dos-laticinios" class="article-card" data-category="Nutrição & Suplementação" data-title="desvendando os mitos dos laticínios" data-excerpt="artigo 146 - desvendando os mitos dos laticínios artigo 25 do acervo original do blog do montanha. painel systeme.io: 11077846(https://systeme.io/dash...">
+        <a href="/materiais/artigos/desvendando-os-mitos-dos-laticinios" class="article-card" data-category="Nutrição & Jejum" data-title="desvendando os mitos dos laticínios" data-excerpt="artigo 146 - desvendando os mitos dos laticínios artigo 25 do acervo original do blog do montanha. painel systeme.io: 11077846(https://systeme.io/dash...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Desvendando os mitos dos laticínios</h3>
@@ -931,9 +1048,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/cuidado-com-o-que-voce-ve" class="article-card" data-category="Nutrição & Suplementação" data-title="cuidado com o que você vê" data-excerpt="artigo 145 - cuidado com o que você vê artigo 26 do acervo original do blog do montanha. painel systeme.io: 10970133(https://systeme.io/dashboard/page...">
+        <a href="/materiais/artigos/cuidado-com-o-que-voce-ve" class="article-card" data-category="Nutrição & Jejum" data-title="cuidado com o que você vê" data-excerpt="artigo 145 - cuidado com o que você vê artigo 26 do acervo original do blog do montanha. painel systeme.io: 10970133(https://systeme.io/dashboard/page...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Cuidado com o que você vê</h3>
@@ -943,9 +1060,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/descubra-o-que-a-ciencia-diz-sobre-a-dieta-atkins" class="article-card" data-category="Nutrição & Suplementação" data-title="descubra o que a ciência diz sobre a dieta atkins" data-excerpt="artigo 144 - descubra o que a ciência diz sobre a dieta atkins artigo 27 do acervo original do blog do montanha. painel systeme.io: 10855655(https://s...">
+        <a href="/materiais/artigos/descubra-o-que-a-ciencia-diz-sobre-a-dieta-atkins" class="article-card" data-category="Nutrição & Jejum" data-title="descubra o que a ciência diz sobre a dieta atkins" data-excerpt="artigo 144 - descubra o que a ciência diz sobre a dieta atkins artigo 27 do acervo original do blog do montanha. painel systeme.io: 10855655(https://s...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Descubra o que a ciência diz sobre a dieta Atkins</h3>
@@ -955,9 +1072,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/venca-seus-bloqueios-e-supere-seus-limites-internos" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="vença seus bloqueios e supere seus limites internos" data-excerpt="artigo 143 - vença seus bloqueios e supere seus limites internos artigo 28 do acervo original do blog do montanha. painel systeme.io: 10766749(https:/...">
+        <a href="/materiais/artigos/venca-seus-bloqueios-e-supere-seus-limites-internos" class="article-card" data-category="Fitness" data-title="vença seus bloqueios e supere seus limites internos" data-excerpt="artigo 143 - vença seus bloqueios e supere seus limites internos artigo 28 do acervo original do blog do montanha. painel systeme.io: 10766749(https:/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Vença seus bloqueios e supere seus limites internos</h3>
@@ -967,9 +1084,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/berberina-um-substituto-seguro-ao-ozempic-ou-uma-farsa" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="berberina: um substituto seguro ao ozempic ou uma farsa?" data-excerpt="artigo 142 - berberina: um substituto seguro ao ozempic ou uma farsa? artigo 29 do acervo original do blog do montanha. painel systeme.io: 10692399(ht...">
+        <a href="/materiais/artigos/berberina-um-substituto-seguro-ao-ozempic-ou-uma-farsa" class="article-card" data-category="Fitness" data-title="berberina: um substituto seguro ao ozempic ou uma farsa?" data-excerpt="artigo 142 - berberina: um substituto seguro ao ozempic ou uma farsa? artigo 29 do acervo original do blog do montanha. painel systeme.io: 10692399(ht...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Berberina: Um substituto seguro ao Ozempic ou uma farsa?</h3>
@@ -979,9 +1096,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/pe-no-chao-como-identificar-e-tratar-problemas-nos-pes" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="pé no chão: como identificar e tratar problemas nos pés" data-excerpt="artigo 141 - pé no chão: como identificar e tratar problemas nos pés artigo 30 do acervo original do blog do montanha. painel systeme.io: 10676393(htt...">
+        <a href="/materiais/artigos/pe-no-chao-como-identificar-e-tratar-problemas-nos-pes" class="article-card" data-category="Fitness" data-title="pé no chão: como identificar e tratar problemas nos pés" data-excerpt="artigo 141 - pé no chão: como identificar e tratar problemas nos pés artigo 30 do acervo original do blog do montanha. painel systeme.io: 10676393(htt...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Pé no chão: como identificar e tratar problemas nos pés</h3>
@@ -991,9 +1108,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/tudo-o-que-voce-precisa-saber-sobre-o-aterramento" class="article-card" data-category="Mentalidade & Disciplina" data-title="tudo o que você precisa saber sobre o aterramento" data-excerpt="artigo 140 – tudo o que você precisa saber sobre o aterramento artigo 31 do acervo original do blog do montanha. painel systeme.io: 10507232(https://s...">
+        <a href="/materiais/artigos/tudo-o-que-voce-precisa-saber-sobre-o-aterramento" class="article-card" data-category="Fitness" data-title="tudo o que você precisa saber sobre o aterramento" data-excerpt="artigo 140 – tudo o que você precisa saber sobre o aterramento artigo 31 do acervo original do blog do montanha. painel systeme.io: 10507232(https://s...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Tudo o que você precisa saber sobre o Aterramento</h3>
@@ -1003,9 +1120,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/entre-em-forma-sem-sair-de-casa" class="article-card" data-category="Mentalidade & Disciplina" data-title="entre em forma sem sair de casa" data-excerpt="artigo 139 - entre em forma sem sair de casa artigo 32 do acervo original do blog do montanha. painel systeme.io: 10435859(https://systeme.io/dashboar...">
+        <a href="/materiais/artigos/entre-em-forma-sem-sair-de-casa" class="article-card" data-category="Fitness" data-title="entre em forma sem sair de casa" data-excerpt="artigo 139 - entre em forma sem sair de casa artigo 32 do acervo original do blog do montanha. painel systeme.io: 10435859(https://systeme.io/dashboar...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Entre em forma sem sair de casa</h3>
@@ -1015,9 +1132,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/um-erro-postural" class="article-card" data-category="Hipertrofia & Força" data-title="um erro postural" data-excerpt="artigo 138 - um erro postural artigo 33 do acervo original do blog do montanha. painel systeme.io: 10423310(https://systeme.io/dashboard/page/10423310...">
+        <a href="/materiais/artigos/um-erro-postural" class="article-card" data-category="Fitness" data-title="um erro postural" data-excerpt="artigo 138 - um erro postural artigo 33 do acervo original do blog do montanha. painel systeme.io: 10423310(https://systeme.io/dashboard/page/10423310...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Um erro postural</h3>
@@ -1027,9 +1144,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/as-8-leis-do-treinamento-de-forca" class="article-card" data-category="Corrida & Endurance" data-title="as 8 leis do treinamento de força" data-excerpt="artigo 137 - as 8 leis do treinamento de força artigo 34 do acervo original do blog do montanha. painel systeme.io: 10417371(https://systeme.io/dashbo...">
+        <a href="/materiais/artigos/as-8-leis-do-treinamento-de-forca" class="article-card" data-category="Treinamento Híbrido" data-title="as 8 leis do treinamento de força" data-excerpt="artigo 137 - as 8 leis do treinamento de força artigo 34 do acervo original do blog do montanha. painel systeme.io: 10417371(https://systeme.io/dashbo...">
           <div class="card-top">
-            <span class="badge badge-artigo">Corrida & Endurance</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">As 8 leis do treinamento de força</h3>
@@ -1039,9 +1156,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/a-influencia-da-frequencia-intensidade-e-volume-no-treinamento-de-forca" class="article-card" data-category="Corrida & Endurance" data-title="a influência da frequência, intensidade e volume no treinamento de força" data-excerpt="artigo 136 - a influência da frequência, intensidade e volume no treinamento de força artigo 35 do acervo original do blog do montanha. painel systeme...">
+        <a href="/materiais/artigos/a-influencia-da-frequencia-intensidade-e-volume-no-treinamento-de-forca" class="article-card" data-category="Treinamento Híbrido" data-title="a influência da frequência, intensidade e volume no treinamento de força" data-excerpt="artigo 136 - a influência da frequência, intensidade e volume no treinamento de força artigo 35 do acervo original do blog do montanha. painel systeme...">
           <div class="card-top">
-            <span class="badge badge-artigo">Corrida & Endurance</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">A influência da frequência, intensidade e volume no treinamento de força</h3>
@@ -1051,9 +1168,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/as-series-de-10-minutos" class="article-card" data-category="Hipertrofia & Força" data-title="as séries de 10 minutos" data-excerpt="artigo 135 - as séries de 10 minutos artigo 36 do acervo original do blog do montanha. painel systeme.io: 10361639(https://systeme.io/dashboard/page/1...">
+        <a href="/materiais/artigos/as-series-de-10-minutos" class="article-card" data-category="Treinamento Híbrido" data-title="as séries de 10 minutos" data-excerpt="artigo 135 - as séries de 10 minutos artigo 36 do acervo original do blog do montanha. painel systeme.io: 10361639(https://systeme.io/dashboard/page/1...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">As séries de 10 minutos</h3>
@@ -1063,9 +1180,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/otimize-os-intervalos-entre-as-series" class="article-card" data-category="Hipertrofia & Força" data-title="otimize os intervalos entre as séries" data-excerpt="artigo 134 - otimize os intervalos entre as séries artigo 37 do acervo original do blog do montanha. painel systeme.io: 10274795(https://systeme.io/da...">
+        <a href="/materiais/artigos/otimize-os-intervalos-entre-as-series" class="article-card" data-category="Fitness" data-title="otimize os intervalos entre as séries" data-excerpt="artigo 134 - otimize os intervalos entre as séries artigo 37 do acervo original do blog do montanha. painel systeme.io: 10274795(https://systeme.io/da...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Otimize os intervalos entre as séries</h3>
@@ -1075,9 +1192,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/as-mascaras-de-treinamento-em-altitude-realmente-melhoram-o-desempenho" class="article-card" data-category="Mentalidade & Disciplina" data-title="as máscaras de treinamento em altitude realmente melhoram o desempenho?" data-excerpt="artigo 133 - as máscaras de treinamento em altitude realmente melhoram o desempenho? artigo 38 do acervo original do blog do montanha. painel systeme....">
+        <a href="/materiais/artigos/as-mascaras-de-treinamento-em-altitude-realmente-melhoram-o-desempenho" class="article-card" data-category="Desenvolvimento Pessoal" data-title="as máscaras de treinamento em altitude realmente melhoram o desempenho?" data-excerpt="artigo 133 - as máscaras de treinamento em altitude realmente melhoram o desempenho? artigo 38 do acervo original do blog do montanha. painel systeme....">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Desenvolvimento Pessoal</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">As máscaras de treinamento em altitude realmente melhoram o desempenho?</h3>
@@ -1087,9 +1204,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/domine-a-vontade-de-mudar-o-seu-programa-de-treino" class="article-card" data-category="Hipertrofia & Força" data-title="domine a vontade de mudar o seu programa de treino" data-excerpt="artigo 132 - domine a vontade de mudar o seu programa de treino artigo 39 do acervo original do blog do montanha. painel systeme.io: 10206637(https://...">
+        <a href="/materiais/artigos/domine-a-vontade-de-mudar-o-seu-programa-de-treino" class="article-card" data-category="Fitness" data-title="domine a vontade de mudar o seu programa de treino" data-excerpt="artigo 132 - domine a vontade de mudar o seu programa de treino artigo 39 do acervo original do blog do montanha. painel systeme.io: 10206637(https://...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Domine a vontade de mudar o seu programa de treino</h3>
@@ -1099,9 +1216,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-poder-antidepressivo-da-dieta-cetogenica" class="article-card" data-category="Nutrição & Suplementação" data-title="o poder antidepressivo da dieta cetogênica" data-excerpt="artigo 131 - o poder antidepressivo da dieta cetogênica artigo 40 do acervo original do blog do montanha. painel systeme.io: 10155196(https://systeme....">
+        <a href="/materiais/artigos/o-poder-antidepressivo-da-dieta-cetogenica" class="article-card" data-category="Nutrição & Jejum" data-title="o poder antidepressivo da dieta cetogênica" data-excerpt="artigo 131 - o poder antidepressivo da dieta cetogênica artigo 40 do acervo original do blog do montanha. painel systeme.io: 10155196(https://systeme....">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O poder antidepressivo da dieta cetogênica</h3>
@@ -1111,9 +1228,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/conheca-os-beneficios-da-terapia-de-contraste-nas-dores-articulares" class="article-card" data-category="Nutrição & Suplementação" data-title="conheça os benefícios da terapia de contraste nas dores articulares" data-excerpt="artigo 130 - conheça os benefícios da terapia de contraste nas dores articulares artigo 41 do acervo original do blog do montanha. painel systeme.io: ...">
+        <a href="/materiais/artigos/conheca-os-beneficios-da-terapia-de-contraste-nas-dores-articulares" class="article-card" data-category="Nutrição & Jejum" data-title="conheça os benefícios da terapia de contraste nas dores articulares" data-excerpt="artigo 130 - conheça os benefícios da terapia de contraste nas dores articulares artigo 41 do acervo original do blog do montanha. painel systeme.io: ...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Conheça os benefícios da terapia de contraste nas dores articulares</h3>
@@ -1123,9 +1240,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/vbt-o-treinamento-baseado-em-velocidade" class="article-card" data-category="Mentalidade & Disciplina" data-title="vbt, o treinamento baseado em velocidade" data-excerpt="artigo 129 - vbt, o treinamento baseado em velocidade artigo 42 do acervo original do blog do montanha. painel systeme.io: 10094247(https://systeme.io...">
+        <a href="/materiais/artigos/vbt-o-treinamento-baseado-em-velocidade" class="article-card" data-category="Fitness" data-title="vbt, o treinamento baseado em velocidade" data-excerpt="artigo 129 - vbt, o treinamento baseado em velocidade artigo 42 do acervo original do blog do montanha. painel systeme.io: 10094247(https://systeme.io...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">VBT, o Treinamento Baseado em Velocidade</h3>
@@ -1135,9 +1252,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/tome-isso-a-noite-reduza-o-estresse-e-controle-seu-cortisol" class="article-card" data-category="Mentalidade & Disciplina" data-title="tome isso à noite, reduza o estresse e controle seu cortisol" data-excerpt="artigo 128 - tome isso à noite, reduza o estresse e controle seu cortisol artigo 43 do acervo original do blog do montanha. painel systeme.io: 1005094...">
+        <a href="/materiais/artigos/tome-isso-a-noite-reduza-o-estresse-e-controle-seu-cortisol" class="article-card" data-category="Fitness" data-title="tome isso à noite, reduza o estresse e controle seu cortisol" data-excerpt="artigo 128 - tome isso à noite, reduza o estresse e controle seu cortisol artigo 43 do acervo original do blog do montanha. painel systeme.io: 1005094...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Tome isso à noite, reduza o estresse e controle seu cortisol</h3>
@@ -1147,9 +1264,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/os-segredos-por-tras-da-barra-olimpica" class="article-card" data-category="Hipertrofia & Força" data-title="os segredos por trás da barra olímpica" data-excerpt="artigo 127 - os segredos por trás da barra olímpica artigo 44 do acervo original do blog do montanha. painel systeme.io: 10036844(https://systeme.io/d...">
+        <a href="/materiais/artigos/os-segredos-por-tras-da-barra-olimpica" class="article-card" data-category="Fitness" data-title="os segredos por trás da barra olímpica" data-excerpt="artigo 127 - os segredos por trás da barra olímpica artigo 44 do acervo original do blog do montanha. painel systeme.io: 10036844(https://systeme.io/d...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Os segredos por trás da barra olímpica</h3>
@@ -1195,9 +1312,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/cronotipos-e-a-obesidade" class="article-card" data-category="Hipertrofia & Força" data-title="cronotipos e a obesidade" data-excerpt="artigo 123 - cronotipos e a obesidade artigo 48 do acervo original do blog do montanha. painel systeme.io: 9888121(https://systeme.io/dashboard/page/9...">
+        <a href="/materiais/artigos/cronotipos-e-a-obesidade" class="article-card" data-category="Fitness" data-title="cronotipos e a obesidade" data-excerpt="artigo 123 - cronotipos e a obesidade artigo 48 do acervo original do blog do montanha. painel systeme.io: 9888121(https://systeme.io/dashboard/page/9...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Cronotipos e a obesidade</h3>
@@ -1207,9 +1324,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/erros-comuns-no-agachamento-e-como-corrigi-los" class="article-card" data-category="Hipertrofia & Força" data-title="erros comuns no agachamento e como corrigi-los" data-excerpt="artigo 122 - erros comuns no agachamento e como corrigi-los artigo 49 do acervo original do blog do montanha. painel systeme.io: 9867468(https://syste...">
+        <a href="/materiais/artigos/erros-comuns-no-agachamento-e-como-corrigi-los" class="article-card" data-category="Fitness" data-title="erros comuns no agachamento e como corrigi-los" data-excerpt="artigo 122 - erros comuns no agachamento e como corrigi-los artigo 49 do acervo original do blog do montanha. painel systeme.io: 9867468(https://syste...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Erros comuns no agachamento e como corrigi-los</h3>
@@ -1219,9 +1336,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/hipertrofia-forca-e-resistencia-o-poder-do-metodo-37" class="article-card" data-category="Hipertrofia & Força" data-title="hipertrofia, força e resistência: o poder do método 3/7" data-excerpt="artigo 121 - hipertrofia, força e resistência: o poder do método 3/7 artigo 50 do acervo original do blog do montanha. painel systeme.io: 9775275(http...">
+        <a href="/materiais/artigos/hipertrofia-forca-e-resistencia-o-poder-do-metodo-37" class="article-card" data-category="Treinamento Híbrido" data-title="hipertrofia, força e resistência: o poder do método 3/7" data-excerpt="artigo 121 - hipertrofia, força e resistência: o poder do método 3/7 artigo 50 do acervo original do blog do montanha. painel systeme.io: 9775275(http...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Hipertrofia, força e resistência: O poder do método 3/7</h3>
@@ -1231,9 +1348,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/osteoporose-melhore-sua-densidade-ossea-com-o-treinamento-hibrido" class="article-card" data-category="Hipertrofia & Força" data-title="osteoporose: melhore sua densidade óssea com o treinamento híbrido" data-excerpt="artigo 120 - osteoporose: melhore sua densidade óssea com o treinamento híbrido artigo 51 do acervo original do blog do montanha. painel systeme.io: 9...">
+        <a href="/materiais/artigos/osteoporose-melhore-sua-densidade-ossea-com-o-treinamento-hibrido" class="article-card" data-category="Treinamento Híbrido" data-title="osteoporose: melhore sua densidade óssea com o treinamento híbrido" data-excerpt="artigo 120 - osteoporose: melhore sua densidade óssea com o treinamento híbrido artigo 51 do acervo original do blog do montanha. painel systeme.io: 9...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Osteoporose: Melhore sua densidade óssea com o Treinamento Híbrido</h3>
@@ -1243,9 +1360,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/como-a-posicao-dos-pes-influencia-no-agachamento" class="article-card" data-category="Hipertrofia & Força" data-title="como a posição dos pés influencia no agachamento?" data-excerpt="artigo 119 - como a posição dos pés influencia no agachamento? artigo 52 do acervo original do blog do montanha. painel systeme.io: 9634494(https://sy...">
+        <a href="/materiais/artigos/como-a-posicao-dos-pes-influencia-no-agachamento" class="article-card" data-category="Treinamento Híbrido" data-title="como a posição dos pés influencia no agachamento?" data-excerpt="artigo 119 - como a posição dos pés influencia no agachamento? artigo 52 do acervo original do blog do montanha. painel systeme.io: 9634494(https://sy...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Como a posição dos pés influencia no agachamento?</h3>
@@ -1255,9 +1372,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-treinamento-resistido-aumenta-a-produtividade-no-trabalho" class="article-card" data-category="Hipertrofia & Força" data-title="o treinamento resistido aumenta a produtividade no trabalho?" data-excerpt="artigo 118 - o treinamento resistido aumenta a produtividade no trabalho? artigo 53 do acervo original do blog do montanha. painel systeme.io: 9555718...">
+        <a href="/materiais/artigos/o-treinamento-resistido-aumenta-a-produtividade-no-trabalho" class="article-card" data-category="Fitness" data-title="o treinamento resistido aumenta a produtividade no trabalho?" data-excerpt="artigo 118 - o treinamento resistido aumenta a produtividade no trabalho? artigo 53 do acervo original do blog do montanha. painel systeme.io: 9555718...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O Treinamento Resistido aumenta a produtividade no trabalho?</h3>
@@ -1267,9 +1384,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/acabe-de-vez-com-a-gordura-localizada-conheca-o-inibe-one" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="acabe de vez com a gordura localizada! conheça o inibe one." data-excerpt="artigo 117 - acabe de vez com a gordura localizada! conheça o inibe one. artigo 54 do acervo original do blog do montanha. painel systeme.io: 9540452(...">
+        <a href="/materiais/artigos/acabe-de-vez-com-a-gordura-localizada-conheca-o-inibe-one" class="article-card" data-category="Fitness" data-title="acabe de vez com a gordura localizada! conheça o inibe one." data-excerpt="artigo 117 - acabe de vez com a gordura localizada! conheça o inibe one. artigo 54 do acervo original do blog do montanha. painel systeme.io: 9540452(...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Acabe de vez com a gordura localizada! Conheça o Inibe One.</h3>
@@ -1279,9 +1396,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/como-a-dopamina-afeta-a-sua-dieta" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="como a dopamina afeta a sua dieta" data-excerpt="artigo 116 - como a dopamina afeta a sua dieta artigo 55 do acervo original do blog do montanha. painel systeme.io: 9532127(https://systeme.io/dashboa...">
+        <a href="/materiais/artigos/como-a-dopamina-afeta-a-sua-dieta" class="article-card" data-category="Fitness" data-title="como a dopamina afeta a sua dieta" data-excerpt="artigo 116 - como a dopamina afeta a sua dieta artigo 55 do acervo original do blog do montanha. painel systeme.io: 9532127(https://systeme.io/dashboa...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Como a Dopamina afeta a sua dieta</h3>
@@ -1291,9 +1408,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/alta-intensidade-vs-baixa-intensidade" class="article-card" data-category="Nutrição & Suplementação" data-title="alta intensidade vs. baixa intensidade" data-excerpt="artigo 115 - alta intensidade vs. baixa intensidade artigo 56 do acervo original do blog do montanha. painel systeme.io: 9531136(https://systeme.io/da...">
+        <a href="/materiais/artigos/alta-intensidade-vs-baixa-intensidade" class="article-card" data-category="Nutrição & Jejum" data-title="alta intensidade vs. baixa intensidade" data-excerpt="artigo 115 - alta intensidade vs. baixa intensidade artigo 56 do acervo original do blog do montanha. painel systeme.io: 9531136(https://systeme.io/da...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Alta intensidade Vs. Baixa intensidade</h3>
@@ -1303,9 +1420,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/os-beneficios-dos-metodos-de-autoregulacao" class="article-card" data-category="Mentalidade & Disciplina" data-title="os benefícios dos métodos de autoregulação" data-excerpt="artigo 114 - os benefícios dos métodos de autoregulação artigo 57 do acervo original do blog do montanha. painel systeme.io: 9481296(https://systeme.i...">
+        <a href="/materiais/artigos/os-beneficios-dos-metodos-de-autoregulacao" class="article-card" data-category="Fitness" data-title="os benefícios dos métodos de autoregulação" data-excerpt="artigo 114 - os benefícios dos métodos de autoregulação artigo 57 do acervo original do blog do montanha. painel systeme.io: 9481296(https://systeme.i...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Os benefícios dos métodos de autoregulação</h3>
@@ -1315,9 +1432,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/domine-seu-cerebro-para-dominar-seu-corpo" class="article-card" data-category="Saúde & Fisiologia" data-title="domine seu cérebro para dominar seu corpo" data-excerpt="artigo 113 - domine seu cérebro para dominar seu corpo artigo 58 do acervo original do blog do montanha. painel systeme.io: 9450749(https://systeme.io...">
+        <a href="/materiais/artigos/domine-seu-cerebro-para-dominar-seu-corpo" class="article-card" data-category="Desenvolvimento Pessoal" data-title="domine seu cérebro para dominar seu corpo" data-excerpt="artigo 113 - domine seu cérebro para dominar seu corpo artigo 58 do acervo original do blog do montanha. painel systeme.io: 9450749(https://systeme.io...">
           <div class="card-top">
-            <span class="badge badge-artigo">Saúde & Fisiologia</span>
+            <span class="badge badge-artigo">Desenvolvimento Pessoal</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Domine seu cérebro para dominar seu corpo</h3>
@@ -1327,9 +1444,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/quando-adicionar-peso-a-um-exercicio" class="article-card" data-category="Hipertrofia & Força" data-title="quando adicionar peso a um exercício?" data-excerpt="artigo 112 - quando adicionar peso a um exercício? artigo 59 do acervo original do blog do montanha. painel systeme.io: 9439052(https://systeme.io/das...">
+        <a href="/materiais/artigos/quando-adicionar-peso-a-um-exercicio" class="article-card" data-category="Fitness" data-title="quando adicionar peso a um exercício?" data-excerpt="artigo 112 - quando adicionar peso a um exercício? artigo 59 do acervo original do blog do montanha. painel systeme.io: 9439052(https://systeme.io/das...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Quando adicionar peso a um exercício?</h3>
@@ -1339,9 +1456,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/uma-discussao-sobre-o-coco-e-o-que-ele-diz-sobre-sua-saude" class="article-card" data-category="Saúde & Fisiologia" data-title="uma discussão sobre o cocô e o que ele diz sobre sua saúde" data-excerpt="artigo 111 - uma discussão sobre o cocô e o que ele diz sobre sua saúde artigo 60 do acervo original do blog do montanha. painel systeme.io: 9395678(h...">
+        <a href="/materiais/artigos/uma-discussao-sobre-o-coco-e-o-que-ele-diz-sobre-sua-saude" class="article-card" data-category="Fitness" data-title="uma discussão sobre o cocô e o que ele diz sobre sua saúde" data-excerpt="artigo 111 - uma discussão sobre o cocô e o que ele diz sobre sua saúde artigo 60 do acervo original do blog do montanha. painel systeme.io: 9395678(h...">
           <div class="card-top">
-            <span class="badge badge-artigo">Saúde & Fisiologia</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Uma discussão sobre o cocô e o que ele diz sobre sua saúde</h3>
@@ -1351,9 +1468,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/beneficios-do-relaxamento-muscular-progressivo-abreviado" class="article-card" data-category="Saúde & Fisiologia" data-title="benefícios do relaxamento muscular progressivo abreviado" data-excerpt="artigo 110 - benefícios do relaxamento muscular progressivo abreviado artigo 61 do acervo original do blog do montanha. painel systeme.io: 9387823(htt...">
+        <a href="/materiais/artigos/beneficios-do-relaxamento-muscular-progressivo-abreviado" class="article-card" data-category="Fitness" data-title="benefícios do relaxamento muscular progressivo abreviado" data-excerpt="artigo 110 - benefícios do relaxamento muscular progressivo abreviado artigo 61 do acervo original do blog do montanha. painel systeme.io: 9387823(htt...">
           <div class="card-top">
-            <span class="badge badge-artigo">Saúde & Fisiologia</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Benefícios do Relaxamento Muscular Progressivo Abreviado</h3>
@@ -1363,9 +1480,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-segredo-de-um-treinamento-de-resultado" class="article-card" data-category="Hipertrofia & Força" data-title="o segredo de um treinamento de resultado" data-excerpt="artigo 109 - o segredo de um treinamento de resultado artigo 62 do acervo original do blog do montanha. painel systeme.io: 9372517(https://systeme.io/...">
+        <a href="/materiais/artigos/o-segredo-de-um-treinamento-de-resultado" class="article-card" data-category="Fitness" data-title="o segredo de um treinamento de resultado" data-excerpt="artigo 109 - o segredo de um treinamento de resultado artigo 62 do acervo original do blog do montanha. painel systeme.io: 9372517(https://systeme.io/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O segredo de um treinamento de resultado</h3>
@@ -1375,9 +1492,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/influencia-do-treinamento-de-forca-na-saude-vascular" class="article-card" data-category="Hipertrofia & Força" data-title="influência do treinamento de força na saúde vascular" data-excerpt="artigo 108 - influência do treinamento de força na saúde vascular artigo 63 do acervo original do blog do montanha. painel systeme.io: 9247991(https:/...">
+        <a href="/materiais/artigos/influencia-do-treinamento-de-forca-na-saude-vascular" class="article-card" data-category="Treinamento Híbrido" data-title="influência do treinamento de força na saúde vascular" data-excerpt="artigo 108 - influência do treinamento de força na saúde vascular artigo 63 do acervo original do blog do montanha. painel systeme.io: 9247991(https:/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Influência do treinamento de força na saúde vascular</h3>
@@ -1387,9 +1504,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-treinamento-resistido-provoca-perda-de-flexibilidade" class="article-card" data-category="Hipertrofia & Força" data-title="o treinamento resistido provoca perda de flexibilidade?" data-excerpt="artigo 107 - o treinamento resistido provoca perda de flexibilidade? artigo 64 do acervo original do blog do montanha. painel systeme.io: 9116528(http...">
+        <a href="/materiais/artigos/o-treinamento-resistido-provoca-perda-de-flexibilidade" class="article-card" data-category="Fitness" data-title="o treinamento resistido provoca perda de flexibilidade?" data-excerpt="artigo 107 - o treinamento resistido provoca perda de flexibilidade? artigo 64 do acervo original do blog do montanha. painel systeme.io: 9116528(http...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O Treinamento Resistido provoca perda de flexibilidade?</h3>
@@ -1399,9 +1516,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/a-fibromialgia-e-o-treinamento-resistido" class="article-card" data-category="Hipertrofia & Força" data-title="a fibromialgia e o treinamento resistido" data-excerpt="artigo 106 - a fibromialgia e o treinamento resistido artigo 65 do acervo original do blog do montanha. painel systeme.io: 9066499(https://systeme.io/...">
+        <a href="/materiais/artigos/a-fibromialgia-e-o-treinamento-resistido" class="article-card" data-category="Fitness" data-title="a fibromialgia e o treinamento resistido" data-excerpt="artigo 106 - a fibromialgia e o treinamento resistido artigo 65 do acervo original do blog do montanha. painel systeme.io: 9066499(https://systeme.io/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">A fibromialgia e o treinamento resistido</h3>
@@ -1411,9 +1528,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/vale-a-pena-treinar-duas-vezes-por-dia-para-ganhar-mais-musculos" class="article-card" data-category="Hipertrofia & Força" data-title="vale a pena treinar duas vezes por dia para ganhar mais músculos?" data-excerpt="artigo 105 – vale a pena treinar duas vezes por dia para ganhar mais músculos? artigo 66 do acervo original do blog do montanha. painel systeme.io: 90...">
+        <a href="/materiais/artigos/vale-a-pena-treinar-duas-vezes-por-dia-para-ganhar-mais-musculos" class="article-card" data-category="Treinamento Híbrido" data-title="vale a pena treinar duas vezes por dia para ganhar mais músculos?" data-excerpt="artigo 105 – vale a pena treinar duas vezes por dia para ganhar mais músculos? artigo 66 do acervo original do blog do montanha. painel systeme.io: 90...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Vale a pena treinar duas vezes por dia para ganhar mais músculos?</h3>
@@ -1423,9 +1540,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/problemas-na-coluna-e-o-treinamento-hibrido" class="article-card" data-category="Hipertrofia & Força" data-title="problemas na coluna e o treinamento híbrido" data-excerpt="artigo 104 - problemas na coluna e o treinamento híbrido artigo 67 do acervo original do blog do montanha. painel systeme.io: 9004005(https://systeme....">
+        <a href="/materiais/artigos/problemas-na-coluna-e-o-treinamento-hibrido" class="article-card" data-category="Treinamento Híbrido" data-title="problemas na coluna e o treinamento híbrido" data-excerpt="artigo 104 - problemas na coluna e o treinamento híbrido artigo 67 do acervo original do blog do montanha. painel systeme.io: 9004005(https://systeme....">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Problemas na coluna e o Treinamento Híbrido</h3>
@@ -1435,9 +1552,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/voce-sente-dor-lombar-a-culpa-pode-ser-da-sua-pisada" class="article-card" data-category="Mobilidade & Híbrido" data-title="você sente dor lombar? a culpa pode ser da sua pisada." data-excerpt="artigo 103 - você sente dor lombar? a culpa pode ser da sua pisada. artigo 68 do acervo original do blog do montanha. painel systeme.io: 8984814(https...">
+        <a href="/materiais/artigos/voce-sente-dor-lombar-a-culpa-pode-ser-da-sua-pisada" class="article-card" data-category="Treinamento Híbrido" data-title="você sente dor lombar? a culpa pode ser da sua pisada." data-excerpt="artigo 103 - você sente dor lombar? a culpa pode ser da sua pisada. artigo 68 do acervo original do blog do montanha. painel systeme.io: 8984814(https...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mobilidade & Híbrido</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Você sente dor lombar? A culpa pode ser da sua pisada.</h3>
@@ -1447,9 +1564,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/aumente-seu-desempenho-esportivo-com-o-power-clean" class="article-card" data-category="Mobilidade & Híbrido" data-title="aumente seu desempenho esportivo com o power clean" data-excerpt="artigo 102 - aumente seu desempenho esportivo com o power clean artigo 69 do acervo original do blog do montanha. painel systeme.io: 8950303(https://s...">
+        <a href="/materiais/artigos/aumente-seu-desempenho-esportivo-com-o-power-clean" class="article-card" data-category="Mobilidade Articular" data-title="aumente seu desempenho esportivo com o power clean" data-excerpt="artigo 102 - aumente seu desempenho esportivo com o power clean artigo 69 do acervo original do blog do montanha. painel systeme.io: 8950303(https://s...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mobilidade & Híbrido</span>
+            <span class="badge badge-artigo">Mobilidade Articular</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Aumente seu desempenho esportivo com o Power Clean</h3>
@@ -1459,9 +1576,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/quanta-proteina-e-necessaria-nos-dias-de-descanso" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="quanta proteína é necessária nos dias de descanso?" data-excerpt="artigo 101 - quanta proteína é necessária nos dias de descanso? artigo 70 do acervo original do blog do montanha. painel systeme.io: 8768062(https://s...">
+        <a href="/materiais/artigos/quanta-proteina-e-necessaria-nos-dias-de-descanso" class="article-card" data-category="Fitness" data-title="quanta proteína é necessária nos dias de descanso?" data-excerpt="artigo 101 - quanta proteína é necessária nos dias de descanso? artigo 70 do acervo original do blog do montanha. painel systeme.io: 8768062(https://s...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Quanta proteína é necessária nos dias de descanso?</h3>
@@ -1471,9 +1588,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/como-perder-gordura-sem-perder-massa-muscular" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="como perder gordura sem perder massa muscular?" data-excerpt="artigo 100 - como perder gordura sem perder massa muscular? artigo 71 do acervo original do blog do montanha. painel systeme.io: 8768060(https://syste...">
+        <a href="/materiais/artigos/como-perder-gordura-sem-perder-massa-muscular" class="article-card" data-category="Fitness" data-title="como perder gordura sem perder massa muscular?" data-excerpt="artigo 100 - como perder gordura sem perder massa muscular? artigo 71 do acervo original do blog do montanha. painel systeme.io: 8768060(https://syste...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Como perder gordura sem perder massa muscular?</h3>
@@ -1483,9 +1600,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/vale-a-pena-investir-no-treino-mental" class="article-card" data-category="Corrida & Endurance" data-title="vale a pena investir no treino mental?" data-excerpt="artigo 99 - vale a pena investir no treino mental? artigo 72 do acervo original do blog do montanha. painel systeme.io: 8596407(https://systeme.io/das...">
+        <a href="/materiais/artigos/vale-a-pena-investir-no-treino-mental" class="article-card" data-category="Treinamento Híbrido" data-title="vale a pena investir no treino mental?" data-excerpt="artigo 99 - vale a pena investir no treino mental? artigo 72 do acervo original do blog do montanha. painel systeme.io: 8596407(https://systeme.io/das...">
           <div class="card-top">
-            <span class="badge badge-artigo">Corrida & Endurance</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Vale a pena investir no treino mental?</h3>
@@ -1495,9 +1612,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/hipertrofia-miofibrilar-vs-hipertrofia-sarcoplasmatica" class="article-card" data-category="Hipertrofia & Força" data-title="hipertrofia miofibrilar vs hipertrofia sarcoplasmática" data-excerpt="artigo 98 - hipertrofia miofibrilar vs hipertrofia sarcoplasmática artigo 73 do acervo original do blog do montanha. painel systeme.io: 8593778(https:...">
+        <a href="/materiais/artigos/hipertrofia-miofibrilar-vs-hipertrofia-sarcoplasmatica" class="article-card" data-category="Treinamento Híbrido" data-title="hipertrofia miofibrilar vs hipertrofia sarcoplasmática" data-excerpt="artigo 98 - hipertrofia miofibrilar vs hipertrofia sarcoplasmática artigo 73 do acervo original do blog do montanha. painel systeme.io: 8593778(https:...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Hipertrofia Miofibrilar Vs Hipertrofia Sarcoplasmática</h3>
@@ -1507,9 +1624,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-pe-pode-afetar-a-sua-postura" class="article-card" data-category="Hipertrofia & Força" data-title="o pé pode afetar a sua postura?" data-excerpt="artigo 97 - o pé pode afetar a sua postura? artigo 74 do acervo original do blog do montanha. painel systeme.io: 8576635(https://systeme.io/dashboard/...">
+        <a href="/materiais/artigos/o-pe-pode-afetar-a-sua-postura" class="article-card" data-category="Fitness" data-title="o pé pode afetar a sua postura?" data-excerpt="artigo 97 - o pé pode afetar a sua postura? artigo 74 do acervo original do blog do montanha. painel systeme.io: 8576635(https://systeme.io/dashboard/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O pé pode afetar a sua postura?</h3>
@@ -1531,9 +1648,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/emagreca-treinando-powerlifting" class="article-card" data-category="Hipertrofia & Força" data-title="emagreça treinando powerlifting" data-excerpt="artigo 95 - emagreça treinando powerlifting artigo 76 do acervo original do blog do montanha. painel systeme.io: 8522679(https://systeme.io/dashboard/...">
+        <a href="/materiais/artigos/emagreca-treinando-powerlifting" class="article-card" data-category="Fitness" data-title="emagreça treinando powerlifting" data-excerpt="artigo 95 - emagreça treinando powerlifting artigo 76 do acervo original do blog do montanha. painel systeme.io: 8522679(https://systeme.io/dashboard/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Emagreça treinando Powerlifting</h3>
@@ -1543,9 +1660,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/comer-tarde-da-noite-e-prejudicial-para-perda-de-peso" class="article-card" data-category="Hipertrofia & Força" data-title="comer tarde da noite é prejudicial para perda de peso" data-excerpt="artigo 94 - comer tarde da noite é prejudicial para perda de peso artigo 77 do acervo original do blog do montanha. painel systeme.io: 8521667(https:/...">
+        <a href="/materiais/artigos/comer-tarde-da-noite-e-prejudicial-para-perda-de-peso" class="article-card" data-category="Fitness" data-title="comer tarde da noite é prejudicial para perda de peso" data-excerpt="artigo 94 - comer tarde da noite é prejudicial para perda de peso artigo 77 do acervo original do blog do montanha. painel systeme.io: 8521667(https:/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Comer tarde da noite é prejudicial para perda de peso</h3>
@@ -1555,9 +1672,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/existe-relacao-entre-o-jejum-e-o-ganho-de-forca" class="article-card" data-category="Hipertrofia & Força" data-title="existe relação entre o jejum e o ganho de força?" data-excerpt="artigo 93 - existe relação entre o jejum e o ganho de força? artigo 78 do acervo original do blog do montanha. painel systeme.io: 8504067(https://syst...">
+        <a href="/materiais/artigos/existe-relacao-entre-o-jejum-e-o-ganho-de-forca" class="article-card" data-category="Treinamento Híbrido" data-title="existe relação entre o jejum e o ganho de força?" data-excerpt="artigo 93 - existe relação entre o jejum e o ganho de força? artigo 78 do acervo original do blog do montanha. painel systeme.io: 8504067(https://syst...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Existe relação entre o jejum e o ganho de força?</h3>
@@ -1567,9 +1684,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/os-principios-do-contraste-e-da-progressividade-no-treinamento-hibrido" class="article-card" data-category="Hipertrofia & Força" data-title="os princípios do contraste e da progressividade no treinamento híbrido" data-excerpt="artigo 92 - os princípios do contraste e da progressividade no treinamento híbrido artigo 79 do acervo original do blog do montanha. painel systeme.io...">
+        <a href="/materiais/artigos/os-principios-do-contraste-e-da-progressividade-no-treinamento-hibrido" class="article-card" data-category="Treinamento Híbrido" data-title="os princípios do contraste e da progressividade no treinamento híbrido" data-excerpt="artigo 92 - os princípios do contraste e da progressividade no treinamento híbrido artigo 79 do acervo original do blog do montanha. painel systeme.io...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Os Princípios do Contraste e da Progressividade no Treinamento Híbrido</h3>
@@ -1579,9 +1696,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/controle-se" class="article-card" data-category="Mobilidade & Híbrido" data-title="controle-se!" data-excerpt="artigo 91 - controle-se! artigo 80 do acervo original do blog do montanha. painel systeme.io: 8065928(https://systeme.io/dashboard/page/8065928/edit) ...">
+        <a href="/materiais/artigos/controle-se" class="article-card" data-category="Treinamento Híbrido" data-title="controle-se!" data-excerpt="artigo 91 - controle-se! artigo 80 do acervo original do blog do montanha. painel systeme.io: 8065928(https://systeme.io/dashboard/page/8065928/edit) ...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mobilidade & Híbrido</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Controle-se!</h3>
@@ -1591,9 +1708,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/durma-melhor-com-hipnose" class="article-card" data-category="Hipertrofia & Força" data-title="durma melhor com hipnose" data-excerpt="artigo 90 - durma melhor com hipnose artigo 81 do acervo original do blog do montanha. painel systeme.io: 7995671(https://systeme.io/dashboard/page/79...">
+        <a href="/materiais/artigos/durma-melhor-com-hipnose" class="article-card" data-category="Fitness" data-title="durma melhor com hipnose" data-excerpt="artigo 90 - durma melhor com hipnose artigo 81 do acervo original do blog do montanha. painel systeme.io: 7995671(https://systeme.io/dashboard/page/79...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Durma melhor com Hipnose</h3>
@@ -1603,9 +1720,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-cortisol-atrapalha-a-perda-de-peso" class="article-card" data-category="Hipertrofia & Força" data-title="o cortisol atrapalha a perda de peso?" data-excerpt="artigo 89 - o cortisol atrapalha a perda de peso? artigo 82 do acervo original do blog do montanha. painel systeme.io: 7994123(https://systeme.io/dash...">
+        <a href="/materiais/artigos/o-cortisol-atrapalha-a-perda-de-peso" class="article-card" data-category="Fitness" data-title="o cortisol atrapalha a perda de peso?" data-excerpt="artigo 89 - o cortisol atrapalha a perda de peso? artigo 82 do acervo original do blog do montanha. painel systeme.io: 7994123(https://systeme.io/dash...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O Cortisol atrapalha a perda de peso?</h3>
@@ -1615,9 +1732,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/qual-a-diferenca-entre-os-agachamentos" class="article-card" data-category="Hipertrofia & Força" data-title="qual a diferença entre os agachamentos?" data-excerpt="artigo 88 - qual a diferença entre os agachamentos? artigo 83 do acervo original do blog do montanha. painel systeme.io: 7934556(https://systeme.io/da...">
+        <a href="/materiais/artigos/qual-a-diferenca-entre-os-agachamentos" class="article-card" data-category="Fitness" data-title="qual a diferença entre os agachamentos?" data-excerpt="artigo 88 - qual a diferença entre os agachamentos? artigo 83 do acervo original do blog do montanha. painel systeme.io: 7934556(https://systeme.io/da...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Qual a diferença entre os agachamentos?</h3>
@@ -1627,9 +1744,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/voce-ja-ouviu-falar-no-zma" class="article-card" data-category="Hipertrofia & Força" data-title="você já ouviu falar no zma?" data-excerpt="artigo 87 - você já ouviu falar no zma? artigo 84 do acervo original do blog do montanha. painel systeme.io: 7838336(https://systeme.io/dashboard/page...">
+        <a href="/materiais/artigos/voce-ja-ouviu-falar-no-zma" class="article-card" data-category="Fitness" data-title="você já ouviu falar no zma?" data-excerpt="artigo 87 - você já ouviu falar no zma? artigo 84 do acervo original do blog do montanha. painel systeme.io: 7838336(https://systeme.io/dashboard/page...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Você já ouviu falar no ZMA?</h3>
@@ -1639,9 +1756,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/observe-seus-musculos-e-fique-mais-forte" class="article-card" data-category="Hipertrofia & Força" data-title="observe seus músculos e fique mais forte" data-excerpt="artigo 86 - observe seus músculos e fique mais forte artigo 85 do acervo original do blog do montanha. painel systeme.io: 7831237(https://systeme.io/d...">
+        <a href="/materiais/artigos/observe-seus-musculos-e-fique-mais-forte" class="article-card" data-category="Treinamento Híbrido" data-title="observe seus músculos e fique mais forte" data-excerpt="artigo 86 - observe seus músculos e fique mais forte artigo 85 do acervo original do blog do montanha. painel systeme.io: 7831237(https://systeme.io/d...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Observe seus músculos e fique mais forte</h3>
@@ -1651,9 +1768,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/controle-suas-emocoes-nos-momentos-dificeis" class="article-card" data-category="Hipertrofia & Força" data-title="controle suas emoções nos momentos difíceis" data-excerpt="artigo 85 - controle suas emoções nos momentos difíceis artigo 86 do acervo original do blog do montanha. painel systeme.io: 7593096(https://systeme.i...">
+        <a href="/materiais/artigos/controle-suas-emocoes-nos-momentos-dificeis" class="article-card" data-category="Fitness" data-title="controle suas emoções nos momentos difíceis" data-excerpt="artigo 85 - controle suas emoções nos momentos difíceis artigo 86 do acervo original do blog do montanha. painel systeme.io: 7593096(https://systeme.i...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Controle suas emoções nos momentos difíceis</h3>
@@ -1663,9 +1780,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/use-sua-mente-para-aumentar-a-intensidade-dos-treinos" class="article-card" data-category="Hipertrofia & Força" data-title="use sua mente para aumentar a intensidade dos treinos" data-excerpt="artigo 84 - use sua mente para aumentar a intensidade dos treinos artigo 87 do acervo original do blog do montanha. painel systeme.io: 7574990(https:/...">
+        <a href="/materiais/artigos/use-sua-mente-para-aumentar-a-intensidade-dos-treinos" class="article-card" data-category="Fitness" data-title="use sua mente para aumentar a intensidade dos treinos" data-excerpt="artigo 84 - use sua mente para aumentar a intensidade dos treinos artigo 87 do acervo original do blog do montanha. painel systeme.io: 7574990(https:/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Use sua mente para aumentar a intensidade dos treinos</h3>
@@ -1711,9 +1828,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-poder-da-visualizacao" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="o poder da visualização" data-excerpt="artigo 80 - o poder da visualização artigo 91 do acervo original do blog do montanha. painel systeme.io: 7455513(https://systeme.io/dashboard/page/745...">
+        <a href="/materiais/artigos/o-poder-da-visualizacao" class="article-card" data-category="Fitness" data-title="o poder da visualização" data-excerpt="artigo 80 - o poder da visualização artigo 91 do acervo original do blog do montanha. painel systeme.io: 7455513(https://systeme.io/dashboard/page/745...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O poder da visualização</h3>
@@ -1723,9 +1840,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/os-hormonios-da-perda-de-gordura" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="os hormônios da perda de gordura" data-excerpt="artigo 79 - os hormônios da perda de gordura artigo 92 do acervo original do blog do montanha. painel systeme.io: 7428933(https://systeme.io/dashboard...">
+        <a href="/materiais/artigos/os-hormonios-da-perda-de-gordura" class="article-card" data-category="Fitness" data-title="os hormônios da perda de gordura" data-excerpt="artigo 79 - os hormônios da perda de gordura artigo 92 do acervo original do blog do montanha. painel systeme.io: 7428933(https://systeme.io/dashboard...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Os hormônios da perda de gordura</h3>
@@ -1735,9 +1852,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-treinamento-fisico-e-a-melhora-da-funcao-cerebral" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="o treinamento físico e a melhora da função cerebral" data-excerpt="artigo 78 - o treinamento físico e a melhora da função cerebral artigo 93 do acervo original do blog do montanha. painel systeme.io: 7398186(https://s...">
+        <a href="/materiais/artigos/o-treinamento-fisico-e-a-melhora-da-funcao-cerebral" class="article-card" data-category="Fitness" data-title="o treinamento físico e a melhora da função cerebral" data-excerpt="artigo 78 - o treinamento físico e a melhora da função cerebral artigo 93 do acervo original do blog do montanha. painel systeme.io: 7398186(https://s...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O treinamento físico e a melhora da função cerebral</h3>
@@ -1747,9 +1864,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/recuperacao-ativa-e-passiva" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="recuperação ativa e passiva" data-excerpt="artigo 77 - recuperação ativa e passiva artigo 94 do acervo original do blog do montanha. painel systeme.io: 7370983(https://systeme.io/dashboard/page...">
+        <a href="/materiais/artigos/recuperacao-ativa-e-passiva" class="article-card" data-category="Fitness" data-title="recuperação ativa e passiva" data-excerpt="artigo 77 - recuperação ativa e passiva artigo 94 do acervo original do blog do montanha. painel systeme.io: 7370983(https://systeme.io/dashboard/page...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Recuperação ativa e passiva</h3>
@@ -1759,9 +1876,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/a-gordura-abdominal-e-o-tamanho-do-cerebro" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="a gordura abdominal e o tamanho do cérebro" data-excerpt="artigo 76 - a gordura abdominal e o tamanho do cérebro artigo 95 do acervo original do blog do montanha. painel systeme.io: 7344549(https://systeme.io...">
+        <a href="/materiais/artigos/a-gordura-abdominal-e-o-tamanho-do-cerebro" class="article-card" data-category="Fitness" data-title="a gordura abdominal e o tamanho do cérebro" data-excerpt="artigo 76 - a gordura abdominal e o tamanho do cérebro artigo 95 do acervo original do blog do montanha. painel systeme.io: 7344549(https://systeme.io...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">A gordura abdominal e o tamanho do cérebro</h3>
@@ -1771,9 +1888,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-principio-kaizen" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="o princípio kaizen" data-excerpt="artigo 75 - o princípio kaizen artigo 96 do acervo original do blog do montanha. painel systeme.io: 7322439(https://systeme.io/dashboard/page/7322439/...">
+        <a href="/materiais/artigos/o-principio-kaizen" class="article-card" data-category="Fitness" data-title="o princípio kaizen" data-excerpt="artigo 75 - o princípio kaizen artigo 96 do acervo original do blog do montanha. painel systeme.io: 7322439(https://systeme.io/dashboard/page/7322439/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O princípio Kaizen</h3>
@@ -1783,9 +1900,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/compreendendo-os-sistemas-energeticos" class="article-card" data-category="Hipertrofia & Força" data-title="compreendendo os sistemas energéticos" data-excerpt="artigo 74 - compreendendo os sistemas energéticos artigo 97 do acervo original do blog do montanha. painel systeme.io: 7289293(https://systeme.io/dash...">
+        <a href="/materiais/artigos/compreendendo-os-sistemas-energeticos" class="article-card" data-category="Fitness" data-title="compreendendo os sistemas energéticos" data-excerpt="artigo 74 - compreendendo os sistemas energéticos artigo 97 do acervo original do blog do montanha. painel systeme.io: 7289293(https://systeme.io/dash...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Compreendendo os sistemas energéticos</h3>
@@ -1795,9 +1912,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/treine-o-seu-musculo-do-autocontrole" class="article-card" data-category="Hipertrofia & Força" data-title="treine o seu músculo do autocontrole" data-excerpt="treine o seu músculo do autocontrole artigo 98 do acervo original do blog do montanha. painel systeme.io: 7240817(https://systeme.io/dashboard/page/72...">
+        <a href="/materiais/artigos/treine-o-seu-musculo-do-autocontrole" class="article-card" data-category="Fitness" data-title="treine o seu músculo do autocontrole" data-excerpt="treine o seu músculo do autocontrole artigo 98 do acervo original do blog do montanha. painel systeme.io: 7240817(https://systeme.io/dashboard/page/72...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Treine o seu músculo do autocontrole</h3>
@@ -1807,9 +1924,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/a-importancia-da-tecnica-respiratoria-nos-esportes" class="article-card" data-category="Hipertrofia & Força" data-title="a importância da técnica respiratória nos esportes" data-excerpt="a importância da técnica respiratória nos esportes artigo 99 do acervo original do blog do montanha. painel systeme.io: 7238380(https://systeme.io/das...">
+        <a href="/materiais/artigos/a-importancia-da-tecnica-respiratoria-nos-esportes" class="article-card" data-category="Fitness" data-title="a importância da técnica respiratória nos esportes" data-excerpt="a importância da técnica respiratória nos esportes artigo 99 do acervo original do blog do montanha. painel systeme.io: 7238380(https://systeme.io/das...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">A importância da técnica respiratória nos esportes</h3>
@@ -1819,9 +1936,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/analgesicos-afetam-a-hipertrofia-muscular" class="article-card" data-category="Hipertrofia & Força" data-title="analgésicos afetam a hipertrofia muscular?" data-excerpt="analgésicos afetam a hipertrofia muscular? artigo 100 do acervo original do blog do montanha. painel systeme.io: 7202318(https://systeme.io/dashboard/...">
+        <a href="/materiais/artigos/analgesicos-afetam-a-hipertrofia-muscular" class="article-card" data-category="Treinamento Híbrido" data-title="analgésicos afetam a hipertrofia muscular?" data-excerpt="analgésicos afetam a hipertrofia muscular? artigo 100 do acervo original do blog do montanha. painel systeme.io: 7202318(https://systeme.io/dashboard/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Analgésicos afetam a hipertrofia muscular?</h3>
@@ -1831,9 +1948,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/uma-dica-simples-para-perda-de-gordura" class="article-card" data-category="Hipertrofia & Força" data-title="uma dica simples para perda de gordura" data-excerpt="uma dica simples para perda de gordura artigo 101 do acervo original do blog do montanha. painel systeme.io: 7196340(https://systeme.io/dashboard/page...">
+        <a href="/materiais/artigos/uma-dica-simples-para-perda-de-gordura" class="article-card" data-category="Fitness" data-title="uma dica simples para perda de gordura" data-excerpt="uma dica simples para perda de gordura artigo 101 do acervo original do blog do montanha. painel systeme.io: 7196340(https://systeme.io/dashboard/page...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Uma dica simples para perda de gordura</h3>
@@ -1843,9 +1960,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/como-determinar-sua-frequencia-cardiaca-maxima" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="como determinar sua frequência cardíaca máxima?" data-excerpt="como determinar sua frequência cardíaca máxima? artigo 102 do acervo original do blog do montanha. painel systeme.io: 7172263(https://systeme.io/dashb...">
+        <a href="/materiais/artigos/como-determinar-sua-frequencia-cardiaca-maxima" class="article-card" data-category="Fitness" data-title="como determinar sua frequência cardíaca máxima?" data-excerpt="como determinar sua frequência cardíaca máxima? artigo 102 do acervo original do blog do montanha. painel systeme.io: 7172263(https://systeme.io/dashb...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Como determinar sua Frequência Cardíaca Máxima?</h3>
@@ -1855,9 +1972,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/trincar-o-abdomen-pode-levar-mais-tempo-do-que-voce-pensa" class="article-card" data-category="Mentalidade & Disciplina" data-title="trincar o abdômen pode levar mais tempo do que você pensa" data-excerpt="trincar o abdômen pode levar mais tempo do que você pensa artigo 103 do acervo original do blog do montanha. painel systeme.io: 7147900(https://system...">
+        <a href="/materiais/artigos/trincar-o-abdomen-pode-levar-mais-tempo-do-que-voce-pensa" class="article-card" data-category="Desenvolvimento Pessoal" data-title="trincar o abdômen pode levar mais tempo do que você pensa" data-excerpt="trincar o abdômen pode levar mais tempo do que você pensa artigo 103 do acervo original do blog do montanha. painel systeme.io: 7147900(https://system...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Desenvolvimento Pessoal</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Trincar o abdômen pode levar mais tempo do que você pensa</h3>
@@ -1867,9 +1984,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/os-beneficios-do-treino-ao-ar-livre" class="article-card" data-category="Hipertrofia & Força" data-title="os benefícios do treino ao ar livre" data-excerpt="os benefícios do treino ao ar livre artigo 104 do acervo original do blog do montanha. painel systeme.io: 7112975(https://systeme.io/dashboard/page/71...">
+        <a href="/materiais/artigos/os-beneficios-do-treino-ao-ar-livre" class="article-card" data-category="Fitness" data-title="os benefícios do treino ao ar livre" data-excerpt="os benefícios do treino ao ar livre artigo 104 do acervo original do blog do montanha. painel systeme.io: 7112975(https://systeme.io/dashboard/page/71...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Os benefícios do treino ao ar livre</h3>
@@ -1879,9 +1996,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-mindset-de-alto-desempenho" class="article-card" data-category="Nutrição & Suplementação" data-title="o mindset de alto desempenho" data-excerpt="o mindset de alto desempenho artigo 105 do acervo original do blog do montanha. painel systeme.io: 7099486(https://systeme.io/dashboard/page/7099486/e...">
+        <a href="/materiais/artigos/o-mindset-de-alto-desempenho" class="article-card" data-category="Nutrição & Jejum" data-title="o mindset de alto desempenho" data-excerpt="o mindset de alto desempenho artigo 105 do acervo original do blog do montanha. painel systeme.io: 7099486(https://systeme.io/dashboard/page/7099486/e...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O mindset de alto desempenho</h3>
@@ -1891,9 +2008,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/todas-as-dietas-funcionam" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="todas as dietas funcionam" data-excerpt="artigo 65 - todas as dietas funcionam artigo 106 do acervo original do blog do montanha. painel systeme.io: 7004543(https://systeme.io/dashboard/page/...">
+        <a href="/materiais/artigos/todas-as-dietas-funcionam" class="article-card" data-category="Fitness" data-title="todas as dietas funcionam" data-excerpt="artigo 65 - todas as dietas funcionam artigo 106 do acervo original do blog do montanha. painel systeme.io: 7004543(https://systeme.io/dashboard/page/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Todas as dietas funcionam</h3>
@@ -1903,9 +2020,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/dores-articulares-relacionadas-ao-clima" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="dores articulares relacionadas ao clima" data-excerpt="dores articulares relacionadas ao clima artigo 107 do acervo original do blog do montanha. painel systeme.io: 6970698(https://systeme.io/dashboard/pag...">
+        <a href="/materiais/artigos/dores-articulares-relacionadas-ao-clima" class="article-card" data-category="Fitness" data-title="dores articulares relacionadas ao clima" data-excerpt="dores articulares relacionadas ao clima artigo 107 do acervo original do blog do montanha. painel systeme.io: 6970698(https://systeme.io/dashboard/pag...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Dores articulares relacionadas ao clima</h3>
@@ -1951,9 +2068,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/use-o-medo-como-combustivel" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="use o medo como combustível." data-excerpt="use o medo como combustível. artigo 111 do acervo original do blog do montanha. painel systeme.io: 6334127(https://systeme.io/dashboard/page/6334127/e...">
+        <a href="/materiais/artigos/use-o-medo-como-combustivel" class="article-card" data-category="Fitness" data-title="use o medo como combustível." data-excerpt="use o medo como combustível. artigo 111 do acervo original do blog do montanha. painel systeme.io: 6334127(https://systeme.io/dashboard/page/6334127/e...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Use o medo como combustível.</h3>
@@ -1963,9 +2080,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/quanta-vitamina-d-voce-precisa" class="article-card" data-category="Nutrição & Suplementação" data-title="quanta vitamina d você precisa?" data-excerpt="quanta vitamina d você precisa? artigo 112 do acervo original do blog do montanha. painel systeme.io: 6287806(https://systeme.io/dashboard/page/628780...">
+        <a href="/materiais/artigos/quanta-vitamina-d-voce-precisa" class="article-card" data-category="Nutrição & Jejum" data-title="quanta vitamina d você precisa?" data-excerpt="quanta vitamina d você precisa? artigo 112 do acervo original do blog do montanha. painel systeme.io: 6287806(https://systeme.io/dashboard/page/628780...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Quanta vitamina D você precisa?</h3>
@@ -1975,9 +2092,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/voce-tem-neuronios-gulosos-e-nao-sabe" class="article-card" data-category="Mentalidade & Disciplina" data-title="você tem neurônios "gulosos" e não sabe!" data-excerpt="você tem neurônios "gulosos" e não sabe! artigo 113 do acervo original do blog do montanha. painel systeme.io: 6279462(https://systeme.io/dashboard/pa...">
+        <a href="/materiais/artigos/voce-tem-neuronios-gulosos-e-nao-sabe" class="article-card" data-category="Fitness" data-title="você tem neurônios "gulosos" e não sabe!" data-excerpt="você tem neurônios "gulosos" e não sabe! artigo 113 do acervo original do blog do montanha. painel systeme.io: 6279462(https://systeme.io/dashboard/pa...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Você tem neurônios "gulosos" e não sabe!</h3>
@@ -2023,9 +2140,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/reprograme-sua-mente-para-emagrecer" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="reprograme sua mente para emagrecer" data-excerpt="reprograme sua mente para emagrecer artigo 117 do acervo original do blog do montanha. painel systeme.io: 6208805(https://systeme.io/dashboard/page/62...">
+        <a href="/materiais/artigos/reprograme-sua-mente-para-emagrecer" class="article-card" data-category="Fitness" data-title="reprograme sua mente para emagrecer" data-excerpt="reprograme sua mente para emagrecer artigo 117 do acervo original do blog do montanha. painel systeme.io: 6208805(https://systeme.io/dashboard/page/62...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Reprograme sua mente para emagrecer</h3>
@@ -2035,9 +2152,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/a-hora-de-comer-influencia-no-seu-emagrecimento" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="a hora de comer influencia no seu emagrecimento" data-excerpt="a hora de comer influencia no seu emagrecimento artigo 118 do acervo original do blog do montanha. painel systeme.io: 6184905(https://systeme.io/dashb...">
+        <a href="/materiais/artigos/a-hora-de-comer-influencia-no-seu-emagrecimento" class="article-card" data-category="Fitness" data-title="a hora de comer influencia no seu emagrecimento" data-excerpt="a hora de comer influencia no seu emagrecimento artigo 118 do acervo original do blog do montanha. painel systeme.io: 6184905(https://systeme.io/dashb...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">A hora de comer influencia no seu emagrecimento</h3>
@@ -2059,9 +2176,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/meditacao-e-o-sono-de-qualidade" class="article-card" data-category="Saúde & Fisiologia" data-title="meditação e o sono de qualidade" data-excerpt="artigo 51 - meditação e o sono de qualidade artigo 120 do acervo original do blog do montanha. painel systeme.io: 6139605(https://systeme.io/dashboard...">
+        <a href="/materiais/artigos/meditacao-e-o-sono-de-qualidade" class="article-card" data-category="Fitness" data-title="meditação e o sono de qualidade" data-excerpt="artigo 51 - meditação e o sono de qualidade artigo 120 do acervo original do blog do montanha. painel systeme.io: 6139605(https://systeme.io/dashboard...">
           <div class="card-top">
-            <span class="badge badge-artigo">Saúde & Fisiologia</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Meditação e o sono de qualidade</h3>
@@ -2071,9 +2188,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/a-importancia-da-vitamina-d" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="a importância da vitamina d" data-excerpt="a importância da vitamina d artigo 121 do acervo original do blog do montanha. painel systeme.io: 6117248(https://systeme.io/dashboard/page/6117248/ed...">
+        <a href="/materiais/artigos/a-importancia-da-vitamina-d" class="article-card" data-category="Fitness" data-title="a importância da vitamina d" data-excerpt="a importância da vitamina d artigo 121 do acervo original do blog do montanha. painel systeme.io: 6117248(https://systeme.io/dashboard/page/6117248/ed...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">A importância da vitamina D</h3>
@@ -2083,9 +2200,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/grelina-o-hormonio-da-fome" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="grelina, o hormônio da fome" data-excerpt="grelina, o hormônio da fome artigo 122 do acervo original do blog do montanha. painel systeme.io: 6075311(https://systeme.io/dashboard/page/6075311/ed...">
+        <a href="/materiais/artigos/grelina-o-hormonio-da-fome" class="article-card" data-category="Fitness" data-title="grelina, o hormônio da fome" data-excerpt="grelina, o hormônio da fome artigo 122 do acervo original do blog do montanha. painel systeme.io: 6075311(https://systeme.io/dashboard/page/6075311/ed...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Grelina, o Hormônio da Fome</h3>
@@ -2095,9 +2212,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-sono-ruim-esta-afetando-65-dos-brasileiros" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="o sono ruim está afetando 65% dos brasileiros" data-excerpt="o sono ruim está afetando 65% dos brasileiros artigo 123 do acervo original do blog do montanha. painel systeme.io: 6040413(https://systeme.io/dashboa...">
+        <a href="/materiais/artigos/o-sono-ruim-esta-afetando-65-dos-brasileiros" class="article-card" data-category="Fitness" data-title="o sono ruim está afetando 65% dos brasileiros" data-excerpt="o sono ruim está afetando 65% dos brasileiros artigo 123 do acervo original do blog do montanha. painel systeme.io: 6040413(https://systeme.io/dashboa...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O sono ruim está afetando 65% dos brasileiros</h3>
@@ -2107,9 +2224,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/correndo-para-perder-peso" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="correndo para perder peso" data-excerpt="correndo para perder peso artigo 124 do acervo original do blog do montanha. painel systeme.io: 6017327(https://systeme.io/dashboard/page/6017327/edit...">
+        <a href="/materiais/artigos/correndo-para-perder-peso" class="article-card" data-category="Fitness" data-title="correndo para perder peso" data-excerpt="correndo para perder peso artigo 124 do acervo original do blog do montanha. painel systeme.io: 6017327(https://systeme.io/dashboard/page/6017327/edit...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Correndo para perder peso</h3>
@@ -2119,9 +2236,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/conheca-os-beneficios-do-oleo-de-abacate-para-a-saude" class="article-card" data-category="Hipertrofia & Força" data-title="conheça os benefícios do óleo de abacate para a saúde." data-excerpt="conheça os benefícios do óleo de abacate para a saúde. artigo 125 do acervo original do blog do montanha. painel systeme.io: 6005772(https://systeme.i...">
+        <a href="/materiais/artigos/conheca-os-beneficios-do-oleo-de-abacate-para-a-saude" class="article-card" data-category="Fitness" data-title="conheça os benefícios do óleo de abacate para a saúde." data-excerpt="conheça os benefícios do óleo de abacate para a saúde. artigo 125 do acervo original do blog do montanha. painel systeme.io: 6005772(https://systeme.i...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Conheça os benefícios do óleo de abacate para a saúde.</h3>
@@ -2131,9 +2248,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/voce-conhece-o-treinamento-especifico-de-hipertrofia-hst" class="article-card" data-category="Hipertrofia & Força" data-title="você conhece o treinamento específico de hipertrofia (hst)?" data-excerpt="você conhece o treinamento específico de hipertrofia (hst)? artigo 126 do acervo original do blog do montanha. painel systeme.io: 5986029(https://syst...">
+        <a href="/materiais/artigos/voce-conhece-o-treinamento-especifico-de-hipertrofia-hst" class="article-card" data-category="Fitness" data-title="você conhece o treinamento específico de hipertrofia (hst)?" data-excerpt="você conhece o treinamento específico de hipertrofia (hst)? artigo 126 do acervo original do blog do montanha. painel systeme.io: 5986029(https://syst...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Você conhece o Treinamento Específico de Hipertrofia (HST)?</h3>
@@ -2143,9 +2260,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/inflamacao-o-segredo-para-comermos-demais" class="article-card" data-category="Hipertrofia & Força" data-title="inflamação, o segredo para comermos demais?" data-excerpt="inflamação, o segredo para comermos demais? artigo 127 do acervo original do blog do montanha. painel systeme.io: 5967672(https://systeme.io/dashboard...">
+        <a href="/materiais/artigos/inflamacao-o-segredo-para-comermos-demais" class="article-card" data-category="Fitness" data-title="inflamação, o segredo para comermos demais?" data-excerpt="inflamação, o segredo para comermos demais? artigo 127 do acervo original do blog do montanha. painel systeme.io: 5967672(https://systeme.io/dashboard...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Inflamação, o segredo para comermos demais?</h3>
@@ -2155,9 +2272,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/quantas-horas-de-sono-sao-necessarias-para-uma-boa-saude" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="quantas horas de sono são necessárias para uma boa saúde?" data-excerpt="quantas horas de sono são necessárias para uma boa saúde? artigo 128 do acervo original do blog do montanha. painel systeme.io: 5919200(https://system...">
+        <a href="/materiais/artigos/quantas-horas-de-sono-sao-necessarias-para-uma-boa-saude" class="article-card" data-category="Fitness" data-title="quantas horas de sono são necessárias para uma boa saúde?" data-excerpt="quantas horas de sono são necessárias para uma boa saúde? artigo 128 do acervo original do blog do montanha. painel systeme.io: 5919200(https://system...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Quantas horas de sono são necessárias para uma boa saúde?</h3>
@@ -2167,9 +2284,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-segredo-do-meu-emagrecimento-e-o-neat" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="o segredo do meu emagrecimento é o neat!" data-excerpt="o segredo do meu emagrecimento é o neat! artigo 129 do acervo original do blog do montanha. painel systeme.io: 5886514(https://systeme.io/dashboard/pa...">
+        <a href="/materiais/artigos/o-segredo-do-meu-emagrecimento-e-o-neat" class="article-card" data-category="Fitness" data-title="o segredo do meu emagrecimento é o neat!" data-excerpt="o segredo do meu emagrecimento é o neat! artigo 129 do acervo original do blog do montanha. painel systeme.io: 5886514(https://systeme.io/dashboard/pa...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O segredo do meu emagrecimento é o NEAT!</h3>
@@ -2179,9 +2296,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/sera-que-a-fadiga-mental-influencia-a-performance" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="será que a fadiga mental influencia a performance?" data-excerpt="será que a fadiga mental influencia a performance? artigo 130 do acervo original do blog do montanha. painel systeme.io: 5803492(https://systeme.io/da...">
+        <a href="/materiais/artigos/sera-que-a-fadiga-mental-influencia-a-performance" class="article-card" data-category="Fitness" data-title="será que a fadiga mental influencia a performance?" data-excerpt="será que a fadiga mental influencia a performance? artigo 130 do acervo original do blog do montanha. painel systeme.io: 5803492(https://systeme.io/da...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Será que a fadiga mental influencia a performance?</h3>
@@ -2191,9 +2308,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-que-fazer-para-ter-um-envelhecimento-saudavel" class="article-card" data-category="Mentalidade & Disciplina" data-title="o que fazer para ter um envelhecimento saudável" data-excerpt="o que fazer para ter um envelhecimento saudável artigo 131 do acervo original do blog do montanha. painel systeme.io: 5793030(https://systeme.io/dashb...">
+        <a href="/materiais/artigos/o-que-fazer-para-ter-um-envelhecimento-saudavel" class="article-card" data-category="Fitness" data-title="o que fazer para ter um envelhecimento saudável" data-excerpt="o que fazer para ter um envelhecimento saudável artigo 131 do acervo original do blog do montanha. painel systeme.io: 5793030(https://systeme.io/dashb...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O que fazer para ter um envelhecimento saudável</h3>
@@ -2203,9 +2320,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/12-razoes-para-voce-evitar-o-acucar" class="article-card" data-category="Mentalidade & Disciplina" data-title="12 razões para você evitar o açúcar." data-excerpt="12 razões para você evitar o açúcar. artigo 132 do acervo original do blog do montanha. painel systeme.io: 5777817(https://systeme.io/dashboard/page/5...">
+        <a href="/materiais/artigos/12-razoes-para-voce-evitar-o-acucar" class="article-card" data-category="Fitness" data-title="12 razões para você evitar o açúcar." data-excerpt="12 razões para você evitar o açúcar. artigo 132 do acervo original do blog do montanha. painel systeme.io: 5777817(https://systeme.io/dashboard/page/5...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">12 Razões para você evitar o açúcar.</h3>
@@ -2215,9 +2332,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/comer-ovos-5-vezes-por-semana-torna-as-pessoas-mais-magras" class="article-card" data-category="Mentalidade & Disciplina" data-title="comer ovos 5 vezes por semana torna as pessoas mais magras" data-excerpt="comer ovos 5 vezes por semana torna as pessoas mais magras artigo 133 do acervo original do blog do montanha. painel systeme.io: 5770781(https://syste...">
+        <a href="/materiais/artigos/comer-ovos-5-vezes-por-semana-torna-as-pessoas-mais-magras" class="article-card" data-category="Fitness" data-title="comer ovos 5 vezes por semana torna as pessoas mais magras" data-excerpt="comer ovos 5 vezes por semana torna as pessoas mais magras artigo 133 do acervo original do blog do montanha. painel systeme.io: 5770781(https://syste...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Comer ovos 5 vezes por semana torna as pessoas mais magras</h3>
@@ -2227,9 +2344,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-elemento-intensidade" class="article-card" data-category="Mentalidade & Disciplina" data-title="o elemento intensidade" data-excerpt="o elemento intensidade artigo 134 do acervo original do blog do montanha. painel systeme.io: 5734200(https://systeme.io/dashboard/page/5734200/edit) -...">
+        <a href="/materiais/artigos/o-elemento-intensidade" class="article-card" data-category="Desenvolvimento Pessoal" data-title="o elemento intensidade" data-excerpt="o elemento intensidade artigo 134 do acervo original do blog do montanha. painel systeme.io: 5734200(https://systeme.io/dashboard/page/5734200/edit) -...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Desenvolvimento Pessoal</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O elemento intensidade</h3>
@@ -2239,9 +2356,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/tecnica-pomodoro-para-produtividade" class="article-card" data-category="Nutrição & Suplementação" data-title="técnica pomodoro para produtividade" data-excerpt="técnica pomodoro para produtividade artigo 135 do acervo original do blog do montanha. painel systeme.io: 5726709(https://systeme.io/dashboard/page/57...">
+        <a href="/materiais/artigos/tecnica-pomodoro-para-produtividade" class="article-card" data-category="Nutrição & Jejum" data-title="técnica pomodoro para produtividade" data-excerpt="técnica pomodoro para produtividade artigo 135 do acervo original do blog do montanha. painel systeme.io: 5726709(https://systeme.io/dashboard/page/57...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Técnica Pomodoro para produtividade</h3>
@@ -2251,9 +2368,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/alguns-beneficios-do-jejum-intermitente" class="article-card" data-category="Hipertrofia & Força" data-title="alguns benefícios do jejum intermitente" data-excerpt="alguns benefícios do jejum intermitente artigo 136 do acervo original do blog do montanha. painel systeme.io: 5716373(https://systeme.io/dashboard/pag...">
+        <a href="/materiais/artigos/alguns-beneficios-do-jejum-intermitente" class="article-card" data-category="Fitness" data-title="alguns benefícios do jejum intermitente" data-excerpt="alguns benefícios do jejum intermitente artigo 136 do acervo original do blog do montanha. painel systeme.io: 5716373(https://systeme.io/dashboard/pag...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Alguns benefícios do Jejum Intermitente</h3>
@@ -2263,9 +2380,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/recomendacoes-para-hipertrofia-muscular" class="article-card" data-category="Hipertrofia & Força" data-title="recomendações para hipertrofia muscular" data-excerpt="recomendações para hipertrofia muscular artigo 137 do acervo original do blog do montanha. painel systeme.io: 5708775(https://systeme.io/dashboard/pag...">
+        <a href="/materiais/artigos/recomendacoes-para-hipertrofia-muscular" class="article-card" data-category="Treinamento Híbrido" data-title="recomendações para hipertrofia muscular" data-excerpt="recomendações para hipertrofia muscular artigo 137 do acervo original do blog do montanha. painel systeme.io: 5708775(https://systeme.io/dashboard/pag...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Recomendações para Hipertrofia Muscular</h3>
@@ -2275,9 +2392,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/sobrecarga-de-informacoes" class="article-card" data-category="Hipertrofia & Força" data-title="sobrecarga de informações" data-excerpt="sobrecarga de informações artigo 138 do acervo original do blog do montanha. painel systeme.io: 5701485(https://systeme.io/dashboard/page/5701485/edit...">
+        <a href="/materiais/artigos/sobrecarga-de-informacoes" class="article-card" data-category="Treinamento Híbrido" data-title="sobrecarga de informações" data-excerpt="sobrecarga de informações artigo 138 do acervo original do blog do montanha. painel systeme.io: 5701485(https://systeme.io/dashboard/page/5701485/edit...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Sobrecarga de Informações</h3>
@@ -2287,9 +2404,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/vacuums-contracao-do-abdomen" class="article-card" data-category="Hipertrofia & Força" data-title="vacuums - contração do abdômen" data-excerpt="vacuums - contração do abdômen artigo 139 do acervo original do blog do montanha. painel systeme.io: 5692328(https://systeme.io/dashboard/page/5692328...">
+        <a href="/materiais/artigos/vacuums-contracao-do-abdomen" class="article-card" data-category="Fitness" data-title="vacuums - contração do abdômen" data-excerpt="vacuums - contração do abdômen artigo 139 do acervo original do blog do montanha. painel systeme.io: 5692328(https://systeme.io/dashboard/page/5692328...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Vacuums - Contração do abdômen</h3>
@@ -2299,9 +2416,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/viva-mais-reduza-a-insulina" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="viva mais. reduza a insulina!" data-excerpt="artigo 31 - viva mais. reduza a insulina! artigo 140 do acervo original do blog do montanha. painel systeme.io: 5689009(https://systeme.io/dashboard/p...">
+        <a href="/materiais/artigos/viva-mais-reduza-a-insulina" class="article-card" data-category="Fitness" data-title="viva mais. reduza a insulina!" data-excerpt="artigo 31 - viva mais. reduza a insulina! artigo 140 do acervo original do blog do montanha. painel systeme.io: 5689009(https://systeme.io/dashboard/p...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Viva mais. Reduza a insulina!</h3>
@@ -2311,9 +2428,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/homens-cuidem-dos-seus-ovos" class="article-card" data-category="Hipertrofia & Força" data-title="homens, cuidem dos seus ovos!" data-excerpt="artigo 30 - homens, cuidem dos seus ovos! artigo 141 do acervo original do blog do montanha. painel systeme.io: 5667159(https://systeme.io/dashboard/p...">
+        <a href="/materiais/artigos/homens-cuidem-dos-seus-ovos" class="article-card" data-category="Fitness" data-title="homens, cuidem dos seus ovos!" data-excerpt="artigo 30 - homens, cuidem dos seus ovos! artigo 141 do acervo original do blog do montanha. painel systeme.io: 5667159(https://systeme.io/dashboard/p...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Homens, cuidem dos seus ovos!</h3>
@@ -2323,9 +2440,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/quais-os-principais-tipos-de-whey" class="article-card" data-category="Hipertrofia & Força" data-title="quais os principais tipos de whey?" data-excerpt="quais os principais tipos de whey? artigo 142 do acervo original do blog do montanha. painel systeme.io: 5659534(https://systeme.io/dashboard/page/565...">
+        <a href="/materiais/artigos/quais-os-principais-tipos-de-whey" class="article-card" data-category="Treinamento Híbrido" data-title="quais os principais tipos de whey?" data-excerpt="quais os principais tipos de whey? artigo 142 do acervo original do blog do montanha. painel systeme.io: 5659534(https://systeme.io/dashboard/page/565...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Quais os principais tipos de Whey?</h3>
@@ -2335,9 +2452,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/resultados-garantidos-com-o-treino-emom" class="article-card" data-category="Corrida & Endurance" data-title="resultados garantidos com o treino emom!" data-excerpt="resultados garantidos com o treino emom! artigo 143 do acervo original do blog do montanha. painel systeme.io: 5656929(https://systeme.io/dashboard/pa...">
+        <a href="/materiais/artigos/resultados-garantidos-com-o-treino-emom" class="article-card" data-category="Treinamento Híbrido" data-title="resultados garantidos com o treino emom!" data-excerpt="resultados garantidos com o treino emom! artigo 143 do acervo original do blog do montanha. painel systeme.io: 5656929(https://systeme.io/dashboard/pa...">
           <div class="card-top">
-            <span class="badge badge-artigo">Corrida & Endurance</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Resultados garantidos com o treino EMOM!</h3>
@@ -2347,9 +2464,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/caminhada-te-protege-da-demencia" class="article-card" data-category="Saúde & Fisiologia" data-title="caminhada te protege da demência!" data-excerpt="caminhada te protege da demência! artigo 144 do acervo original do blog do montanha. painel systeme.io: 5653847(https://systeme.io/dashboard/page/5653...">
+        <a href="/materiais/artigos/caminhada-te-protege-da-demencia" class="article-card" data-category="Treinamento Híbrido" data-title="caminhada te protege da demência!" data-excerpt="caminhada te protege da demência! artigo 144 do acervo original do blog do montanha. painel systeme.io: 5653847(https://systeme.io/dashboard/page/5653...">
           <div class="card-top">
-            <span class="badge badge-artigo">Saúde & Fisiologia</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Caminhada te protege da demência!</h3>
@@ -2359,9 +2476,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/seus-nervos-controlam-seus-resultados" class="article-card" data-category="Mentalidade & Disciplina" data-title="seus nervos controlam seus resultados." data-excerpt="seus nervos controlam seus resultados. artigo 145 do acervo original do blog do montanha. painel systeme.io: 5648043(https://systeme.io/dashboard/page...">
+        <a href="/materiais/artigos/seus-nervos-controlam-seus-resultados" class="article-card" data-category="Fitness" data-title="seus nervos controlam seus resultados." data-excerpt="seus nervos controlam seus resultados. artigo 145 do acervo original do blog do montanha. painel systeme.io: 5648043(https://systeme.io/dashboard/page...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Seus nervos controlam seus resultados.</h3>
@@ -2371,9 +2488,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/treino-intenso-preserva-massa-muscular" class="article-card" data-category="Corrida & Endurance" data-title="treino intenso preserva massa muscular." data-excerpt="treino intenso preserva massa muscular. artigo 146 do acervo original do blog do montanha. painel systeme.io: 5643396(https://systeme.io/dashboard/pag...">
+        <a href="/materiais/artigos/treino-intenso-preserva-massa-muscular" class="article-card" data-category="Treinamento Híbrido" data-title="treino intenso preserva massa muscular." data-excerpt="treino intenso preserva massa muscular. artigo 146 do acervo original do blog do montanha. painel systeme.io: 5643396(https://systeme.io/dashboard/pag...">
           <div class="card-top">
-            <span class="badge badge-artigo">Corrida & Endurance</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Treino intenso preserva massa muscular.</h3>
@@ -2383,9 +2500,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/homens-cuidem-do-seu-dhea" class="article-card" data-category="Saúde & Fisiologia" data-title="homens, cuidem do seu dhea!" data-excerpt="artigo 24 - homens, cuidem do seu dhea! artigo 147 do acervo original do blog do montanha. painel systeme.io: 5643270(https://systeme.io/dashboard/pag...">
+        <a href="/materiais/artigos/homens-cuidem-do-seu-dhea" class="article-card" data-category="Desenvolvimento Pessoal" data-title="homens, cuidem do seu dhea!" data-excerpt="artigo 24 - homens, cuidem do seu dhea! artigo 147 do acervo original do blog do montanha. painel systeme.io: 5643270(https://systeme.io/dashboard/pag...">
           <div class="card-top">
-            <span class="badge badge-artigo">Saúde & Fisiologia</span>
+            <span class="badge badge-artigo">Desenvolvimento Pessoal</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Homens, cuidem do seu DHEA!</h3>
@@ -2395,9 +2512,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/existem-alteracoes-no-cerebro-do-pai" class="article-card" data-category="Saúde & Fisiologia" data-title="existem alterações no cérebro do pai?" data-excerpt="artigo 23 - existem alterações no cérebro do pai? artigo 148 do acervo original do blog do montanha. painel systeme.io: 5635820(https://systeme.io/das...">
+        <a href="/materiais/artigos/existem-alteracoes-no-cerebro-do-pai" class="article-card" data-category="Desenvolvimento Pessoal" data-title="existem alterações no cérebro do pai?" data-excerpt="artigo 23 - existem alterações no cérebro do pai? artigo 148 do acervo original do blog do montanha. painel systeme.io: 5635820(https://systeme.io/das...">
           <div class="card-top">
-            <span class="badge badge-artigo">Saúde & Fisiologia</span>
+            <span class="badge badge-artigo">Desenvolvimento Pessoal</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Existem alterações no cérebro do pai?</h3>
@@ -2407,9 +2524,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/voce-da-duro-de-verdade-sera-mesmo" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="você dá duro de verdade? será mesmo?" data-excerpt="você dá duro de verdade? será mesmo? artigo 149 do acervo original do blog do montanha. painel systeme.io: 5635757(https://systeme.io/dashboard/page/5...">
+        <a href="/materiais/artigos/voce-da-duro-de-verdade-sera-mesmo" class="article-card" data-category="Fitness" data-title="você dá duro de verdade? será mesmo?" data-excerpt="você dá duro de verdade? será mesmo? artigo 149 do acervo original do blog do montanha. painel systeme.io: 5635757(https://systeme.io/dashboard/page/5...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Você dá duro de verdade? Será mesmo?</h3>
@@ -2419,9 +2536,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/emagrecer-e-facil-e-eu-posso-te-provar" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="emagrecer é fácil! e eu posso te provar..." data-excerpt="artigo 21 - emagrecer é fácil! e eu posso te provar... artigo 150 do acervo original do blog do montanha. painel systeme.io: 5626580(https://systeme.i...">
+        <a href="/materiais/artigos/emagrecer-e-facil-e-eu-posso-te-provar" class="article-card" data-category="Fitness" data-title="emagrecer é fácil! e eu posso te provar..." data-excerpt="artigo 21 - emagrecer é fácil! e eu posso te provar... artigo 150 do acervo original do blog do montanha. painel systeme.io: 5626580(https://systeme.i...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Emagrecer é fácil! E eu posso te provar...</h3>
@@ -2431,9 +2548,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/durma-mais-e-tenha-mais-testosterona" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="durma mais e tenha mais testosterona!" data-excerpt="durma mais e tenha mais testosterona! artigo 151 do acervo original do blog do montanha. painel systeme.io: 5619522(https://systeme.io/dashboard/page/...">
+        <a href="/materiais/artigos/durma-mais-e-tenha-mais-testosterona" class="article-card" data-category="Fitness" data-title="durma mais e tenha mais testosterona!" data-excerpt="durma mais e tenha mais testosterona! artigo 151 do acervo original do blog do montanha. painel systeme.io: 5619522(https://systeme.io/dashboard/page/...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Durma mais e tenha mais testosterona!</h3>
@@ -2443,9 +2560,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-principio-8020-no-treinamento" class="article-card" data-category="Hipertrofia & Força" data-title="o princípio 80/20 no treinamento" data-excerpt="o princípio 80/20 no treinamento artigo 152 do acervo original do blog do montanha. painel systeme.io: 5614995(https://systeme.io/dashboard/page/56149...">
+        <a href="/materiais/artigos/o-principio-8020-no-treinamento" class="article-card" data-category="Fitness" data-title="o princípio 80/20 no treinamento" data-excerpt="o princípio 80/20 no treinamento artigo 152 do acervo original do blog do montanha. painel systeme.io: 5614995(https://systeme.io/dashboard/page/56149...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O Princípio 80/20 no treinamento</h3>
@@ -2455,9 +2572,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/cuidado-com-a-sobrecarga-de-insulina" class="article-card" data-category="Hipertrofia & Força" data-title="cuidado com a sobrecarga de insulina" data-excerpt="cuidado com a sobrecarga de insulina artigo 153 do acervo original do blog do montanha. painel systeme.io: 5600531(https://systeme.io/dashboard/page/5...">
+        <a href="/materiais/artigos/cuidado-com-a-sobrecarga-de-insulina" class="article-card" data-category="Fitness" data-title="cuidado com a sobrecarga de insulina" data-excerpt="cuidado com a sobrecarga de insulina artigo 153 do acervo original do blog do montanha. painel systeme.io: 5600531(https://systeme.io/dashboard/page/5...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Cuidado com a sobrecarga de insulina</h3>
@@ -2467,9 +2584,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/vale-a-pena-alongar" class="article-card" data-category="Hipertrofia & Força" data-title="vale a pena alongar?" data-excerpt="vale a pena alongar? artigo 154 do acervo original do blog do montanha. painel systeme.io: 5600453(https://systeme.io/dashboard/page/5600453/edit) ---...">
+        <a href="/materiais/artigos/vale-a-pena-alongar" class="article-card" data-category="Fitness" data-title="vale a pena alongar?" data-excerpt="vale a pena alongar? artigo 154 do acervo original do blog do montanha. painel systeme.io: 5600453(https://systeme.io/dashboard/page/5600453/edit) ---...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Vale a pena alongar?</h3>
@@ -2491,9 +2608,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/umas-poucas-palavras-sobre-a-vitamina-c" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="umas poucas palavras sobre a vitamina c" data-excerpt="artigo 15 - umas poucas palavras sobre a vitamina c artigo 156 do acervo original do blog do montanha. painel systeme.io: 5572425(https://systeme.io/d...">
+        <a href="/materiais/artigos/umas-poucas-palavras-sobre-a-vitamina-c" class="article-card" data-category="Fitness" data-title="umas poucas palavras sobre a vitamina c" data-excerpt="artigo 15 - umas poucas palavras sobre a vitamina c artigo 156 do acervo original do blog do montanha. painel systeme.io: 5572425(https://systeme.io/d...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Umas poucas palavras sobre a vitamina C</h3>
@@ -2503,9 +2620,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/sera-que-voce-produz-acido-o-suficiente" class="article-card" data-category="Nutrição & Suplementação" data-title="será que você produz ácido o suficiente" data-excerpt="artigo 14 - será que você produz ácido o suficiente artigo 157 do acervo original do blog do montanha. painel systeme.io: 5567603(https://systeme.io/d...">
+        <a href="/materiais/artigos/sera-que-voce-produz-acido-o-suficiente" class="article-card" data-category="Nutrição & Jejum" data-title="será que você produz ácido o suficiente" data-excerpt="artigo 14 - será que você produz ácido o suficiente artigo 157 do acervo original do blog do montanha. painel systeme.io: 5567603(https://systeme.io/d...">
           <div class="card-top">
-            <span class="badge badge-artigo">Nutrição & Suplementação</span>
+            <span class="badge badge-artigo">Nutrição & Jejum</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Será que você produz ácido o suficiente</h3>
@@ -2515,9 +2632,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/nem-tudo-se-resume-a-intensidade" class="article-card" data-category="Mentalidade & Disciplina" data-title="nem tudo se resume a intensidade" data-excerpt="artigo 13 - nem tudo se resume a intensidade artigo 158 do acervo original do blog do montanha. painel systeme.io: 5555699(https://systeme.io/dashboar...">
+        <a href="/materiais/artigos/nem-tudo-se-resume-a-intensidade" class="article-card" data-category="Fitness" data-title="nem tudo se resume a intensidade" data-excerpt="artigo 13 - nem tudo se resume a intensidade artigo 158 do acervo original do blog do montanha. painel systeme.io: 5555699(https://systeme.io/dashboar...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Nem tudo se resume a Intensidade</h3>
@@ -2527,9 +2644,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/voce-prefere-ser-ativo-ou-passivo" class="article-card" data-category="Mentalidade & Disciplina" data-title="você prefere ser ativo ou passivo" data-excerpt="artigo 12 - você prefere ser ativo ou passivo artigo 159 do acervo original do blog do montanha. painel systeme.io: 5544840(https://systeme.io/dashboa...">
+        <a href="/materiais/artigos/voce-prefere-ser-ativo-ou-passivo" class="article-card" data-category="Desenvolvimento Pessoal" data-title="você prefere ser ativo ou passivo" data-excerpt="artigo 12 - você prefere ser ativo ou passivo artigo 159 do acervo original do blog do montanha. painel systeme.io: 5544840(https://systeme.io/dashboa...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Desenvolvimento Pessoal</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Você prefere ser ativo ou passivo</h3>
@@ -2539,9 +2656,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/balanca-a-maquina-maligna-da-industria-fitness" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="balança a máquina maligna da indústria fitness" data-excerpt="artigo 11 - balança a máquina maligna da indústria fitness artigo 160 do acervo original do blog do montanha. painel systeme.io: 5534358(https://syste...">
+        <a href="/materiais/artigos/balanca-a-maquina-maligna-da-industria-fitness" class="article-card" data-category="Fitness" data-title="balança a máquina maligna da indústria fitness" data-excerpt="artigo 11 - balança a máquina maligna da indústria fitness artigo 160 do acervo original do blog do montanha. painel systeme.io: 5534358(https://syste...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Balança A Máquina Maligna da Indústria Fitness</h3>
@@ -2551,9 +2668,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/menos-e-igual-a-mais" class="article-card" data-category="Mentalidade & Disciplina" data-title="menos é igual a mais" data-excerpt="artigo 10 - menos é igual a mais artigo 161 do acervo original do blog do montanha. painel systeme.io: 5534058(https://systeme.io/dashboard/page/55340...">
+        <a href="/materiais/artigos/menos-e-igual-a-mais" class="article-card" data-category="Fitness" data-title="menos é igual a mais" data-excerpt="artigo 10 - menos é igual a mais artigo 161 do acervo original do blog do montanha. painel systeme.io: 5534058(https://systeme.io/dashboard/page/55340...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Menos é igual a mais</h3>
@@ -2563,9 +2680,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/kettlebell-pentathlon-do-esporte-para-o-fitness" class="article-card" data-category="Hipertrofia & Força" data-title="kettlebell pentathlon – do esporte para o fitness" data-excerpt="artigo 9 - kettlebell pentathlon – do esporte para o fitness artigo 162 do acervo original do blog do montanha. painel systeme.io: 5510995(https://sys...">
+        <a href="/materiais/artigos/kettlebell-pentathlon-do-esporte-para-o-fitness" class="article-card" data-category="Fitness" data-title="kettlebell pentathlon – do esporte para o fitness" data-excerpt="artigo 9 - kettlebell pentathlon – do esporte para o fitness artigo 162 do acervo original do blog do montanha. painel systeme.io: 5510995(https://sys...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Kettlebell Pentathlon – Do Esporte para o Fitness</h3>
@@ -2575,9 +2692,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/sangue-suor-lagrimas-e-dor" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="sangue, suor, lágrimas e dor." data-excerpt="artigo 8 - sangue, suor, lágrimas e dor. artigo 163 do acervo original do blog do montanha. painel systeme.io: 5495584(https://systeme.io/dashboard/pa...">
+        <a href="/materiais/artigos/sangue-suor-lagrimas-e-dor" class="article-card" data-category="Fitness" data-title="sangue, suor, lágrimas e dor." data-excerpt="artigo 8 - sangue, suor, lágrimas e dor. artigo 163 do acervo original do blog do montanha. painel systeme.io: 5495584(https://systeme.io/dashboard/pa...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Sangue, suor, lágrimas e dor.</h3>
@@ -2587,9 +2704,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/joao-pessoa-uma-cidade-acima-do-peso" class="article-card" data-category="Mentalidade & Disciplina" data-title="joão pessoa, uma cidade acima do peso." data-excerpt="artigo 7 - joão pessoa, uma cidade acima do peso. artigo 164 do acervo original do blog do montanha. painel systeme.io: 5494501(https://systeme.io/das...">
+        <a href="/materiais/artigos/joao-pessoa-uma-cidade-acima-do-peso" class="article-card" data-category="Fitness" data-title="joão pessoa, uma cidade acima do peso." data-excerpt="artigo 7 - joão pessoa, uma cidade acima do peso. artigo 164 do acervo original do blog do montanha. painel systeme.io: 5494501(https://systeme.io/das...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">João Pessoa, uma cidade acima do peso.</h3>
@@ -2611,9 +2728,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/o-sistema-nervoso-e-a-perda-de-peso" class="article-card" data-category="Emagrecimento & Metabolismo" data-title="o sistema nervoso e a perda de peso" data-excerpt="artigo 5 - o sistema nervoso e a perda de peso artigo 166 do acervo original do blog do montanha. painel systeme.io: 5430786(https://systeme.io/dashbo...">
+        <a href="/materiais/artigos/o-sistema-nervoso-e-a-perda-de-peso" class="article-card" data-category="Fitness" data-title="o sistema nervoso e a perda de peso" data-excerpt="artigo 5 - o sistema nervoso e a perda de peso artigo 166 do acervo original do blog do montanha. painel systeme.io: 5430786(https://systeme.io/dashbo...">
           <div class="card-top">
-            <span class="badge badge-artigo">Emagrecimento & Metabolismo</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">O sistema nervoso e a perda de peso</h3>
@@ -2623,9 +2740,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/quer-emagrecer-muito-rapido-invista-no-epoc" class="article-card" data-category="Hipertrofia & Força" data-title="quer emagrecer muito rápido? invista no epoc!" data-excerpt="artigo 4 - quer emagrecer muito rápido? invista no epoc! artigo 167 do acervo original do blog do montanha. painel systeme.io: 5430274(https://systeme...">
+        <a href="/materiais/artigos/quer-emagrecer-muito-rapido-invista-no-epoc" class="article-card" data-category="Fitness" data-title="quer emagrecer muito rápido? invista no epoc!" data-excerpt="artigo 4 - quer emagrecer muito rápido? invista no epoc! artigo 167 do acervo original do blog do montanha. painel systeme.io: 5430274(https://systeme...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Quer emagrecer muito rápido? Invista no EPOC!</h3>
@@ -2635,9 +2752,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/4-dicas-para-estimular-a-hipertrofia-muscular" class="article-card" data-category="Hipertrofia & Força" data-title="4 dicas para estimular a hipertrofia muscular" data-excerpt="artigo 3 - 4 dicas para estimular a hipertrofia muscular artigo 168 do acervo original do blog do montanha. painel systeme.io: 5430150(https://systeme...">
+        <a href="/materiais/artigos/4-dicas-para-estimular-a-hipertrofia-muscular" class="article-card" data-category="Fitness" data-title="4 dicas para estimular a hipertrofia muscular" data-excerpt="artigo 3 - 4 dicas para estimular a hipertrofia muscular artigo 168 do acervo original do blog do montanha. painel systeme.io: 5430150(https://systeme...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">4 Dicas para estimular a Hipertrofia Muscular</h3>
@@ -2647,9 +2764,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/l-carnitina-ajuda-a-perder-gordura" class="article-card" data-category="Hipertrofia & Força" data-title="l-carnitina ajuda a perder gordura?" data-excerpt="artigo 2 - l-carnitina ajuda a perder gordura? artigo 169 do acervo original do blog do montanha. painel systeme.io: 5429927(https://systeme.io/dashbo...">
+        <a href="/materiais/artigos/l-carnitina-ajuda-a-perder-gordura" class="article-card" data-category="Fitness" data-title="l-carnitina ajuda a perder gordura?" data-excerpt="artigo 2 - l-carnitina ajuda a perder gordura? artigo 169 do acervo original do blog do montanha. painel systeme.io: 5429927(https://systeme.io/dashbo...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">L-Carnitina ajuda a perder gordura?</h3>
@@ -2659,9 +2776,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/quantas-calorias-os-musculos-gastam" class="article-card" data-category="Hipertrofia & Força" data-title="quantas calorias os músculos gastam?" data-excerpt="artigo 1 - quantas calorias os músculos gastam? artigo 170 do acervo original do blog do montanha. painel systeme.io: 5369673(https://systeme.io/dashb...">
+        <a href="/materiais/artigos/quantas-calorias-os-musculos-gastam" class="article-card" data-category="Fitness" data-title="quantas calorias os músculos gastam?" data-excerpt="artigo 1 - quantas calorias os músculos gastam? artigo 170 do acervo original do blog do montanha. painel systeme.io: 5369673(https://systeme.io/dashb...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">2 min de leitura</span>
           </div>
           <h3 class="card-title">Quantas calorias os músculos gastam?</h3>
@@ -2683,9 +2800,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/diretrizes-da-esteira-editorial-montanha-magazine" class="article-card" data-category="Hipertrofia & Força" data-title="diretrizes da esteira editorial — montanha magazine" data-excerpt="diretrizes da esteira editorial — montanha magazine este repositório armazena todos os artigos e publicações da montanha magazine. todas as produções ...">
+        <a href="/materiais/artigos/diretrizes-da-esteira-editorial-montanha-magazine" class="article-card" data-category="Treinamento Híbrido" data-title="diretrizes da esteira editorial — montanha magazine" data-excerpt="diretrizes da esteira editorial — montanha magazine este repositório armazena todos os artigos e publicações da montanha magazine. todas as produções ...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Treinamento Híbrido</span>
             <span class="meta-tag">4 min de leitura</span>
           </div>
           <h3 class="card-title">Diretrizes da Esteira Editorial — Montanha Magazine</h3>
@@ -2731,9 +2848,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/esteira-editorial-30-dias-montanha-magazine" class="article-card" data-category="Mentalidade & Disciplina" data-title="esteira editorial 30 dias // montanha magazine" data-excerpt="esteira editorial 30 dias // montanha magazine metodologia: /esteira-30-dias-conteudo autor: coach montanha fontes: vault técnico outlook via withone ...">
+        <a href="/materiais/artigos/esteira-editorial-30-dias-montanha-magazine" class="article-card" data-category="Desenvolvimento Pessoal" data-title="esteira editorial 30 dias // montanha magazine" data-excerpt="esteira editorial 30 dias // montanha magazine metodologia: /esteira-30-dias-conteudo autor: coach montanha fontes: vault técnico outlook via withone ...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Desenvolvimento Pessoal</span>
             <span class="meta-tag">12 min de leitura</span>
           </div>
           <h3 class="card-title">Esteira Editorial 30 Dias // Montanha Magazine</h3>
@@ -2743,9 +2860,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/grade-operacional-30-dias-montanha-magazine-16-publicacoes" class="article-card" data-category="Hipertrofia & Força" data-title="grade operacional 30 dias // montanha magazine (16 publicações)" data-excerpt="grade operacional 30 dias // montanha magazine (16 publicações) modo: /eco | autor: coach montanha | status: pronto para publicação e agendamento catá...">
+        <a href="/materiais/artigos/grade-operacional-30-dias-montanha-magazine-16-publicacoes" class="article-card" data-category="Fitness" data-title="grade operacional 30 dias // montanha magazine (16 publicações)" data-excerpt="grade operacional 30 dias // montanha magazine (16 publicações) modo: /eco | autor: coach montanha | status: pronto para publicação e agendamento catá...">
           <div class="card-top">
-            <span class="badge badge-artigo">Hipertrofia & Força</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">11 min de leitura</span>
           </div>
           <h3 class="card-title">Grade Operacional 30 Dias // Montanha Magazine (16 Publicações)</h3>
@@ -2803,9 +2920,9 @@
           </div>
         </a>
         
-        <a href="/materiais/artigos/prompts-oficiais-gemini-30-dias-de-conteudo" class="article-card" data-category="Mentalidade & Disciplina" data-title="prompts oficiais gemini // 30 dias de conteúdo" data-excerpt="prompts oficiais gemini // 30 dias de conteúdo montanha magazine // modo @eco // otimizado para gemini (image & video engine) padrão estético: brutali...">
+        <a href="/materiais/artigos/prompts-oficiais-gemini-30-dias-de-conteudo" class="article-card" data-category="Fitness" data-title="prompts oficiais gemini // 30 dias de conteúdo" data-excerpt="prompts oficiais gemini // 30 dias de conteúdo montanha magazine // modo @eco // otimizado para gemini (image & video engine) padrão estético: brutali...">
           <div class="card-top">
-            <span class="badge badge-artigo">Mentalidade & Disciplina</span>
+            <span class="badge badge-artigo">Fitness</span>
             <span class="meta-tag">16 min de leitura</span>
           </div>
           <h3 class="card-title">Prompts Oficiais Gemini // 30 Dias de Conteúdo</h3>
@@ -2824,9 +2941,9 @@
     <div class="modal-box">
       <button class="modal-close" onclick="closeLeadModal()">✕</button>
       <div style="font-size:28px; margin-bottom:12px;">📥</div>
-      <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:8px;">Baixar PDF Oficial</h3>
+      <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:8px; font-family:var(--font-title);">Baixar Material Oficial</h3>
       <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:20px;">
-        Informe seu nome e WhatsApp para receber o material e atualizações dos protocolos do Coach Montanha.
+        Informe seu nome e WhatsApp para receber o download e atualizações do Coach Montanha.
       </p>
       <form id="leadForm" onsubmit="submitLead(event)">
         <input type="text" id="leadName" class="modal-input" placeholder="Seu Nome Completo" required>
@@ -2841,10 +2958,64 @@
     </div>
   </div>
 
-  <footer class="hub-footer">
+  <!-- Rodapé Oficial de 4 Colunas do Blog Original -->
+  <footer class="blog-footer">
     <div class="container">
-      <p>© 2026 Ecossistema Montanha • Studio Personal & Consultoria de Alta Performance.</p>
-      <p style="margin-top:6px; font-size:12px;">Construído com zero desperdício de tokens. Hospedado no Edge CDN.</p>
+      <div class="footer-grid">
+        <!-- Coluna 1 -->
+        <div class="footer-col">
+          <h4>LINKS RÁPIDOS</h4>
+          <ul>
+            <li><a href="/materiais">Início</a></li>
+            <li><a href="#artigosSection">Meus Artigos</a></li>
+            <li><a href="#ebooksSection">Livros/Ebooks</a></li>
+            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20quero%20conhecer%20os%20Cursos%20Online" target="_blank">Cursos Online</a></li>
+            <li><a href="https://coachmontanha1.systeme.io/amazon" target="_blank">Links Amazon</a></li>
+            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank">Contato</a></li>
+            <li><a href="/portal">Portal do Aluno</a></li>
+          </ul>
+        </div>
+
+        <!-- Coluna 2 -->
+        <div class="footer-col">
+          <h4>CATEGORIAS</h4>
+          <ul>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Fitness')">Fitness</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Desenvolvimento Pessoal')">Desenvolvimento Pessoal</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Mindset')">Mindset</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Treinamento Híbrido')">Treinamento Híbrido</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Corrida & Endurance')">Corrida & Endurance</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Mobilidade Articular')">Mobilidade Articular</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Nutrição & Jejum')">Nutrição & Jejum</a></li>
+          </ul>
+        </div>
+
+        <!-- Coluna 3 -->
+        <div class="footer-col">
+          <h4>REDES SOCIAIS</h4>
+          <ul>
+            <li><a href="https://www.instagram.com/coachmontanha1/" target="_blank">📸 Instagram (@coachmontanha1)</a></li>
+            <li><a href="https://www.youtube.com/channel/UCy29z1eRp_GPFAVFHJfmg_A" target="_blank">📺 YouTube (Coach Montanha)</a></li>
+            <li><a href="https://twitter.com/coachmontanha1" target="_blank">🐦 Twitter / X</a></li>
+            <li><a href="https://www.facebook.com/albertosarly.coutinho" target="_blank">📘 Facebook</a></li>
+          </ul>
+        </div>
+
+        <!-- Coluna 4 -->
+        <div class="footer-col footer-newsletter">
+          <h4>NEWSLETTER</h4>
+          <p>Quer receber nossos artigos sempre que forem postados? Coloque o seu e-mail aqui!</p>
+          <form onsubmit="event.preventDefault(); alert('E-mail cadastrado com sucesso!'); this.reset();">
+            <input type="email" class="footer-input" placeholder="Seu melhor e-mail" required>
+            <button type="submit" class="btn btn-primary" style="width:100%;">ASSINAR</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Ecossistema Montanha • Coach Montanha. Todos os direitos reservados.</div>
+        <div>Hospedado no Vercel Edge CDN com máxima velocidade e zero atrito.</div>
+      </div>
     </div>
   </footer>
 
@@ -2876,7 +3047,6 @@
       const name = document.getElementById('leadName').value;
       const phone = document.getElementById('leadPhone').value;
       
-      // Envio não bloqueante para webhook
       fetch('/api/forms/google-webhook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2895,7 +3065,6 @@
       }
     }
 
-    // Filtros e Busca Instantânea
     const searchInput = document.getElementById('searchInput');
     const catPills = document.querySelectorAll('.cat-pill');
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -2903,8 +3072,17 @@
     const ebooksSec = document.getElementById('ebooksSection');
     const articlesSec = document.getElementById('articlesSection');
 
-    let activeCategory = 'Todos';
+    let activeCategory = 'Todas';
     let activeTab = 'todos';
+
+    function selectCategory(catName) {
+      catPills.forEach(p => {
+        if (p.getAttribute('data-category') === catName) {
+          p.click();
+        }
+      });
+      articlesSec.scrollIntoView({ behavior: 'smooth' });
+    }
 
     function filterContent() {
       const query = searchInput.value.toLowerCase().trim();
@@ -2915,7 +3093,7 @@
         const cat = card.getAttribute('data-category');
 
         const matchesQuery = !query || title.includes(query) || excerpt.includes(query);
-        const matchesCat = (activeCategory === 'Todos') || (cat === activeCategory);
+        const matchesCat = (activeCategory === 'Todas') || (cat === activeCategory);
 
         if (matchesQuery && matchesCat) {
           card.style.display = 'flex';
@@ -2924,9 +3102,8 @@
         }
       });
 
-      // Tabs visibility
       if (activeTab === 'todos') {
-        ebooksSec.style.display = (!query && activeCategory === 'Todos') ? 'block' : 'none';
+        ebooksSec.style.display = (!query && activeCategory === 'Todas') ? 'block' : 'none';
         articlesSec.style.display = 'block';
       } else if (activeTab === 'ebooks') {
         ebooksSec.style.display = 'block';

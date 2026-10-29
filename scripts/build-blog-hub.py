@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 build-blog-hub.py — Compilador do Hub de Materiais Públicos & 182 Artigos do Coach Montanha
-Gera o portal unificado /materiais e as páginas estáticas com OpenGraph no Vercel Edge.
+Engenharia reversa e espelhamento fiel do blog original do Systeme.io (coachmontanha1.systeme.io).
 """
 
 import os
@@ -35,25 +35,29 @@ def slugify(text):
     return text
 
 def clean_title(raw_title):
-    # Remove "ARTIGO 170 - ", "001_ARTIGO_170_-_", etc.
     title = re.sub(r'^(ARTIGO\s+\d+\s*[-–—]\s*|\d{3}_ARTIGO_\d+_[-–—]\s*)', '', raw_title, flags=re.IGNORECASE)
     return title.strip()
 
 def infer_category(title, content):
     tc = (title + " " + content[:1000]).lower()
+    # Categorias originais do Systeme.io + Especialidades do Studio
+    if any(k in tc for k in ["híbrido", "hibrido", "hyrox", "densidade", "emom"]):
+        return "Treinamento Híbrido"
     if any(k in tc for k in ["corrida", "maratona", "5k", "15k", "maf", "endurance", "cadência", "pace", "trote"]):
         return "Corrida & Endurance"
+    if any(k in tc for k in ["mobilidade", "fáscia", "alongamento", "articulação", "joelho", "lombar", "foam roller", "cócoras"]):
+        return "Mobilidade Articular"
     if any(k in tc for k in ["hipertrofia", "musculação", "músculo", "barra fixa", "supino", "agachamento", "força", "hst", "carga"]):
-        return "Hipertrofia & Força"
-    if any(k in tc for k in ["emagrecer", "emagrecimento", "gordura", "déficit", "calorias", "metabolismo", "ozempic", "fome"]):
-        return "Emagrecimento & Metabolismo"
-    if any(k in tc for k in ["híbrido", "hibrido", "hyrox", "mobilidade", "fáscia", "alongamento", "articulação", "joelho", "lombar", "foam roller", "remo"]):
-        return "Mobilidade & Híbrido"
+        return "Fitness"
+    if any(k in tc for k in ["emagrecer", "emagrecimento", "gordura", "déficit", "calorias", "metabolismo", "ozempic", "fome", "neat", "epoc"]):
+        return "Fitness"
     if any(k in tc for k in ["nutrição", "dieta", "proteína", "psyllium", "jejum", "carboidrato", "laticínios", "suplemento", "creatina"]):
-        return "Nutrição & Suplementação"
-    if any(k in tc for k in ["hormônio", "testosterona", "sono", "ansiedade", "saúde", "coluna", "fisiologia", "imunidade"]):
-        return "Saúde & Fisiologia"
-    return "Mentalidade & Disciplina"
+        return "Nutrição & Jejum"
+    if any(k in tc for k in ["autodisciplina", "disciplina", "hábito", "foco", "rotina", "tempo", "pomodoro", "produtividade"]):
+        return "Desenvolvimento Pessoal"
+    if any(k in tc for k in ["mente", "mindset", "ansiedade", "medo", "bloqueio", "mentalidade", "autocontrole"]):
+        return "Mindset"
+    return "Fitness"
 
 def parse_frontmatter_and_body(filepath):
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
@@ -76,48 +80,46 @@ def parse_frontmatter_and_body(filepath):
                         key, val = line.split(':', 1)
                         meta[key.strip()] = val.strip().strip('"').strip("'")
 
-    # If title not in meta, try to find first H1
-    if 'title' not in meta:
+    if 'title' not in meta or not meta['title']:
         m = re.search(r'^#\s+(.+)$', body, flags=re.MULTILINE)
         if m:
             meta['title'] = m.group(1).strip()
         else:
             meta['title'] = os.path.splitext(os.path.basename(filepath))[0]
 
-    # Clean title
-    meta['clean_title'] = clean_title(meta['title'])
+    meta['clean_title'] = clean_title(str(meta['title']))
     
-    # Generate clean slug
-    raw_slug = meta['clean_title']
-    slug = slugify(raw_slug)
+    slug = slugify(meta['clean_title'])
     if not slug:
         slug = slugify(os.path.splitext(os.path.basename(filepath))[0])
     meta['slug'] = slug
 
-    # Category
     if 'category' not in meta or not meta['category']:
         meta['category'] = infer_category(meta['clean_title'], body)
 
-    # Word count and read time
     words = len(re.findall(r'\w+', body))
     meta['read_time'] = max(2, math.ceil(words / 140))
     meta['word_count'] = words
 
-    # Excerpt (clean markdown for description)
     plain = re.sub(r'[#*`_\[\]>]', '', body)
     plain = re.sub(r'\s+', ' ', plain).strip()
-    # Strip any leading quotes or boilerplate
     plain = re.sub(r'^(Artigo #\d+.*?Systeme\.io:\s*|\s*)+', '', plain)
     meta['excerpt'] = plain[:150] + ("..." if len(plain) > 150 else "")
 
     return meta, body
 
-# Base CSS & JS for all pages (Modern dark theme, zero CLS, mobile-first)
+# Common Head com Google Fonts Fira Sans & Montserrat do Systeme.io
 COMMON_HEAD = """
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#09090b">
-  <link rel="icon" type="image/png" href="/logo_dark.png">
+  <link rel="icon" type="image/png" href="/materiais/logo_montanha.png">
+  
+  <!-- Fontes Oficiais do Blog: Fira Sans (Títulos) & Montserrat (Corpo) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400;1,700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+  
   <style>
     :root {
       --bg: #09090b;
@@ -130,26 +132,32 @@ COMMON_HEAD = """
       --primary: #f59e0b;
       --primary-hover: #d97706;
       --primary-soft: rgba(245, 158, 11, 0.12);
-      --accent-red: #ef4444;
-      --accent-green: #10b981;
+      --font-title: 'Fira Sans', sans-serif;
+      --font-body: 'Montserrat', sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background-color: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
+      font-family: var(--font-body);
+      line-height: 1.7;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-title);
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
     a { color: inherit; text-decoration: none; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
     
-    /* Top Bar */
+    /* Topbar Original do Blog */
     .topbar {
       border-bottom: 1px solid var(--card-border);
-      background: rgba(9, 9, 11, 0.9);
-      backdrop-filter: blur(12px);
+      background: rgba(9, 9, 11, 0.95);
+      backdrop-filter: blur(14px);
       position: sticky;
       top: 0;
       z-index: 50;
@@ -158,26 +166,60 @@ COMMON_HEAD = """
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
+      height: 72px;
     }
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
+      font-family: var(--font-title);
       font-weight: 800;
-      font-size: 16px;
+      font-size: 18px;
       letter-spacing: -0.02em;
     }
     .brand img {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
     }
+    
+    /* Menu Central do Blog Original */
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-menu a {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .nav-menu a:hover {
+      color: var(--primary);
+    }
+    @media (max-width: 900px) {
+      .nav-menu { display: none; }
+    }
+
     .topbar-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
+    .social-icons-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-right: 6px;
+    }
+    .social-icons-top a {
+      color: var(--text-muted);
+      font-size: 15px;
+      transition: color 0.2s;
+    }
+    .social-icons-top a:hover { color: var(--primary); }
+    
     .btn {
       display: inline-flex;
       align-items: center;
@@ -190,10 +232,12 @@ COMMON_HEAD = """
       cursor: pointer;
       transition: all 0.2s ease;
       border: 1px solid transparent;
+      font-family: var(--font-title);
     }
     .btn-primary {
       background: var(--primary);
       color: #000;
+      font-weight: 700;
     }
     .btn-primary:hover {
       background: var(--primary-hover);
@@ -210,12 +254,13 @@ COMMON_HEAD = """
       background: rgba(16, 185, 129, 0.15);
       border-color: rgba(16, 185, 129, 0.3);
       color: #34d399;
+      font-weight: 700;
     }
     
-    /* Alert / Student Banner */
+    /* Banners */
     .banner-vip {
-      background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
-      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.06));
+      border-bottom: 1px solid rgba(16, 185, 129, 0.3);
       padding: 10px 0;
       font-size: 13px;
       text-align: center;
@@ -223,19 +268,83 @@ COMMON_HEAD = """
       display: none;
     }
     .banner-visitor {
-      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.02));
-      border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.02));
+      border-bottom: 1px solid rgba(245, 158, 11, 0.25);
       padding: 10px 0;
       font-size: 13px;
       text-align: center;
       color: #fcd34d;
     }
 
-    /* Modal */
+    /* Rodapé Oficial de 4 Colunas */
+    .blog-footer {
+      border-top: 1px solid var(--card-border);
+      background: #0d0d10;
+      padding: 60px 0 30px 0;
+      margin-top: 80px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 36px;
+      margin-bottom: 40px;
+    }
+    .footer-col h4 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      margin-bottom: 18px;
+    }
+    .footer-col ul {
+      list-style: none;
+    }
+    .footer-col li {
+      margin-bottom: 10px;
+    }
+    .footer-col a {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .footer-col a:hover {
+      color: #fff;
+    }
+    .footer-newsletter p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .footer-input {
+      width: 100%;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    .footer-input:focus { border-color: var(--primary); }
+    .footer-bottom {
+      border-top: 1px solid var(--card-border);
+      padding-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 12.5px;
+      color: var(--text-dim);
+    }
+
+    /* Modal de Lead */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(8px);
       z-index: 100;
       display: none;
@@ -274,9 +383,7 @@ COMMON_HEAD = """
       margin-bottom: 12px;
       outline: none;
     }
-    .modal-input:focus {
-      border-color: var(--primary);
-    }
+    .modal-input:focus { border-color: var(--primary); }
   </style>
 """
 
@@ -312,14 +419,14 @@ STUDENT_DETECTION_SCRIPT = """
 
 def generate_hub_html(articles, ebooks):
     categories = [
-        "Todos",
+        "Todas",
+        "Fitness",
+        "Desenvolvimento Pessoal",
+        "Mindset",
+        "Treinamento Híbrido",
         "Corrida & Endurance",
-        "Hipertrofia & Força",
-        "Emagrecimento & Metabolismo",
-        "Mobilidade & Híbrido",
-        "Nutrição & Suplementação",
-        "Saúde & Fisiologia",
-        "Mentalidade & Disciplina"
+        "Mobilidade Articular",
+        "Nutrição & Jejum"
     ]
 
     cat_pills = "".join([f'<button class="cat-pill {"active" if i == 0 else ""}" data-category="{c}">{c}</button>' for i, c in enumerate(categories)])
@@ -329,7 +436,6 @@ def generate_hub_html(articles, ebooks):
     for eb in ebooks:
         badge_class = "badge-app" if eb.get("type") == "app" else "badge-pdf"
         badge_text = "Web App Interativo" if eb.get("type") == "app" else "PDF AcroForm"
-        action_btn = ""
         if eb.get("type") == "app":
             action_btn = f'<a href="{eb["url"]}" class="btn btn-primary" style="width:100%; text-align:center;">Abrir Web App ➔</a>'
         else:
@@ -370,55 +476,54 @@ def generate_hub_html(articles, ebooks):
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Cofre de Materiais & Blog Oficial | Coach Montanha</title>
-  <meta name="description" content="Acesse todos os 182 artigos do blog, e-books e protocolos interativos do Coach Montanha. Força, corrida, mobilidade e performance sem atrito.">
-  <meta property="og:title" content="Cofre de Materiais & Blog Oficial | Coach Montanha">
-  <meta property="og:description" content="Artigos publicados, e-books com caixas de marcação e web apps de treino abertos para você.">
-  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/logo_dark.png">
+  <title>Blog do Montanha • Artigos, E-books & Protocolos Oficiais</title>
+  <meta name="description" content="Acesse todos os 182 artigos do blog, e-books e protocolos interativos do Coach Montanha. Fitness, força, corrida em Zona 2, desenvolvimento pessoal e mindset.">
+  <meta property="og:title" content="Blog do Montanha • Artigos, E-books & Protocolos Oficiais">
+  <meta property="og:description" content="O acervo oficial do Coach Montanha: artigos publicados, e-books e ferramentas interativas.">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/materiais/logo_montanha.png">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://montanha-personal-studio.vercel.app/materiais">
   {COMMON_HEAD}
   {STUDENT_DETECTION_SCRIPT}
   <style>
-    /* Banners */
     .hero-section {{
-      padding: 48px 0 32px 0;
+      padding: 56px 0 36px 0;
       text-align: center;
       border-bottom: 1px solid var(--card-border);
-      background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+      background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.09) 0%, transparent 70%);
     }}
     .hero-badge {{
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 11px;
+      font-size: 11.5px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       font-weight: 700;
       color: var(--primary);
       background: var(--primary-soft);
       border: 1px solid rgba(245, 158, 11, 0.25);
-      padding: 4px 12px;
+      padding: 4px 14px;
       border-radius: 9999px;
       margin-bottom: 16px;
+      font-family: var(--font-title);
     }}
     .hero-title {{
-      font-size: 36px;
+      font-size: 42px;
       font-weight: 800;
-      letter-spacing: -0.03em;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       color: #fff;
+      line-height: 1.15;
     }}
     .hero-subtitle {{
-      font-size: 16px;
+      font-size: 16.5px;
       color: var(--text-muted);
-      max-width: 680px;
+      max-width: 720px;
       margin: 0 auto;
     }}
     
-    /* Search & Filter Bar */
     .controls-wrap {{
-      margin: 32px 0 24px 0;
+      margin: 36px 0 28px 0;
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -432,18 +537,17 @@ def generate_hub_html(articles, ebooks):
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 14px 20px 14px 44px;
+      padding: 16px 20px 16px 46px;
       color: #fff;
       font-size: 15px;
       outline: none;
+      font-family: var(--font-body);
       transition: border-color 0.2s;
     }}
-    .search-input:focus {{
-      border-color: var(--primary);
-    }}
+    .search-input:focus {{ border-color: var(--primary); }}
     .search-icon {{
       position: absolute;
-      left: 16px;
+      left: 18px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-dim);
@@ -461,62 +565,58 @@ def generate_hub_html(articles, ebooks):
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       color: var(--text-muted);
-      padding: 8px 14px;
+      padding: 8px 16px;
       border-radius: 9999px;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       white-space: nowrap;
       cursor: pointer;
+      font-family: var(--font-title);
       transition: all 0.2s;
     }}
-    .cat-pill:hover {{
-      color: #fff;
-      border-color: #3f3f46;
-    }}
+    .cat-pill:hover {{ color: #fff; border-color: #3f3f46; }}
     .cat-pill.active {{
       background: var(--primary);
       color: #000;
       border-color: var(--primary);
-      font-weight: 700;
+      font-weight: 800;
     }}
     
-    /* Tabs */
     .section-tabs {{
       display: flex;
       border-bottom: 1px solid var(--card-border);
-      margin-bottom: 28px;
-      gap: 24px;
+      margin-bottom: 32px;
+      gap: 28px;
     }}
     .tab-btn {{
       background: transparent;
       border: none;
       color: var(--text-dim);
-      font-size: 15px;
-      font-weight: 600;
-      padding: 12px 0;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: var(--font-title);
+      padding: 14px 0;
       cursor: pointer;
       position: relative;
       transition: color 0.2s;
     }}
     .tab-btn:hover {{ color: var(--text); }}
-    .tab-btn.active {{
-      color: var(--primary);
-    }}
+    .tab-btn.active {{ color: var(--primary); }}
     .tab-btn.active::after {{
       content: '';
       position: absolute;
       bottom: -1px;
       left: 0;
       right: 0;
-      height: 2px;
+      height: 3px;
       background: var(--primary);
+      border-radius: 3px 3px 0 0;
     }}
     
-    /* Grids */
     .cards-grid {{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
+      gap: 22px;
       margin-bottom: 60px;
     }}
     .article-card, .ebook-card {{
@@ -532,7 +632,7 @@ def generate_hub_html(articles, ebooks):
     .article-card:hover, .ebook-card:hover {{
       transform: translateY(-3px);
       border-color: #3f3f46;
-      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.6);
     }}
     .card-top {{
       display: flex;
@@ -544,25 +644,26 @@ def generate_hub_html(articles, ebooks):
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 3px 8px;
+      letter-spacing: 0.06em;
+      padding: 4px 9px;
       border-radius: 6px;
+      font-family: var(--font-title);
     }}
     .badge-artigo {{ background: #27272a; color: #a1a1aa; }}
     .badge-app {{ background: rgba(245, 158, 11, 0.2); color: #fbbf24; }}
     .badge-pdf {{ background: rgba(59, 130, 246, 0.2); color: #60a5fa; }}
     .meta-tag {{ font-size: 12px; color: var(--text-dim); }}
     .card-title {{
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 700;
       color: #fff;
-      line-height: 1.4;
+      line-height: 1.35;
       margin-bottom: 10px;
     }}
     .card-desc {{
       font-size: 13.5px;
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.55;
       margin-bottom: 20px;
       flex-grow: 1;
     }}
@@ -575,23 +676,15 @@ def generate_hub_html(articles, ebooks):
     }}
     .read-link {{
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--primary);
-    }}
-    
-    /* Footer */
-    .hub-footer {{
-      border-top: 1px solid var(--card-border);
-      padding: 40px 0;
-      text-align: center;
-      font-size: 13px;
-      color: var(--text-dim);
+      font-family: var(--font-title);
     }}
   </style>
 </head>
 <body>
 
-  <!-- Banners de Notificação -->
+  <!-- Banners de Reconhecimento -->
   <div class="banner-vip">
     <div class="container">
       <strong>✅ Área do Aluno Conectada:</strong> Acesso irrestrito a todos os e-books e protocolos com download imediato em 1 toque.
@@ -604,37 +697,56 @@ def generate_hub_html(articles, ebooks):
     </div>
   </div>
 
-  <!-- Barra Superior -->
+  <!-- Barra Superior Original do Blog -->
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
-        <img src="/logo_dark.png" alt="Coach Montanha">
-        <span>COACH MONTANHA • COFRE</span>
+        <a href="/materiais" style="display:flex; align-items:center; gap:12px;">
+          <img src="/materiais/logo_montanha.png" alt="Coach Montanha">
+          <span>COACH MONTANHA</span>
+        </a>
       </div>
+
+      <!-- Links do Menu Original -->
+      <nav class="nav-menu">
+        <a href="/materiais">Início</a>
+        <a href="#artigosSection">Meus Artigos</a>
+        <a href="#ebooksSection">Livros/Ebooks</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20quero%20conhecer%20os%20Cursos%20Online" target="_blank">Cursos Online</a>
+        <a href="https://coachmontanha1.systeme.io/amazon" target="_blank">Links Amazon</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog%20e%20gostaria%20de%20falar%20com%20voc%C3%AA" target="_blank">Contato</a>
+      </nav>
+
       <div class="topbar-actions">
-        <a href="/auth" class="btn btn-outline btn-login-action">Entrar no Studio</a>
-        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20vim%20pelo%20Cofre%20de%20Materiais%20e%20quero%20conhecer%20a%20Consultoria" class="btn btn-primary" target="_blank">Consultoria WhatsApp</a>
+        <!-- Ícones Sociais -->
+        <div class="social-icons-top">
+          <a href="https://www.instagram.com/coachmontanha1/" target="_blank" title="Instagram">📸</a>
+          <a href="https://www.youtube.com/channel/UCy29z1eRp_GPFAVFHJfmg_A" target="_blank" title="YouTube">📺</a>
+          <a href="https://twitter.com/coachmontanha1" target="_blank" title="Twitter/X">🐦</a>
+          <a href="https://www.facebook.com/albertosarly.coutinho" target="_blank" title="Facebook">📘</a>
+        </div>
+        <a href="/portal" class="btn btn-outline btn-login-action">Entrar no Studio</a>
       </div>
     </div>
   </header>
 
-  <!-- Hero -->
+  <!-- Hero Section -->
   <section class="hero-section">
     <div class="container">
-      <span class="hero-badge">Biblioteca Digital Aberta</span>
-      <h1 class="hero-title">Cofre de Conhecimento & Treinamento</h1>
+      <span class="hero-badge">Acervo Oficial de Treinamento & Artigos</span>
+      <h1 class="hero-title">Blog do Montanha</h1>
       <p class="hero-subtitle">
-        182 artigos técnicos, protocolos de força, corrida em Zona 2 e e-books completos com ferramentas interativas diretas no navegador.
+        182 artigos sobre treinamento de força, corrida em Zona 2, emagrecimento sustentável, desenvolvimento pessoal e mentalidade, além de e-books e web apps interativos.
       </p>
     </div>
   </section>
 
-  <!-- Conteúdo Principal -->
+  <!-- Main Catalog -->
   <main class="container">
     <div class="controls-wrap">
       <div class="search-input-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por tema (ex: barra fixa, remo, 5k, hipertrofia, sono)...">
+        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por tema (ex: remo, barra fixa, corrida, neat, epoc, jejum, sono)...">
       </div>
       
       <div class="cat-scroll">
@@ -645,13 +757,13 @@ def generate_hub_html(articles, ebooks):
     <!-- Abas -->
     <div class="section-tabs">
       <button class="tab-btn active" data-tab="todos">Todos os Conteúdos ({len(articles) + len(ebooks)})</button>
-      <button class="tab-btn" data-tab="artigos">Artigos Publicados ({len(articles)})</button>
-      <button class="tab-btn" data-tab="ebooks">E-books & Protocolos ({len(ebooks)})</button>
+      <button class="tab-btn" data-tab="artigos">Meus Artigos ({len(articles)})</button>
+      <button class="tab-btn" data-tab="ebooks">Livros & E-books ({len(ebooks)})</button>
     </div>
 
     <!-- Grid de E-books -->
     <div id="ebooksSection" class="tab-section">
-      <h2 style="font-size:20px; font-weight:700; margin-bottom:18px; color:#fff;">E-books & Protocolos Interativos</h2>
+      <h2 style="font-size:22px; font-weight:700; margin-bottom:20px; color:#fff;">Livros, E-books & Protocolos Interativos</h2>
       <div class="cards-grid">
         {ebook_cards_html}
       </div>
@@ -659,7 +771,7 @@ def generate_hub_html(articles, ebooks):
 
     <!-- Grid de Artigos -->
     <div id="articlesSection" class="tab-section">
-      <h2 style="font-size:20px; font-weight:700; margin-bottom:18px; color:#fff;">Artigos Publicados</h2>
+      <h2 style="font-size:22px; font-weight:700; margin-bottom:20px; color:#fff;">Artigos Publicados</h2>
       <div id="articlesGrid" class="cards-grid">
         {article_cards_html}
       </div>
@@ -671,9 +783,9 @@ def generate_hub_html(articles, ebooks):
     <div class="modal-box">
       <button class="modal-close" onclick="closeLeadModal()">✕</button>
       <div style="font-size:28px; margin-bottom:12px;">📥</div>
-      <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:8px;">Baixar PDF Oficial</h3>
+      <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:8px; font-family:var(--font-title);">Baixar Material Oficial</h3>
       <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:20px;">
-        Informe seu nome e WhatsApp para receber o material e atualizações dos protocolos do Coach Montanha.
+        Informe seu nome e WhatsApp para receber o download e atualizações do Coach Montanha.
       </p>
       <form id="leadForm" onsubmit="submitLead(event)">
         <input type="text" id="leadName" class="modal-input" placeholder="Seu Nome Completo" required>
@@ -688,10 +800,64 @@ def generate_hub_html(articles, ebooks):
     </div>
   </div>
 
-  <footer class="hub-footer">
+  <!-- Rodapé Oficial de 4 Colunas do Blog Original -->
+  <footer class="blog-footer">
     <div class="container">
-      <p>© {2026} Ecossistema Montanha • Studio Personal & Consultoria de Alta Performance.</p>
-      <p style="margin-top:6px; font-size:12px;">Construído com zero desperdício de tokens. Hospedado no Edge CDN.</p>
+      <div class="footer-grid">
+        <!-- Coluna 1 -->
+        <div class="footer-col">
+          <h4>LINKS RÁPIDOS</h4>
+          <ul>
+            <li><a href="/materiais">Início</a></li>
+            <li><a href="#artigosSection">Meus Artigos</a></li>
+            <li><a href="#ebooksSection">Livros/Ebooks</a></li>
+            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20quero%20conhecer%20os%20Cursos%20Online" target="_blank">Cursos Online</a></li>
+            <li><a href="https://coachmontanha1.systeme.io/amazon" target="_blank">Links Amazon</a></li>
+            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank">Contato</a></li>
+            <li><a href="/portal">Portal do Aluno</a></li>
+          </ul>
+        </div>
+
+        <!-- Coluna 2 -->
+        <div class="footer-col">
+          <h4>CATEGORIAS</h4>
+          <ul>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Fitness')">Fitness</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Desenvolvimento Pessoal')">Desenvolvimento Pessoal</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Mindset')">Mindset</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Treinamento Híbrido')">Treinamento Híbrido</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Corrida & Endurance')">Corrida & Endurance</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Mobilidade Articular')">Mobilidade Articular</a></li>
+            <li><a href="javascript:void(0)" onclick="selectCategory('Nutrição & Jejum')">Nutrição & Jejum</a></li>
+          </ul>
+        </div>
+
+        <!-- Coluna 3 -->
+        <div class="footer-col">
+          <h4>REDES SOCIAIS</h4>
+          <ul>
+            <li><a href="https://www.instagram.com/coachmontanha1/" target="_blank">📸 Instagram (@coachmontanha1)</a></li>
+            <li><a href="https://www.youtube.com/channel/UCy29z1eRp_GPFAVFHJfmg_A" target="_blank">📺 YouTube (Coach Montanha)</a></li>
+            <li><a href="https://twitter.com/coachmontanha1" target="_blank">🐦 Twitter / X</a></li>
+            <li><a href="https://www.facebook.com/albertosarly.coutinho" target="_blank">📘 Facebook</a></li>
+          </ul>
+        </div>
+
+        <!-- Coluna 4 -->
+        <div class="footer-col footer-newsletter">
+          <h4>NEWSLETTER</h4>
+          <p>Quer receber nossos artigos sempre que forem postados? Coloque o seu e-mail aqui!</p>
+          <form onsubmit="event.preventDefault(); alert('E-mail cadastrado com sucesso!'); this.reset();">
+            <input type="email" class="footer-input" placeholder="Seu melhor e-mail" required>
+            <button type="submit" class="btn btn-primary" style="width:100%;">ASSINAR</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Ecossistema Montanha • Coach Montanha. Todos os direitos reservados.</div>
+        <div>Hospedado no Vercel Edge CDN com máxima velocidade e zero atrito.</div>
+      </div>
     </div>
   </footer>
 
@@ -723,7 +889,6 @@ def generate_hub_html(articles, ebooks):
       const name = document.getElementById('leadName').value;
       const phone = document.getElementById('leadPhone').value;
       
-      // Envio não bloqueante para webhook
       fetch('/api/forms/google-webhook', {{
         method: 'POST',
         headers: {{ 'Content-Type': 'application/json' }},
@@ -742,7 +907,6 @@ def generate_hub_html(articles, ebooks):
       }}
     }}
 
-    // Filtros e Busca Instantânea
     const searchInput = document.getElementById('searchInput');
     const catPills = document.querySelectorAll('.cat-pill');
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -750,8 +914,17 @@ def generate_hub_html(articles, ebooks):
     const ebooksSec = document.getElementById('ebooksSection');
     const articlesSec = document.getElementById('articlesSection');
 
-    let activeCategory = 'Todos';
+    let activeCategory = 'Todas';
     let activeTab = 'todos';
+
+    function selectCategory(catName) {{
+      catPills.forEach(p => {{
+        if (p.getAttribute('data-category') === catName) {{
+          p.click();
+        }}
+      }});
+      articlesSec.scrollIntoView({{ behavior: 'smooth' }});
+    }}
 
     function filterContent() {{
       const query = searchInput.value.toLowerCase().trim();
@@ -762,7 +935,7 @@ def generate_hub_html(articles, ebooks):
         const cat = card.getAttribute('data-category');
 
         const matchesQuery = !query || title.includes(query) || excerpt.includes(query);
-        const matchesCat = (activeCategory === 'Todos') || (cat === activeCategory);
+        const matchesCat = (activeCategory === 'Todas') || (cat === activeCategory);
 
         if (matchesQuery && matchesCat) {{
           card.style.display = 'flex';
@@ -771,9 +944,8 @@ def generate_hub_html(articles, ebooks):
         }}
       }});
 
-      // Tabs visibility
       if (activeTab === 'todos') {{
-        ebooksSec.style.display = (!query && activeCategory === 'Todos') ? 'block' : 'none';
+        ebooksSec.style.display = (!query && activeCategory === 'Todas') ? 'block' : 'none';
         articlesSec.style.display = 'block';
       }} else if (activeTab === 'ebooks') {{
         ebooksSec.style.display = 'block';
@@ -823,6 +995,39 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
     prev_link = f'<a href="/materiais/artigos/{prev_article["slug"]}" class="nav-prev">← {prev_article["clean_title"][:45]}...</a>' if prev_article else '<span></span>'
     next_link = f'<a href="/materiais/artigos/{next_article["slug"]}" class="nav-next">{next_article["clean_title"][:45]}... →</a>' if next_article else '<span></span>'
 
+    # Os 6 Artigos Populares Clássicos do Blog Original
+    popular_articles_html = """
+    <div class="popular-posts-box">
+      <h3 class="popular-title">Artigos populares</h3>
+      <div class="popular-list">
+        <a href="/materiais/artigos/o-segredo-do-meu-emagrecimento-e-o-neat" class="pop-item">
+          <strong>O segredo do meu emagrecimento é o NEAT!</strong>
+          <span>Por Coach Montanha</span>
+        </a>
+        <a href="/materiais/artigos/o-que-fazer-para-ter-um-envelhecimento-saudavel" class="pop-item">
+          <strong>O que fazer para ter um envelhecimento saudável</strong>
+          <span>Por Coach Montanha</span>
+        </a>
+        <a href="/materiais/artigos/a-balanca-a-maquina-maligna-da-industria-fitness" class="pop-item">
+          <strong>Balança: A Máquina Maligna da Indústria Fitness</strong>
+          <span>Por Coach Montanha</span>
+        </a>
+        <a href="/materiais/artigos/sera-que-a-fadiga-mental-influencia-a-performance" class="pop-item">
+          <strong>Será que a fadiga mental influencia a performance?</strong>
+          <span>Por Coach Montanha</span>
+        </a>
+        <a href="/materiais/artigos/alguns-beneficios-do-jejum-intermitente" class="pop-item">
+          <strong>Alguns benefícios do Jejum Intermitente</strong>
+          <span>Por Coach Montanha</span>
+        </a>
+        <a href="/materiais/artigos/quer-emagrecer-muito-rapido-invista-no-epoc" class="pop-item">
+          <strong>Quer emagrecer muito rápido? Invista no EPOC!</strong>
+          <span>Por Coach Montanha</span>
+        </a>
+      </div>
+    </div>
+    """
+
     html = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -835,8 +1040,8 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
   <meta property="og:description" content="{excerpt}">
   <meta property="og:url" content="{share_url}">
   <meta property="og:type" content="article">
-  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/logo_dark.png">
-  <meta property="og:site_name" content="Coach Montanha • Studio Personal">
+  <meta property="og:image" content="https://montanha-personal-studio.vercel.app/materiais/logo_montanha.png">
+  <meta property="og:site_name" content="Coach Montanha • Blog Oficial">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{title}">
   <meta name="twitter:description" content="{excerpt}">
@@ -846,8 +1051,8 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
 
   <style>
     .article-wrap {{
-      max-width: 780px;
-      margin: 40px auto 80px auto;
+      max-width: 820px;
+      margin: 40px auto 60px auto;
       padding: 0 20px;
     }}
     .breadcrumbs {{
@@ -874,14 +1079,15 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
       color: var(--primary);
       padding: 4px 10px;
       border-radius: 6px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       border: 1px solid rgba(245, 158, 11, 0.25);
+      font-family: var(--font-title);
     }}
     .article-title {{
-      font-size: 32px;
+      font-size: 38px;
       font-weight: 800;
       color: #fff;
-      line-height: 1.3;
+      line-height: 1.25;
       letter-spacing: -0.02em;
       margin-bottom: 14px;
     }}
@@ -889,13 +1095,12 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
       display: flex;
       align-items: center;
       gap: 16px;
-      font-size: 13.5px;
+      font-size: 14px;
       color: var(--text-muted);
     }}
     
-    /* Typography */
     .prose {{
-      font-size: 17px;
+      font-size: 18.5px;
       line-height: 1.8;
       color: #d4d4d8;
     }}
@@ -905,17 +1110,17 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
       margin: 40px 0 16px 0;
       letter-spacing: -0.01em;
     }}
-    .prose h1 {{ font-size: 26px; }}
-    .prose h2 {{ font-size: 22px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }}
-    .prose h3 {{ font-size: 19px; }}
-    .prose p {{ margin-bottom: 20px; }}
-    .prose ul, .prose ol {{ margin: 0 0 20px 24px; }}
+    .prose h1 {{ font-size: 28px; }}
+    .prose h2 {{ font-size: 23px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }}
+    .prose h3 {{ font-size: 20px; }}
+    .prose p {{ margin-bottom: 22px; }}
+    .prose ul, .prose ol {{ margin: 0 0 22px 24px; }}
     .prose li {{ margin-bottom: 8px; }}
     .prose blockquote {{
       border-left: 4px solid var(--primary);
       background: var(--card-bg);
       padding: 16px 20px;
-      margin: 24px 0;
+      margin: 26px 0;
       border-radius: 0 8px 8px 0;
       color: #e4e4e7;
       font-style: italic;
@@ -955,11 +1160,56 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
       padding: 10px 14px;
       text-align: left;
     }}
-    .prose th {{ background: var(--card-bg); color: #fff; }}
+    .prose th {{ background: var(--card-bg); color: #fff; font-family: var(--font-title); }}
 
-    /* Share & CTA */
+    /* Artigos Populares Box */
+    .popular-posts-box {{
+      margin: 50px 0 30px 0;
+      padding: 28px;
+      background: #121215;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+    }}
+    .popular-title {{
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 10px;
+    }}
+    .popular-list {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }}
+    .pop-item {{
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 14px 16px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.2s;
+    }}
+    .pop-item:hover {{
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }}
+    .pop-item strong {{
+      font-size: 14px;
+      color: #fff;
+      line-height: 1.4;
+    }}
+    .pop-item span {{
+      font-size: 11.5px;
+      color: var(--text-dim);
+    }}
+
+    /* Share & Feedback Box */
     .share-box {{
-      margin: 48px 0;
+      margin: 40px 0;
       padding: 24px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -973,25 +1223,26 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
     .nav-carousel {{
       display: flex;
       justify-content: space-between;
-      margin-top: 48px;
+      margin-top: 40px;
       padding-top: 24px;
       border-top: 1px solid var(--card-border);
       gap: 16px;
     }}
     .nav-prev, .nav-next {{
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--primary);
+      font-family: var(--font-title);
       max-width: 48%;
     }}
     .nav-next {{ text-align: right; }}
 
-    /* Conversion Box */
-    .conversion-box {{
-      margin-top: 60px;
-      padding: 32px;
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      background: radial-gradient(circle at 100% 0%, rgba(245, 158, 11, 0.1) 0%, rgba(20, 20, 23, 0.8) 100%);
+    /* Caixa de Comentário / WhatsApp */
+    .comment-box {{
+      margin-top: 48px;
+      padding: 28px;
+      background: radial-gradient(circle at 100% 0%, rgba(37, 211, 102, 0.1) 0%, rgba(20, 20, 23, 0.8) 100%);
+      border: 1px solid rgba(37, 211, 102, 0.3);
       border-radius: 14px;
       text-align: center;
     }}
@@ -999,25 +1250,34 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
 </head>
 <body>
 
-  <!-- Top Bar -->
+  <!-- Topbar Original -->
   <header class="topbar">
     <div class="container topbar-inner">
       <div class="brand">
-        <a href="/materiais" style="display:flex; align-items:center; gap:10px;">
-          <img src="/logo_dark.png" alt="Coach Montanha">
+        <a href="/materiais" style="display:flex; align-items:center; gap:12px;">
+          <img src="/materiais/logo_montanha.png" alt="Coach Montanha">
           <span>COACH MONTANHA</span>
         </a>
       </div>
+
+      <nav class="nav-menu">
+        <a href="/materiais">Início</a>
+        <a href="/materiais#artigosSection">Meus Artigos</a>
+        <a href="/materiais#ebooksSection">Livros/Ebooks</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20quero%20conhecer%20os%20Cursos%20Online" target="_blank">Cursos Online</a>
+        <a href="https://coachmontanha1.systeme.io/amazon" target="_blank">Links Amazon</a>
+        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20artigo%20'{title}'" target="_blank">Contato</a>
+      </nav>
+
       <div class="topbar-actions">
-        <a href="/materiais" class="btn btn-outline">← Ver Todos os Materiais</a>
-        <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20li%20o%20artigo%20'{title}'%20e%20quero%20conhecer%20a%20Consultoria" class="btn btn-primary" target="_blank">Falar no WhatsApp</a>
+        <a href="/materiais" class="btn btn-outline">← Todos os Artigos</a>
       </div>
     </div>
   </header>
 
   <article class="article-wrap">
     <div class="breadcrumbs">
-      <a href="/materiais">Cofre de Materiais</a>
+      <a href="/materiais">Início</a>
       <span>›</span>
       <a href="/materiais?cat={category}">{category}</a>
       <span>›</span>
@@ -1041,8 +1301,8 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
     <!-- Compartilhamento -->
     <div class="share-box">
       <div>
-        <strong style="color:#fff; display:block; margin-bottom:4px;">Gostou deste conteúdo?</strong>
-        <span style="font-size:13px; color:var(--text-muted);">Envie para um amigo ou no grupo de treino.</span>
+        <strong style="color:#fff; display:block; margin-bottom:4px; font-family:var(--font-title);">Gostou deste artigo?</strong>
+        <span style="font-size:13px; color:var(--text-muted);">Compartilhe com quem treina com você.</span>
       </div>
       <div style="display:flex; gap:10px;">
         <a href="{whatsapp_share}" target="_blank" class="btn btn-primary" style="background:#25d366; color:#000;">
@@ -1054,28 +1314,81 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
       </div>
     </div>
 
+    <!-- Seção de Artigos Populares Clássicos -->
+    {popular_articles_html}
+
+    <!-- Caixa de Interação / Comentário via WhatsApp -->
+    <div class="comment-box">
+      <h3 style="font-size:20px; font-weight:800; color:#fff; margin-bottom:8px; font-family:var(--font-title);">Deixe seu comentário ou tire sua dúvida</h3>
+      <p style="font-size:14px; color:var(--text-muted); max-width:540px; margin:0 auto 18px auto;">
+        Quer feedback sobre sua execução ou sugestão para um próximo artigo? Fale diretamente com o Coach Montanha.
+      </p>
+      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20li%20o%20artigo%20'{title}'%20e%20gostaria%20de%20comentar" class="btn btn-primary" target="_blank" style="background:#25d366; color:#000; padding:12px 24px; font-size:15px;">
+        Enviar Mensagem no WhatsApp ➔
+      </a>
+    </div>
+
     <!-- Navegação Sequencial -->
     <div class="nav-carousel">
       {prev_link}
       {next_link}
     </div>
-
-    <!-- Caixa de Conversão -->
-    <div class="conversion-box">
-      <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--primary); letter-spacing:0.08em;">Studio Personal & Consultoria</span>
-      <h3 style="font-size:22px; font-weight:800; color:#fff; margin:8px 0 12px 0;">Treine com o Coach Montanha</h3>
-      <p style="font-size:14.5px; color:var(--text-muted); max-width:540px; margin:0 auto 20px auto;">
-        Chega de seguir treino genérico de aplicativo e continuar travado. Receba periodização individualizada, acompanhamento biomecânico e métricas reais.
-      </p>
-      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Montanha,%20vim%20pelo%20artigo%20'{title}'%20e%20quero%20vagas%20no%20Studio%20ou%20Consultoria" class="btn btn-primary" target="_blank" style="padding:12px 24px; font-size:15px;">
-        Solicitar Triagem no WhatsApp ➔
-      </a>
-    </div>
   </article>
 
-  <footer class="hub-footer">
+  <!-- Rodapé Oficial de 4 Colunas -->
+  <footer class="blog-footer">
     <div class="container">
-      <p>© {2026} Ecossistema Montanha • Todos os direitos reservados.</p>
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>LINKS RÁPIDOS</h4>
+          <ul>
+            <li><a href="/materiais">Início</a></li>
+            <li><a href="/materiais#artigosSection">Meus Artigos</a></li>
+            <li><a href="/materiais#ebooksSection">Livros/Ebooks</a></li>
+            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20quero%20conhecer%20os%20Cursos%20Online" target="_blank">Cursos Online</a></li>
+            <li><a href="https://coachmontanha1.systeme.io/amazon" target="_blank">Links Amazon</a></li>
+            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank">Contato</a></li>
+            <li><a href="/portal">Portal do Aluno</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>CATEGORIAS</h4>
+          <ul>
+            <li><a href="/materiais?cat=Fitness">Fitness</a></li>
+            <li><a href="/materiais?cat=Desenvolvimento+Pessoal">Desenvolvimento Pessoal</a></li>
+            <li><a href="/materiais?cat=Mindset">Mindset</a></li>
+            <li><a href="/materiais?cat=Treinamento+H%C3%ADbrido">Treinamento Híbrido</a></li>
+            <li><a href="/materiais?cat=Corrida+%26+Endurance">Corrida & Endurance</a></li>
+            <li><a href="/materiais?cat=Mobilidade+Articular">Mobilidade Articular</a></li>
+            <li><a href="/materiais?cat=Nutri%C3%A7%C3%A3o+%26+Jejum">Nutrição & Jejum</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>REDES SOCIAIS</h4>
+          <ul>
+            <li><a href="https://www.instagram.com/coachmontanha1/" target="_blank">📸 Instagram (@coachmontanha1)</a></li>
+            <li><a href="https://www.youtube.com/channel/UCy29z1eRp_GPFAVFHJfmg_A" target="_blank">📺 YouTube (Coach Montanha)</a></li>
+            <li><a href="https://twitter.com/coachmontanha1" target="_blank">🐦 Twitter / X</a></li>
+            <li><a href="https://www.facebook.com/albertosarly.coutinho" target="_blank">📘 Facebook</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col footer-newsletter">
+          <h4>NEWSLETTER</h4>
+          <p>Quer receber nossos artigos sempre que forem postados? Coloque o seu e-mail aqui!</p>
+          <form onsubmit="event.preventDefault(); alert('E-mail cadastrado com sucesso!'); this.reset();">
+            <input type="email" class="footer-input" placeholder="Seu melhor e-mail" required>
+            <button type="submit" class="btn btn-primary" style="width:100%;">ASSINAR</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Ecossistema Montanha • Coach Montanha. Todos os direitos reservados.</div>
+        <div>Hospedado no Vercel Edge CDN com máxima velocidade e zero atrito.</div>
+      </div>
     </div>
   </footer>
 
@@ -1085,7 +1398,7 @@ def generate_article_html(article_meta, body_html, prev_article, next_article):
     return html
 
 def main():
-    print("Iniciando build do Blog Hub e 182 Artigos...")
+    print("Iniciando build do Blog do Montanha (Replica & Upgrade Systeme.io)...")
     
     # 1. Carregar Artigos
     md_files = sorted(glob.glob(os.path.join(ARTICLES_SRC_DIR, "*.md")))
@@ -1093,21 +1406,17 @@ def main():
     
     articles = []
     seen_slugs = set()
-    
     md = markdown.Markdown(extensions=['extra', 'tables', 'fenced_code', 'nl2br'])
 
     for idx, filepath in enumerate(md_files):
         meta, body_raw = parse_frontmatter_and_body(filepath)
         
-        # Ensure unique slug
         slug = meta['slug']
         if slug in seen_slugs:
             slug = f"{slug}-{idx+1}"
         seen_slugs.add(slug)
         meta['slug'] = slug
 
-        # Convert markdown to html
-        # Remove any leading title # headers if identical to meta title to avoid duplication
         clean_body = re.sub(r'^#\s+.*?\n', '', body_raw, count=1).strip()
         body_html = md.reset().convert(clean_body)
         
@@ -1123,7 +1432,7 @@ def main():
 
     print(f"Artigos processados: {len(articles)}")
 
-    # 2. Definir E-books
+    # 2. Definir Livros & E-books
     ebooks = [
         {
             'title': 'Protocolo do Atleta Híbrido (30 Dias)',
@@ -1170,54 +1479,54 @@ def main():
         {
             'title': 'Treinamento Específico de Hipertrofia (HST)',
             'desc': 'Guia completo de aplicação do método Hypertrophy-Specific Training (frequência mecânica e descondicionamento estratégico).',
-            'category': 'Hipertrofia & Força',
+            'category': 'Fitness',
             'type': 'pdf',
             'url': '/materiais/ebooks/EbookComplementarVocconheceroTreinamentoEspecficodeHipertrofiaHST.pdf'
         },
         {
             'title': 'Treinar Duas Vezes por Dia para Ganhar Músculo',
             'desc': 'Como fracionar o volume diário de musculação para aumentar síntese proteica sem saturar o sistema nervoso.',
-            'category': 'Hipertrofia & Força',
+            'category': 'Fitness',
             'type': 'pdf',
             'url': '/materiais/ebooks/Valeapenatreinarduasvezespordiaparaganharmaismsculos.pdf'
         },
         {
             'title': 'Desafio 30 Dias de Cócoras',
             'desc': 'Restauração da mobilidade de tornozelo e quadril através do padrão primordial de agachamento profundo diário.',
-            'category': 'Mobilidade & Híbrido',
+            'category': 'Mobilidade Articular',
             'type': 'pdf',
             'url': '/materiais/ebooks/EbookDesafio30DiasdeCcoras.pdf'
         },
         {
             'title': 'Cálculo de TDEE e Macronutrientes',
             'desc': 'A matemática exata para calcular seu gasto calórico total e estruturar proteínas, gorduras e carboidratos para recomposição.',
-            'category': 'Nutrição & Suplementação',
+            'category': 'Nutrição & Jejum',
             'type': 'pdf',
             'url': '/materiais/ebooks/EbookGETeMacros-Comocalcular_.pdf'
         },
         {
             'title': 'Reprograme sua Mente para Emagrecer',
             'desc': 'Quebra de hábitos compulsivos, gatilhos de estresse e mecanismos de saciedade hormonal.',
-            'category': 'Emagrecimento & Metabolismo',
+            'category': 'Mindset',
             'type': 'pdf',
             'url': '/materiais/ebooks/EbookComplementarReprogramesuamenteparaemagrecer.pdf'
         },
         {
             'title': 'O Sono Eficiente Sem Neura',
             'desc': 'Higiene do sono baseada em ritmo circadiano, temperatura ambiente e regulação de melatonina para atletas.',
-            'category': 'Saúde & Fisiologia',
+            'category': 'Desenvolvimento Pessoal',
             'type': 'pdf',
             'url': '/materiais/ebooks/RoteiroWebinrioOSonoEficienteSemNeura.pdf'
         }
     ]
 
-    # 3. Preparar diretórios de destino
+    # 3. Preparar diretórios
     os.makedirs(DEST_DIR, exist_ok=True)
     os.makedirs(os.path.join(DEST_DIR, "artigos"), exist_ok=True)
     os.makedirs(os.path.join(DEST_DIR, "data"), exist_ok=True)
     os.makedirs(os.path.join(DEST_DIR, "ebooks"), exist_ok=True)
 
-    # 4. Copiar PDFs para DEST_DIR/ebooks se existirem
+    # 4. Copiar PDFs
     for f in glob.glob(os.path.join(PDFS_SRC_DIR, "*.pdf")):
         fname = os.path.basename(f)
         dest_pdf = os.path.join(DEST_DIR, "ebooks", fname)
@@ -1225,14 +1534,13 @@ def main():
             shutil.copy2(f, dest_pdf)
 
     # 5. Gerar páginas individuais dos artigos
-    print("Gerando 182 páginas HTML individuais de artigos...")
+    print("Gerando 182 páginas HTML com o novo layout...")
     for i, a in enumerate(articles):
         prev_a = articles[i - 1] if i > 0 else None
         next_a = articles[i + 1] if i < len(articles) - 1 else None
         
         art_html = generate_article_html(a['meta'], a['body_html'], prev_a, next_a)
         
-        # Save to /materiais/artigos/<slug>/index.html
         art_dir = os.path.join(DEST_DIR, "artigos", a['slug'])
         os.makedirs(art_dir, exist_ok=True)
         with open(os.path.join(art_dir, "index.html"), "w", encoding="utf-8") as f:
@@ -1268,7 +1576,7 @@ def main():
             shutil.rmtree(MIRROR_DIR)
         shutil.copytree(DEST_DIR, MIRROR_DIR)
 
-    print("✅ Build do Hub e Artigos concluído com sucesso!")
+    print("✅ Build do Blog e Artigos concluído com sucesso!")
 
 if __name__ == "__main__":
     main()
