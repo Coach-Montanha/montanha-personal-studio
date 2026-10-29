@@ -28,7 +28,7 @@ export interface ArticleDetail {
   file_name: string;
 }
 
-function slugify(text: string): string {
+export function slugify(text: string): string {
   return text
     .normalize("NFKD")
     .replace(/[^\w\s-]/g, "")
@@ -37,11 +37,11 @@ function slugify(text: string): string {
     .replace(/[-\s]+/g, "-");
 }
 
-function cleanTitle(raw: string): string {
+export function cleanTitle(raw: string): string {
   return raw.replace(/^(ARTIGO\s+\d+\s*[-–—]\s*|\d{3}_ARTIGO_\d+_[-–—]\s*)/i, "").trim();
 }
 
-function markdownToBlocks(md: string): ArticleBlock[] {
+export function markdownToBlocks(md: string): ArticleBlock[] {
   let body = md;
   if (md.startsWith("---")) {
     const parts = md.split("---");
@@ -137,7 +137,7 @@ function markdownToBlocks(md: string): ArticleBlock[] {
   return blocks;
 }
 
-function blocksToMarkdown(blocks: ArticleBlock[]): string {
+export function blocksToMarkdown(blocks: ArticleBlock[]): string {
   return blocks
     .map((b) => {
       if (b.type === "heading") return `${"#".repeat(b.level || 2)} ${b.content || ""}\n`;
@@ -206,38 +206,53 @@ export const getArticleDetailFn = createServerFn({ method: "POST" })
       const fs = await import("node:fs");
       const path = await import("node:path");
 
-      if (!fs.existsSync(ARTICLES_DIR)) {
-        throw new Error("Diretório de artigos do Obsidian não encontrado: " + ARTICLES_DIR);
-      }
-
-      const files = fs.readdirSync(ARTICLES_DIR);
       let matchedFile: string | null = null;
       let matchedContent = "";
 
-      for (const f of files) {
-        if (!f.endsWith(".md")) continue;
-        const cleanName = cleanTitle(f.replace(/\.md$/, ""));
-        if (slugify(cleanName) === slug || slugify(f.replace(/\.md$/, "")) === slug) {
-          matchedFile = f;
-          matchedContent = fs.readFileSync(path.join(ARTICLES_DIR, f), "utf-8");
-          break;
-        }
-      }
-
-      if (!matchedFile) {
+      // 1. Tentar ler do diretório local do Obsidian
+      if (fs.existsSync(ARTICLES_DIR)) {
+        const files = fs.readdirSync(ARTICLES_DIR);
         for (const f of files) {
           if (!f.endsWith(".md")) continue;
-          const content = fs.readFileSync(path.join(ARTICLES_DIR, f), "utf-8");
-          const m = content.match(/title:\s*["']?([^"'\n]+)["']?/i);
-          if (m && slugify(cleanTitle(m[1])) === slug) {
+          const cleanName = cleanTitle(f.replace(/\.md$/, ""));
+          if (slugify(cleanName) === slug || slugify(f.replace(/\.md$/, "")) === slug) {
             matchedFile = f;
-            matchedContent = content;
+            matchedContent = fs.readFileSync(path.join(ARTICLES_DIR, f), "utf-8");
             break;
+          }
+        }
+
+        if (!matchedFile) {
+          for (const f of files) {
+            if (!f.endsWith(".md")) continue;
+            const content = fs.readFileSync(path.join(ARTICLES_DIR, f), "utf-8");
+            const m = content.match(/title:\s*["']?([^"'\n]+)["']?/i);
+            if (m && slugify(cleanTitle(m[1])) === slug) {
+              matchedFile = f;
+              matchedContent = content;
+              break;
+            }
           }
         }
       }
 
-      if (!matchedFile) {
+      // 2. Se não encontrar no disco local (ex: ambiente Vercel Serverless), ler do bundle empacotado
+      if (!matchedContent) {
+        const bundlePath = path.resolve(process.cwd(), "public/materiais/data/articles-bundle.json");
+        if (fs.existsSync(bundlePath)) {
+          const bundle = JSON.parse(fs.readFileSync(bundlePath, "utf-8"));
+          if (bundle[slug]) {
+            return { success: true, article: bundle[slug] };
+          }
+          for (const s of Object.keys(bundle)) {
+            if (s === slug || slugify(bundle[s].clean_title) === slug || bundle[s].slug === slug) {
+              return { success: true, article: bundle[s] };
+            }
+          }
+        }
+      }
+
+      if (!matchedFile && !matchedContent) {
         throw new Error(`Artigo com slug '${slug}' não encontrado.`);
       }
 
@@ -257,7 +272,7 @@ export const getArticleDetailFn = createServerFn({ method: "POST" })
         }
       }
 
-      const fullTitle = meta.title || matchedFile.replace(/\.md$/, "");
+      const fullTitle = meta.title || matchedFile?.replace(/\.md$/, "") || slug;
       const cleanT = cleanTitle(fullTitle);
       const blocks = markdownToBlocks(body);
 
@@ -272,7 +287,7 @@ export const getArticleDetailFn = createServerFn({ method: "POST" })
         excerpt: meta.excerpt || body.slice(0, 160).replace(/[#*`_]/g, ""),
         blocks,
         raw_markdown: body,
-        file_name: matchedFile,
+        file_name: matchedFile || `${slug}.md`,
       };
 
       return { success: true, article: detail };
@@ -303,11 +318,6 @@ export const saveArticleDetailFn = createServerFn({ method: "POST" })
       const { exec } = await import("node:child_process");
       const scriptsDir = path.resolve(process.cwd(), "scripts");
 
-      const filePath = path.join(ARTICLES_DIR, data.file_name);
-      if (!fs.existsSync(filePath)) {
-        throw new Error("Arquivo não encontrado no cofre: " + filePath);
-      }
-
       const bodyMarkdown = blocksToMarkdown(data.blocks);
       const frontmatter = `---
 title: "${data.full_title}"
@@ -322,17 +332,246 @@ excerpt: "${data.excerpt.replace(/"/g, '\\"')}"
 ${bodyMarkdown.trim()}
 `;
 
-      fs.writeFileSync(filePath, frontmatter, "utf-8");
+      // 1. Gravar em disco local no Obsidian caso exista
+      if (fs.existsSync(ARTICLES_DIR)) {
+        const filePath = path.join(ARTICLES_DIR, data.file_name);
+        fs.writeFileSync(filePath, frontmatter, "utf-8");
+      }
 
-      if (data.rebuild) {
+      // 2. Atualizar bundle JSON para refletir no portal e na web
+      const bundlePath = path.resolve(process.cwd(), "public/materiais/data/articles-bundle.json");
+      if (fs.existsSync(bundlePath)) {
+        try {
+          const bundle = JSON.parse(fs.readFileSync(bundlePath, "utf-8"));
+          bundle[data.slug] = {
+            ...data,
+            raw_markdown: bodyMarkdown.trim(),
+          };
+          fs.writeFileSync(bundlePath, JSON.stringify(bundle, null, 2), "utf-8");
+        } catch (e) {
+          console.warn("Aviso ao atualizar bundle:", e);
+        }
+      }
+
+      // 3. Atualizar catalog.json se presente
+      const catalogPath = path.resolve(process.cwd(), "public/materiais/data/catalog.json");
+      if (fs.existsSync(catalogPath)) {
+        try {
+          const catalog = JSON.parse(fs.readFileSync(catalogPath, "utf-8"));
+          const idx = (catalog.articles || []).findIndex((a: any) => a.slug === data.slug);
+          const updatedMeta = {
+            title: data.full_title,
+            clean_title: data.clean_title,
+            slug: data.slug,
+            category: data.category,
+            theme: data.theme,
+            date_full: data.date_full,
+            date_short: new Date().toLocaleDateString("pt-BR"),
+            read_time: 3,
+            excerpt: data.excerpt,
+            url: `/materiais/artigos/${data.slug}`,
+          };
+          if (idx >= 0) {
+            catalog.articles[idx] = { ...catalog.articles[idx], ...updatedMeta };
+          } else {
+            catalog.articles.unshift(updatedMeta);
+            catalog.total_articles = (catalog.articles || []).length;
+          }
+          fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2), "utf-8");
+        } catch (e) {
+          console.warn("Aviso ao atualizar catalog.json:", e);
+        }
+      }
+
+      if (data.rebuild && fs.existsSync(scriptsDir)) {
         const buildScript = path.join(scriptsDir, "build-blog-hub.py");
-        exec(`python "${buildScript}"`, (err, stdout, stderr) => {
-          if (err) console.error("Erro ao recompilar blog:", err);
-          else console.log("Blog recompilado com sucesso após edição.");
-        });
+        if (fs.existsSync(buildScript)) {
+          exec(`python "${buildScript}"`, (err) => {
+            if (err) console.error("Erro ao recompilar blog:", err);
+            else console.log("Blog recompilado com sucesso após edição.");
+          });
+        }
       }
 
       return { success: true, message: "Artigo e blocos salvos com sucesso!" };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  });
+
+const CREATE_ARTICLE_SCHEMA = z.object({
+  title: z.string().min(1, "Título é obrigatório"),
+  category: z.string().default("Fitness"),
+  theme: z.string().default("Treinamento Híbrido"),
+  excerpt: z.string().optional(),
+});
+
+export const createArticleFn = createServerFn({ method: "POST" })
+  .validator((raw: any) => CREATE_ARTICLE_SCHEMA.parse(raw))
+  .handler(async ({ data }) => {
+    try {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+
+      const clTitle = cleanTitle(data.title);
+      const slug = slugify(clTitle) || `artigo-${Date.now()}`;
+      const fileName = `${slug}.md`;
+      const dateFull = new Date().toLocaleDateString("pt-BR", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      const initialBlocks: ArticleBlock[] = [
+        {
+          id: "b_1",
+          type: "heading",
+          level: 2,
+          content: clTitle,
+        },
+        {
+          id: "b_2",
+          type: "paragraph",
+          content: data.excerpt || "Escreva a introdução do seu novo artigo aqui...",
+        },
+      ];
+
+      const initialMarkdown = `## ${clTitle}\n\n${data.excerpt || "Escreva a introdução do seu novo artigo aqui..."}`;
+
+      const frontmatter = `---
+title: "${data.title}"
+clean_title: "${clTitle}"
+category: "${data.category}"
+theme: "${data.theme}"
+date: "${dateFull}"
+author: "Coach Montanha"
+excerpt: "${(data.excerpt || "").replace(/"/g, '\\"')}"
+---
+
+${initialMarkdown}
+`;
+
+      // 1. Gravar no Obsidian local se disponível
+      if (fs.existsSync(ARTICLES_DIR)) {
+        fs.writeFileSync(path.join(ARTICLES_DIR, fileName), frontmatter, "utf-8");
+      }
+
+      // 2. Gravar no bundle
+      const bundlePath = path.resolve(process.cwd(), "public/materiais/data/articles-bundle.json");
+      if (fs.existsSync(bundlePath)) {
+        try {
+          const bundle = JSON.parse(fs.readFileSync(bundlePath, "utf-8"));
+          bundle[slug] = {
+            slug,
+            file_name: fileName,
+            full_title: data.title,
+            clean_title: clTitle,
+            category: data.category,
+            theme: data.theme,
+            date_full: dateFull,
+            read_time: 3,
+            excerpt: data.excerpt || "",
+            blocks: initialBlocks,
+            raw_markdown: initialMarkdown,
+          };
+          fs.writeFileSync(bundlePath, JSON.stringify(bundle, null, 2), "utf-8");
+        } catch (e) {
+          console.warn("Aviso ao salvar no bundle:", e);
+        }
+      }
+
+      // 3. Adicionar no catalog.json
+      const catalogPath = path.resolve(process.cwd(), "public/materiais/data/catalog.json");
+      if (fs.existsSync(catalogPath)) {
+        try {
+          const catalog = JSON.parse(fs.readFileSync(catalogPath, "utf-8"));
+          const newEntry = {
+            title: data.title,
+            clean_title: clTitle,
+            slug,
+            category: data.category,
+            theme: data.theme,
+            date_full: dateFull,
+            date_short: new Date().toLocaleDateString("pt-BR"),
+            read_time: 3,
+            excerpt: data.excerpt || "",
+            url: `/materiais/artigos/${slug}`,
+          };
+          catalog.articles = [newEntry, ...(catalog.articles || [])];
+          catalog.total_articles = catalog.articles.length;
+          fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2), "utf-8");
+        } catch (e) {
+          console.warn("Aviso ao salvar no catalog.json:", e);
+        }
+      }
+
+      const newArticle: ArticleDetail = {
+        slug,
+        file_name: fileName,
+        full_title: data.title,
+        clean_title: clTitle,
+        category: data.category,
+        theme: data.theme,
+        date_full: dateFull,
+        read_time: 3,
+        excerpt: data.excerpt || "",
+        blocks: initialBlocks,
+        raw_markdown: initialMarkdown,
+      };
+
+      return { success: true, article: newArticle, message: "Artigo criado com sucesso!" };
+    } catch (err: any) {
+      return { success: false, error: err.message, article: null };
+    }
+  });
+
+const DELETE_ARTICLE_SCHEMA = z.object({
+  slug: z.string(),
+  file_name: z.string().optional(),
+});
+
+export const deleteArticleFn = createServerFn({ method: "POST" })
+  .validator((raw: any) => DELETE_ARTICLE_SCHEMA.parse(raw))
+  .handler(async ({ data }) => {
+    try {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+
+      // 1. Remover do Obsidian local
+      if (fs.existsSync(ARTICLES_DIR) && data.file_name) {
+        const filePath = path.join(ARTICLES_DIR, data.file_name);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      // 2. Remover do bundle
+      const bundlePath = path.resolve(process.cwd(), "public/materiais/data/articles-bundle.json");
+      if (fs.existsSync(bundlePath)) {
+        try {
+          const bundle = JSON.parse(fs.readFileSync(bundlePath, "utf-8"));
+          delete bundle[data.slug];
+          fs.writeFileSync(bundlePath, JSON.stringify(bundle, null, 2), "utf-8");
+        } catch (e) {
+          console.warn("Aviso ao remover do bundle:", e);
+        }
+      }
+
+      // 3. Remover do catalog.json
+      const catalogPath = path.resolve(process.cwd(), "public/materiais/data/catalog.json");
+      if (fs.existsSync(catalogPath)) {
+        try {
+          const catalog = JSON.parse(fs.readFileSync(catalogPath, "utf-8"));
+          catalog.articles = (catalog.articles || []).filter((a: any) => a.slug !== data.slug);
+          catalog.total_articles = catalog.articles.length;
+          fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2), "utf-8");
+        } catch (e) {
+          console.warn("Aviso ao remover do catalog.json:", e);
+        }
+      }
+
+      return { success: true, message: "Artigo excluído com sucesso!" };
     } catch (err: any) {
       return { success: false, error: err.message };
     }
@@ -346,7 +585,7 @@ export const rebuildEntireBlogFn = createServerFn({ method: "POST" }).handler(as
       const scriptsDir = path.resolve(process.cwd(), "scripts");
       const buildScript = path.join(scriptsDir, "build-blog-hub.py");
 
-      exec(`python "${buildScript}"`, (err, stdout, stderr) => {
+      exec(`python "${buildScript}"`, (err) => {
         if (err) {
           resolve({ success: false, message: `Erro ao recompilar: ${err.message}` });
         } else {
