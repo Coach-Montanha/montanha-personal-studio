@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { formatDateBR } from "@/lib/format";
-import { SessionTimer } from "@/components/pt/SessionTimer";
+import { SessionTimer, formatSeconds } from "@/components/pt/SessionTimer";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { WorkoutSummaryDialog } from "@/components/pt/WorkoutSummaryDialog";
@@ -418,26 +418,88 @@ export function FocusedDayView({
 
       if (error) throw error;
 
-      if (studentId) {
-        const { data: studentData } = await supabase
-          .from("pt_students")
-          .select("user_id, name")
-          .eq("id", studentId)
-          .maybeSingle();
+      // Notificação ao treinador/studio com padrão MFit (cargas, tempo e feedback)
+      try {
+        let coachUserId: string | null = null;
+        let resolvedStudentName = studentName || "Aluno";
+        let resolvedStudentId = studentId;
 
-        if (studentData?.user_id) {
+        // 1. Descobrir o id e treinador (aluno PT ou Studio)
+        if (studentId) {
+          const { data: ptData } = await supabase
+            .from("pt_students")
+            .select("user_id, name")
+            .eq("id", studentId)
+            .maybeSingle();
+          if (ptData) {
+            coachUserId = ptData.user_id;
+            if (ptData.name) resolvedStudentName = ptData.name;
+          } else {
+            const { data: stData } = await supabase
+              .from("students")
+              .select("user_id, name")
+              .eq("id", studentId)
+              .maybeSingle();
+            if (stData) {
+              coachUserId = stData.user_id;
+              if (stData.name) resolvedStudentName = stData.name;
+            }
+          }
+        }
+
+        // 2. Se o próprio aluno executou logado (sem studentId explícito nas props)
+        if (!coachUserId && currentUserId) {
+          const { data: ptByAccount } = await supabase
+            .from("pt_students")
+            .select("id, user_id, name")
+            .eq("account_user_id", currentUserId)
+            .maybeSingle();
+          if (ptByAccount) {
+            coachUserId = ptByAccount.user_id;
+            resolvedStudentName = ptByAccount.name || resolvedStudentName;
+            if (!resolvedStudentId) resolvedStudentId = ptByAccount.id;
+          } else {
+            const { data: stByAccount } = await supabase
+              .from("students")
+              .select("id, user_id, name")
+              .eq("account_user_id", currentUserId)
+              .maybeSingle();
+            if (stByAccount) {
+              coachUserId = stByAccount.user_id;
+              resolvedStudentName = stByAccount.name || resolvedStudentName;
+              if (!resolvedStudentId) resolvedStudentId = stByAccount.id;
+            }
+          }
+        }
+
+        // 3. Resumo inteligente do treino executado (cargas registradas e tempo)
+        const totalLoadsCount = Object.keys(notes.loads || {}).length;
+        const formattedDuration = timerSeconds > 0 ? formatSeconds(timerSeconds) : "Sem cronômetro";
+        const feedbackPreview = feedback.trim() ? ` | Feedback: "${feedback.trim()}"` : "";
+        const notifTitle = `🏋️ ${resolvedStudentName} finalizou o treino!`;
+        const notifMessage = `Treino "${day.name}" concluído em ${formattedDuration} (${performedExerciseIds.length} exerc., ${totalLoadsCount} cargas)${feedbackPreview}`;
+
+        if (coachUserId) {
           await supabase.from("pt_notifications" as any).insert({
-            user_id: studentData.user_id,
-            title: "Novo treino concluído!",
-            message: `${studentData.name || "Aluno"} finalizou o treino "${day.name}"`,
+            user_id: coachUserId,
+            title: notifTitle,
+            message: notifMessage,
             type: "training_complete",
             metadata: {
-              student_id: studentId,
+              student_id: resolvedStudentId,
+              student_name: resolvedStudentName,
               execution_id: (newExec as any)?.id,
               day_name: day.name,
+              timer_seconds: timerSeconds,
+              duration_formatted: formattedDuration,
+              loads_count: totalLoadsCount,
+              feedback: feedback.trim() || null,
+              performed_count: performedExerciseIds.length,
             },
           });
         }
+      } catch (notifErr) {
+        console.warn("[FocusedDayView] Erro ao emitir notificação de conclusão para o treinador:", notifErr);
       }
 
       setLastExecutionId((newExec as any)?.id);

@@ -281,14 +281,33 @@ export function NotificationCenter() {
           const message = notif.message || "";
 
           // Disparo de notificação nativa no sistema operacional (Android APK e Web)
+          const targetUrl = notif.type === "training_complete" && notif.metadata?.student_id
+            ? `/personal-trainer/students/${notif.metadata.student_id}`
+            : "/agenda";
+
           await triggerDeviceNotification({
             id: hashStringToInt(notif.id || (title + message)),
             title,
             body: message,
-            url: "/agenda",
+            url: targetUrl,
           });
 
-          if (notif.type === "checkin") {
+          if (notif.type === "training_complete") {
+            toast.success(notif.title || "🏋️ Treino Concluído!", {
+              description: notif.message,
+              duration: 12000,
+              action: notif.metadata?.student_id
+                ? {
+                    label: "Analisar Treino",
+                    onClick: () =>
+                      navigate({
+                        to: "/personal-trainer/students/$id",
+                        params: { id: notif.metadata.student_id },
+                      }),
+                  }
+                : undefined,
+            });
+          } else if (notif.type === "checkin") {
             toast.success("🔔 Novo Check-in!", {
               description: notif.message,
               duration: 8000,
@@ -409,7 +428,7 @@ export function NotificationCenter() {
       case "class_reminder_19m30s":
         return <Calendar className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />;
       case "training_complete":
-        return <Dumbbell className="h-4 w-4 text-primary shrink-0 mt-0.5" />;
+        return <Dumbbell className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />;
     }
