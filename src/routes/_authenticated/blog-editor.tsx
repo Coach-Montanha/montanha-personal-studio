@@ -633,8 +633,8 @@ export function BlogEditorPage() {
     <div className="space-y-6 p-6">
       <PageHeader
         title="Gerenciador do Blog & Artigos"
-        subtitle="Estrutura de blocos, páginas e categorização fiel ao Systeme.io"
-        icon={<Newspaper className="w-6 h-6 text-amber-500" />}
+        description="Estrutura de blocos, páginas e categorização fiel ao Systeme.io"
+        icon={Newspaper}
         actions={
           <div className="flex items-center gap-2">
             <Button

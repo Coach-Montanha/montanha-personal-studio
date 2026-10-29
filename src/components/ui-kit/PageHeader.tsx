@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import React from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,11 +19,20 @@ export function PageHeader({
 }: {
   title: string;
   description?: ReactNode;
-  icon?: LucideIcon;
+  icon?: LucideIcon | ReactNode;
   eyebrow?: string;
   actions?: ReactNode;
   className?: string;
 }) {
+  const renderIcon = () => {
+    if (!Icon) return null;
+    if (React.isValidElement(Icon)) {
+      return Icon;
+    }
+    const Component = Icon as LucideIcon;
+    return <Component className="h-4 w-4 sm:h-5 sm:w-5" />;
+  };
+
   return (
     <header
       className={cn(
@@ -36,7 +46,7 @@ export function PageHeader({
             aria-hidden
             className="mt-0.5 grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-inset ring-primary/15"
           >
-            <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+            {renderIcon()}
           </span>
         )}
         <div className="min-w-0 flex-1">

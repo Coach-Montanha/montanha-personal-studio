@@ -1,12 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import fs from "fs";
-import path from "path";
-import { exec } from "child_process";
 
 const ARTICLES_DIR = "c:\\Users\\Administrator\\Documents\\Projetos\\Obsidian-Cofre-Montanha\\01-Blog-e-Ebooks\\Artigos";
-const CATALOG_PATH = path.resolve(process.cwd(), "public/materiais/data/catalog.json");
-const SCRIPTS_DIR = path.resolve(process.cwd(), "scripts");
 
 export interface ArticleBlock {
   id: string;
@@ -159,9 +154,13 @@ function blocksToMarkdown(blocks: ArticleBlock[]): string {
 
 export const getBlogCatalogFn = createServerFn({ method: "GET" }).handler(async () => {
   try {
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const catalogPath = path.resolve(process.cwd(), "public/materiais/data/catalog.json");
+
     let catalog: any = null;
-    if (fs.existsSync(CATALOG_PATH)) {
-      catalog = JSON.parse(fs.readFileSync(CATALOG_PATH, "utf-8"));
+    if (fs.existsSync(catalogPath)) {
+      catalog = JSON.parse(fs.readFileSync(catalogPath, "utf-8"));
     }
 
     const pages = [
@@ -204,6 +203,9 @@ export const getArticleDetailFn = createServerFn({ method: "POST" })
   .validator((slug: string) => slug)
   .handler(async ({ data: slug }) => {
     try {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+
       if (!fs.existsSync(ARTICLES_DIR)) {
         throw new Error("Diretório de artigos do Obsidian não encontrado: " + ARTICLES_DIR);
       }
@@ -296,6 +298,11 @@ export const saveArticleDetailFn = createServerFn({ method: "POST" })
   .validator((raw: any) => SAVE_ARTICLE_SCHEMA.parse(raw))
   .handler(async ({ data }) => {
     try {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const { exec } = await import("node:child_process");
+      const scriptsDir = path.resolve(process.cwd(), "scripts");
+
       const filePath = path.join(ARTICLES_DIR, data.file_name);
       if (!fs.existsSync(filePath)) {
         throw new Error("Arquivo não encontrado no cofre: " + filePath);
@@ -318,7 +325,7 @@ ${bodyMarkdown.trim()}
       fs.writeFileSync(filePath, frontmatter, "utf-8");
 
       if (data.rebuild) {
-        const buildScript = path.join(SCRIPTS_DIR, "build-blog-hub.py");
+        const buildScript = path.join(scriptsDir, "build-blog-hub.py");
         exec(`python "${buildScript}"`, (err, stdout, stderr) => {
           if (err) console.error("Erro ao recompilar blog:", err);
           else console.log("Blog recompilado com sucesso após edição.");
@@ -332,14 +339,22 @@ ${bodyMarkdown.trim()}
   });
 
 export const rebuildEntireBlogFn = createServerFn({ method: "POST" }).handler(async () => {
-  return new Promise<{ success: boolean; message: string }>((resolve) => {
-    const buildScript = path.join(SCRIPTS_DIR, "build-blog-hub.py");
-    exec(`python "${buildScript}"`, (err, stdout, stderr) => {
-      if (err) {
-        resolve({ success: false, message: `Erro ao recompilar: ${err.message}` });
-      } else {
-        resolve({ success: true, message: "Todos os 182 artigos e páginas foram recompilados e publicados!" });
-      }
-    });
+  return new Promise<{ success: boolean; message: string }>(async (resolve) => {
+    try {
+      const path = await import("node:path");
+      const { exec } = await import("node:child_process");
+      const scriptsDir = path.resolve(process.cwd(), "scripts");
+      const buildScript = path.join(scriptsDir, "build-blog-hub.py");
+
+      exec(`python "${buildScript}"`, (err, stdout, stderr) => {
+        if (err) {
+          resolve({ success: false, message: `Erro ao recompilar: ${err.message}` });
+        } else {
+          resolve({ success: true, message: "Todos os 182 artigos e páginas foram recompilados e publicados!" });
+        }
+      });
+    } catch (e: any) {
+      resolve({ success: false, message: `Erro ao importar dependências: ${e.message}` });
+    }
   });
 });
