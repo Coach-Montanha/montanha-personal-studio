@@ -156,11 +156,18 @@ export const getBlogCatalogFn = createServerFn({ method: "GET" }).handler(async 
   try {
     const fs = await import("node:fs");
     const path = await import("node:path");
-    const catalogPath = path.resolve(process.cwd(), "public/materiais/data/catalog.json");
+    const candidatePaths = [
+      path.resolve(process.cwd(), "public/materiais/data/catalog.json"),
+      path.resolve(process.cwd(), ".vercel/output/static/materiais/data/catalog.json"),
+      path.resolve(process.cwd(), "static/materiais/data/catalog.json"),
+    ];
 
     let catalog: any = null;
-    if (fs.existsSync(catalogPath)) {
-      catalog = JSON.parse(fs.readFileSync(catalogPath, "utf-8"));
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) {
+        catalog = JSON.parse(fs.readFileSync(p, "utf-8"));
+        break;
+      }
     }
 
     const pages = [
@@ -238,15 +245,21 @@ export const getArticleDetailFn = createServerFn({ method: "POST" })
 
       // 2. Se não encontrar no disco local (ex: ambiente Vercel Serverless), ler do bundle empacotado
       if (!matchedContent) {
-        const bundlePath = path.resolve(process.cwd(), "public/materiais/data/articles-bundle.json");
-        if (fs.existsSync(bundlePath)) {
-          const bundle = JSON.parse(fs.readFileSync(bundlePath, "utf-8"));
-          if (bundle[slug]) {
-            return { success: true, article: bundle[slug] };
-          }
-          for (const s of Object.keys(bundle)) {
-            if (s === slug || slugify(bundle[s].clean_title) === slug || bundle[s].slug === slug) {
-              return { success: true, article: bundle[s] };
+        const bundleCandidates = [
+          path.resolve(process.cwd(), "public/materiais/data/articles-bundle.json"),
+          path.resolve(process.cwd(), ".vercel/output/static/materiais/data/articles-bundle.json"),
+          path.resolve(process.cwd(), "static/materiais/data/articles-bundle.json"),
+        ];
+        for (const bp of bundleCandidates) {
+          if (fs.existsSync(bp)) {
+            const bundle = JSON.parse(fs.readFileSync(bp, "utf-8"));
+            if (bundle[slug]) {
+              return { success: true, article: bundle[slug] };
+            }
+            for (const s of Object.keys(bundle)) {
+              if (s === slug || slugify(bundle[s].clean_title) === slug || bundle[s].slug === slug) {
+                return { success: true, article: bundle[s] };
+              }
             }
           }
         }

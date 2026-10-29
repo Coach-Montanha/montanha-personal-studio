@@ -119,6 +119,41 @@ export function BlogEditorPage() {
   const { data: blogData, isLoading: isLoadingCatalog, refetch: refetchCatalog } = useQuery({
     queryKey: ["blog-catalog"],
     queryFn: async () => {
+      // 1. Tentar carregar diretamente do endpoint estático servido pela Vercel / CDN
+      try {
+        const resp = await fetch("/materiais/data/catalog.json");
+        if (resp.ok) {
+          const cat = await resp.json();
+          return {
+            success: true,
+            total_articles: cat.total_articles || (cat.articles || []).length || 182,
+            articles: cat.articles || [],
+            pages: [
+              { id: "p1", title: "Início (Feed Principal)", url: "/materiais", type: "Home", status: "Publicado" },
+              { id: "p2", title: "Meus Artigos", url: "/materiais#artigosSection", type: "Catálogo", status: "Publicado" },
+              { id: "p3", title: "Livros & E-books", url: "/materiais#ebooksSection", type: "Biblioteca", status: "Publicado" },
+              { id: "p4", title: "Cursos Online", url: "/materiais#cursosSection", type: "Educação", status: "Publicado" },
+              { id: "p5", title: "Links Amazon (24 Livros)", url: "/materiais#amazonSection", type: "Afiliados", status: "Publicado" },
+              { id: "p6", title: "Search (Busca Instantânea)", url: "/materiais", type: "Pesquisa", status: "Publicado" },
+              { id: "p7", title: "Missão Coach Montanha", url: "https://coachmontanha1.systeme.io/missao", type: "Institucional", status: "Legado" },
+              { id: "p8", title: "Lista de Presentes", url: "https://coachmontanha1.systeme.io/lista-de-presente", type: "Apoio", status: "Legado" },
+              { id: "p9", title: "Contato WhatsApp", url: "https://wa.me/5511999999999", type: "Contato", status: "Ativo" },
+            ],
+            categories: [
+              { id: "c1", name: "Fitness", slug: "fitness", total_posts: 137, status: "Ativo" },
+              { id: "c2", name: "Desenvolvimento Pessoal", slug: "desenvolvimento-pessoal", total_posts: 33, status: "Ativo" },
+              { id: "c3", name: "Treinamento Híbrido", slug: "treinamento-hibrido", total_posts: 12, status: "Sub-Tema" },
+              { id: "c4", name: "Corrida & Endurance", slug: "corrida-endurance", total_posts: 18, status: "Sub-Tema" },
+              { id: "c5", name: "Mobilidade Articular", slug: "mobilidade-articular", total_posts: 15, status: "Sub-Tema" },
+              { id: "c6", name: "Nutrição & Jejum", slug: "nutricao-jejum", total_posts: 22, status: "Sub-Tema" },
+            ],
+          };
+        }
+      } catch (e) {
+        console.warn("Aviso ao carregar catalog.json estático:", e);
+      }
+
+      // 2. Fallback para server function
       const res = await getBlogCatalogFn();
       if (!res.success) throw new Error(res.error || "Erro ao carregar catálogo");
       return res;
@@ -140,7 +175,31 @@ export function BlogEditorPage() {
         return localMatch;
       }
 
-      // 2. Chamar server function
+      // 2. Tentar buscar direto do bundle estático (Vercel CDN)
+      try {
+        const resp = await fetch("/materiais/data/articles-bundle.json");
+        if (resp.ok) {
+          const bundle = await resp.json();
+          if (bundle[editingSlug]) {
+            setCurrentArticle(bundle[editingSlug]);
+            setBlocks(bundle[editingSlug].blocks);
+            setRawMarkdown(bundle[editingSlug].raw_markdown || "");
+            return bundle[editingSlug];
+          }
+          for (const s of Object.keys(bundle)) {
+            if (s === editingSlug || slugify(bundle[s].clean_title) === editingSlug || bundle[s].slug === editingSlug) {
+              setCurrentArticle(bundle[s]);
+              setBlocks(bundle[s].blocks);
+              setRawMarkdown(bundle[s].raw_markdown || "");
+              return bundle[s];
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Aviso ao carregar bundle estático:", e);
+      }
+
+      // 3. Chamar server function
       const res = await getArticleDetailFn({ data: editingSlug });
       if (res.success && res.article) {
         setCurrentArticle(res.article);
