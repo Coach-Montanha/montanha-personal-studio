@@ -40,6 +40,15 @@ import {
   Scissors,
   Link2,
   Sliders,
+  Palette,
+  Paintbrush,
+  RotateCcw,
+  History,
+  AlignJustify,
+  Strikethrough,
+  Underline,
+  Italic,
+  Bold,
   Info,
   Share,
   AlertCircle,
@@ -125,6 +134,56 @@ export function BlogEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isRebuilding, setIsRebuilding] = useState(false);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyVersions, setHistoryVersions] = useState<Array<{ id: string; date: string; time: string; blocks: ArticleBlock[]; markdown: string; label: string }>>([]);
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!currentArticle?.slug) return;
+    try {
+      const raw = localStorage.getItem(`montanha_blog_history_${currentArticle.slug}`);
+      if (raw) setHistoryVersions(JSON.parse(raw));
+      else setHistoryVersions([]);
+    } catch {}
+  }, [currentArticle?.slug]);
+
+  const saveHistorySnapshot = (label: string, newBlocks: ArticleBlock[], newMd: string) => {
+    if (!currentArticle?.slug) return;
+    const now = new Date();
+    const version = {
+      id: "v_" + Date.now(),
+      date: now.toLocaleDateString("pt-BR"),
+      time: now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      blocks: newBlocks,
+      markdown: newMd,
+      label: label || "Alteração salva"
+    };
+    const updated = [version, ...historyVersions.slice(0, 19)];
+    setHistoryVersions(updated);
+    try {
+      localStorage.setItem(`montanha_blog_history_${currentArticle.slug}`, JSON.stringify(updated));
+    } catch {}
+  };
+
+  const handleRestoreVersion = (version: { blocks: ArticleBlock[]; markdown: string; date: string; time: string }) => {
+    setBlocks(version.blocks);
+    setRawMarkdown(version.markdown);
+    toast.success(`Versão de ${version.date} às ${version.time} restaurada!`);
+  };
+
+  const applyTextFormat = (blockId: string, format: "bold" | "italic" | "underline" | "strike") => {
+    setBlocks(blocks.map(b => {
+      if (b.id !== blockId) return b;
+      const content = b.content || "";
+      let wrapped = content;
+      if (format === "bold") wrapped = `**${content}**`;
+      else if (format === "italic") wrapped = `*${content}*`;
+      else if (format === "underline") wrapped = `<u>${content}</u>`;
+      else if (format === "strike") wrapped = `~~${content}~~`;
+      return { ...b, content: wrapped };
+    }));
+    toast.success("Formatação aplicada ao parágrafo!");
+  };
 
   // Local overrides (para persistência reativa imediata no cliente)
   const [localArticles, setLocalArticles] = useState<any[]>(() => {
@@ -793,6 +852,17 @@ export function BlogEditorPage() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setHistoryOpen(true)}
+              className="gap-1.5 text-xs border-amber-500/30 text-amber-400 hover:bg-amber-500/10 font-semibold"
+              title="Histórico de versões e alterações salvas nos últimos 10 dias"
+            >
+              <History className="h-3.5 w-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Histórico ({historyVersions.length})</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => window.open(`/materiais/artigos/${currentArticle.slug}`, "_blank")}
               className="gap-1.5"
             >
@@ -1271,22 +1341,216 @@ export function BlogEditorPage() {
                         </div>
                       )}
 
-                      {/* Bloco: Parágrafo com suporte a texto fluído e hyperlinks */}
+                      {/* Bloco: Parágrafo com Formatação Completa (Tipografia, Alinhamento, Fundo e Preenchimento) */}
                       {block.type === "paragraph" && (
-                        <div className="space-y-1.5 pr-24 sm:pr-32">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
-                              Parágrafo de Texto
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              Dica: use <code className="text-purple-400">[texto](link)</code> para hiperlinks
-                            </span>
+                        <div className="space-y-2 pr-24 sm:pr-32">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1">
+                                <AlignLeft className="h-3 w-3" /> Texto
+                              </span>
+                              <div className="flex items-center rounded-md border border-border bg-background p-0.5 shadow-sm">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-foreground hover:bg-muted font-bold"
+                                  onClick={() => applyTextFormat(block.id, "bold")}
+                                  title="Negrito (Ctrl+B / **texto**)"
+                                >
+                                  <Bold className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-foreground hover:bg-muted italic"
+                                  onClick={() => applyTextFormat(block.id, "italic")}
+                                  title="Itálico (Ctrl+I / *texto*)"
+                                >
+                                  <Italic className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-foreground hover:bg-muted underline"
+                                  onClick={() => applyTextFormat(block.id, "underline")}
+                                  title="Sublinhado (<u>texto</u>)"
+                                >
+                                  <Underline className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-foreground hover:bg-muted line-through"
+                                  onClick={() => applyTextFormat(block.id, "strike")}
+                                  title="Tachado / Riscado (~~texto~~)"
+                                >
+                                  <Strikethrough className="h-3 w-3" />
+                                </Button>
+                              </div>
+
+                              <div className="flex items-center rounded-md border border-border bg-background p-0.5 shadow-sm">
+                                <Button
+                                  type="button"
+                                  variant={!block.textAlign || block.textAlign === "left" ? "default" : "ghost"}
+                                  size="icon"
+                                  className="h-6 w-6 text-xs p-0"
+                                  onClick={() => handleUpdateImageBlock(block.id, { textAlign: "left" })}
+                                  title="Alinhar à Esquerda"
+                                >
+                                  <AlignLeft className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant={block.textAlign === "center" ? "default" : "ghost"}
+                                  size="icon"
+                                  className="h-6 w-6 text-xs p-0"
+                                  onClick={() => handleUpdateImageBlock(block.id, { textAlign: "center" })}
+                                  title="Alinhar ao Centro"
+                                >
+                                  <AlignCenter className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant={block.textAlign === "right" ? "default" : "ghost"}
+                                  size="icon"
+                                  className="h-6 w-6 text-xs p-0"
+                                  onClick={() => handleUpdateImageBlock(block.id, { textAlign: "right" })}
+                                  title="Alinhar à Direita"
+                                >
+                                  <AlignRight className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant={block.textAlign === "justify" ? "default" : "ghost"}
+                                  size="icon"
+                                  className="h-6 w-6 text-xs p-0"
+                                  onClick={() => handleUpdateImageBlock(block.id, { textAlign: "justify" })}
+                                  title="Justificado"
+                                >
+                                  <AlignJustify className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedBlockId(selectedBlockId === block.id ? null : block.id)}
+                              className="h-6 px-2 text-[10px] gap-1 text-primary hover:bg-primary/10"
+                              title="Configurações de Cor de Fundo, Preenchimento e Tipografia"
+                            >
+                              <Paintbrush className="h-3 w-3" />
+                              <span>Estilo & Cores</span>
+                            </Button>
                           </div>
+
+                          {selectedBlockId === block.id && (
+                            <div className="p-3 rounded-lg border border-border bg-muted/40 space-y-3">
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                <div>
+                                  <Label className="text-[10px] text-muted-foreground font-semibold">Tamanho Fonte (px)</Label>
+                                  <Input
+                                    type="number"
+                                    min={12}
+                                    max={36}
+                                    value={block.fontSize || 16}
+                                    onChange={(e) => handleUpdateImageBlock(block.id, { fontSize: Number(e.target.value) })}
+                                    className="h-7 text-xs mt-1"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-[10px] text-muted-foreground font-semibold">Altura Linha (px)</Label>
+                                  <Input
+                                    type="number"
+                                    min={16}
+                                    max={48}
+                                    value={block.lineHeight || 26}
+                                    onChange={(e) => handleUpdateImageBlock(block.id, { lineHeight: Number(e.target.value) })}
+                                    className="h-7 text-xs mt-1"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-[10px] text-muted-foreground font-semibold">Cor do Texto</Label>
+                                  <div className="flex items-center gap-1.5 mt-1">
+                                    <input
+                                      type="color"
+                                      value={block.textColor || "#f4f4f5"}
+                                      onChange={(e) => handleUpdateImageBlock(block.id, { textColor: e.target.value })}
+                                      className="h-7 w-7 rounded cursor-pointer border border-border bg-transparent p-0"
+                                    />
+                                    <span className="text-[10px] font-mono text-muted-foreground">{block.textColor || "Padrão"}</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label className="text-[10px] text-muted-foreground font-semibold">Cor de Fundo</Label>
+                                  <div className="flex items-center gap-1.5 mt-1">
+                                    <input
+                                      type="color"
+                                      value={block.backgroundColor || "#000000"}
+                                      onChange={(e) => handleUpdateImageBlock(block.id, { backgroundColor: e.target.value })}
+                                      className="h-7 w-7 rounded cursor-pointer border border-border bg-transparent p-0"
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-1.5 text-[10px]"
+                                      onClick={() => handleUpdateImageBlock(block.id, { backgroundColor: undefined })}
+                                    >
+                                      Limpar
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/50">
+                                <div>
+                                  <Label className="text-[10px] text-muted-foreground font-semibold">Preenchimento Interno (Padding px)</Label>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={40}
+                                    value={block.padding || 0}
+                                    onChange={(e) => handleUpdateImageBlock(block.id, { padding: Number(e.target.value) })}
+                                    className="h-7 text-xs mt-1"
+                                    placeholder="0"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-[10px] text-muted-foreground font-semibold">Margem Inferior (px)</Label>
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={40}
+                                    value={block.margin || 8}
+                                    onChange={(e) => handleUpdateImageBlock(block.id, { margin: Number(e.target.value) })}
+                                    className="h-7 text-xs mt-1"
+                                    placeholder="8"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           <Textarea
                             rows={Math.max(3, Math.min(10, ((block.content || "").match(/\n/g) || []).length + 2))}
                             value={block.content || ""}
                             onChange={(e) => handleUpdateBlockContent(block.id, e.target.value)}
-                            className="text-sm leading-relaxed"
+                            style={{
+                              textAlign: block.textAlign || "left",
+                              fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+                              lineHeight: block.lineHeight ? `${block.lineHeight}px` : undefined,
+                              color: block.textColor || undefined,
+                              backgroundColor: block.backgroundColor || undefined,
+                              padding: block.padding ? `${block.padding}px` : undefined,
+                              marginBottom: block.margin ? `${block.margin}px` : undefined,
+                            }}
+                            className="text-sm leading-relaxed transition-all rounded-md"
                           />
                         </div>
                       )}
@@ -1506,7 +1770,24 @@ export function BlogEditorPage() {
                       if (lastIdx < content.length) {
                         parts.push(content.substring(lastIdx));
                       }
-                      return <p key={block.id} className="text-sm leading-relaxed whitespace-pre-line">{parts}</p>;
+                      return (
+  <p
+    key={block.id}
+    style={{
+      textAlign: block.textAlign || "left",
+      fontSize: block.fontSize ? `${block.fontSize}px` : undefined,
+      lineHeight: block.lineHeight ? `${block.lineHeight}px` : undefined,
+      color: block.textColor || undefined,
+      backgroundColor: block.backgroundColor || undefined,
+      padding: block.padding ? `${block.padding}px` : undefined,
+      marginBottom: block.margin ? `${block.margin}px` : undefined,
+      borderRadius: block.backgroundColor ? "8px" : undefined,
+    }}
+    className="text-sm leading-relaxed whitespace-pre-line"
+  >
+    {parts}
+  </p>
+);
                     }
                     if (block.type === "image" && block.src) {
                       return (

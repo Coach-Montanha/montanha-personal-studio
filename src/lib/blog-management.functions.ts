@@ -35,6 +35,15 @@ export interface ArticleBlock {
   htmlContent?: string;
   faqList?: Array<{ question: string; answer: string }>;
   columnContents?: string[];
+  // Propriedades de Estilo & Tipografia (Padrão Systeme.io)
+  textAlign?: "left" | "center" | "right" | "justify";
+  fontSize?: number;
+  lineHeight?: number;
+  letterSpacing?: number;
+  textColor?: string;
+  backgroundColor?: string;
+  padding?: number;
+  margin?: number;
 }
 
 export interface ArticleDetail {
