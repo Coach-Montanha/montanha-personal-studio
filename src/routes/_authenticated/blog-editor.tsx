@@ -40,6 +40,18 @@ import {
   Scissors,
   Link2,
   Sliders,
+  Info,
+  Share,
+  AlertCircle,
+  Code2,
+  MessageSquare,
+  Columns4,
+  Columns3,
+  Columns2,
+  MousePointerClick,
+  HelpCircle,
+  Volume2,
+  Video,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -407,16 +419,45 @@ export function BlogEditorPage() {
           ? "Digite o conteúdo do seu parágrafo aqui..."
           : type === "blockquote"
           ? "Citação ou destaque do artigo"
+          : type === "callout"
+          ? "Texto informativo destacado em caixa colorida"
           : "",
       level: type === "heading" ? 2 : undefined,
       items: type === "list" ? ["Item 1 da lista", "Item 2 da lista", "Item 3 da lista"] : undefined,
-      src: type === "image" ? "" : undefined,
+      src: type === "image" || type === "video" || type === "audio" ? "" : undefined,
       alt: type === "image" ? "" : undefined,
+      title:
+        type === "callout"
+          ? "Nota Importante"
+          : type === "button"
+          ? "Quero Começar Agora"
+          : type === "video"
+          ? "Vídeo de Demonstração"
+          : type === "audio"
+          ? "Áudio Explicativo"
+          : undefined,
       caption: type === "image" ? "" : undefined,
       width: type === "image" ? "full" : undefined,
-      linkUrl: type === "image" ? "" : undefined,
+      linkUrl: type === "button" ? "https://wa.me/5583999999999" : type === "image" ? "" : undefined,
+      variant:
+        type === "button"
+          ? "primary"
+          : type === "columns"
+          ? "2col"
+          : undefined,
+      htmlContent: type === "custom_html" ? "<div class=\"p-4 bg-muted/40 rounded-lg text-center\">Código HTML Personalizado</div>" : undefined,
+      faqList:
+        type === "faq"
+          ? [
+              { question: "Como funciona a consultoria?", answer: "A consultoria é 100% individualizada com acompanhamento semanal pelo app." },
+              { question: "Preciso ter experiência prévia?", answer: "Não, os treinos são adaptados ao seu nível atual com progressão gradual." }
+            ]
+          : undefined,
+      columnContents:
+        type === "columns"
+          ? ["Conteúdo da Coluna 1: Descreva o primeiro ponto ou exercício aqui.", "Conteúdo da Coluna 2: Descreva o contraponto ou detalhes adicionais aqui."]
+          : undefined,
     };
-
     if (typeof index === "number") {
       const copy = [...blocks];
       copy.splice(index + 1, 0, newBlock);
@@ -852,67 +893,207 @@ export function BlogEditorPage() {
               </div>
             </div>
 
-            {/* Paleta de Blocos */}
-            <div className="border-t border-border pt-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+            {/* Paleta Completa de Blocos e Mídias (Padrão Systeme.io) */}
+            <div className="border-t border-border pt-4 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <Layers className="h-3.5 w-3.5 text-primary" />
-                Adicionar Novos Blocos
+                Elementos & Mídia (Systeme.io)
               </h3>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAddBlock("heading")}
-                  className="justify-start gap-2 h-9 text-xs"
-                >
-                  <Type className="h-3.5 w-3.5 text-amber-500" />
-                  Subtítulo
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAddBlock("paragraph")}
-                  className="justify-start gap-2 h-9 text-xs"
-                >
-                  <AlignLeft className="h-3.5 w-3.5 text-blue-500" />
-                  Parágrafo
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAddBlock("blockquote")}
-                  className="justify-start gap-2 h-9 text-xs"
-                >
-                  <Quote className="h-3.5 w-3.5 text-purple-500" />
-                  Citação
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAddBlock("list")}
-                  className="justify-start gap-2 h-9 text-xs"
-                >
-                  <List className="h-3.5 w-3.5 text-emerald-500" />
-                  Lista
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAddBlock("image")}
-                  className="justify-start gap-2 h-9 text-xs border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-400 font-semibold"
-                >
-                  <ImageIcon className="h-3.5 w-3.5 text-emerald-400" />
-                  Imagem
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAddBlock("divider")}
-                  className="col-span-2 justify-start gap-2 h-9 text-xs"
-                >
-                  <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-                  Linha Divisória
-                </Button>
+
+              {/* Seção 1: Texto */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Texto & Conteúdo</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("paragraph")}
+                    className="justify-start gap-1.5 h-8 text-xs hover:border-blue-500/50"
+                  >
+                    <AlignLeft className="h-3.5 w-3.5 text-blue-500" />
+                    Texto / Parágrafo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("heading")}
+                    className="justify-start gap-1.5 h-8 text-xs hover:border-amber-500/50"
+                  >
+                    <Type className="h-3.5 w-3.5 text-amber-500" />
+                    Título / Cabeçalho
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("list")}
+                    className="justify-start gap-1.5 h-8 text-xs hover:border-emerald-500/50"
+                  >
+                    <List className="h-3.5 w-3.5 text-emerald-500" />
+                    Lista Marcadores
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("callout")}
+                    className="justify-start gap-1.5 h-8 text-xs hover:border-purple-500/50"
+                  >
+                    <AlertCircle className="h-3.5 w-3.5 text-purple-500" />
+                    Caixa de Conteúdo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("blockquote")}
+                    className="col-span-2 justify-start gap-1.5 h-8 text-xs hover:border-indigo-500/50"
+                  >
+                    <Quote className="h-3.5 w-3.5 text-indigo-400" />
+                    Citação / Destaque
+                  </Button>
+                </div>
+              </div>
+
+              {/* Seção 2: Layout da Coluna */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Layout de Colunas</span>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleAddBlock("columns");
+                      setTimeout(() => {
+                        setBlocks(prev => {
+                          const last = prev[prev.length - 1];
+                          if (last && last.type === "columns") {
+                            return prev.map(b => b.id === last.id ? { ...b, variant: "2col", columnContents: ["Coluna 1: Escreva o primeiro bloco aqui.", "Coluna 2: Escreva o segundo bloco aqui."] } : b);
+                          }
+                          return prev;
+                        });
+                      }, 50);
+                    }}
+                    className="flex flex-col items-center justify-center h-12 text-[10px] gap-1 p-1 hover:border-primary/50"
+                  >
+                    <Columns2 className="h-4 w-4 text-primary" />
+                    2 Colunas
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleAddBlock("columns");
+                      setTimeout(() => {
+                        setBlocks(prev => {
+                          const last = prev[prev.length - 1];
+                          if (last && last.type === "columns") {
+                            return prev.map(b => b.id === last.id ? { ...b, variant: "3col", columnContents: ["Coluna 1: Ponto A", "Coluna 2: Ponto B", "Coluna 3: Ponto C"] } : b);
+                          }
+                          return prev;
+                        });
+                      }, 50);
+                    }}
+                    className="flex flex-col items-center justify-center h-12 text-[10px] gap-1 p-1 hover:border-primary/50"
+                  >
+                    <Columns3 className="h-4 w-4 text-primary" />
+                    3 Colunas
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      handleAddBlock("columns");
+                      setTimeout(() => {
+                        setBlocks(prev => {
+                          const last = prev[prev.length - 1];
+                          if (last && last.type === "columns") {
+                            return prev.map(b => b.id === last.id ? { ...b, variant: "4col", columnContents: ["Col 1", "Col 2", "Col 3", "Col 4"] } : b);
+                          }
+                          return prev;
+                        });
+                      }, 50);
+                    }}
+                    className="flex flex-col items-center justify-center h-12 text-[10px] gap-1 p-1 hover:border-primary/50"
+                  >
+                    <Columns4 className="h-4 w-4 text-primary" />
+                    4 Colunas
+                  </Button>
+                </div>
+              </div>
+
+              {/* Seção 3: Arquivos de Mídia */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Arquivos de Mídia</span>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("image")}
+                    className="flex flex-col items-center justify-center h-12 text-[10px] gap-1 p-1 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-400 font-semibold"
+                  >
+                    <ImageIcon className="h-4 w-4 text-emerald-400" />
+                    Imagem
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("video")}
+                    className="flex flex-col items-center justify-center h-12 text-[10px] gap-1 p-1 border-rose-500/30 hover:bg-rose-500/10 text-rose-400 font-semibold"
+                  >
+                    <Video className="h-4 w-4 text-rose-400" />
+                    Vídeo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("audio")}
+                    className="flex flex-col items-center justify-center h-12 text-[10px] gap-1 p-1 border-amber-500/30 hover:bg-amber-500/10 text-amber-400 font-semibold"
+                  >
+                    <Volume2 className="h-4 w-4 text-amber-400" />
+                    Áudio
+                  </Button>
+                </div>
+              </div>
+
+              {/* Seção 4: Interações, FAQ & Botões */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Formulário & Interação</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("button")}
+                    className="justify-start gap-1.5 h-8 text-xs border-primary/30 text-primary font-semibold hover:bg-primary/10"
+                  >
+                    <MousePointerClick className="h-3.5 w-3.5 text-primary" />
+                    Botão CTA
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("faq")}
+                    className="justify-start gap-1.5 h-8 text-xs border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                  >
+                    <HelpCircle className="h-3.5 w-3.5 text-cyan-400" />
+                    FAQ (Acordeão)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("custom_html")}
+                    className="justify-start gap-1.5 h-8 text-xs hover:border-primary/40"
+                  >
+                    <Code2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    Código HTML
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddBlock("divider")}
+                    className="justify-start gap-1.5 h-8 text-xs hover:border-primary/40"
+                  >
+                    <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+                    Linha Divisória
+                  </Button>
+                </div>
               </div>
             </div>
           </aside>
@@ -1385,6 +1566,107 @@ export function BlogEditorPage() {
                     }
                     if (block.type === "divider") {
                       return <hr key={block.id} className="border-border my-6" />;
+                    }
+                    if (block.type === "callout") {
+                      return (
+                        <div key={block.id} className="my-5 p-4 rounded-xl border border-purple-500/40 bg-purple-950/20 text-purple-100 shadow-sm">
+                          {block.title && <h4 className="text-base font-bold text-purple-300 mb-1 flex items-center gap-2"><AlertCircle className="h-4 w-4" /> {block.title}</h4>}
+                          <p className="text-sm leading-relaxed whitespace-pre-line">{block.content}</p>
+                        </div>
+                      );
+                    }
+                    if (block.type === "video") {
+                      return (
+                        <div key={block.id} className="my-6 space-y-2">
+                          {block.title && <h4 className="text-base font-bold text-foreground">{block.title}</h4>}
+                          <div className="aspect-video w-full rounded-xl overflow-hidden border border-border bg-black flex items-center justify-center">
+                            {block.src?.includes("youtube") || block.src?.includes("youtu.be") ? (
+                              <iframe
+                                src={block.src.replace("watch?v=", "embed/")}
+                                className="w-full h-full border-0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <video src={block.src} controls className="w-full h-full" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (block.type === "audio") {
+                      return (
+                        <div key={block.id} className="my-5 p-4 rounded-xl border border-amber-500/40 bg-amber-950/20 space-y-2">
+                          {block.title && <h4 className="text-sm font-bold text-amber-300 flex items-center gap-2"><Volume2 className="h-4 w-4" /> {block.title}</h4>}
+                          <audio src={block.src} controls className="w-full" />
+                        </div>
+                      );
+                    }
+                    if (block.type === "button") {
+                      return (
+                        <div key={block.id} className="my-6 text-center">
+                          <a
+                            href={block.linkUrl || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg hover:scale-105 ${
+                              block.variant === "secondary"
+                                ? "bg-purple-600 text-white hover:bg-purple-700 shadow-purple-900/30"
+                                : block.variant === "outline"
+                                ? "border-2 border-primary text-primary hover:bg-primary/10"
+                                : "bg-primary text-black hover:bg-amber-400 shadow-amber-900/30"
+                            }`}
+                          >
+                            <MousePointerClick className="h-4 w-4 mr-2" />
+                            {block.title || "Clique Aqui"}
+                          </a>
+                        </div>
+                      );
+                    }
+                    if (block.type === "faq") {
+                      return (
+                        <div key={block.id} className="my-6 space-y-2 border border-border rounded-xl p-4 bg-card/60">
+                          <h4 className="text-base font-bold text-foreground mb-3 flex items-center gap-2"><HelpCircle className="h-4 w-4 text-cyan-400" /> Perguntas Frequentes</h4>
+                          <div className="space-y-2">
+                            {(block.faqList || []).map((faq, fIdx) => (
+                              <details key={fIdx} className="group border border-border rounded-lg p-3 bg-muted/20 open:bg-muted/40 transition-colors">
+                                <summary className="font-semibold text-sm cursor-pointer list-none flex items-center justify-between text-foreground">
+                                  <span>{faq.question}</span>
+                                  <span className="text-xs text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
+                                </summary>
+                                <p className="text-xs text-muted-foreground mt-2 leading-relaxed whitespace-pre-line pt-2 border-t border-border/50">
+                                  {faq.answer}
+                                </p>
+                              </details>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (block.type === "columns") {
+                      return (
+                        <div
+                          key={block.id}
+                          className={`my-6 grid gap-4 grid-cols-1 ${
+                            block.variant === "3col" ? "sm:grid-cols-3" : block.variant === "4col" ? "sm:grid-cols-4" : "sm:grid-cols-2"
+                          }`}
+                        >
+                          {(block.columnContents || []).map((colText, cIdx) => (
+                            <div key={cIdx} className="p-4 rounded-xl border border-border bg-card shadow-sm text-sm leading-relaxed whitespace-pre-line">
+                              {colText}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                    if (block.type === "custom_html") {
+                      return (
+                        <div
+                          key={block.id}
+                          className="my-5"
+                          dangerouslySetInnerHTML={{ __html: block.htmlContent || "" }}
+                        />
+                      );
                     }
                     return null;
                   })}

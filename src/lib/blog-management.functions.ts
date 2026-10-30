@@ -5,7 +5,22 @@ const ARTICLES_DIR = "c:\\Users\\Administrator\\Documents\\Projetos\\Obsidian-Co
 
 export interface ArticleBlock {
   id: string;
-  type: "heading" | "paragraph" | "blockquote" | "callout" | "list" | "divider" | "image" | "popular_posts" | "whatsapp_feedback";
+  type:
+    | "heading"
+    | "paragraph"
+    | "blockquote"
+    | "callout"
+    | "list"
+    | "divider"
+    | "image"
+    | "video"
+    | "audio"
+    | "button"
+    | "faq"
+    | "columns"
+    | "custom_html"
+    | "popular_posts"
+    | "whatsapp_feedback";
   content?: string;
   level?: number;
   items?: string[];
@@ -15,6 +30,11 @@ export interface ArticleBlock {
   caption?: string;
   width?: "full" | "medium" | "small" | "center";
   linkUrl?: string;
+  variant?: "primary" | "secondary" | "outline" | "danger" | "2col" | "3col" | "4col";
+  subtitle?: string;
+  htmlContent?: string;
+  faqList?: Array<{ question: string; answer: string }>;
+  columnContents?: string[];
 }
 
 export interface ArticleDetail {
@@ -185,7 +205,27 @@ export function blocksToMarkdown(blocks: ArticleBlock[]): string {
         }
         return `![${b.alt || ""}](${b.src || ""})${caption}\n`;
       }
+      if (b.type === "video") {
+        return `<video src="${b.src || ""}" title="${b.title || ""}"></video>\n`;
+      }
+      if (b.type === "audio") {
+        return `<audio src="${b.src || ""}" title="${b.title || ""}"></audio>\n`;
+      }
+      if (b.type === "button") {
+        return `<button href="${b.linkUrl || "#"}" variant="${b.variant || "primary"}">${b.title || "Clique Aqui"}</button>\n`;
+      }
       if (b.type === "callout") return `> [!NOTE] ${b.title || "Destaque"}\n> ${b.content || ""}\n`;
+      if (b.type === "faq") {
+        const list = (b.faqList || []).map(f => `<details><summary>${f.question}</summary><p>${f.answer}</p></details>`).join("\n");
+        return `<div class="faq-section">\n${list}\n</div>\n`;
+      }
+      if (b.type === "columns") {
+        const cols = (b.columnContents || []).map(col => `<div class="col">${col}</div>`).join("\n");
+        return `<div class="columns-${b.variant || "2col"}">\n${cols}\n</div>\n`;
+      }
+      if (b.type === "custom_html") {
+        return `${b.htmlContent || ""}\n`;
+      }
       return `${b.content || ""}\n`;
     })
     .join("\n");
