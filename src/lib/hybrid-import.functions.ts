@@ -253,11 +253,7 @@ export const importHybridProgram = createServerFn({ method: "POST" })
     const targetStudentId = (data.studioStudentId || data.ptStudentId)!;
     let studentName = "";
 
-    if (data.studentType === "studio" || data.studioStudentId) {
-      const { data: student, error: stErr } = await supabase
-        .from("students")
-        .select("id,user_id,name")
-        .eq("id", targetStudentId)
+    programPayload.pt_student_id = targetStudentId;
         .maybeSingle();
       if (stErr) throw new Error(stErr.message);
       if (!student) throw new Error("Aluno do Studio não encontrado");

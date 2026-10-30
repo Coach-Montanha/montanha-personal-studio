@@ -1199,7 +1199,6 @@ export function PrescreverIaDialog({
         const newProgPayload: any = {
           user_id: userId,
           pt_student_id: isStudioStudent ? (studioStudentId || selectedStudentId || finalStudentId) : finalStudentId,
-          studio_student_id: isStudioStudent ? (studioStudentId || selectedStudentId) : null,
           name: progTitle,
           category: "hypertrophy",
           level: "intermediate",
@@ -2000,46 +1999,6 @@ export function PrescreverIaDialog({
               </div>
             ) : (
               <div className="space-y-3">
-                {(!geminiApiKey || showApiKeyInput) && (
-                  <div className="rounded-xl border border-primary/40 bg-primary/10 p-3.5 space-y-2 animate-in fade-in duration-200">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                        <Key className="h-4 w-4 text-primary" />
-                        <span>Configurar Chave Google Gemini</span>
-                      </div>
-                      <a
-                        href="https://aistudio.google.com/app/apikey"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[11px] text-primary hover:underline font-semibold"
-                      >
-                        Obter Chave Gratuita ↗
-                      </a>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-tight">
-                      Insira sua chave do Google Gemini. Ela será consolidada e salva permanentemente neste e em todos os seus dispositivos.
-                    </p>
-                    <div className="flex items-center gap-2 pt-1">
-                      <input
-                        type="password"
-                        value={tempApiKey}
-                        onChange={(e) => setTempApiKey(e.target.value)}
-                        placeholder="Cole sua chave AIzaSy..."
-                        className="flex-1 h-9 rounded-lg border border-border bg-background px-3 text-xs font-mono"
-                        autoFocus={showApiKeyInput}
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="default"
-                        onClick={() => salvarApiKey(tempApiKey)}
-                        className="h-9 px-4 text-xs font-semibold"
-                      >
-                        Salvar Chave
-                      </Button>
-                    </div>
-                  </div>
-                )}
 
               <Button
                 onClick={() => gerarMut.mutate()}

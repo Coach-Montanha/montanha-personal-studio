@@ -307,7 +307,7 @@ export function ProgramEditorDialog({
   const selectedDay = days.find((d) => d.id === selectedDayId);
   const isTemplate =
     program?.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
-    (!program?.studio_student_id && !program?.pt_student_id);
+    (!program?.pt_student_id);
   const alunoNome = program?.pt_students?.name;
 
   return (

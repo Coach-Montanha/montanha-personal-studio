@@ -100,7 +100,7 @@ type ProgramRow = {
   sort_order: number;
   ai_prompt: string | null;
   ai_generated_at: string | null;
-  studio_student_id: string | null;
+  studio_student_id?: string | null;
   pt_student_id: string | null;
   created_at: string;
   // Joins
@@ -201,9 +201,9 @@ export function TreinosPage() {
 
       const isTemplate =
         p.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
-        (!p.studio_student_id && !p.pt_student_id);
+        (!p.pt_student_id);
       const isStudio =
-        !isTemplate && (!!p.studio_student_id || (p.pt_students as any)?.notes?.includes("[Studio]") || (p.pt_students as any)?.notes?.includes("[Aluno Studio]"));
+        !isTemplate && ( (p.pt_students as any)?.notes?.includes("[Studio]") || (p.pt_students as any)?.notes?.includes("[Aluno Studio]"));
       const isPt = !isTemplate && !isStudio;
 
       // Filtro por tipo de aluno
@@ -224,19 +224,19 @@ export function TreinosPage() {
   const totalStudio = programs.filter(
     (p) =>
       p.pt_student_id !== "00000000-0000-0000-0000-000000000001" &&
-      (!!p.studio_student_id || (p.pt_students as any)?.notes?.includes("[Studio]") || (p.pt_students as any)?.notes?.includes("[Aluno Studio]"))
+      ( (p.pt_students as any)?.notes?.includes("[Studio]") || (p.pt_students as any)?.notes?.includes("[Aluno Studio]"))
   ).length;
   const totalPt = programs.filter(
     (p) =>
       p.pt_student_id !== "00000000-0000-0000-0000-000000000001" &&
-      !p.studio_student_id &&
+      
       !(p.pt_students as any)?.notes?.includes("[Studio]") &&
       !(p.pt_students as any)?.notes?.includes("[Aluno Studio]")
   ).length;
   const totalModelos = programs.filter(
     (p) =>
       p.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
-      (!p.studio_student_id && !p.pt_student_id)
+      (!p.pt_student_id)
   ).length;
 
   async function handleDelete(id: string) {
@@ -518,9 +518,9 @@ export function TreinosPage() {
               {programasFiltrados.map((prog) => {
                 const isTemplate =
                   prog.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
-                  (!prog.studio_student_id && !prog.pt_student_id);
+                  (!prog.pt_student_id);
                 const isStudio =
-                  !isTemplate && (!!prog.studio_student_id || (prog.pt_students as any)?.notes?.includes("[Studio]") || (prog.pt_students as any)?.notes?.includes("[Aluno Studio]"));
+                  !isTemplate && ( (prog.pt_students as any)?.notes?.includes("[Studio]") || (prog.pt_students as any)?.notes?.includes("[Aluno Studio]"));
                 const isPt = !isTemplate && !isStudio;
                 const aluno = isTemplate ? null : (prog.students || prog.pt_students);
                 const isExpanded = expandedProgramId === prog.id;
