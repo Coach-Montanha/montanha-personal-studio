@@ -649,3 +649,58 @@ export const rebuildEntireBlogFn = createServerFn({ method: "POST" }).handler(as
     }
   });
 });
+
+
+export const generateArticleSummaryFn = createServerFn({ method: "POST" })
+  .validator((raw: any) =>
+    z
+      .object({
+        title: z.string(),
+        content: z.string(),
+      })
+      .parse(raw)
+  )
+  .handler(async ({ data }) => {
+    const plainText = data.content
+      .replace(/!\[.*?\]\(.*?\)/g, "")
+      .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+      .replace(/[#*`_>]/g, "")
+      .trim();
+
+    try {
+      const { callLovableAiJson } = await import("@/lib/ai-gateway.server");
+      const system = `Você é o assistente editorial do Coach Montanha.
+Sua missão é gerar um RESUMO / EXCERPT curto, direto, envolvente e com poucas palavras (máximo 140 a 160 caracteres).
+O resumo será exibido na tela inicial e nos cards de apresentação dos artigos para atrair o leitor.
+Regras:
+1. Seja direto, sem enrolação e sem clichês.
+2. Não comece com "Neste artigo..." ou "O autor discute...". Comece direto no benefício ou fato marcante.
+3. Responda ESTRITAMENTE em formato JSON: { "summary": "seu resumo aqui" }`;
+
+      const prompt = `Título do Artigo: ${data.title}\n\nConteúdo do Artigo:\n${plainText.slice(0, 6000)}`;
+
+      const res = await callLovableAiJson<{ summary: string }>({
+        system,
+        prompt,
+      });
+
+      if (res?.data?.summary) {
+        return { success: true, summary: res.data.summary.trim() };
+      }
+    } catch (e: any) {
+      console.warn("[generateArticleSummaryFn] Falha na IA, usando extrator defensivo:", e?.message);
+    }
+
+    // Fallback determinístico de alta qualidade (extrai primeiras frases marcantes)
+    const sentences = plainText
+      .split(/(?<=[.?!])\s+/)
+      .filter((s) => s.length > 25 && !s.toLowerCase().startsWith("artigo"));
+    let fallback = sentences.slice(0, 2).join(" ").trim();
+    if (fallback.length > 150) {
+      fallback = fallback.slice(0, 147).trim() + "...";
+    }
+    if (!fallback) {
+      fallback = `Artigo completo sobre ${data.title} por Coach Montanha.`;
+    }
+    return { success: true, summary: fallback };
+  });

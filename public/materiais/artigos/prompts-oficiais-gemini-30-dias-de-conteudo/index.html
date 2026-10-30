@@ -622,6 +622,86 @@
       text-align: center;
     }
 
+    
+    /* Artigos Recomendados */
+    .recommended-section {
+      margin-top: 50px;
+      padding-top: 36px;
+      border-top: 1px solid var(--card-border);
+    }
+    .recommended-header {
+      margin-bottom: 24px;
+    }
+    .recommended-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      font-family: var(--font-title);
+      margin-bottom: 6px;
+    }
+    .recommended-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .recommended-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .rec-card {
+      background: #111115;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .rec-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      background: #15151a;
+    }
+    .rec-card-badge {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .rec-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      font-family: var(--font-title);
+    }
+    .rec-card-excerpt {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+    .rec-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 12px;
+    }
+    .rec-card-cta {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
     /* Navegação Sequencial */
     .nav-carousel {
       display: flex;
@@ -1083,6 +1163,46 @@
         Enviar Mensagem no WhatsApp ➔
       </a>
     </div>
+
+    
+    <!-- Seção de Artigos Recomendados (Indicações de Outros Artigos) -->
+    <div class="recommended-section">
+      <div class="recommended-header">
+        <h3 class="recommended-title">Artigos Recomendados</h3>
+        <p class="recommended-subtitle">Continue sua jornada de aprendizado com outras publicações selecionadas do Coach Montanha:</p>
+      </div>
+      <div class="recommended-grid">
+        
+        <a href="/materiais/artigos/fundamentos-treino-forca1" class="rec-card">
+          <div class="rec-card-badge">Fitness • Hipertrofia & Força</div>
+          <h4 class="rec-card-title">Os fundamentos que guiam o treinamento de força pt. 1</h4>
+          <p class="rec-card-excerpt">ARTIGO 167 - Os fundamentos que guiam o treinamento de força pt. 1 No mundo do treinamento físico, é comum ouvir um grande “d...</p>
+          <div class="rec-card-footer">
+            <span>⏱️ 8 min de leitura</span>
+            <span class="rec-card-cta">Ler artigo ➔</span>
+          </div>
+        </a>
+        <a href="/materiais/artigos/legumes-verduras-frutas-beneficios-riscos" class="rec-card">
+          <div class="rec-card-badge">Fitness • Nutrição & Jejum</div>
+          <h4 class="rec-card-title">Legumes, verduras e frutas: Como maximizar os benefícios e minimizar os riscos</h4>
+          <p class="rec-card-excerpt">ARTIGO 155 - Legumes, verduras e frutas: Como maximizar os benefícios e minimizar os riscos Legumes, verduras e frutas são a ...</p>
+          <div class="rec-card-footer">
+            <span>⏱️ 6 min de leitura</span>
+            <span class="rec-card-cta">Ler artigo ➔</span>
+          </div>
+        </a>
+        <a href="/materiais/artigos/treino-nordico-remo" class="rec-card">
+          <div class="rec-card-badge">Desenvolvimento Pessoal • Mindset</div>
+          <h4 class="rec-card-title">O treino nórdico de remo</h4>
+          <p class="rec-card-excerpt">ARTIGO 170 - O treino nórdico de remo ARTIGO 170 - O treino nórdico de remo O treino de remo costuma ser subestimado quando o...</p>
+          <div class="rec-card-footer">
+            <span>⏱️ 4 min de leitura</span>
+            <span class="rec-card-cta">Ler artigo ➔</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
 
     <!-- Navegação Sequencial -->
     <div class="nav-carousel">

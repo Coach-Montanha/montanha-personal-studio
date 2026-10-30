@@ -69,6 +69,7 @@ import {
   createArticleFn,
   deleteArticleFn,
   rebuildEntireBlogFn,
+  generateArticleSummaryFn,
   type ArticleBlock,
   type ArticleDetail,
   cleanTitle,
@@ -111,6 +112,7 @@ export function BlogEditorPage() {
   const [rawMarkdown, setRawMarkdown] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isRebuilding, setIsRebuilding] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
 
   // Local overrides (para persistência reativa imediata no cliente)
   const [localArticles, setLocalArticles] = useState<any[]>(() => {
@@ -632,6 +634,41 @@ export function BlogEditorPage() {
     }
   };
 
+  // Gerar Resumo Curto e Direto com IA
+  const handleGenerateAiSummary = async () => {
+    if (!currentArticle) return;
+    setIsGeneratingSummary(true);
+    try {
+      const fullText =
+        editorMode === "markdown"
+          ? rawMarkdown
+          : blocks
+              .map((b) => b.content || (b.items ? b.items.join(" ") : ""))
+              .join("\n\n");
+
+      const res = await generateArticleSummaryFn({
+        data: {
+          title: currentArticle.full_title || currentArticle.clean_title,
+          content: fullText,
+        },
+      });
+
+      if (res?.summary) {
+        setCurrentArticle({
+          ...currentArticle,
+          excerpt: res.summary,
+        });
+        toast.success("Resumo com IA gerado com sucesso!");
+      } else {
+        toast.error("Não foi possível gerar o resumo.");
+      }
+    } catch (e: any) {
+      toast.error(`Erro ao gerar resumo: ${e?.message}`);
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  };
+
   // =========================================================================
   // TELA 2: EDITOR DE BLOCOS DO ARTIGO
   // =========================================================================
@@ -789,12 +826,27 @@ export function BlogEditorPage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs">Resumo / Excerpt</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold">Resumo / Excerpt</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleGenerateAiSummary}
+                      disabled={isGeneratingSummary}
+                      className="h-6 px-2 text-[11px] gap-1 font-semibold text-purple-400 hover:text-purple-300 hover:bg-purple-950/40"
+                      title="Gerar resumo curto e direto com IA para os cards de apresentação dos artigos"
+                    >
+                      <Sparkles className={`h-3 w-3 ${isGeneratingSummary ? "animate-spin text-purple-400" : "text-purple-400"}`} />
+                      <span>{isGeneratingSummary ? "Resumindo..." : "Gerar com IA"}</span>
+                    </Button>
+                  </div>
                   <Textarea
                     rows={3}
                     value={currentArticle.excerpt}
                     onChange={(e) => setCurrentArticle({ ...currentArticle, excerpt: e.target.value })}
                     className="mt-1 text-xs"
+                    placeholder="Resumo curto e direto para a tela de apresentação dos artigos..."
                   />
                 </div>
               </div>

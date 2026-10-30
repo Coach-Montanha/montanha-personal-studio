@@ -663,7 +663,7 @@ def generate_footer_html():
   </footer>
 """
 
-def generate_article_html(meta, body_html, prev_art, next_art):
+def generate_article_html(meta, body_html, prev_art, next_art, recommended_arts=None):
     # Seção dos 6 artigos populares clássicos do Systeme.io
     populares = [
         ("O segredo do meu emagrecimento é o NEAT!", "/materiais/artigos/o-segredo-do-meu-emagrecimento-e-o-neat"),
@@ -683,6 +683,34 @@ def generate_article_html(meta, body_html, prev_art, next_art):
 
     prev_link = f'<a href="/materiais/artigos/{prev_art["slug"]}" class="nav-prev">← {prev_art["clean_title"][:40]}...</a>' if prev_art else '<span></span>'
     next_link = f'<a href="/materiais/artigos/{next_art["slug"]}" class="nav-next">{next_art["clean_title"][:40]}... →</a>' if next_art else '<span></span>'
+
+    
+    rec_cards_html = ""
+    if recommended_arts:
+        for r in recommended_arts:
+            rec_cards_html += f'''
+        <a href="/materiais/artigos/{r['slug']}" class="rec-card">
+          <div class="rec-card-badge">{r['category']} • {r['theme']}</div>
+          <h4 class="rec-card-title">{r['clean_title']}</h4>
+          <p class="rec-card-excerpt">{r['excerpt'][:125]}...</p>
+          <div class="rec-card-footer">
+            <span>⏱️ {r['read_time']} min de leitura</span>
+            <span class="rec-card-cta">Ler artigo ➔</span>
+          </div>
+        </a>'''
+
+    recommended_section_html = f'''
+    <!-- Seção de Artigos Recomendados (Indicações de Outros Artigos) -->
+    <div class="recommended-section">
+      <div class="recommended-header">
+        <h3 class="recommended-title">Artigos Recomendados</h3>
+        <p class="recommended-subtitle">Continue sua jornada de aprendizado com outras publicações selecionadas do Coach Montanha:</p>
+      </div>
+      <div class="recommended-grid">
+        {rec_cards_html}
+      </div>
+    </div>
+''' if rec_cards_html else ""
 
     html = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -911,6 +939,86 @@ def generate_article_html(meta, body_html, prev_art, next_art):
       text-align: center;
     }}
 
+    
+    /* Artigos Recomendados */
+    .recommended-section {{
+      margin-top: 50px;
+      padding-top: 36px;
+      border-top: 1px solid var(--card-border);
+    }}
+    .recommended-header {{
+      margin-bottom: 24px;
+    }}
+    .recommended-title {{
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      font-family: var(--font-title);
+      margin-bottom: 6px;
+    }}
+    .recommended-subtitle {{
+      font-size: 14px;
+      color: var(--text-muted);
+    }}
+    .recommended-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }}
+    .rec-card {{
+      background: #111115;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }}
+    .rec-card:hover {{
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      background: #15151a;
+    }}
+    .rec-card-badge {{
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }}
+    .rec-card-title {{
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.4;
+      margin-bottom: 10px;
+      font-family: var(--font-title);
+    }}
+    .rec-card-excerpt {{
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex: 1;
+    }}
+    .rec-card-footer {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 12px;
+    }}
+    .rec-card-cta {{
+      color: var(--primary);
+      font-weight: 600;
+    }}
+
     /* Navegação Sequencial */
     .nav-carousel {{
       display: flex;
@@ -993,6 +1101,8 @@ def generate_article_html(meta, body_html, prev_art, next_art):
         Enviar Mensagem no WhatsApp ➔
       </a>
     </div>
+
+    {recommended_section_html}
 
     <!-- Navegação Sequencial -->
     <div class="nav-carousel">
@@ -1757,7 +1867,16 @@ def main():
         prev_a = articles[i - 1] if i > 0 else None
         next_a = articles[i + 1] if i < len(articles) - 1 else None
         
-        art_html = generate_article_html(a['meta'], a['body_html'], prev_a, next_a)
+        # Selecionar 3 artigos recomendados (mesma categoria ou aleatorios)
+        candidates = [x for x in articles if x['slug'] != a['slug']]
+        same_cat = [x for x in candidates if x['category'] == a['category']]
+        other_cat = [x for x in candidates if x['category'] != a['category']]
+        import random
+        random.seed(i * 37 + 11)
+        rec_selection = (same_cat[:2] + other_cat[:2]) if len(same_cat) >= 2 else candidates[:3]
+        rec_selection = rec_selection[:3]
+        
+        art_html = generate_article_html(a['meta'], a['body_html'], prev_a, next_a, rec_selection)
         
         slugs_to_create = set()
         if a.get('slug'):
