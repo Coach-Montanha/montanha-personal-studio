@@ -116,10 +116,13 @@ def parse_frontmatter_and_body(filepath, idx, total_files):
     meta['full_title'] = raw_title_str
     meta['clean_title'] = clean_title(raw_title_str)
     
-    slug = slugify(meta['clean_title'])
-    if not slug:
-        slug = slugify(os.path.splitext(os.path.basename(filepath))[0])
-    meta['slug'] = slug
+    orig_slug = str(meta.get('slug', '')).strip()
+    title_slug = slugify(meta['clean_title'])
+    if not title_slug:
+        title_slug = slugify(os.path.splitext(os.path.basename(filepath))[0])
+    meta['original_slug'] = orig_slug
+    meta['title_slug'] = title_slug
+    meta['slug'] = orig_slug if orig_slug else title_slug
 
     prim_cat, theme = infer_category_and_theme(meta['clean_title'], body)
     meta['category'] = prim_cat
@@ -804,6 +807,37 @@ def generate_article_html(meta, body_html, prev_art, next_art):
       background: #18181c;
       color: var(--primary);
       font-weight: 700;
+    }}
+    .prose img {{
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      margin: 28px auto;
+      display: block;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--card-border);
+      transition: transform 0.2s ease;
+    }}
+    .prose figure {{
+      margin: 32px auto;
+      text-align: center;
+      max-width: 100%;
+    }}
+    .prose figcaption {{
+      margin-top: 8px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-style: italic;
+    }}
+    .prose a {{
+      color: var(--primary);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }}
+    .prose a:hover {{
+      color: #fbbf24;
     }}
 
     /* Compartilhamento */
@@ -1519,33 +1553,41 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
 def main():
     print("Iniciando build do Blog do Montanha (Replica Fiel Systeme.io)...")
 
-    # 1. Carregar Artigos
+    # 1. Carregar Artigos e Deduplicar
     files = sorted(glob.glob(os.path.join(ARTICLES_SRC_DIR, "*.md")))
     total_files = len(files)
     print(f"Total de arquivos Markdown encontrados: {total_files}")
 
     md = markdown.Markdown(extensions=['extra', 'tables', 'fenced_code'])
-    articles = []
-    seen_slugs = set()
 
+    # Agrupar por canonical slug, priorizando a versão com maior conteúdo
+    raw_articles_map = {}
     for idx, filepath in enumerate(files):
         meta, body_raw = parse_frontmatter_and_body(filepath, idx, total_files)
-        
         slug = meta['slug']
-        if slug in seen_slugs:
-            slug = f"{slug}-{idx+1}"
-        seen_slugs.add(slug)
-        meta['slug'] = slug
+        if slug not in raw_articles_map or len(body_raw) > len(raw_articles_map[slug]['body_raw']):
+            raw_articles_map[slug] = {
+                'meta': meta,
+                'body_raw': body_raw,
+                'filepath': filepath
+            }
+
+    articles = []
+    for slug, item in raw_articles_map.items():
+        meta = item['meta']
+        body_raw = item['body_raw']
 
         clean_body = re.sub(r'^#\s+.*?\n', '', body_raw, count=1).strip()
         body_html = md.reset().convert(clean_body)
-        
+
         articles.append({
             'meta': meta,
             'body_html': body_html,
             'full_title': meta['full_title'],
             'clean_title': meta['clean_title'],
             'slug': meta['slug'],
+            'original_slug': meta.get('original_slug', ''),
+            'title_slug': meta.get('title_slug', ''),
             'category': meta['category'],
             'theme': meta['theme'],
             'date_full': meta['date_full'],
@@ -1554,7 +1596,7 @@ def main():
             'excerpt': meta['excerpt']
         })
 
-    print(f"Artigos processados: {len(articles)}")
+    print(f"Artigos únicos após deduplicação: {len(articles)}")
 
     # 2. Definir Livros & E-books (16 itens + 3 comerciais)
     ebooks = [
@@ -1708,18 +1750,33 @@ def main():
         if not os.path.exists(dest_pdf):
             shutil.copy2(f, dest_pdf)
 
-    # 7. Gerar páginas individuais dos artigos
-    print("Gerando 182 páginas HTML com o novo layout réplica fiel...")
+    # 7. Gerar páginas individuais dos artigos (com suporte dual: slug original + slug do título)
+    print(f"Gerando páginas HTML para {len(articles)} artigos com suporte a slugs múltiplos...")
+    total_html_generated = 0
     for i, a in enumerate(articles):
         prev_a = articles[i - 1] if i > 0 else None
         next_a = articles[i + 1] if i < len(articles) - 1 else None
         
         art_html = generate_article_html(a['meta'], a['body_html'], prev_a, next_a)
         
-        art_dir = os.path.join(DEST_DIR, "artigos", a['slug'])
-        os.makedirs(art_dir, exist_ok=True)
-        with open(os.path.join(art_dir, "index.html"), "w", encoding="utf-8") as f:
-            f.write(art_html)
+        slugs_to_create = set()
+        if a.get('slug'):
+            slugs_to_create.add(a['slug'])
+        if a.get('original_slug'):
+            slugs_to_create.add(a['original_slug'])
+        if a.get('title_slug'):
+            slugs_to_create.add(a['title_slug'])
+
+        for s in slugs_to_create:
+            if not s:
+                continue
+            art_dir = os.path.join(DEST_DIR, "artigos", s)
+            os.makedirs(art_dir, exist_ok=True)
+            with open(os.path.join(art_dir, "index.html"), "w", encoding="utf-8") as f:
+                f.write(art_html)
+            total_html_generated += 1
+
+    print(f"Total de diretórios HTML de artigos gerados: {total_html_generated}")
 
     # 8. Gerar Hub Central
     print("Gerando Hub Central /materiais/index.html...")

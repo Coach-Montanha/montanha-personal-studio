@@ -34,6 +34,12 @@ import {
   Pencil,
   CheckCircle2,
   MoreVertical,
+  Image as ImageIcon,
+  Merge,
+  Combine,
+  Scissors,
+  Link2,
+  Sliders,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -67,6 +73,8 @@ import {
   type ArticleDetail,
   cleanTitle,
   slugify,
+  markdownToBlocks,
+  blocksToMarkdown,
 } from "@/lib/blog-management.functions";
 
 const LS_ARTICLES_OVERRIDE = "montanha:blog:articles-override";
@@ -400,6 +408,11 @@ export function BlogEditorPage() {
           : "",
       level: type === "heading" ? 2 : undefined,
       items: type === "list" ? ["Item 1 da lista", "Item 2 da lista", "Item 3 da lista"] : undefined,
+      src: type === "image" ? "" : undefined,
+      alt: type === "image" ? "" : undefined,
+      caption: type === "image" ? "" : undefined,
+      width: type === "image" ? "full" : undefined,
+      linkUrl: type === "image" ? "" : undefined,
     };
 
     if (typeof index === "number") {
@@ -422,6 +435,10 @@ export function BlogEditorPage() {
   const handleUpdateListItems = (id: string, rawText: string) => {
     const items = rawText.split("\n").filter((l) => l.trim().length > 0);
     setBlocks(blocks.map((b) => (b.id === id ? { ...b, items } : b)));
+  };
+
+  const handleUpdateImageBlock = (id: string, updates: Partial<ArticleBlock>) => {
+    setBlocks(blocks.map((b) => (b.id === id ? { ...b, ...updates } : b)));
   };
 
   const handleMoveBlock = (index: number, direction: "up" | "down") => {
@@ -451,11 +468,111 @@ export function BlogEditorPage() {
     setBlocks(blocks.filter((b) => b.id !== id));
   };
 
+  // Fundir parágrafo com o próximo
+  const handleMergeWithNext = (index: number) => {
+    if (index >= blocks.length - 1) return;
+    const b1 = blocks[index];
+    const b2 = blocks[index + 1];
+
+    const mergedContent = `${b1.content || ""}\n\n${b2.content || ""}`.trim();
+    const merged: ArticleBlock = {
+      ...b1,
+      type: "paragraph",
+      content: mergedContent,
+    };
+
+    const copy = [...blocks];
+    copy.splice(index, 2, merged);
+    setBlocks(copy);
+    toast.success("Parágrafos fundidos em bloco único!");
+  };
+
+  // Fundir todos os parágrafos consecutivos (fluxo contínuo de leitura)
+  const handleMergeAllConsecutiveParagraphs = () => {
+    if (blocks.length === 0) return;
+    const newBlocks: ArticleBlock[] = [];
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i];
+      const last = newBlocks[newBlocks.length - 1];
+      if (last && last.type === "paragraph" && b.type === "paragraph") {
+        last.content = `${last.content || ""}\n\n${b.content || ""}`.trim();
+      } else {
+        newBlocks.push({ ...b });
+      }
+    }
+    const mergedCount = blocks.length - newBlocks.length;
+    setBlocks(newBlocks);
+    if (mergedCount > 0) {
+      toast.success(`${mergedCount} parágrafos fundidos em fluxo linear contínuo!`);
+    } else {
+      toast.info("Todos os parágrafos já estão consolidados.");
+    }
+  };
+
+  // Separar parágrafo grande em blocos menores com base em quebras de linha duplas
+  const handleSplitParagraph = (index: number) => {
+    const b = blocks[index];
+    if (!b.content || !b.content.includes("\n\n")) {
+      toast.info("Este parágrafo não possui quebras de linha duplas (\\n\\n) para separar.");
+      return;
+    }
+    const parts = b.content.split(/\n\n+/).filter((p) => p.trim().length > 0);
+    if (parts.length <= 1) return;
+    const splitBlocks: ArticleBlock[] = parts.map((p) => ({
+      id: "b_" + Math.random().toString(36).substring(2, 9),
+      type: "paragraph",
+      content: p.trim(),
+    }));
+    const copy = [...blocks];
+    copy.splice(index, 1, ...splitBlocks);
+    setBlocks(copy);
+    toast.success(`Parágrafo separado em ${parts.length} blocos.`);
+  };
+
+  // Inserir Hyperlink formatado no parágrafo
+  const handleInsertLinkInBlock = (blockId: string) => {
+    const url = window.prompt("Insira a URL de destino do Hyperlink (ex: https://...):", "https://");
+    if (!url || !url.trim() || url === "https://") return;
+    const anchor = window.prompt("Digite o texto âncora exibido para o leitor:", "clique aqui");
+    if (!anchor || !anchor.trim()) return;
+
+    const mdLink = `[${anchor.trim()}](${url.trim()})`;
+    setBlocks(
+      blocks.map((b) => {
+        if (b.id !== blockId) return b;
+        const current = b.content || "";
+        return {
+          ...b,
+          content: current ? `${current} ${mdLink}` : mdLink,
+        };
+      })
+    );
+    toast.success("Hyperlink inserido no parágrafo!");
+  };
+
+  // Troca de modo com sincronização bidirecional (Blocos <-> Markdown)
+  const handleSwitchMode = (mode: "blocks" | "markdown" | "preview") => {
+    if (editorMode === "markdown" && (mode === "blocks" || mode === "preview")) {
+      const parsed = markdownToBlocks(rawMarkdown);
+      setBlocks(parsed);
+    } else if (editorMode === "blocks" && mode === "markdown") {
+      const md = blocksToMarkdown(blocks);
+      setRawMarkdown(md);
+    }
+    setEditorMode(mode);
+  };
+
   // Salvar Artigo
   const handleSaveArticle = async () => {
     if (!currentArticle) return;
     setIsSaving(true);
     try {
+      let activeBlocks = blocks;
+      if (editorMode === "markdown") {
+        activeBlocks = markdownToBlocks(rawMarkdown);
+        setBlocks(activeBlocks);
+      }
+
       const payload = {
         slug: currentArticle.slug,
         file_name: currentArticle.file_name || `${currentArticle.slug}.md`,
@@ -465,7 +582,7 @@ export function BlogEditorPage() {
         theme: currentArticle.theme,
         date_full: currentArticle.date_full,
         excerpt: currentArticle.excerpt,
-        blocks,
+        blocks: activeBlocks,
         rebuild: true,
       };
 
@@ -478,7 +595,7 @@ export function BlogEditorPage() {
       // Persistir sempre no LocalStorage para garantir retorno imediato
       const updatedArticle: ArticleDetail = {
         ...currentArticle,
-        blocks,
+        blocks: activeBlocks,
       };
       const updatedList = [
         updatedArticle,
@@ -567,13 +684,13 @@ export function BlogEditorPage() {
               </Button>
             </div>
 
-            {/* Seletor Modo */}
+            {/* Seletor Modo com Sincronização Bidirecional */}
             <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5">
               <Button
                 variant={editorMode === "blocks" ? "default" : "ghost"}
                 size="sm"
                 className="h-7 px-2 text-xs"
-                onClick={() => setEditorMode("blocks")}
+                onClick={() => handleSwitchMode("blocks")}
               >
                 Blocos
               </Button>
@@ -581,7 +698,7 @@ export function BlogEditorPage() {
                 variant={editorMode === "markdown" ? "default" : "ghost"}
                 size="sm"
                 className="h-7 px-2 text-xs"
-                onClick={() => setEditorMode("markdown")}
+                onClick={() => handleSwitchMode("markdown")}
               >
                 Markdown
               </Button>
@@ -589,7 +706,7 @@ export function BlogEditorPage() {
                 variant={editorMode === "preview" ? "default" : "ghost"}
                 size="sm"
                 className="h-7 px-2 text-xs"
-                onClick={() => setEditorMode("preview")}
+                onClick={() => handleSwitchMode("preview")}
               >
                 <Eye className="h-3.5 w-3.5 mr-1" /> Prévia
               </Button>
@@ -729,6 +846,15 @@ export function BlogEditorPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => handleAddBlock("image")}
+                  className="justify-start gap-2 h-9 text-xs border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-400 font-semibold"
+                >
+                  <ImageIcon className="h-3.5 w-3.5 text-emerald-400" />
+                  Imagem
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleAddBlock("divider")}
                   className="col-span-2 justify-start gap-2 h-9 text-xs"
                 >
@@ -766,14 +892,78 @@ export function BlogEditorPage() {
               {/* MODO 1: EDITOR DE BLOCOS */}
               {editorMode === "blocks" && (
                 <div className="space-y-4">
+                  {/* Barra de Ferramentas de Linearidade e Mesclagem de Texto */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-card border border-border rounded-xl shadow-sm">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                      <span className="font-bold text-foreground">{blocks.length} blocos</span>
+                      <span>•</span>
+                      <span>{blocks.filter((b) => b.type === "paragraph").length} parágrafos</span>
+                      <span>•</span>
+                      <span>{blocks.filter((b) => b.type === "image").length} imagens</span>
+                      <span>•</span>
+                      <span>{blocks.filter((b) => b.type === "heading").length} subtítulos</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs gap-1.5 font-semibold text-blue-400 hover:text-blue-300 hover:bg-blue-950/30 border-blue-500/30"
+                        onClick={handleMergeAllConsecutiveParagraphs}
+                        title="Fundir todos os parágrafos consecutivos em blocos únicos contínuos"
+                      >
+                        <Combine className="h-3.5 w-3.5" />
+                        Fundir Parágrafos Consecutivos
+                      </Button>
+                    </div>
+                  </div>
+
                   {blocks.map((block, index) => (
                     <Card
                       key={block.id}
                       className="group relative p-4 border-border hover:border-primary/50 transition-all bg-card"
                     >
                       {/* Barra de Ações do Bloco */}
-                      <div className="absolute right-2 top-2 flex items-center gap-1 bg-background/90 border border-border rounded-md p-1 shadow-sm opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute right-2 top-2 flex items-center gap-1 bg-background/95 border border-border rounded-md p-1 shadow-sm opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        {block.type === "paragraph" && (
+                          <>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-blue-400 hover:text-blue-300 hover:bg-blue-950/40"
+                              onClick={() => handleMergeWithNext(index)}
+                              disabled={index === blocks.length - 1}
+                              title="Fundir com o próximo bloco de texto"
+                            >
+                              <Merge className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-purple-400 hover:text-purple-300 hover:bg-purple-950/40"
+                              onClick={() => handleInsertLinkInBlock(block.id)}
+                              title="Inserir Hyperlink [texto](url)"
+                            >
+                              <Link2 className="h-3.5 w-3.5" />
+                            </Button>
+                            {block.content?.includes("\n\n") && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-amber-400 hover:text-amber-300 hover:bg-amber-950/40"
+                                onClick={() => handleSplitParagraph(index)}
+                                title="Separar em blocos individuais nas quebras de linha duplas"
+                              >
+                                <Scissors className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </>
+                        )}
                         <Button
+                          type="button"
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
@@ -784,6 +974,7 @@ export function BlogEditorPage() {
                           <MoveUp className="h-3.5 w-3.5" />
                         </Button>
                         <Button
+                          type="button"
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
@@ -794,6 +985,7 @@ export function BlogEditorPage() {
                           <MoveDown className="h-3.5 w-3.5" />
                         </Button>
                         <Button
+                          type="button"
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
@@ -803,6 +995,7 @@ export function BlogEditorPage() {
                           <Copy className="h-3.5 w-3.5" />
                         </Button>
                         <Button
+                          type="button"
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7 text-destructive hover:text-destructive"
@@ -845,18 +1038,118 @@ export function BlogEditorPage() {
                         </div>
                       )}
 
-                      {/* Bloco: Parágrafo */}
+                      {/* Bloco: Parágrafo com suporte a texto fluído e hyperlinks */}
                       {block.type === "paragraph" && (
-                        <div className="space-y-1.5 pr-24 sm:pr-28">
-                          <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
-                            Parágrafo de Texto
-                          </span>
+                        <div className="space-y-1.5 pr-24 sm:pr-32">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
+                              Parágrafo de Texto
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              Dica: use <code className="text-purple-400">[texto](link)</code> para hiperlinks
+                            </span>
+                          </div>
                           <Textarea
-                            rows={3}
+                            rows={Math.max(3, Math.min(10, ((block.content || "").match(/\n/g) || []).length + 2))}
                             value={block.content || ""}
                             onChange={(e) => handleUpdateBlockContent(block.id, e.target.value)}
                             className="text-sm leading-relaxed"
                           />
+                        </div>
+                      )}
+
+                      {/* Bloco: Imagem / Mídia Visual com Ajuste de Tela */}
+                      {block.type === "image" && (
+                        <div className="space-y-3 pr-24 sm:pr-28">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-1.5">
+                              <ImageIcon className="h-3 w-3" /> Imagem / Mídia Visual
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-muted-foreground font-medium">Ajuste de Tela:</span>
+                              <select
+                                value={block.width || "full"}
+                                onChange={(e) => handleUpdateImageBlock(block.id, { width: e.target.value as any })}
+                                className="text-[11px] bg-muted/60 border border-border rounded px-2 py-0.5 text-foreground font-medium"
+                              >
+                                <option value="full">100% (Largura Total)</option>
+                                <option value="medium">75% (Grande)</option>
+                                <option value="small">50% (Média)</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Preview da Imagem */}
+                          {block.src ? (
+                            <div className="relative overflow-hidden rounded-lg border border-border bg-black/40 text-center p-2">
+                              <img
+                                src={block.src}
+                                alt={block.alt || "Imagem do artigo"}
+                                className={`mx-auto rounded transition-all duration-200 object-contain max-h-[340px] ${
+                                  block.width === "small"
+                                    ? "w-1/2"
+                                    : block.width === "medium"
+                                    ? "w-3/4"
+                                    : "w-full"
+                                }`}
+                                onError={(e) => {
+                                  (e.target as HTMLElement).style.display = "none";
+                                }}
+                              />
+                              {block.caption && (
+                                <p className="text-xs text-muted-foreground italic mt-2 text-center">
+                                  {block.caption}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="p-5 border border-dashed border-border rounded-lg text-center text-xs text-muted-foreground bg-muted/10">
+                              Insira a URL da imagem abaixo para exibir e posicionar
+                            </div>
+                          )}
+
+                          {/* Inputs de URL, Alt, Legenda e Link */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                            <div className="space-y-1">
+                              <Label className="text-[11px] text-muted-foreground font-medium">URL da Imagem:</Label>
+                              <Input
+                                value={block.src || ""}
+                                onChange={(e) => handleUpdateImageBlock(block.id, { src: e.target.value })}
+                                placeholder="https://d1yei2z3i6k35z.cloudfront.net/..."
+                                className="text-xs font-mono h-8"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-[11px] text-muted-foreground font-medium">Texto Alternativo (Alt):</Label>
+                              <Input
+                                value={block.alt || ""}
+                                onChange={(e) => handleUpdateImageBlock(block.id, { alt: e.target.value })}
+                                placeholder="Descrição da imagem para SEO e acessibilidade"
+                                className="text-xs h-8"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-[11px] text-muted-foreground font-medium">Legenda Visível (Opcional):</Label>
+                              <Input
+                                value={block.caption || ""}
+                                onChange={(e) => handleUpdateImageBlock(block.id, { caption: e.target.value })}
+                                placeholder="Ex: Figura 1 — Biomecânica da puxada"
+                                className="text-xs h-8 italic"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-[11px] text-muted-foreground font-medium">Hyperlink ao Clicar na Imagem (Opcional):</Label>
+                              <Input
+                                value={block.linkUrl || ""}
+                                onChange={(e) => handleUpdateImageBlock(block.id, { linkUrl: e.target.value })}
+                                placeholder="https://... (redirecionar se clicar)"
+                                className="text-xs h-8 font-mono"
+                              />
+                            </div>
+                          </div>
                         </div>
                       )}
 
@@ -920,13 +1213,22 @@ export function BlogEditorPage() {
               {editorMode === "markdown" && (
                 <div className="space-y-3">
                   <Textarea
-                    rows={20}
+                    rows={22}
                     value={rawMarkdown}
                     onChange={(e) => setRawMarkdown(e.target.value)}
                     className="font-mono text-xs leading-relaxed"
                   />
-                  <div className="text-xs text-muted-foreground">
-                    Modo Markdown direto para edição rápida ou cópia do texto completo.
+                  <div className="text-xs text-muted-foreground flex items-center justify-between">
+                    <span>Modo Markdown direto para edição rápida e cópia do texto completo.</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-primary"
+                      onClick={() => handleSwitchMode("blocks")}
+                    >
+                      Atualizar Blocos a partir do Markdown →
+                    </Button>
                   </div>
                 </div>
               )}
@@ -936,24 +1238,93 @@ export function BlogEditorPage() {
                 <div className="prose dark:prose-invert max-w-none space-y-4">
                   {blocks.map((block) => {
                     if (block.type === "heading") {
-                      if (block.level === 1) return <h1 key={block.id}>{block.content}</h1>;
-                      if (block.level === 3) return <h3 key={block.id}>{block.content}</h3>;
-                      if (block.level === 4) return <h4 key={block.id}>{block.content}</h4>;
-                      return <h2 key={block.id}>{block.content}</h2>;
+                      if (block.level === 1) return <h1 key={block.id} className="text-2xl font-bold mt-6 mb-3">{block.content}</h1>;
+                      if (block.level === 3) return <h3 key={block.id} className="text-lg font-bold mt-4 mb-2">{block.content}</h3>;
+                      if (block.level === 4) return <h4 key={block.id} className="text-base font-semibold mt-3 mb-1 text-primary">{block.content}</h4>;
+                      return <h2 key={block.id} className="text-xl font-bold mt-5 mb-2 pb-1 border-b border-border">{block.content}</h2>;
                     }
                     if (block.type === "paragraph") {
-                      return <p key={block.id} className="text-sm leading-relaxed">{block.content}</p>;
+                      const content = block.content || "";
+                      const hasLinks = /\[(.*?)\]\((.*?)\)/.test(content);
+                      if (!hasLinks) {
+                        return <p key={block.id} className="text-sm leading-relaxed whitespace-pre-line">{content}</p>;
+                      }
+                      const parts: any[] = [];
+                      const regex = /\[(.*?)\]\((.*?)\)/g;
+                      let lastIdx = 0;
+                      let match;
+                      while ((match = regex.exec(content)) !== null) {
+                        if (match.index > lastIdx) {
+                          parts.push(content.substring(lastIdx, match.index));
+                        }
+                        parts.push(
+                          <a
+                            key={match.index}
+                            href={match[2]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline font-medium hover:text-amber-400"
+                          >
+                            {match[1]}
+                          </a>
+                        );
+                        lastIdx = regex.lastIndex;
+                      }
+                      if (lastIdx < content.length) {
+                        parts.push(content.substring(lastIdx));
+                      }
+                      return <p key={block.id} className="text-sm leading-relaxed whitespace-pre-line">{parts}</p>;
+                    }
+                    if (block.type === "image" && block.src) {
+                      return (
+                        <figure
+                          key={block.id}
+                          className={`my-6 text-center ${
+                            block.width === "small"
+                              ? "max-w-md mx-auto"
+                              : block.width === "medium"
+                              ? "max-w-xl mx-auto"
+                              : "w-full"
+                          }`}
+                        >
+                          {block.linkUrl ? (
+                            <a
+                              href={block.linkUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-block transition-transform hover:scale-[1.01]"
+                            >
+                              <img
+                                src={block.src}
+                                alt={block.alt || currentArticle.clean_title}
+                                className="rounded-xl border border-border shadow-md max-h-[460px] w-full object-contain mx-auto"
+                              />
+                            </a>
+                          ) : (
+                            <img
+                              src={block.src}
+                              alt={block.alt || currentArticle.clean_title}
+                              className="rounded-xl border border-border shadow-md max-h-[460px] w-full object-contain mx-auto"
+                            />
+                          )}
+                          {(block.caption || block.alt) && (
+                            <figcaption className="text-xs text-muted-foreground italic mt-2">
+                              {block.caption || block.alt}
+                            </figcaption>
+                          )}
+                        </figure>
+                      );
                     }
                     if (block.type === "blockquote") {
                       return (
-                        <blockquote key={block.id} className="border-l-4 border-primary pl-4 italic text-sm text-muted-foreground">
+                        <blockquote key={block.id} className="border-l-4 border-primary pl-4 italic text-sm text-muted-foreground my-4">
                           {block.content}
                         </blockquote>
                       );
                     }
                     if (block.type === "list") {
                       return (
-                        <ul key={block.id} className="list-disc pl-5 text-sm space-y-1">
+                        <ul key={block.id} className="list-disc pl-5 text-sm space-y-1 my-3">
                           {(block.items || []).map((it, idx) => (
                             <li key={idx}>{it}</li>
                           ))}

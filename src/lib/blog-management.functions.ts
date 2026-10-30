@@ -12,6 +12,9 @@ export interface ArticleBlock {
   src?: string;
   alt?: string;
   title?: string;
+  caption?: string;
+  width?: "full" | "medium" | "small" | "center";
+  linkUrl?: string;
 }
 
 export interface ArticleDetail {
@@ -129,6 +132,36 @@ export function markdownToBlocks(md: string): ArticleBlock[] {
       continue;
     }
 
+    // Imagem em Markdown: [![alt](src)](url) ou ![alt](src)
+    const linkedImgMatch = trimmed.match(/^\[!\[(.*?)\]\((.*?)\)\]\((.*?)\)/);
+    if (linkedImgMatch) {
+      flushPara();
+      flushList();
+      blocks.push({
+        id: "b_" + Math.random().toString(36).substring(2, 9),
+        type: "image",
+        alt: linkedImgMatch[1],
+        src: linkedImgMatch[2],
+        linkUrl: linkedImgMatch[3],
+        width: "full",
+      });
+      continue;
+    }
+
+    const imgMatch = trimmed.match(/^!\[(.*?)\]\((.*?)\)/);
+    if (imgMatch) {
+      flushPara();
+      flushList();
+      blocks.push({
+        id: "b_" + Math.random().toString(36).substring(2, 9),
+        type: "image",
+        alt: imgMatch[1],
+        src: imgMatch[2],
+        width: "full",
+      });
+      continue;
+    }
+
     currentPara.push(line);
   }
 
@@ -145,7 +178,13 @@ export function blocksToMarkdown(blocks: ArticleBlock[]): string {
       if (b.type === "blockquote") return `> ${b.content || ""}\n`;
       if (b.type === "divider") return `---\n`;
       if (b.type === "list") return (b.items || []).map((it) => `- ${it}`).join("\n") + "\n";
-      if (b.type === "image") return `![${b.alt || ""}](${b.src || ""})\n`;
+      if (b.type === "image") {
+        const caption = b.caption ? `\n*${b.caption}*` : "";
+        if (b.linkUrl) {
+          return `[![${b.alt || ""}](${b.src || ""})](${b.linkUrl})${caption}\n`;
+        }
+        return `![${b.alt || ""}](${b.src || ""})${caption}\n`;
+      }
       if (b.type === "callout") return `> [!NOTE] ${b.title || "Destaque"}\n> ${b.content || ""}\n`;
       return `${b.content || ""}\n`;
     })
