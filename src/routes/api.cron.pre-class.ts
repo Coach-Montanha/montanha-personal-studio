@@ -69,8 +69,8 @@ export const Route = createFileRoute("/api/cron/pre-class")({
             // Segundos restantes até a aula
             const diffSeconds = sessionDaySeconds - currentDaySeconds;
 
-            // Janela de disparo: de 19 minutos e 30 segundos (1170s) até 2 minutos antes (120s)
-            if (diffSeconds <= 1170 && diffSeconds >= 120) {
+            // Janela de disparo precisa: de 21 minutos (1260s) até 2 minutos antes (120s)
+            if (diffSeconds <= 1260 && diffSeconds >= 120) {
               const { data: alreadySent } = await supabaseAdmin
                 .from("pt_notifications")
                 .select("id")
