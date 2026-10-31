@@ -83,6 +83,9 @@ export function formatGoogleFormEmbedUrl(url: string): string {
   return clean;
 }
 
+const TEMPLATES_VERSION_KEY = 'studio:forms_tpl_version';
+const CURRENT_TEMPLATES_VERSION = '2026-10-31-v4';
+
 const DEFAULT_TEMPLATES: StudioFormItem[] = [
   {
     id: "pedido-camiseta-studio",
@@ -181,11 +184,30 @@ export function listStudioForms(tenantId?: string): StudioFormItem[] {
 
   if (typeof window === "undefined") return filterDeleted(DEFAULT_TEMPLATES);
   try {
-    const raw = localStorage.getItem(getStorageKey(tenantId));
-    if (!raw) {
-      const initial = filterDeleted(DEFAULT_TEMPLATES);
-      localStorage.setItem(getStorageKey(tenantId), JSON.stringify(initial));
-      return initial;
+    const storageKey = getStorageKey(tenantId);
+    const raw = localStorage.getItem(storageKey);
+    const savedVer = localStorage.getItem(TEMPLATES_VERSION_KEY);
+
+    if (!raw || savedVer !== CURRENT_TEMPLATES_VERSION) {
+      let merged = [...DEFAULT_TEMPLATES];
+      if (raw) {
+        try {
+          const existing = JSON.parse(raw);
+          if (Array.isArray(existing)) {
+            for (const item of existing) {
+              const defIdx = merged.findIndex((m) => m.id.toLowerCase() === item.id.toLowerCase());
+              if (defIdx >= 0) {
+                merged[defIdx] = { ...merged[defIdx], ...item };
+              } else {
+                merged.push(item);
+              }
+            }
+          }
+        } catch {}
+      }
+      localStorage.setItem(storageKey, JSON.stringify(merged));
+      localStorage.setItem(TEMPLATES_VERSION_KEY, CURRENT_TEMPLATES_VERSION);
+      return filterDeleted(merged);
     }
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? filterDeleted(parsed) : filterDeleted(DEFAULT_TEMPLATES);
