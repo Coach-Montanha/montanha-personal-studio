@@ -26,6 +26,7 @@ import {
   FormFieldType,
   saveStudioForm,
 } from "@/lib/forms-store";
+import { DEFAULT_STUDIO_FORMS } from "@/lib/forms-definitions";
 import { saveFormServerFn } from "@/lib/forms.functions";
 import { toast } from "sonner";
 import {
@@ -41,6 +42,7 @@ import {
   ListOrdered,
   CheckSquare,
   Hash,
+  Archive,
 } from "lucide-react";
 
 interface FormEditDialogProps {
@@ -76,6 +78,7 @@ export function FormEditDialog({
   const [estimatedMinutes, setEstimatedMinutes] = useState(2);
   const [visibleToStudents, setVisibleToStudents] = useState(true);
   const [isPublicLead, setIsPublicLead] = useState(true);
+  const [isArchived, setIsArchived] = useState(false);
   const [fields, setFields] = useState<FormFieldDefinition[]>([]);
 
   useEffect(() => {
@@ -89,11 +92,38 @@ export function FormEditDialog({
       setEstimatedMinutes(formToEdit.estimatedMinutes || 2);
       setVisibleToStudents(formToEdit.visibleToStudents ?? true);
       setIsPublicLead(formToEdit.isPublicLead ?? true);
-      setFields(
-        formToEdit.fields && formToEdit.fields.length > 0
-          ? JSON.parse(JSON.stringify(formToEdit.fields))
-          : []
-      );
+      setIsArchived((formToEdit as any).isArchived ?? false);
+
+      // Se o formulário já tem campos customizados, usa eles
+      if (formToEdit.fields && formToEdit.fields.length > 0) {
+        setFields(JSON.parse(JSON.stringify(formToEdit.fields)));
+      } else {
+        // Se for um dos formulários modelo padrão (ex: termo-de-imagem, anamnese, par-q, feedback, camiseta), hidrata com as perguntas oficiais correspondentes
+        const normSlug = (formToEdit.slug || formToEdit.id || "").toLowerCase();
+        const defMatch = DEFAULT_STUDIO_FORMS.find(
+          (d) => d.slug.toLowerCase() === normSlug || d.id.toLowerCase() === normSlug
+        );
+        if (defMatch?.fields && defMatch.fields.length > 0) {
+          setFields(JSON.parse(JSON.stringify(defMatch.fields)));
+        } else {
+          setFields([
+            {
+              id: "nome_completo",
+              label: "Nome Completo",
+              type: "text",
+              required: true,
+              placeholder: "Digite o nome e sobrenome",
+            },
+            {
+              id: "telefone_whatsapp",
+              label: "WhatsApp de Contato",
+              type: "tel",
+              required: true,
+              placeholder: "(00) 00000-0000",
+            },
+          ]);
+        }
+      }
     } else {
       setTitle("");
       setSlug("");
@@ -104,6 +134,7 @@ export function FormEditDialog({
       setEstimatedMinutes(2);
       setVisibleToStudents(true);
       setIsPublicLead(true);
+      setIsArchived(false);
       // Blocos padrão para novo formulário
       setFields([
         {
@@ -138,14 +169,14 @@ export function FormEditDialog({
     }
   };
 
-  // Gerenciamento de blocos de campos
+  // Gerenciamento de blocos de perguntas
   const addField = () => {
     const newId = `campo_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 5)}`;
     setFields((prev) => [
       ...prev,
       {
         id: newId,
-        label: "Nova Informação",
+        label: "Nova Pergunta / Informação",
         type: "text",
         required: true,
         placeholder: "Digite aqui...",
@@ -184,6 +215,7 @@ export function FormEditDialog({
         estimatedMinutes: Number(estimatedMinutes) || 2,
         visibleToStudents,
         isPublicLead,
+        isArchived,
         fields,
         userId: tenantId,
       };
@@ -214,10 +246,10 @@ export function FormEditDialog({
         <DialogHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Sparkles className="h-5 w-5 text-primary" />
-            {formToEdit ? "Editar Formulário & Blocos de Informação" : "Criar Novo Formulário"}
+            {formToEdit ? "Editar Formulário & Questionário" : "Criar Novo Formulário"}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Configure o título, descrição e monte livremente os blocos de perguntas, dados e opções de escolha.
+            Personalize título, visibilidade e edite diretamente as perguntas, alternativas e campos do questionário.
           </DialogDescription>
         </DialogHeader>
 
@@ -339,15 +371,15 @@ export function FormEditDialog({
             </div>
           </div>
 
-          {/* Seção Dinâmica de Blocos e Campos */}
+          {/* Seção Dinâmica de Perguntas & Blocos do Questionário */}
           <div className="pt-3 border-t border-border space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground">
-                  Blocos de Informação & Perguntas ({fields.length})
+                  Perguntas & Campos do Questionário ({fields.length})
                 </h3>
                 <p className="text-[11px] text-muted-foreground">
-                  Adicione, edite ou remova campos como Nome, Tamanho, Cor, WhatsApp, etc.
+                  Adicione, altere enunciados, configure tamanhos, opções de escolha ou remova campos.
                 </p>
               </div>
               <Button
@@ -358,7 +390,7 @@ export function FormEditDialog({
                 className="h-8 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Adicionar Bloco
+                Nova Pergunta
               </Button>
             </div>
 
@@ -373,7 +405,7 @@ export function FormEditDialog({
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary font-mono">
                         {idx + 1}
                       </span>
-                      <span>Bloco #{idx + 1}</span>
+                      <span>Pergunta #{idx + 1}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -384,7 +416,7 @@ export function FormEditDialog({
                           onChange={(e) => updateField(idx, { required: e.target.checked })}
                           className="h-3.5 w-3.5 rounded border-border text-primary accent-primary"
                         />
-                        <span>Obrigatório</span>
+                        <span>Obrigatória</span>
                       </label>
 
                       <Button
@@ -393,7 +425,7 @@ export function FormEditDialog({
                         size="sm"
                         onClick={() => removeField(idx)}
                         className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        title="Remover este bloco"
+                        title="Remover esta pergunta"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -402,11 +434,11 @@ export function FormEditDialog({
 
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                     <div className="sm:col-span-7 space-y-1">
-                      <Label className="text-[11px] text-muted-foreground">Nome da Pergunta / Campo</Label>
+                      <Label className="text-[11px] text-muted-foreground">Enunciado da Pergunta / Campo</Label>
                       <Input
                         value={f.label}
                         onChange={(e) => updateField(idx, { label: e.target.value })}
-                        placeholder="Ex: Tamanho da Camiseta"
+                        placeholder="Ex: Tamanho da Camiseta ou Horário preferido"
                         className="h-8 text-xs font-medium"
                       />
                     </div>
@@ -442,7 +474,7 @@ export function FormEditDialog({
                   {["radio", "checkbox", "select"].includes(f.type) && (
                     <div className="space-y-1.5 pt-1 bg-muted/20 p-2.5 rounded-lg border border-border/60">
                       <Label className="text-[11px] font-semibold text-foreground flex items-center justify-between">
-                        <span>Opções de Escolha (separadas por vírgula)</span>
+                        <span>Alternativas de Escolha (separadas por vírgula)</span>
                         <span className="text-[10px] text-muted-foreground font-normal">
                           Ex: PP, P, M, G, GG, XGG
                         </span>
@@ -462,7 +494,7 @@ export function FormEditDialog({
                     </div>
                   )}
 
-                  {/* Placeholder e Texto de Apoio */}
+                  {/* Dica interna e Orientação */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <Input
                       value={f.placeholder || ""}
@@ -473,7 +505,7 @@ export function FormEditDialog({
                     <Input
                       value={f.helperText || ""}
                       onChange={(e) => updateField(idx, { helperText: e.target.value })}
-                      placeholder="Orientação abaixo do campo (opcional)..."
+                      placeholder="Orientação explicativa abaixo da pergunta..."
                       className="h-7 text-[11px] text-muted-foreground"
                     />
                   </div>
@@ -483,14 +515,14 @@ export function FormEditDialog({
               {fields.length === 0 && (
                 <div className="rounded-xl border border-dashed border-border p-6 text-center bg-muted/10">
                   <p className="text-xs text-muted-foreground">
-                    Nenhum bloco de informação cadastrado. Clique no botão acima para adicionar.
+                    Nenhuma pergunta neste formulário. Clique no botão acima para adicionar.
                   </p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Configurações de Visibilidade */}
+          {/* Configurações de Visibilidade & Arquivamento */}
           <div className="pt-3 border-t border-border space-y-2">
             <div className="flex items-center justify-between rounded-lg border border-border p-2.5 bg-muted/20">
               <div className="space-y-0.5">
@@ -499,7 +531,7 @@ export function FormEditDialog({
                   Exibir no Portal do Aluno
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Alunos logados veem este formulário de pedidos na área do portal.
+                  Alunos logados veem este formulário na área do portal.
                 </p>
               </div>
               <Switch checked={visibleToStudents} onCheckedChange={setVisibleToStudents} />
@@ -507,15 +539,29 @@ export function FormEditDialog({
 
             <div className="flex items-center justify-between rounded-lg border border-border p-2.5 bg-muted/20">
               <div className="space-y-0.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                  <Globe className="h-3.5 w-3.5 text-emerald-500" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
+                  <Globe className="h-3.5 w-3.5" />
                   Link Público Aberto
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Permite que qualquer pessoa acesse pelo link /f/{slug || "slug"}.
+                  Permite responder pelo link público /f/{slug || "slug"}.
                 </p>
               </div>
               <Switch checked={isPublicLead} onCheckedChange={setIsPublicLead} />
+            </div>
+
+            {/* Controle de Arquivamento / Ocultação Total */}
+            <div className="flex items-center justify-between rounded-lg border border-amber-500/30 p-2.5 bg-amber-500/5">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                  <Archive className="h-3.5 w-3.5" />
+                  Arquivar Formulário (Deixar Invisível)
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Oculta este formulário da listagem principal ativa e bloqueia novos envios sem apagá-lo.
+                </p>
+              </div>
+              <Switch checked={isArchived} onCheckedChange={setIsArchived} />
             </div>
           </div>
 
