@@ -1,5 +1,31 @@
 export type FormCategory = "anamnese" | "parq" | "objetivos" | "feedback" | "geral";
 
+export type FormFieldType =
+  | "text"
+  | "textarea"
+  | "email"
+  | "tel"
+  | "select"
+  | "radio"
+  | "checkbox"
+  | "scale"
+  | "legal-consent";
+
+export interface FormFieldDefinition {
+  id: string;
+  label: string;
+  type: FormFieldType;
+  required?: boolean;
+  placeholder?: string;
+  helperText?: string;
+  options?: string[];
+  consentStatement?: string;
+  scaleMin?: number;
+  scaleMax?: number;
+  scaleMinLabel?: string;
+  scaleMaxLabel?: string;
+}
+
 export interface StudioFormItem {
   id: string;
   slug: string;
@@ -11,6 +37,7 @@ export interface StudioFormItem {
   estimatedMinutes?: number;
   visibleToStudents: boolean;
   isPublicLead: boolean;
+  fields?: FormFieldDefinition[];
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +84,20 @@ export function formatGoogleFormEmbedUrl(url: string): string {
 }
 
 const DEFAULT_TEMPLATES: StudioFormItem[] = [
+  {
+    id: "pedido-camiseta-studio",
+    slug: "camiseta-studio",
+    title: "Pedido de Camiseta Oficial do Studio",
+    category: "geral",
+    description: "Garanta a camiseta oficial do Studio Montanha! Escolha o modelo, tamanho ideal e detalhes do pedido.",
+    googleFormUrl: "",
+    badge: "Loja & Uniforme",
+    estimatedMinutes: 2,
+    visibleToStudents: true,
+    isPublicLead: true,
+    createdAt: "2026-10-30T18:00:00.000Z",
+    updatedAt: "2026-10-30T18:00:00.000Z",
+  },
   {
     id: "termo-de-autorizacao-de-uso-de-imagem",
     slug: "termo-de-autorizacao-de-uso-de-imagem",
@@ -201,11 +242,12 @@ export function saveStudioForm(
     slug: targetSlug,
     category: data.category || "geral",
     description: data.description?.trim() || "",
-    googleFormUrl: data.googleFormUrl.trim(),
+    googleFormUrl: (data.googleFormUrl || "").trim(),
     badge: data.badge?.trim() || "Formulário",
     estimatedMinutes: data.estimatedMinutes || 3,
     visibleToStudents: data.visibleToStudents ?? true,
     isPublicLead: data.isPublicLead ?? true,
+    fields: (data as any).fields || [],
     createdAt: now,
     updatedAt: now,
   };

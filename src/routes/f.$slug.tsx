@@ -404,6 +404,23 @@ function PublicFormViewPage() {
                     />
                   )}
 
+                  {field.type === "select" && (
+                    <select
+                      id={field.id}
+                      value={answers[field.id] || ""}
+                      onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                      required={field.required}
+                      className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
+                    >
+                      <option value="">Selecione uma opção...</option>
+                      {field.options?.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
                   {field.type === "radio" && (
                     <div className="grid gap-2 pt-1">
                       {field.options?.map((opt) => {

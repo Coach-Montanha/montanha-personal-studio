@@ -19,10 +19,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StudioFormItem, FormCategory, saveStudioForm } from "@/lib/forms-store";
+import {
+  StudioFormItem,
+  FormCategory,
+  FormFieldDefinition,
+  FormFieldType,
+  saveStudioForm,
+} from "@/lib/forms-store";
 import { saveFormServerFn } from "@/lib/forms.functions";
 import { toast } from "sonner";
-import { Link2, Sparkles, Globe, UserCheck } from "lucide-react";
+import {
+  Link2,
+  Sparkles,
+  Globe,
+  UserCheck,
+  Plus,
+  Trash2,
+  Sliders,
+  Type,
+  AlignLeft,
+  ListOrdered,
+  CheckSquare,
+  Hash,
+} from "lucide-react";
 
 interface FormEditDialogProps {
   open: boolean;
@@ -31,6 +50,15 @@ interface FormEditDialogProps {
   onSaved: (saved: StudioFormItem) => void;
   tenantId?: string;
 }
+
+const FIELD_TYPE_OPTIONS: Array<{ value: FormFieldType; label: string; icon: any }> = [
+  { value: "text", label: "Texto Curto", icon: Type },
+  { value: "textarea", label: "Texto Longo / Parágrafo", icon: AlignLeft },
+  { value: "tel", label: "WhatsApp / Telefone", icon: Hash },
+  { value: "radio", label: "Múltipla Escolha (1 opção)", icon: ListOrdered },
+  { value: "checkbox", label: "Caixas de Seleção (várias)", icon: CheckSquare },
+  { value: "select", label: "Menu Suspenso (Dropdown)", icon: Sliders },
+];
 
 export function FormEditDialog({
   open,
@@ -41,39 +69,62 @@ export function FormEditDialog({
 }: FormEditDialogProps) {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [category, setCategory] = useState<FormCategory>("anamnese");
+  const [category, setCategory] = useState<FormCategory>("geral");
   const [description, setDescription] = useState("");
   const [googleFormUrl, setGoogleFormUrl] = useState("");
   const [badge, setBadge] = useState("");
-  const [estimatedMinutes, setEstimatedMinutes] = useState(3);
+  const [estimatedMinutes, setEstimatedMinutes] = useState(2);
   const [visibleToStudents, setVisibleToStudents] = useState(true);
   const [isPublicLead, setIsPublicLead] = useState(true);
+  const [fields, setFields] = useState<FormFieldDefinition[]>([]);
 
   useEffect(() => {
     if (formToEdit) {
       setTitle(formToEdit.title || "");
       setSlug(formToEdit.slug || "");
-      setCategory(formToEdit.category || "anamnese");
+      setCategory(formToEdit.category || "geral");
       setDescription(formToEdit.description || "");
       setGoogleFormUrl(formToEdit.googleFormUrl || "");
       setBadge(formToEdit.badge || "");
-      setEstimatedMinutes(formToEdit.estimatedMinutes || 3);
+      setEstimatedMinutes(formToEdit.estimatedMinutes || 2);
       setVisibleToStudents(formToEdit.visibleToStudents ?? true);
       setIsPublicLead(formToEdit.isPublicLead ?? true);
+      setFields(
+        formToEdit.fields && formToEdit.fields.length > 0
+          ? JSON.parse(JSON.stringify(formToEdit.fields))
+          : []
+      );
     } else {
       setTitle("");
       setSlug("");
-      setCategory("anamnese");
+      setCategory("geral");
       setDescription("");
       setGoogleFormUrl("");
-      setBadge("Novos Alunos");
-      setEstimatedMinutes(3);
+      setBadge("Oficial");
+      setEstimatedMinutes(2);
       setVisibleToStudents(true);
       setIsPublicLead(true);
+      // Blocos padrão para novo formulário
+      setFields([
+        {
+          id: "nome_completo",
+          label: "Nome Completo",
+          type: "text",
+          required: true,
+          placeholder: "Digite o nome e sobrenome",
+        },
+        {
+          id: "telefone_whatsapp",
+          label: "WhatsApp de Contato",
+          type: "tel",
+          required: true,
+          placeholder: "(00) 00000-0000",
+        },
+      ]);
     }
   }, [formToEdit, open]);
 
-  // Auto-gera slug baseado no título se slug estiver vazio
+  // Auto-gera slug baseado no título
   const handleTitleChange = (val: string) => {
     setTitle(val);
     if (!formToEdit && (!slug || slug === "")) {
@@ -87,6 +138,33 @@ export function FormEditDialog({
     }
   };
 
+  // Gerenciamento de blocos de campos
+  const addField = () => {
+    const newId = `campo_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 5)}`;
+    setFields((prev) => [
+      ...prev,
+      {
+        id: newId,
+        label: "Nova Informação",
+        type: "text",
+        required: true,
+        placeholder: "Digite aqui...",
+      },
+    ]);
+  };
+
+  const removeField = (index: number) => {
+    setFields((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateField = (index: number, updates: Partial<FormFieldDefinition>) => {
+    setFields((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], ...updates };
+      return copy;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -95,24 +173,25 @@ export function FormEditDialog({
     }
 
     try {
-      const payload = {
+      const payload: any = {
         id: formToEdit?.id,
-        title,
-        slug,
+        title: title.trim(),
+        slug: slug.trim(),
         category,
-        description,
-        googleFormUrl,
-        badge,
-        estimatedMinutes: Number(estimatedMinutes) || 3,
+        description: description.trim(),
+        googleFormUrl: googleFormUrl.trim(),
+        badge: badge.trim(),
+        estimatedMinutes: Number(estimatedMinutes) || 2,
         visibleToStudents,
         isPublicLead,
+        fields,
         userId: tenantId,
       };
 
       // 1. Salva localmente como cache imediato
       const saved = saveStudioForm(payload, tenantId);
 
-      // 2. Salva no banco de dados na nuvem via server function (para funcionar em qualquer dispositivo ou aba anônima)
+      // 2. Salva no banco de dados na nuvem via server function (sincronização global)
       try {
         await saveFormServerFn({ data: payload });
       } catch (cloudErr) {
@@ -131,19 +210,20 @@ export function FormEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl w-[95vw] p-5">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <Sparkles className="h-5 w-5 text-primary" />
-              {formToEdit ? "Editar Formulário" : "Cadastrar Novo Formulário"}
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              Conecte qualquer Google Formulários à vitrine profissional do Studio e gere links públicos para WhatsApp e Instagram.
-            </DialogDescription>
-          </DialogHeader>
+      <DialogContent className="max-w-2xl w-[96vw] max-h-[92vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20 shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Sparkles className="h-5 w-5 text-primary" />
+            {formToEdit ? "Editar Formulário & Blocos de Informação" : "Criar Novo Formulário"}
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            Configure o título, descrição e monte livremente os blocos de perguntas, dados e opções de escolha.
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="grid gap-3 py-1">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
+          {/* Dados Gerais do Formulário */}
+          <div className="space-y-3">
             <div className="space-y-1">
               <Label htmlFor="form-title" className="text-xs font-semibold">
                 Título do Formulário *
@@ -152,7 +232,7 @@ export function FormEditDialog({
                 id="form-title"
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Ex: Anamnese Inicial & Histórico de Saúde"
+                placeholder="Ex: Pedido de Camiseta Oficial do Studio"
                 required
                 className="h-9 text-sm"
               />
@@ -161,7 +241,7 @@ export function FormEditDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="form-slug" className="text-xs font-semibold">
-                  Identificador na URL (Slug)
+                  Link na URL (Slug)
                 </Label>
                 <div className="flex items-center rounded-md border border-input bg-muted/40 px-2 h-9 text-xs">
                   <span className="text-muted-foreground mr-1">/f/</span>
@@ -169,7 +249,7 @@ export function FormEditDialog({
                     id="form-slug"
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
-                    placeholder="anamnese"
+                    placeholder="camiseta-studio"
                     className="w-full bg-transparent outline-none font-mono"
                   />
                 </div>
@@ -187,45 +267,25 @@ export function FormEditDialog({
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="geral">👕 Geral & Pedidos / Loja</SelectItem>
                     <SelectItem value="anamnese">📋 Anamnese Clínica</SelectItem>
                     <SelectItem value="parq">🩺 Prontidão PAR-Q</SelectItem>
                     <SelectItem value="objetivos">🎯 Alinhamento de Metas</SelectItem>
                     <SelectItem value="feedback">⭐ Feedback & Satisfação</SelectItem>
-                    <SelectItem value="geral">📄 Formulário Geral</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="form-url" className="text-xs font-semibold flex items-center justify-between">
-                <span>Link do Google Forms *</span>
-                <span className="text-[10px] text-muted-foreground font-normal">
-                  docs.google.com/forms/...
-                </span>
-              </Label>
-              <div className="relative">
-                <Link2 className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="form-url"
-                  value={googleFormUrl}
-                  onChange={(e) => setGoogleFormUrl(e.target.value)}
-                  placeholder="https://docs.google.com/forms/d/e/.../viewform"
-                  required
-                  className="pl-9 h-9 text-xs font-mono"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
               <Label htmlFor="form-desc" className="text-xs font-semibold">
-                Descrição Curta
+                Descrição ou Instruções aos Alunos
               </Label>
               <Textarea
                 id="form-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Breve orientação para o aluno entender o objetivo do questionário..."
+                placeholder="Ex: Escolha o modelo e tamanho ideal da sua camiseta do Studio..."
                 rows={2}
                 className="text-xs resize-none"
               />
@@ -240,14 +300,14 @@ export function FormEditDialog({
                   id="form-badge"
                   value={badge}
                   onChange={(e) => setBadge(e.target.value)}
-                  placeholder="Ex: Novos Alunos"
+                  placeholder="Ex: Loja & Uniforme"
                   className="h-9 text-xs"
                 />
               </div>
 
               <div className="space-y-1">
                 <Label htmlFor="form-minutes" className="text-xs font-semibold">
-                  Tempo Estimado (min)
+                  Tempo Estimado (minutos)
                 </Label>
                 <Input
                   id="form-minutes"
@@ -261,42 +321,205 @@ export function FormEditDialog({
               </div>
             </div>
 
-            <div className="pt-2 border-t border-border space-y-2">
-              <div className="flex items-center justify-between rounded-lg border border-border p-2.5 bg-muted/20">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <UserCheck className="h-3.5 w-3.5 text-primary" />
-                    Exibir no Portal do Aluno
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Alunos conectados veem este formulário na área do portal.
-                  </p>
-                </div>
-                <Switch
-                  checked={visibleToStudents}
-                  onCheckedChange={setVisibleToStudents}
-                />
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border border-border p-2.5 bg-muted/20">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                    <Globe className="h-3.5 w-3.5 text-emerald-500" />
-                    Link Público (Captação de Leads / Instagram)
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Permite abrir sem login nem senha pelo link público /f/{slug || "slug"}.
-                  </p>
-                </div>
-                <Switch
-                  checked={isPublicLead}
-                  onCheckedChange={setIsPublicLead}
+            <div className="space-y-1">
+              <Label htmlFor="form-url" className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                <span>Google Forms (Opcional - caso queira espelhar)</span>
+                <span className="text-[10px]">docs.google.com/forms/...</span>
+              </Label>
+              <div className="relative">
+                <Link2 className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="form-url"
+                  value={googleFormUrl}
+                  onChange={(e) => setGoogleFormUrl(e.target.value)}
+                  placeholder="Deixe em branco para usar o formulário interativo nativo"
+                  className="pl-9 h-9 text-xs font-mono"
                 />
               </div>
             </div>
           </div>
 
-          <DialogFooter className="gap-2">
+          {/* Seção Dinâmica de Blocos e Campos */}
+          <div className="pt-3 border-t border-border space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Blocos de Informação & Perguntas ({fields.length})
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Adicione, edite ou remova campos como Nome, Tamanho, Cor, WhatsApp, etc.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addField}
+                className="h-8 gap-1.5 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Adicionar Bloco
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {fields.map((f, idx) => (
+                <div
+                  key={f.id}
+                  className="rounded-xl border border-border bg-card p-3.5 shadow-2xs space-y-2.5 transition-all hover:border-primary/40"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-foreground">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] text-primary font-mono">
+                        {idx + 1}
+                      </span>
+                      <span>Bloco #{idx + 1}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={!!f.required}
+                          onChange={(e) => updateField(idx, { required: e.target.checked })}
+                          className="h-3.5 w-3.5 rounded border-border text-primary accent-primary"
+                        />
+                        <span>Obrigatório</span>
+                      </label>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeField(idx)}
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        title="Remover este bloco"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                    <div className="sm:col-span-7 space-y-1">
+                      <Label className="text-[11px] text-muted-foreground">Nome da Pergunta / Campo</Label>
+                      <Input
+                        value={f.label}
+                        onChange={(e) => updateField(idx, { label: e.target.value })}
+                        placeholder="Ex: Tamanho da Camiseta"
+                        className="h-8 text-xs font-medium"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-5 space-y-1">
+                      <Label className="text-[11px] text-muted-foreground">Tipo de Resposta</Label>
+                      <Select
+                        value={f.type}
+                        onValueChange={(val) => {
+                          const newType = val as FormFieldType;
+                          const updates: Partial<FormFieldDefinition> = { type: newType };
+                          if (["radio", "checkbox", "select"].includes(newType) && (!f.options || f.options.length === 0)) {
+                            updates.options = ["Opção 1", "Opção 2", "Opção 3"];
+                          }
+                          updateField(idx, updates);
+                        }}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FIELD_TYPE_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Opções configuráveis se for radio, select ou checkbox */}
+                  {["radio", "checkbox", "select"].includes(f.type) && (
+                    <div className="space-y-1.5 pt-1 bg-muted/20 p-2.5 rounded-lg border border-border/60">
+                      <Label className="text-[11px] font-semibold text-foreground flex items-center justify-between">
+                        <span>Opções de Escolha (separadas por vírgula)</span>
+                        <span className="text-[10px] text-muted-foreground font-normal">
+                          Ex: PP, P, M, G, GG, XGG
+                        </span>
+                      </Label>
+                      <Input
+                        value={(f.options || []).join(", ")}
+                        onChange={(e) => {
+                          const opts = e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean);
+                          updateField(idx, { options: opts });
+                        }}
+                        placeholder="PP, P, M, G, GG, XGG"
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  )}
+
+                  {/* Placeholder e Texto de Apoio */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Input
+                      value={f.placeholder || ""}
+                      onChange={(e) => updateField(idx, { placeholder: e.target.value })}
+                      placeholder="Texto de dica dentro do campo..."
+                      className="h-7 text-[11px] text-muted-foreground"
+                    />
+                    <Input
+                      value={f.helperText || ""}
+                      onChange={(e) => updateField(idx, { helperText: e.target.value })}
+                      placeholder="Orientação abaixo do campo (opcional)..."
+                      className="h-7 text-[11px] text-muted-foreground"
+                    />
+                  </div>
+                </div>
+              ))}
+
+              {fields.length === 0 && (
+                <div className="rounded-xl border border-dashed border-border p-6 text-center bg-muted/10">
+                  <p className="text-xs text-muted-foreground">
+                    Nenhum bloco de informação cadastrado. Clique no botão acima para adicionar.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Configurações de Visibilidade */}
+          <div className="pt-3 border-t border-border space-y-2">
+            <div className="flex items-center justify-between rounded-lg border border-border p-2.5 bg-muted/20">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <UserCheck className="h-3.5 w-3.5 text-primary" />
+                  Exibir no Portal do Aluno
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Alunos logados veem este formulário de pedidos na área do portal.
+                </p>
+              </div>
+              <Switch checked={visibleToStudents} onCheckedChange={setVisibleToStudents} />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border p-2.5 bg-muted/20">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <Globe className="h-3.5 w-3.5 text-emerald-500" />
+                  Link Público Aberto
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Permite que qualquer pessoa acesse pelo link /f/{slug || "slug"}.
+                </p>
+              </div>
+              <Switch checked={isPublicLead} onCheckedChange={setIsPublicLead} />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 pt-2 border-t border-border">
             <Button
               type="button"
               variant="outline"
