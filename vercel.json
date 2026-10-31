@@ -74,7 +74,7 @@
   "crons": [
     {
       "path": "/api/cron/pre-class",
-      "schedule": "40 8,10,11,12,20,21 * * *"
+      "schedule": "0 10 * * *"
     }
   ]
 }
