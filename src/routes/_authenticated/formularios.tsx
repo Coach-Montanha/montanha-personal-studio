@@ -149,6 +149,9 @@ function FormulariosAdminPage() {
 
     try {
       saveStudioForm(updatedForm as any, user?.id);
+      setForms((prev) =>
+        prev.map((f) => ((f.slug || f.id) === (form.slug || form.id) ? updatedForm : f))
+      );
       await saveFormServerFn({ data: updatedForm });
       toast.success(
         nextArchived

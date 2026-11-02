@@ -427,7 +427,7 @@ export const DEFAULT_STUDIO_FORMS: StudioFormItem[] = [
         placeholder: "Deixe seu elogio, crítica ou sugestão sincera...",
       },
     ],
-  },,
+  },
   {
     id: "pedido-camiseta-studio",
     slug: "camiseta-studio",

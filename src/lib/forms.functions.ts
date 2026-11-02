@@ -88,10 +88,11 @@ export const listFormsServerFn = createServerFn({ method: "GET" }).handler(async
         estimatedMinutes: meta.estimatedMinutes || 3,
         visibleToStudents: meta.visibleToStudents ?? true,
         isPublicLead: meta.isPublicLead ?? true,
+        isArchived: meta.isArchived === true,
         fields: meta.fields || [],
         googleFormUrl: meta.googleFormUrl || "",
         userId: row.user_id,
-      });
+      } as any);
     }
   } catch (err: any) {
     console.warn("[listFormsServerFn] Erro ao listar do banco:", err?.message);
@@ -283,6 +284,7 @@ export const saveFormServerFn = createServerFn({ method: "POST" })
       estimatedMinutes: Number(form.estimatedMinutes) || 3,
       visibleToStudents: form.visibleToStudents ?? true,
       isPublicLead: form.isPublicLead ?? true,
+      isArchived: form.isArchived === true,
       fields: resolvedFields,
       googleFormUrl: form.googleFormUrl || "",
     };

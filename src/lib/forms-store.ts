@@ -37,6 +37,7 @@ export interface StudioFormItem {
   estimatedMinutes?: number;
   visibleToStudents: boolean;
   isPublicLead: boolean;
+  isArchived?: boolean;
   fields?: FormFieldDefinition[];
   createdAt: string;
   updatedAt: string;
