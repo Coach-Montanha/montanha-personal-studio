@@ -60,6 +60,7 @@ function FormulariosAdminPage() {
   const [embedTarget, setEmbedTarget] = useState<StudioFormItem | null>(null);
   const [editTarget, setEditTarget] = useState<StudioFormItem | null | undefined>(undefined);
   const [submissionsOpen, setSubmissionsOpen] = useState(false);
+  const [selectedFormForSubmissions, setSelectedFormForSubmissions] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const refreshList = async () => {
@@ -201,7 +202,10 @@ function FormulariosAdminPage() {
 
         <div className="flex items-center gap-2">
           <Button
-            onClick={() => setSubmissionsOpen(true)}
+            onClick={() => {
+              setSelectedFormForSubmissions(null);
+              setSubmissionsOpen(true);
+            }}
             size="sm"
             variant="outline"
             className="gap-2 font-bold shrink-0 shadow-xs relative border-primary/30 hover:bg-primary/10 text-primary"
@@ -333,11 +337,30 @@ function FormulariosAdminPage() {
                 <div>
                   {/* Card Top Badges */}
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wider">
                         <Sparkles className="h-3 w-3" />
                         {item.badge || item.category}
                       </span>
+                      {(() => {
+                        const itemSubCount = submissions.filter(
+                          (s) => (s.formSlug || "").toLowerCase() === (item.slug || item.id).toLowerCase()
+                        ).length;
+                        return itemSubCount > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedFormForSubmissions(item.slug || item.id);
+                              setSubmissionsOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 rounded-md bg-primary/15 hover:bg-primary/25 text-primary px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
+                            title="Clique para ver e analisar as respostas deste formulário"
+                          >
+                            <FileCheck2 className="h-3 w-3" />
+                            {itemSubCount} {itemSubCount === 1 ? "resposta" : "respostas"}
+                          </button>
+                        ) : null;
+                      })()}
                       {isArchived && (
                         <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                           <EyeOff className="h-3 w-3" />
@@ -345,7 +368,7 @@ function FormulariosAdminPage() {
                         </span>
                       )}
                     </div>
-                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground shrink-0">
                       <Clock className="h-3 w-3" />
                       ~{item.estimatedMinutes || 2} min
                     </span>
@@ -502,11 +525,15 @@ function FormulariosAdminPage() {
       {/* Dialog de Respostas & Submissões */}
       <FormSubmissionsDialog
         open={submissionsOpen}
-        onOpenChange={setSubmissionsOpen}
+        onOpenChange={(open) => {
+          setSubmissionsOpen(open);
+          if (!open) setSelectedFormForSubmissions(null);
+        }}
         submissions={submissions}
         forms={forms}
         students={students}
         onRefresh={refreshList}
+        initialFormSlug={selectedFormForSubmissions}
       />
     </div>
   );

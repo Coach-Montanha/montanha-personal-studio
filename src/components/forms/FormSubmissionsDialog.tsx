@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Trash2,
   Unlink,
+  Filter,
 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadFormSubmissionPdf } from "@/lib/form-submission-pdf";
@@ -50,6 +51,7 @@ interface FormSubmissionsDialogProps {
   forms?: Array<{ id: string; slug: string; title: string; fields?: Array<{ id: string; label: string }> }>;
   students: Array<{ id: string; name: string }>;
   onRefresh: () => void;
+  initialFormSlug?: string | null;
 }
 
 export function FormSubmissionsDialog({
@@ -59,7 +61,9 @@ export function FormSubmissionsDialog({
   forms = [],
   students,
   onRefresh,
+  initialFormSlug,
 }: FormSubmissionsDialogProps) {
+  const [selectedFormSlug, setSelectedFormSlug] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"resumo" | "pergunta" | "individual">("resumo");
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmissionItem | null>(null);
   const [linkTargetStudentId, setLinkTargetStudentId] = useState<string>("");
@@ -69,7 +73,59 @@ export function FormSubmissionsDialog({
   const [selectedQuestionIdx, setSelectedQuestionIdx] = useState<number>(0);
   const [individualIdx, setIndividualIdx] = useState<number>(0);
 
-  const activeSubmission = selectedSubmission || submissions[individualIdx] || submissions[0] || null;
+  // Sincroniza o formulário inicial quando fornecido ou ao abrir o diálogo
+  useMemo(() => {
+    if (initialFormSlug) {
+      setSelectedFormSlug(initialFormSlug);
+    }
+  }, [initialFormSlug, open]);
+
+  // Lista de opções de formulários com contagem real de respostas
+  const formOptions = useMemo(() => {
+    const list: Array<{ slug: string; title: string; count: number }> = [];
+    const seen = new Set<string>();
+
+    for (const f of forms) {
+      const slug = f.slug || f.id;
+      if (!slug || seen.has(slug.toLowerCase())) continue;
+      seen.add(slug.toLowerCase());
+      const count = submissions.filter(
+        (s) => (s.formSlug || "").toLowerCase() === slug.toLowerCase()
+      ).length;
+      list.push({ slug, title: f.title || slug, count });
+    }
+
+    for (const s of submissions) {
+      const slug = s.formSlug;
+      if (slug && !seen.has(slug.toLowerCase())) {
+        seen.add(slug.toLowerCase());
+        const count = submissions.filter(
+          (sub) => (sub.formSlug || "").toLowerCase() === slug.toLowerCase()
+        ).length;
+        list.push({ slug, title: s.formTitle || slug, count });
+      }
+    }
+
+    return list;
+  }, [forms, submissions]);
+
+  // Submissões filtradas pelo formulário selecionado
+  const filteredSubmissions = useMemo(() => {
+    if (!selectedFormSlug || selectedFormSlug === "all") {
+      return submissions;
+    }
+    return submissions.filter(
+      (s) => (s.formSlug || "").toLowerCase() === selectedFormSlug.toLowerCase()
+    );
+  }, [submissions, selectedFormSlug]);
+
+  const activeSubmission =
+    (selectedSubmission && filteredSubmissions.some((s) => s.id === selectedSubmission.id)
+      ? selectedSubmission
+      : null) ||
+    filteredSubmissions[individualIdx] ||
+    filteredSubmissions[0] ||
+    null;
 
   // Resolve rótulo amigável para qualquer chave
   const getFieldLabel = (key: string, formSlug?: string) => {
@@ -96,12 +152,20 @@ export function FormSubmissionsDialog({
     return clean.replace(/_/g, " ");
   };
 
-  // Coleta todas as perguntas definidas no formulário e cruza com as submissões
+  // Coleta todas as perguntas definidas no formulário e cruza com as submissões filtradas
   const questionSummaries = useMemo(() => {
     const map = new Map<string, { label: string; responses: Array<{ respondent: string; answer: any; contact?: string; date: string }> }>();
 
-    // 1. Inicializa com todos os campos oficiais de cada formulário
-    for (const f of forms) {
+    // 1. Inicializa com os campos oficiais dos formulários (se filtrado, apenas do formulário selecionado)
+    const targetForms =
+      selectedFormSlug && selectedFormSlug !== "all"
+        ? forms.filter(
+            (f) =>
+              (f.slug || f.id || "").toLowerCase() === selectedFormSlug.toLowerCase()
+          )
+        : forms;
+
+    for (const f of targetForms) {
       if (Array.isArray(f.fields)) {
         for (const fld of f.fields) {
           if (fld.label && !map.has(fld.label)) {
@@ -111,8 +175,8 @@ export function FormSubmissionsDialog({
       }
     }
 
-    // 2. Preenche as respostas registradas
-    for (const sub of submissions) {
+    // 2. Preenche com as respostas das submissões filtradas
+    for (const sub of filteredSubmissions) {
       const date = new Date(sub.createdAt).toLocaleDateString("pt-BR");
       for (const [key, val] of Object.entries(sub.answers || {})) {
         if (key.startsWith("_")) continue;
@@ -130,7 +194,7 @@ export function FormSubmissionsDialog({
     }
 
     return Array.from(map.values());
-  }, [submissions, forms]);
+  }, [filteredSubmissions, forms, selectedFormSlug]);
 
   const handleImportCsv = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -315,7 +379,7 @@ export function FormSubmissionsDialog({
                 Google Forms Hub
               </span>
               <span className="text-xs text-muted-foreground font-semibold">
-                {submissions.length} {submissions.length === 1 ? "resposta" : "respostas"}
+                {filteredSubmissions.length} de {submissions.length} {submissions.length === 1 ? "resposta" : "respostas"}
               </span>
             </div>
             <DialogTitle className="text-lg font-bold text-foreground mt-1">
@@ -380,13 +444,77 @@ export function FormSubmissionsDialog({
           </div>
         </DialogHeader>
 
-        {submissions.length === 0 ? (
+        {/* Barra de Filtro de Formulário */}
+        <div className="px-5 py-2.5 border-b border-border bg-muted/20 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex items-center gap-1 text-muted-foreground font-bold uppercase tracking-wider text-[11px] shrink-0">
+              <Filter className="h-3.5 w-3.5 text-primary" />
+              Filtrar por Formulário:
+            </span>
+            <div className="relative">
+              <select
+                value={selectedFormSlug}
+                onChange={(e) => {
+                  setSelectedFormSlug(e.target.value);
+                  setSelectedSubmission(null);
+                  setIndividualIdx(0);
+                  setSelectedQuestionIdx(0);
+                }}
+                className="h-8 pl-3 pr-8 rounded-lg border border-border bg-card font-semibold text-foreground text-xs shadow-2xs hover:bg-muted/50 focus:outline-hidden focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer"
+              >
+                <option value="all">Todos os Formulários ({submissions.length} respostas)</option>
+                {formOptions.map((opt) => (
+                  <option key={opt.slug} value={opt.slug}>
+                    {opt.title} ({opt.count} {opt.count === 1 ? "resposta" : "respostas"})
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground">
+                <ChevronRight className="h-3.5 w-3.5 rotate-90" />
+              </div>
+            </div>
+          </div>
+
+          {selectedFormSlug !== "all" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedFormSlug("all");
+                setSelectedSubmission(null);
+                setIndividualIdx(0);
+                setSelectedQuestionIdx(0);
+              }}
+              className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              Limpar Filtro
+            </Button>
+          )}
+        </div>
+
+        {filteredSubmissions.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
             <FileText className="h-12 w-12 stroke-[1.2] text-muted-foreground/40 mb-3" />
-            <p className="font-semibold text-foreground text-sm">Nenhuma resposta registrada ainda</p>
-            <p className="text-xs max-w-sm mt-1">
-              Assim que um aluno ou lead preencher qualquer formulário pelo link público ou importar do Google Forms, as análises completas aparecerão aqui.
+            <p className="font-semibold text-foreground text-sm">
+              {selectedFormSlug !== "all"
+                ? "Nenhuma resposta registrada para este formulário ainda"
+                : "Nenhuma resposta registrada ainda"}
             </p>
+            <p className="text-xs max-w-sm mt-1">
+              {selectedFormSlug !== "all"
+                ? "Assim que alguém responder a este questionário ou você importar um CSV, os dados aparecerão aqui."
+                : "Assim que um aluno ou lead preencher qualquer formulário pelo link público ou importar do Google Forms, as análises completas aparecerão aqui."}
+            </p>
+            {selectedFormSlug !== "all" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedFormSlug("all")}
+                className="mt-4 text-xs font-semibold"
+              >
+                Ver todos os formulários
+              </Button>
+            )}
           </div>
         ) : (
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -396,9 +524,9 @@ export function FormSubmissionsDialog({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="bg-card border border-border rounded-xl p-4 shadow-2xs">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Total de Respostas
+                      Total de Respostas {selectedFormSlug !== "all" ? "(Deste Formulário)" : ""}
                     </span>
-                    <p className="text-2xl font-extrabold text-foreground mt-1">{submissions.length}</p>
+                    <p className="text-2xl font-extrabold text-foreground mt-1">{filteredSubmissions.length}</p>
                   </div>
                   <div className="bg-card border border-border rounded-xl p-4 shadow-2xs">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -411,7 +539,7 @@ export function FormSubmissionsDialog({
                       Alunos Vinculados
                     </span>
                     <p className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
-                      {submissions.filter((s) => s.studentId).length}
+                      {filteredSubmissions.filter((s) => s.studentId).length}
                     </p>
                   </div>
                 </div>
@@ -577,7 +705,7 @@ export function FormSubmissionsDialog({
               <div className="flex-1 min-h-0 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border">
                 {/* Lista Lateral de Envios */}
                 <div className="w-full md:w-80 flex-shrink-0 overflow-y-auto divide-y divide-border bg-muted/20">
-                  {submissions.map((sub, sIdx) => {
+                  {filteredSubmissions.map((sub, sIdx) => {
                     const isSelected = activeSubmission?.id === sub.id;
                     const date = new Date(sub.createdAt).toLocaleString("pt-BR", {
                       day: "2-digit",
@@ -660,7 +788,7 @@ export function FormSubmissionsDialog({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-card border border-border rounded-xl p-4 shadow-xs">
                       <div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                          Resposta {individualIdx + 1} de {submissions.length}
+                          Resposta {individualIdx + 1} de {filteredSubmissions.length}
                         </span>
                         <h3 className="text-base font-extrabold text-foreground mt-0.5">
                           {activeSubmission.respondentName}
@@ -679,7 +807,7 @@ export function FormSubmissionsDialog({
                           onClick={() => {
                             const newIdx = Math.max(0, individualIdx - 1);
                             setIndividualIdx(newIdx);
-                            setSelectedSubmission(submissions[newIdx]);
+                            setSelectedSubmission(filteredSubmissions[newIdx]);
                           }}
                         >
                           <ChevronLeft className="h-3.5 w-3.5" />
@@ -688,11 +816,11 @@ export function FormSubmissionsDialog({
                           size="sm"
                           variant="outline"
                           className="h-8 px-2 text-xs"
-                          disabled={individualIdx >= submissions.length - 1}
+                          disabled={individualIdx >= filteredSubmissions.length - 1}
                           onClick={() => {
-                            const newIdx = Math.min(submissions.length - 1, individualIdx + 1);
+                            const newIdx = Math.min(filteredSubmissions.length - 1, individualIdx + 1);
                             setIndividualIdx(newIdx);
-                            setSelectedSubmission(submissions[newIdx]);
+                            setSelectedSubmission(filteredSubmissions[newIdx]);
                           }}
                         >
                           <ChevronRight className="h-3.5 w-3.5" />
