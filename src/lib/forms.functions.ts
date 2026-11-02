@@ -305,21 +305,33 @@ export const saveFormServerFn = createServerFn({ method: "POST" })
     const { data: existing } = await existingQuery.maybeSingle();
 
     if (existing) {
-      await supabaseAdmin
+      const { error: updateErr } = await supabaseAdmin
         .from("pt_notifications")
         .update({
           title: resolvedTitle,
           metadata: formPayload,
         })
         .eq("id", existing.id);
+      if (updateErr) {
+        console.error("[saveFormServerFn] Erro ao atualizar no banco:", updateErr.message);
+        throw new Error(`Erro ao atualizar no banco: ${updateErr.message}`);
+      }
     } else {
-      await supabaseAdmin.from("pt_notifications" as any).insert({
-        user_id: form.userId || null,
+      // Fallback para admin caso form.userId não seja fornecido (ex: formulários padrão)
+      const targetUserId =
+        form.userId || "b75fc258-7809-4861-b52f-55877117cc92";
+
+      const { error: insertErr } = await supabaseAdmin.from("pt_notifications" as any).insert({
+        user_id: targetUserId,
         title: resolvedTitle,
         message: resolvedDesc || "Definição de formulário customizado",
         type: "custom_form_definition",
         metadata: formPayload,
       });
+      if (insertErr) {
+        console.error("[saveFormServerFn] Erro ao inserir no banco:", insertErr.message);
+        throw new Error(`Erro ao inserir no banco: ${insertErr.message}`);
+      }
     }
 
     return { ok: true, slug };

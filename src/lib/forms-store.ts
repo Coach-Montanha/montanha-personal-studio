@@ -243,19 +243,23 @@ export function saveStudioForm(
       .replace(/^-+|-+$/g, "");
   }
 
-  if (data.id) {
-    const index = forms.findIndex((f) => f.id === data.id);
-    if (index >= 0) {
-      const updated: StudioFormItem = {
-        ...forms[index],
-        ...data,
-        slug: targetSlug,
-        updatedAt: now,
-      };
-      forms[index] = updated;
-      localStorage.setItem(getStorageKey(tenantId), JSON.stringify(forms));
-      return updated;
-    }
+  // Procura por ID ou por Slug correspondente para atualizar
+  const existingIdx = forms.findIndex(
+    (f) =>
+      (data.id && f.id.toLowerCase() === data.id.toLowerCase()) ||
+      (targetSlug && f.slug.toLowerCase() === targetSlug)
+  );
+
+  if (existingIdx >= 0) {
+    const updated: StudioFormItem = {
+      ...forms[existingIdx],
+      ...data,
+      slug: targetSlug || forms[existingIdx].slug,
+      updatedAt: now,
+    };
+    forms[existingIdx] = updated;
+    localStorage.setItem(getStorageKey(tenantId), JSON.stringify(forms));
+    return updated;
   }
 
   const newId = `form_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;

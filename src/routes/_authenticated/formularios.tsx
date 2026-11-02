@@ -70,7 +70,21 @@ function FormulariosAdminPage() {
         listSubmissionsServerFn(),
       ]);
       if (Array.isArray(formsData) && formsData.length > 0) {
-        setForms(formsData);
+        // Preserva flags locais caso o servidor ainda não as tenha sincronizado
+        const localForms = listStudioForms(user?.id);
+        const localMap = new Map(
+          localForms.map((f) => [(f.slug || f.id).toLowerCase(), f])
+        );
+
+        const mergedForms = formsData.map((f) => {
+          const local = localMap.get((f.slug || f.id).toLowerCase());
+          if (local && (f as any).isArchived === undefined && (local as any).isArchived !== undefined) {
+            return { ...f, isArchived: (local as any).isArchived };
+          }
+          return f;
+        });
+
+        setForms(mergedForms);
       }
       if (Array.isArray(subsData)) {
         setSubmissions(subsData as FormSubmissionItem[]);
