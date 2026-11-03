@@ -660,6 +660,41 @@ function TrainingExecutionTimeline({
     },
   });
 
+  // Coletar IDs de exercicios que precisam de resolucao de nome (execucoes antigas ou sem exerciseNames)
+  const missingExerciseIds = useMemo(() => {
+    const ids = new Set<string>();
+    executions.forEach((exec) => {
+      let notes: any = {};
+      try {
+        notes = typeof exec.notes === "string" ? JSON.parse(exec.notes || "{}") : (exec.notes || {});
+      } catch {
+        notes = {};
+      }
+      const loads = notes.loads || {};
+      const exerciseNames = notes.exerciseNames || {};
+      Object.keys(loads).forEach((id) => {
+        if (!exerciseNames[id]) ids.add(id);
+      });
+    });
+    return Array.from(ids);
+  }, [executions]);
+
+  const { data: fallbackExerciseMap = {} } = useQuery({
+    queryKey: ["pt-fallback-exercises", missingExerciseIds.sort().join(",")],
+    enabled: missingExerciseIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pt_training_exercises" as any)
+        .select("id, name")
+        .in("id", missingExerciseIds);
+      const map: Record<string, string> = {};
+      (data || []).forEach((row: any) => {
+        if (row.id && row.name) map[row.id] = row.name;
+      });
+      return map;
+    },
+  });
+
   if (isLoading) return <div className="text-sm text-muted-foreground">Carregando timeline...</div>;
   if (executions.length === 0) return (
     <Card className="p-8 text-center bg-muted/20 border-dashed">
@@ -679,6 +714,7 @@ function TrainingExecutionTimeline({
           }
           const timerSeconds = notes.timerSeconds || 0;
           const loads = notes.loads || {};
+          const exerciseNames = { ...(fallbackExerciseMap || {}), ...(notes.exerciseNames || {}) };
           const excludedCount = Array.isArray(notes.excludedExercises) ? notes.excludedExercises.length : 0;
           
           return (
@@ -710,6 +746,7 @@ function TrainingExecutionTimeline({
                             executedAt: exec.executed_at,
                             timerSeconds,
                             loads,
+                            exerciseNames,
                             excludedCount,
                           })
                         }
@@ -763,13 +800,16 @@ function TrainingExecutionTimeline({
                   <div className="mt-4 space-y-2">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Cargas Registradas</div>
                     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                      {Object.entries(loads).map(([exId, load]) => (
-                        <div key={exId} className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-xs">
-                          <Activity className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          <span className="font-medium truncate flex-1">Exercício #{exId.slice(-4)}</span>
-                          <span className="font-bold text-primary tabular-nums">{load as string}</span>
-                        </div>
-                      ))}
+                      {Object.entries(loads).map(([exId, load]) => {
+                        const exName = exerciseNames[exId] || `Exercício #${exId.slice(-4)}`;
+                        return (
+                          <div key={exId} className="flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-xs" title={exName}>
+                            <Activity className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <span className="font-medium truncate flex-1">{exName}</span>
+                            <span className="font-bold text-primary tabular-nums">{load as string}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

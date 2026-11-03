@@ -127,20 +127,71 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
       if (studioStudentId) {
         const { data } = await supabase
           .from("students" as never)
-          .select("name")
+          .select("name, email")
           .eq("id", studioStudentId)
           .maybeSingle();
-        if (data) return data as { name: string };
+        if (data) return data as { name: string; email?: string };
       }
       if (studentId) {
         const { data } = await supabase
           .from("pt_students")
-          .select("name")
+          .select("name, email")
           .eq("id", studentId)
           .maybeSingle();
-        if (data) return data;
+        if (data) return data as { name: string; email?: string };
       }
       return null;
+    },
+  });
+
+  // Descobrir todos os IDs associados a este aluno (unindo Studio e PT)
+  const { data: linkedStudentIds = [filterVal] } = useQuery({
+    queryKey: ["pt-linked-student-ids", studentId, studioStudentId, studentInfo?.name, studentInfo?.email],
+    queryFn: async () => {
+      const ids = new Set<string>();
+      if (filterVal) ids.add(filterVal);
+      if (studentId) ids.add(studentId);
+      if (studioStudentId) ids.add(studioStudentId);
+
+      // Buscar por email correspondente
+      if (studentInfo?.email) {
+        const [{ data: ptRows }, { data: stRows }] = await Promise.all([
+          supabase.from("pt_students").select("id").ilike("email", studentInfo.email),
+          supabase.from("students" as never).select("id").ilike("email", studentInfo.email),
+        ]);
+        (ptRows || []).forEach((r: any) => ids.add(r.id));
+        (stRows || []).forEach((r: any) => ids.add(r.id));
+      }
+
+      // Buscar por nome correspondente se só tiver 1 id
+      if (studentInfo?.name && ids.size <= 1) {
+        const cleanName = studentInfo.name.trim();
+        const [{ data: ptRows }, { data: stRows }] = await Promise.all([
+          supabase.from("pt_students").select("id").ilike("name", `%${cleanName}%`),
+          supabase.from("students" as never).select("id").ilike("name", `%${cleanName}%`),
+        ]);
+        (ptRows || []).forEach((r: any) => ids.add(r.id));
+        (stRows || []).forEach((r: any) => ids.add(r.id));
+      }
+
+      return Array.from(ids);
+    },
+  });
+
+  // Buscar contagens de rotinas (ativas, arquivadas, lixeira) para badges visíveis e informativas
+  const { data: programCounts = { active: 0, archived: 0, deleted: 0 } } = useQuery({
+    queryKey: ["pt-program-counts", linkedStudentIds.sort().join(",")],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("pt_programs" as never)
+        .select("id, is_archived, is_deleted")
+        .in("pt_student_id" as never, linkedStudentIds);
+      const rows = (data ?? []) as any[];
+      return {
+        active: rows.filter((p) => !p.is_archived && !p.is_deleted).length,
+        archived: rows.filter((p) => p.is_archived && !p.is_deleted).length,
+        deleted: rows.filter((p) => p.is_deleted).length,
+      };
     },
   });
 
@@ -173,12 +224,12 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
   }
 
   const { data: programs = [] } = useQuery({
-    queryKey: ["pt-programs", filterVal, view],
+    queryKey: ["pt-programs", linkedStudentIds.sort().join(","), view],
     queryFn: async () => {
       let q = supabase
         .from("pt_programs" as never)
         .select("*")
-        .eq("pt_student_id" as never, filterVal);
+        .in("pt_student_id" as never, linkedStudentIds);
       if (view === "active") q = q.eq("is_archived", false).eq("is_deleted", false);
       else if (view === "archived") q = q.eq("is_archived", true).eq("is_deleted", false);
       else q = q.eq("is_deleted", true);
@@ -204,12 +255,12 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
   });
 
   const { data: executions = [] } = useQuery({
-    queryKey: ["pt-executions", filterVal],
+    queryKey: ["pt-executions", linkedStudentIds.sort().join(",")],
     queryFn: async () => {
       const { data } = await supabase
         .from("pt_training_executions" as never)
         .select("*")
-        .eq("pt_student_id" as never, filterVal)
+        .in("pt_student_id" as never, linkedStudentIds)
         .order("executed_at", { ascending: false });
       return (data ?? []) as unknown as Execution[];
     },
@@ -393,7 +444,7 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
     <div className="space-y-4">
       {/* View toggles */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
             onClick={() => { setEditingProgram(null); setProgramOpen(true); }}
@@ -408,27 +459,52 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
           >
             <Sparkles className="h-4 w-4" /> Prescrever com IA & Planilha
           </Button>
+
+          {/* Filtros com contador explicito e visual claro */}
+          <Button
+            size="sm"
+            variant={view === "active" ? "secondary" : "ghost"}
+            className={view === "active" ? "font-bold border border-primary/30" : ""}
+            onClick={() => setView("active")}
+          >
+            <Dumbbell className="h-4 w-4 mr-1.5" /> Ativas ({programCounts.active})
+          </Button>
+
           <Button
             size="sm"
             variant={view === "archived" ? "default" : "outline"}
             onClick={() => setView(view === "archived" ? "active" : "archived")}
+            className="gap-1.5"
           >
-            <Archive className="h-4 w-4" /> Rotinas arquivadas
+            <Archive className="h-4 w-4" /> Rotinas arquivadas ({programCounts.archived})
           </Button>
           <Button
             size="sm"
             variant={view === "deleted" ? "default" : "outline"}
             onClick={() => setView(view === "deleted" ? "active" : "deleted")}
+            className="gap-1.5"
           >
-            <Trash2 className="h-4 w-4" /> Rotinas excluídas
+            <Trash2 className="h-4 w-4" /> Rotinas excluídas ({programCounts.deleted})
           </Button>
           {view !== "active" && (
-            <Button size="sm" variant="ghost" onClick={() => setView("active")}>
-              Voltar para ativas
+            <Button size="sm" variant="ghost" className="text-primary font-semibold hover:underline" onClick={() => setView("active")}>
+              ← Voltar para rotinas ativas ({programCounts.active})
             </Button>
           )}
         </div>
       </div>
+
+      {/* Alerta contextual se estiver visualizando arquivadas ou lixeira */}
+      {view !== "active" && (
+        <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-900 dark:text-amber-200">
+          <span>
+            Exibindo rotinas {view === "archived" ? "arquivadas" : "excluídas"}. Suas rotinas de treino ativas continuam salvas.
+          </span>
+          <Button size="sm" variant="outline" className="h-7 text-xs bg-background" onClick={() => setView("active")}>
+            Exibir Ativas ({programCounts.active})
+          </Button>
+        </div>
+      )}
 
       {/* Program tabs */}
       {programs.length > 0 && (

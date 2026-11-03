@@ -13,6 +13,7 @@ export interface WorkoutStoryData {
   executedAt: string;
   timerSeconds?: number;
   loads?: Record<string, string>;
+  exerciseNames?: Record<string, string>;
   excludedCount?: number;
 }
 
@@ -163,14 +164,18 @@ export function WorkoutStoryModal({
                     Cargas Principais:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
-                    {loadEntries.map(([exId, load]) => (
-                      <span
-                        key={exId}
-                        className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-bold text-amber-300"
-                      >
-                        ⚡ #{exId.slice(-4)}: {load}
-                      </span>
-                    ))}
+                    {loadEntries.map(([exId, load]) => {
+                      const exName = data.exerciseNames?.[exId] || `Exercício #${exId.slice(-4)}`;
+                      return (
+                        <span
+                          key={exId}
+                          className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-bold text-amber-300 max-w-[200px] truncate"
+                          title={`${exName}: ${load}`}
+                        >
+                          ⚡ {exName}: {load}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               )}
