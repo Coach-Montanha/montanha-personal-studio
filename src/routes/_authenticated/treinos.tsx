@@ -106,6 +106,7 @@ type ProgramRow = {
   // Joins
   students?: { id: string; name: string; email: string | null } | null;
   pt_students?: { id: string; name: string; email: string | null; notes?: string | null } | null;
+  pt_training_days?: Array<{ id: string; name: string; day_label?: string | null; sort_order?: number }> | null;
 };
 
 const CATEGORIA_LABELS: Record<string, string> = {
@@ -156,7 +157,8 @@ export function TreinosPage() {
         .from("pt_programs" as never)
         .select(`
           *,
-          pt_students:pt_student_id (id, name, email, notes)
+          pt_students:pt_student_id (id, name, email, notes),
+          pt_training_days (id, name, day_label, sort_order)
         ` as never);
 
       if (statusFiltro === "ativos") {
@@ -173,6 +175,21 @@ export function TreinosPage() {
       return (data || []) as unknown as ProgramRow[];
     },
   });
+
+  // Buscar lista de alunos do Studio para cruzamento de dados e identificacao precisa
+  const { data: studioStudentsList = [] } = useQuery({
+    queryKey: ["studio-students-list-cached"],
+    staleTime: 1000 * 60 * 5,
+    queryFn: async () => {
+      const { data } = await supabase.from("students" as never).select("id, name, email");
+      return (data || []) as Array<{ id: string; name: string; email: string | null }>;
+    },
+  });
+
+  // Estados especificos para a aba de Calendario
+  const [calSearch, setCalSearch] = useState("");
+  const [calFilterOrigin, setCalFilterOrigin] = useState<"todos" | "pt" | "studio">("todos");
+  const [calFilterStatus, setCalFilterStatus] = useState<"todos" | "em_andamento" | "sem_fim" | "futuro" | "concluido">("todos");
 
   // Dias do programa expandido
   const { data: expandedDays = [] } = useQuery({
@@ -238,6 +255,94 @@ export function TreinosPage() {
       p.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
       (!p.pt_student_id)
   ).length;
+
+  // Mapa rapido de alunos Studio para deteccao precisa
+  const studioNamesSet = useMemo(() => {
+    return new Set(studioStudentsList.map((s) => s.name.trim().toLowerCase()));
+  }, [studioStudentsList]);
+
+  const studioIdsSet = useMemo(() => {
+    return new Set(studioStudentsList.map((s) => s.id));
+  }, [studioStudentsList]);
+
+  // Lista processada de alunos com treinos cadastrados para o Calendario
+  const calendarStudentItems = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    return programs
+      .filter((p) => {
+        const isModel =
+          p.pt_student_id === "00000000-0000-0000-0000-000000000001" || !p.pt_student_id;
+        return !isModel;
+      })
+      .map((p) => {
+        const studentName = p.pt_students?.name?.trim() || "Aluno sem nome";
+        const studentNotes = p.pt_students?.notes || "";
+        const studentEmail = p.pt_students?.email || "";
+
+        const hasStudioTag =
+          studentNotes.includes("[Studio]") || studentNotes.includes("[Aluno Studio]");
+        const isInStudioTable =
+          (p.pt_student_id ? studioIdsSet.has(p.pt_student_id) : false) ||
+          studioNamesSet.has(studentName.toLowerCase());
+
+        const isStudio = hasStudioTag || isInStudioTable;
+        const origin: "Studio" | "PT" = isStudio ? "Studio" : "PT";
+
+        const isStudioRecord = p.pt_student_id ? studioIdsSet.has(p.pt_student_id) : false;
+        const studentProfileUrl = isStudioRecord
+          ? `/students/${p.pt_student_id}`
+          : `/personal-trainer/students/${p.pt_students?.id || p.pt_student_id}`;
+
+        const start = p.start_date ? p.start_date.slice(0, 10) : "";
+        const end = p.end_date ? p.end_date.slice(0, 10) : null;
+
+        let statusTime: "em_andamento" | "sem_fim" | "futuro" | "concluido" = "sem_fim";
+        if (start && start > todayStr) {
+          statusTime = "futuro";
+        } else if (end && end < todayStr) {
+          statusTime = "concluido";
+        } else if (end && end >= todayStr) {
+          statusTime = "em_andamento";
+        } else if (start && !end) {
+          statusTime = "sem_fim";
+        }
+
+        const days = Array.isArray(p.pt_training_days)
+          ? [...p.pt_training_days].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          : [];
+
+        return {
+          program: p,
+          studentName,
+          studentEmail,
+          origin,
+          programName: p.name,
+          startDate: p.start_date,
+          endDate: p.end_date,
+          statusTime,
+          studentProfileUrl,
+          days,
+          category: p.category,
+        };
+      })
+      .filter((item) => {
+        if (calSearch) {
+          const match = matchesSearchTerms(
+            [item.studentName, item.programName, item.origin, item.category],
+            calSearch
+          );
+          if (!match) return false;
+        }
+
+        if (calFilterOrigin === "pt" && item.origin !== "PT") return false;
+        if (calFilterOrigin === "studio" && item.origin !== "Studio") return false;
+
+        if (calFilterStatus !== "todos" && item.statusTime !== calFilterStatus) return false;
+
+        return true;
+      });
+  }, [programs, studioIdsSet, studioNamesSet, calSearch, calFilterOrigin, calFilterStatus]);
 
   async function handleDelete(id: string) {
     const ok = await confirmDialog({
@@ -826,16 +931,312 @@ export function TreinosPage() {
         </TabsContent>
 
         {/* ABA: CALENDÁRIO */}
-        <TabsContent value="calendario" className="space-y-4 m-0">
-          <Card className="p-6 bg-card/80 border-border/70 text-center space-y-3">
-            <Calendar className="h-10 w-10 text-primary mx-auto" />
-            <div className="space-y-1">
-              <h3 className="text-base font-bold text-foreground">Agenda de Treinos dos Alunos</h3>
-              <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                Visualize as sessões distribuídas por dia da semana para alunos do Studio e Personal Trainer.
-              </p>
+        <TabsContent value="calendario" className="space-y-5 m-0">
+          {/* Header e Barra de Filtros do Calendario */}
+          <div className="bg-card/70 p-4 rounded-xl border border-border/70 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Alunos com Treinos Cadastrados
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Acompanhe alunos do Studio e Personal Trainer, rotinas ativas, períodos de vigência e sessões semanais.
+                </p>
+              </div>
+
+              {/* Botoes de atalho rapido */}
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs font-semibold gap-1.5"
+                  onClick={() => {
+                    setSelectedProgramForIa(null);
+                    setPrescreverIaOpen(true);
+                  }}
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-primary" /> Prescrever Novo Treino
+                </Button>
+              </div>
             </div>
-          </Card>
+
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 pt-2 border-t border-border/50">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  value={calSearch}
+                  onChange={(e) => setCalSearch(e.target.value)}
+                  placeholder="Filtrar por aluno, nome do treino ou modalidade..."
+                  className="pl-9 h-9 text-xs bg-background"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Filtro Origem: Todos, PT, Studio */}
+                <div className="inline-flex rounded-lg border border-border/80 bg-muted/40 p-0.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setCalFilterOrigin("todos")}
+                    className={cn(
+                      "px-2.5 py-1 rounded-md font-semibold transition-all",
+                      calFilterOrigin === "todos"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Todos ({programs.filter((p) => p.pt_student_id !== "00000000-0000-0000-0000-000000000001" && p.pt_student_id).length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCalFilterOrigin("pt")}
+                    className={cn(
+                      "px-2.5 py-1 rounded-md font-semibold transition-all inline-flex items-center gap-1",
+                      calFilterOrigin === "pt"
+                        ? "bg-background text-indigo-600 dark:text-indigo-400 shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                    PT
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCalFilterOrigin("studio")}
+                    className={cn(
+                      "px-2.5 py-1 rounded-md font-semibold transition-all inline-flex items-center gap-1",
+                      calFilterOrigin === "studio"
+                        ? "bg-background text-emerald-600 dark:text-emerald-400 shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    Studio
+                  </button>
+                </div>
+
+                {/* Filtro Periodo / Vigencia */}
+                <Select
+                  value={calFilterStatus}
+                  onValueChange={(v) => setCalFilterStatus(v as any)}
+                >
+                  <SelectTrigger className="h-9 w-[160px] text-xs bg-background">
+                    <SelectValue placeholder="Período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os Períodos</SelectItem>
+                    <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                    <SelectItem value="sem_fim">Contínuo / Sem Fim</SelectItem>
+                    <SelectItem value="futuro">Início Futuro</SelectItem>
+                    <SelectItem value="concluido">Encerrados</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Listagem em Cards de Alunos com Treinos */}
+          {calendarStudentItems.length === 0 ? (
+            <Card className="p-10 text-center bg-card/60 border-border/70 space-y-3">
+              <Calendar className="h-10 w-10 text-muted-foreground mx-auto opacity-40" />
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-foreground">Nenhum aluno com treino encontrado</h4>
+                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                  Tente alterar os termos da busca ou os filtros de origem e período acima.
+                </p>
+              </div>
+              {calSearch && (
+                <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setCalSearch("")}>
+                  Limpar busca
+                </Button>
+              )}
+            </Card>
+          ) : (
+            <div className="grid gap-3.5">
+              {calendarStudentItems.map((item) => {
+                const isPt = item.origin === "PT";
+                const startFormatted = item.startDate ? formatDateBR(item.startDate) : "Não definida";
+                const endFormatted = item.endDate ? formatDateBR(item.endDate) : "Sem data fim (Contínuo)";
+
+                return (
+                  <Card
+                    key={item.program.id}
+                    className="p-4 sm:p-5 bg-card/90 border-border/70 hover:border-primary/40 transition-all shadow-sm space-y-3.5"
+                  >
+                    {/* Linha Principal: Aluno + Tags de Origem + Treino + Periodo */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        {/* Nome do Aluno e Tags */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            to={item.studentProfileUrl}
+                            className="text-base font-extrabold text-foreground hover:text-primary transition-colors flex items-center gap-1.5 group"
+                          >
+                            <span>{item.studentName}</span>
+                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-60 group-hover:opacity-100 group-hover:text-primary" />
+                          </Link>
+
+                          {/* Tag de Identificacao PT vs Studio */}
+                          {isPt ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 px-2 py-0.5"
+                            >
+                              PT
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 px-2 py-0.5"
+                            >
+                              Studio
+                            </Badge>
+                          )}
+
+                          {/* Tag da Modalidade */}
+                          <Badge variant="secondary" className="text-[10px] font-medium px-2 py-0.5">
+                            {CATEGORIA_LABELS[item.category] || item.category}
+                          </Badge>
+
+                          {/* Tag de Status de Vigencia */}
+                          {item.statusTime === "em_andamento" && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              Em Vigência
+                            </span>
+                          )}
+                          {item.statusTime === "sem_fim" && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
+                              <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                              Contínuo
+                            </span>
+                          )}
+                          {item.statusTime === "concluido" && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                              Encerrado
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Nome do Treino ao lado com Periodo de Inicio e Fim */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground pt-0.5">
+                          {/* Nome do Treino */}
+                          <div className="flex items-center gap-1.5 font-bold text-foreground">
+                            <Dumbbell className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span className="text-sm font-bold text-primary dark:text-primary-foreground tracking-tight">
+                              {item.programName}
+                            </span>
+                          </div>
+
+                          <span className="hidden sm:inline text-muted-foreground/40">•</span>
+
+                          {/* Periodo de Inicio e Fim */}
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <CalendarDays className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <span className="font-semibold text-foreground">Início:</span>
+                            <span>{startFormatted}</span>
+                            <span className="mx-1 text-muted-foreground/60">→</span>
+                            <span className="font-semibold text-foreground">Fim:</span>
+                            <span className={cn(item.endDate ? "text-foreground font-medium" : "italic text-muted-foreground")}>
+                              {endFormatted}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Botoes de Acoes do Card */}
+                      <div className="flex items-center gap-2 self-start lg:self-center shrink-0">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 text-xs font-semibold text-primary hover:bg-primary/10 gap-1.5"
+                          onClick={() => {
+                            setSelectedProgramIdForEdit(item.program.id);
+                            setInitialDayIdForEdit(null);
+                            setProgramEditorOpen(true);
+                          }}
+                          title="Abrir editor completo para ajustar séries e exercícios"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          <span>Editar Treino</span>
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs font-semibold gap-1.5"
+                          onClick={() => {
+                            setStudentViewProgramId(item.program.id);
+                            setStudentViewOpen(true);
+                          }}
+                          title="Visualizar a rotina na perspectiva do aluno"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">Modo Aluno</span>
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            setSelectedAlunoPerfil({
+                              programId: item.program.id,
+                              name: item.studentName,
+                              email: item.studentEmail,
+                              tipo: item.origin,
+                              notes: item.program.pt_students?.notes || null,
+                              url: item.studentProfileUrl,
+                            });
+                            setAlunoPerfilOpen(true);
+                          }}
+                          title="Ver detalhes do aluno"
+                        >
+                          <User className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Divisao Semanal / Dias Cadastrados da Rotina */}
+                    {item.days.length > 0 && (
+                      <div className="pt-2 border-t border-border/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                            <Layers className="h-3 w-3" />
+                            Sessões do Programa ({item.days.length})
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {item.days.map((day) => (
+                            <button
+                              key={day.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedProgramIdForEdit(item.program.id);
+                                setInitialDayIdForEdit(day.id);
+                                setProgramEditorOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted px-2.5 py-1 text-xs text-foreground transition-colors group cursor-pointer"
+                              title={`Abrir ${day.name}`}
+                            >
+                              {day.day_label && (
+                                <span className="font-extrabold text-[10px] text-primary bg-primary/10 px-1.5 py-0.2 rounded">
+                                  {day.day_label}
+                                </span>
+                              )}
+                              <span className="font-medium group-hover:text-primary transition-colors truncate max-w-[200px]">
+                                {day.name}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </TabsContent>
 
         {/* ABA: NOVA SESSÃO / CONSTRUTOR MANUAL */}
