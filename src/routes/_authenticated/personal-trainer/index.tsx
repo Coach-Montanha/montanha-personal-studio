@@ -116,15 +116,25 @@ function PTOverview() {
     queryKey: ["pt-package-usage", scopeKey],
     enabled: ready,
     queryFn: async () => {
-      let q = supabase
-        .from("pt_sessions")
-        .select("pt_payment_id")
-        .eq("status", "completed")
-        .not("pt_payment_id", "is", null);
-      if (scopeId) q = q.eq("user_id", scopeId);
-      const { data } = await q;
+      let allRows: { pt_payment_id: string | null }[] = [];
+      let from = 0;
+      const PAGE = 1000;
+      while (true) {
+        let q = supabase
+          .from("pt_sessions")
+          .select("pt_payment_id")
+          .eq("status", "completed")
+          .not("pt_payment_id", "is", null)
+          .range(from, from + PAGE - 1);
+        if (scopeId) q = q.eq("user_id", scopeId);
+        const { data, error } = await q;
+        if (error || !data || data.length === 0) break;
+        allRows = allRows.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
       const map = new Map<string, number>();
-      for (const r of data ?? []) {
+      for (const r of allRows) {
         if (!r.pt_payment_id) continue;
         map.set(r.pt_payment_id, (map.get(r.pt_payment_id) ?? 0) + 1);
       }

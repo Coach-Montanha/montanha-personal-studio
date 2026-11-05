@@ -151,12 +151,24 @@ function CheckinPage() {
     queryKey: ["pt-sessions-used-counts", scopeKey],
     enabled: ready,
     queryFn: async () => {
-      let q = supabase
-        .from("pt_sessions")
-        .select("pt_payment_id")
-        .not("pt_payment_id", "is", null);
-      if (scopeId) q = q.eq("user_id", scopeId);
-      return (await q).data ?? [];
+      let allRows: { pt_payment_id: string | null }[] = [];
+      let from = 0;
+      const PAGE = 1000;
+      while (true) {
+        let q = supabase
+          .from("pt_sessions")
+          .select("pt_payment_id")
+          .eq("status", "completed")
+          .not("pt_payment_id", "is", null)
+          .range(from, from + PAGE - 1);
+        if (scopeId) q = q.eq("user_id", scopeId);
+        const { data, error } = await q;
+        if (error || !data || data.length === 0) break;
+        allRows = allRows.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return allRows;
     },
   });
 
@@ -299,8 +311,9 @@ function CheckinPage() {
     ];
 
     if (chosen && bal) {
+      const isExhausted = bal.remaining === 0;
       const totalRemainingAfter = Math.max(0, bal.remaining - 1);
-      const usedAfter = chosen.used + 1;
+      const usedAfter = isExhausted ? chosen.contracted : Math.min(chosen.contracted, chosen.used + 1);
       const otherRemaining = bal.packagesWithBalance
         .filter((p) => p.id !== chosen.id)
         .reduce((acc, p) => acc + p.remaining, 0);
@@ -319,12 +332,16 @@ function CheckinPage() {
       }
       if (totalRemainingAfter === 0) {
         lines.push(``);
-        lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+        lines.push(
+          isExhausted
+            ? `⚠️ Check-in registrado, mas o pacote de aulas está esgotado (${chosen.contracted}/${chosen.contracted}). Fale com seu treinador para renovar.`
+            : `ℹ️ Pacote concluído! Você completou todas as ${chosen.contracted} aulas. Fale com seu treinador para renovar.`
+        );
       }
     } else {
       lines.push(``);
       if (bal && bal.contracted > 0 && bal.remaining === 0) {
-        lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+        lines.push(`⚠️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
       } else if (bal && bal.remaining > 0) {
         lines.push(`📦 *Saldo atual:* ${bal.remaining} aula(s)`);
         lines.push(`ℹ️ Check-in registrado com sucesso.`);
@@ -337,7 +354,9 @@ function CheckinPage() {
     lines.push(`Bom treino! 💪`);
 
     const defaultMessage = lines.join("\n");
+    const isExhausted = chosen && bal ? bal.remaining === 0 : false;
     const totalRemainingAfter = chosen && bal ? Math.max(0, bal.remaining - 1) : (bal?.remaining ?? 0);
+    const usedAfterCalc = chosen && bal ? (isExhausted ? chosen.contracted : Math.min(chosen.contracted, chosen.used + 1)) : 0;
     let whatsappMessage = waTemplate.trim()
       ? applyTemplate(waTemplate, {
           aluno: targetStudent.name,
@@ -345,7 +364,7 @@ function CheckinPage() {
           hora: timeLabel,
           duracao: `${duration} min`,
           saldo: String(totalRemainingAfter),
-          utilizadas: chosen ? String(chosen.used + 1) : "0",
+          utilizadas: chosen ? String(usedAfterCalc) : "0",
           contratadas: chosen ? String(chosen.contracted) : "0",
           plano: chosen?.planName ?? "",
         })
@@ -413,7 +432,20 @@ function CheckinPage() {
           .filter((p: any) => p.status === "paid")
           .sort((a: any, b: any) => (a.payment_date < b.payment_date ? 1 : -1))[0];
         chosenPaymentId = chosen?.id ?? latestPaid?.id ?? null;
-        chosenPkg = chosen;
+        if (chosen) {
+          chosenPkg = chosen;
+        } else if (latestPaid) {
+          const contracted = Number(latestPaid.pt_plans?.sessions_per_month ?? latestPaid.sessions_paid ?? 0) || 0;
+          chosenPkg = {
+            id: latestPaid.id,
+            payment_date: latestPaid.payment_date,
+            reference_month: latestPaid.reference_month ?? null,
+            planName: latestPaid.pt_plans?.name ?? null,
+            contracted,
+            used: contracted,
+            remaining: 0,
+          };
+        }
       }
 
       const { data, error } = await supabase

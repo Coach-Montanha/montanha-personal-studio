@@ -28,9 +28,22 @@ export function PtAnalyticsPanel() {
     queryKey: ["pt-analytics-sessions", scopeKey],
     enabled: ready,
     queryFn: async () => {
-      let q = supabase.from("pt_sessions").select("session_date,status,pt_student_id");
-      if (scopeId) q = q.eq("user_id", scopeId);
-      return (await q).data ?? [];
+      let all: any[] = [];
+      let from = 0;
+      const PAGE = 1000;
+      while (true) {
+        let q = supabase
+          .from("pt_sessions")
+          .select("session_date,status,pt_student_id")
+          .range(from, from + PAGE - 1);
+        if (scopeId) q = q.eq("user_id", scopeId);
+        const { data, error } = await q;
+        if (error || !data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      return all;
     },
   });
   const { data: students = [] } = useQuery({
