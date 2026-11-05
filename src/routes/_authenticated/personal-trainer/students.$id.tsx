@@ -236,11 +236,14 @@ function PTStudentDetail() {
     );
     let pkgLabel: string = "—";
     let pkgFull = false;
+    let pkgDeficit = 0;
     if (lastPkg) {
       const total = lastPkg.sessions_paid ?? lastPkg.pt_plans?.package_sessions ?? 0;
       const used = (lastPkg.linkedSessions ?? []).length;
-      pkgLabel = `${used}/${total}`;
+      const diff = total - used;
       pkgFull = total > 0 && used >= total;
+      pkgDeficit = diff < 0 ? diff : 0;
+      pkgLabel = diff < 0 ? `${used}/${total} (${diff})` : `${used}/${total}`;
     } else if (partnerPayments.length > 0) {
       const partnerLastPkg = partnerPayments.find(
         (p: any) => p.status === "paid" && ((p.sessions_paid ?? 0) > 0 || p.pt_plans?.billing_type === "package"),
@@ -248,11 +251,13 @@ function PTStudentDetail() {
       if (partnerLastPkg) {
         const total = partnerLastPkg.contracted ?? 0;
         const used = partnerLastPkg.used ?? 0;
-        pkgLabel = `${used}/${total} (Dupla)`;
+        const diff = total - used;
         pkgFull = total > 0 && used >= total;
+        pkgDeficit = diff < 0 ? diff : 0;
+        pkgLabel = diff < 0 ? `${used}/${total} (${diff}) (Dupla)` : `${used}/${total} (Dupla)`;
       }
     }
-    return { ltv, completed, rate, pkgLabel, pkgFull };
+    return { ltv, completed, rate, pkgLabel, pkgFull, pkgDeficit };
   }, [payments, sessions, partnerPayments, completedPeriod]);
 
   const currentPlan =
@@ -459,7 +464,7 @@ function PTStudentDetail() {
         <KPICard
           label="Aulas no Pacote Atual"
           value={kpis.pkgLabel}
-          hint={kpis.pkgFull ? "Pacote esgotado" : "Realizadas / Contratadas"}
+          hint={kpis.pkgDeficit < 0 ? `${Math.abs(kpis.pkgDeficit)} aula(s) em débito` : (kpis.pkgFull ? "Pacote esgotado" : "Realizadas / Contratadas")}
           icon={<Layers className="h-5 w-5" />}
         />
       </div>

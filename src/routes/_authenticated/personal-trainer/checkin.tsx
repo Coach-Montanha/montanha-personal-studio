@@ -250,7 +250,7 @@ function CheckinPage() {
           planName: p.pt_plans?.name ?? null,
           contracted,
           used,
-          remaining: Math.max(0, contracted - used),
+          remaining: contracted - used,
         });
       }
       payments.sort((a, b) => (a.payment_date < b.payment_date ? -1 : a.payment_date > b.payment_date ? 1 : 0));
@@ -259,7 +259,7 @@ function CheckinPage() {
       map.set(s.id, {
         contracted,
         used,
-        remaining: Math.max(0, contracted - used),
+        remaining: contracted - used,
         payments,
         packagesWithBalance: payments.filter((p) => p.remaining > 0 && p.contracted > 0),
       });
@@ -310,9 +310,17 @@ function CheckinPage() {
       `🕐 *Horário:* ${timeLabel}`,
     ];
 
-    if (chosen && bal) {
+    const totalRemainingAfter = (bal?.remaining ?? 0) <= 0
+      ? (bal?.remaining ?? 0) - 1
+      : (bal?.remaining ?? 0) - 1;
+
+    if (totalRemainingAfter < 0) {
+      lines.push(``);
+      lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+      lines.push(``);
+      lines.push(`Aula registrada: ${totalRemainingAfter}`);
+    } else if (chosen && bal) {
       const isExhausted = bal.remaining === 0;
-      const totalRemainingAfter = Math.max(0, bal.remaining - 1);
       const usedAfter = isExhausted ? chosen.contracted : Math.min(chosen.contracted, chosen.used + 1);
       const otherRemaining = bal.packagesWithBalance
         .filter((p) => p.id !== chosen.id)
@@ -354,9 +362,9 @@ function CheckinPage() {
     lines.push(`Bom treino! 💪`);
 
     const defaultMessage = lines.join("\n");
-    const isExhausted = chosen && bal ? bal.remaining === 0 : false;
-    const totalRemainingAfter = chosen && bal ? Math.max(0, bal.remaining - 1) : (bal?.remaining ?? 0);
-    const usedAfterCalc = chosen && bal ? (isExhausted ? chosen.contracted : Math.min(chosen.contracted, chosen.used + 1)) : 0;
+    const usedAfterCalc = chosen && bal
+      ? (bal.remaining <= 0 ? chosen.used + 1 : Math.min(chosen.contracted, chosen.used + 1))
+      : 0;
     let whatsappMessage = waTemplate.trim()
       ? applyTemplate(waTemplate, {
           aluno: targetStudent.name,

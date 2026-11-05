@@ -1,4 +1,4 @@
-import { Receipt, Loader2 } from "lucide-react";
+import { Receipt, Loader2, AlertCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DialogHeadline } from "@/components/ui-kit/DialogHeadline";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
@@ -60,6 +60,62 @@ export function PTPaymentDialog({
   const [form, setForm] = useState<PTPayment>({});
   const [saving, setSaving] = useState(false);
   const [historicalSessions, setHistoricalSessions] = useState<number | "">("");
+  const [compensateDeficit, setCompensateDeficit] = useState(true);
+
+  // Consulta aulas realizadas em débito (excedentes do pacote anterior ou sem pagamento)
+  const { data: pendingSessions = [] } = useQuery({
+    queryKey: ["pt-student-pending-deficit", form.pt_student_id],
+    enabled: open && !form.id && !!form.pt_student_id,
+    queryFn: async () => {
+      if (!form.pt_student_id) return [];
+      const studentId = form.pt_student_id;
+
+      const { data: sessions } = await supabase
+        .from("pt_sessions")
+        .select("id, session_date, session_time, pt_payment_id, created_at")
+        .eq("pt_student_id", studentId)
+        .eq("status", "completed")
+        .order("session_date", { ascending: true })
+        .order("session_time", { ascending: true });
+
+      const { data: pays } = await supabase
+        .from("pt_payments")
+        .select("id, payment_date, sessions_paid, pt_plans(billing_type, package_sessions, sessions_per_month)")
+        .eq("pt_student_id", studentId)
+        .eq("status", "paid")
+        .order("payment_date", { ascending: true });
+
+      const paymentContracted = new Map<string, number>();
+      for (const p of pays ?? []) {
+        const contracted = Number(p.sessions_paid ?? p.pt_plans?.package_sessions ?? p.pt_plans?.sessions_per_month ?? 0) || 0;
+        paymentContracted.set(p.id, contracted);
+      }
+
+      const sessionsByPayment = new Map<string, any[]>();
+      const unlinked: any[] = [];
+      for (const s of sessions ?? []) {
+        if (!s.pt_payment_id) {
+          unlinked.push(s);
+        } else {
+          const arr = sessionsByPayment.get(s.pt_payment_id) || [];
+          arr.push(s);
+          sessionsByPayment.set(s.pt_payment_id, arr);
+        }
+      }
+
+      const deficitSessions: any[] = [];
+      for (const [pid, pSessions] of sessionsByPayment.entries()) {
+        const contracted = paymentContracted.get(pid) || 0;
+        if (pSessions.length > contracted) {
+          deficitSessions.push(...pSessions.slice(contracted));
+        }
+      }
+
+      return [...deficitSessions, ...unlinked].sort((a, b) =>
+        a.session_date < b.session_date ? -1 : a.session_date > b.session_date ? 1 : 0
+      );
+    },
+  });
   useEffect(() => {
     if (open) {
       setForm(payment ?? {
@@ -150,9 +206,24 @@ export function PTPaymentDialog({
       const { data: opData, error } = await op;
       if (error) throw error;
 
-      // Ao criar um pagamento novo, permite registrar N aulas históricas
-      // já realizadas, vinculadas a este pagamento (útil para migração/histórico).
+      // Ao criar um pagamento novo, compensa automaticamente as aulas em débito
       const newPaymentId = !form.id ? (opData as any)?.id : null;
+      if (newPaymentId && compensateDeficit && pendingSessions.length > 0 && form.pt_student_id) {
+        const quota = Number(form.sessions_paid || activePlan?.package_sessions || activePlan?.sessions_per_month || 0) || 999;
+        const toCompensate = pendingSessions.slice(0, quota);
+        if (toCompensate.length > 0) {
+          const ids = toCompensate.map((s) => s.id);
+          const { error: compErr } = await supabase
+            .from("pt_sessions")
+            .update({ pt_payment_id: newPaymentId })
+            .in("id", ids);
+          if (compErr) {
+            toast.error(`Falha ao compensar aulas: ${compErr.message}`);
+          } else {
+            toast.success(`✅ ${toCompensate.length} aula(s) em débito compensada(s) automaticamente!`);
+          }
+        }
+      }
       const count = typeof historicalSessions === "number" ? historicalSessions : 0;
       if (newPaymentId && count > 0 && form.pt_student_id) {
         const baseDate = new Date(`${form.payment_date}T12:00:00`);
@@ -309,6 +380,26 @@ export function PTPaymentDialog({
             <Label>Observações</Label>
             <Textarea rows={2} value={form.notes ?? ""} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
           </div>
+          {!form.id && pendingSessions.length > 0 && (
+            <div className="col-span-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm space-y-2">
+              <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-semibold text-xs uppercase tracking-wider">
+                <AlertCircle className="h-4 w-4" />
+                <span>Aulas em Débito Detectadas</span>
+              </div>
+              <p className="text-xs text-foreground/80 leading-relaxed">
+                Este aluno possui <strong>{pendingSessions.length} aula(s)</strong> já realizada(s) em débito (treinou sem pacote ativo ou além do saldo).
+              </p>
+              <label className="flex items-center gap-2 pt-1 text-xs font-medium cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-amber-500 text-amber-600 focus:ring-amber-500"
+                  checked={compensateDeficit}
+                  onChange={(e) => setCompensateDeficit(e.target.checked)}
+                />
+                <span>Compensar automaticamente até {form.sessions_paid || activePlan?.package_sessions || 0} aula(s) neste pagamento</span>
+              </label>
+            </div>
+          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancelar</Button>

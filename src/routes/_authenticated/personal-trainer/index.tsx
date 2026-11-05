@@ -648,12 +648,15 @@ function PTOverview() {
                     const checked = selected.has(s.id);
                     let pkgLabel: string | null = null;
                     let pkgFull = false;
+                    let pkgDeficit = 0;
                     if (lastPkg) {
                       const contractedPkg = lastPkg.sessions_paid ?? lastPkg.pt_plans?.package_sessions ?? 0;
                       if (contractedPkg) {
                         const usedPkg = packageUsage.get(lastPkg.id) ?? 0;
-                        pkgFull = usedPkg >= contractedPkg;
-                        pkgLabel = `${usedPkg}/${contractedPkg}`;
+                        const diff = contractedPkg - usedPkg;
+                        pkgFull = diff <= 0;
+                        pkgDeficit = diff < 0 ? diff : 0;
+                        pkgLabel = diff < 0 ? `${usedPkg}/${contractedPkg} (${diff})` : `${usedPkg}/${contractedPkg}`;
                       }
                     }
                     return (
@@ -1252,7 +1255,7 @@ function DaySessionsDialog({
           planName: p.pt_plans?.name ?? null,
           contracted,
           used,
-          remaining: Math.max(0, contracted - used),
+          remaining: contracted - used,
         });
       }
       payments.sort((a, b) => (a.payment_date < b.payment_date ? -1 : a.payment_date > b.payment_date ? 1 : 0));
@@ -1261,7 +1264,7 @@ function DaySessionsDialog({
       return {
         contracted,
         used,
-        remaining: Math.max(0, contracted - used),
+        remaining: contracted - used,
         payments,
         packagesWithBalance: payments.filter((p) => p.remaining > 0 && p.contracted > 0),
       };
@@ -1297,8 +1300,14 @@ function DaySessionsDialog({
       `🕐 *Horário:* ${timeLabel}`,
     ];
 
-    if (chosen && bal) {
-      const totalRemainingAfter = bal.remaining;
+    const totalRemainingAfter = bal?.remaining ?? 0;
+
+    if (totalRemainingAfter < 0) {
+      lines.push(``);
+      lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+      lines.push(``);
+      lines.push(`Aula registrada: ${totalRemainingAfter}`);
+    } else if (chosen && bal) {
       const usedAfter = chosen.used;
       const otherRemaining = bal.packagesWithBalance
         .filter((p) => p.id !== chosen.id)
@@ -1318,12 +1327,12 @@ function DaySessionsDialog({
       }
       if (totalRemainingAfter === 0) {
         lines.push(``);
-        lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+        lines.push(`ℹ️ Pacote concluído! Você completou todas as ${chosen.contracted} aulas. Fale com seu treinador para renovar.`);
       }
     } else {
       lines.push(``);
       if (bal && bal.contracted > 0 && bal.remaining === 0) {
-        lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
+        lines.push(`⚠️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
       } else if (bal && bal.remaining > 0) {
         lines.push(`📦 *Saldo atual:* ${bal.remaining} aula(s)`);
         lines.push(`ℹ️ Check-in registrado com sucesso.`);
