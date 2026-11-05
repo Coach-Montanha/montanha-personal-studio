@@ -32,6 +32,7 @@ import { MigrateStudentsDialog } from "@/components/MigrateStudentsDialog";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { useScopeFilter } from "@/hooks/use-scope-filter";
 import { parseStudentPartner } from "@/lib/pt-duo";
+import { buildCheckinWhatsAppMessage } from "@/lib/pt-messages";
 
 import { cn } from "@/lib/utils";
 
@@ -125,6 +126,7 @@ function PTOverview() {
           .select("pt_payment_id")
           .eq("status", "completed")
           .not("pt_payment_id", "is", null)
+          .order("id")
           .range(from, from + PAGE - 1);
         if (scopeId) q = q.eq("user_id", scopeId);
         const { data, error } = await q;
@@ -1290,84 +1292,21 @@ function DaySessionsDialog({
       }
     }
 
-    // Monta exatamente as linhas padrão do check-in
-    const lines: string[] = [
-      `Olá ${studentName}! ✅`,
-      ``,
-      `Seu check-in foi registrado com sucesso!`,
-      ``,
-      `📅 *Data:* ${dateLabel}`,
-      `🕐 *Horário:* ${timeLabel}`,
-    ];
-
-    const totalRemainingAfter = bal?.remaining ?? 0;
-
-    if (totalRemainingAfter < 0) {
-      lines.push(``);
-      lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
-      lines.push(``);
-      lines.push(`Aula registrada: ${totalRemainingAfter}`);
-    } else if (chosen && bal) {
-      const usedAfter = chosen.used;
-      const otherRemaining = bal.packagesWithBalance
-        .filter((p) => p.id !== chosen.id)
-        .reduce((acc, p) => acc + p.remaining, 0);
-      const otherCount = bal.packagesWithBalance.filter((p) => p.id !== chosen.id && p.remaining > 0).length;
-      const openPackages = bal.packagesWithBalance.length;
-
-      lines.push(``);
-      if (openPackages > 1) {
-        lines.push(`📦 *Saldo restante:* ${totalRemainingAfter} aula(s) em ${openPackages} pacote(s)`);
-      } else {
-        lines.push(`📦 *Saldo restante:* ${totalRemainingAfter} aula(s)`);
-      }
-      lines.push(`   • ${usedAfter} de ${chosen.contracted} aulas utilizadas`);
-      if (otherCount > 0) {
-        lines.push(`   • Outros pacotes em aberto: ${otherCount} pacote(s), ${otherRemaining} aula(s)`);
-      }
-      if (totalRemainingAfter === 0) {
-        lines.push(``);
-        lines.push(`ℹ️ Pacote concluído! Você completou todas as ${chosen.contracted} aulas. Fale com seu treinador para renovar.`);
-      }
-    } else {
-      lines.push(``);
-      if (bal && bal.contracted > 0 && bal.remaining === 0) {
-        lines.push(`⚠️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
-      } else if (bal && bal.remaining > 0) {
-        lines.push(`📦 *Saldo atual:* ${bal.remaining} aula(s)`);
-        lines.push(`ℹ️ Check-in registrado com sucesso.`);
-      } else {
-        lines.push(`ℹ️ Check-in registrado com sucesso.`);
-      }
-    }
-
-    lines.push(``);
-    lines.push(`Bom treino! 💪`);
-
-    const defaultMessage = lines.join("\n");
-
     let savedTemplate = "";
     try {
       savedTemplate = localStorage.getItem("edufinance.checkinWhatsAppTemplate") || "";
     } catch { /* ignore */ }
 
-    let message = savedTemplate.trim()
-      ? savedTemplate
-          .replace(/\{\{aluno\}\}/gi, studentName)
-          .replace(/\{\{data\}\}/gi, dateLabel)
-          .replace(/\{\{hora\}\}/gi, timeLabel)
-          .replace(/\{\{duracao\}\}/gi, durationLabel)
-          .replace(/\{\{saldo\}\}/gi, String(bal?.remaining ?? 0))
-          .replace(/\{\{utilizadas\}\}/gi, chosen ? String(chosen.used) : "0")
-          .replace(/\{\{contratadas\}\}/gi, chosen ? String(chosen.contracted) : "0")
-          .replace(/\{\{plano\}\}/gi, chosen?.planName ?? "")
-      : defaultMessage;
-
-    // Se houver qualquer resquício de lovable em template customizado, sanitiza para vercel
-    message = message.replace(
-      /https?:\/\/[a-zA-Z0-9.-]*lovable\.app[^\s]*/gi,
-      "https://montanha-personal-studio.vercel.app"
-    );
+    const message = buildCheckinWhatsAppMessage({
+      studentName,
+      dateLabel,
+      timeLabel,
+      durationLabel,
+      bal,
+      chosen,
+      isAlreadyRecorded: true,
+      customTemplate: savedTemplate,
+    });
 
     const cleanPhone = phone.startsWith("55") ? phone : `55${phone}`;
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;

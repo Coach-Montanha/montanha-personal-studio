@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { useScopeFilter } from "@/hooks/use-scope-filter";
 import { parseStudentPartner } from "@/lib/pt-duo";
 import { matchesSearchTerms } from "@/lib/search-utils";
+import { buildCheckinWhatsAppMessage } from "@/lib/pt-messages";
 
 
 export const Route = createFileRoute("/_authenticated/personal-trainer/checkin")({
@@ -160,6 +161,7 @@ function CheckinPage() {
           .select("pt_payment_id")
           .eq("status", "completed")
           .not("pt_payment_id", "is", null)
+          .order("id")
           .range(from, from + PAGE - 1);
         if (scopeId) q = q.eq("user_id", scopeId);
         const { data, error } = await q;
@@ -301,91 +303,20 @@ function CheckinPage() {
     });
     const timeLabel = sessionTime;
 
-    const lines: string[] = [
-      `Olá ${targetStudent.name}! ✅`,
-      ``,
-      `Seu check-in foi registrado com sucesso!`,
-      ``,
-      `📅 *Data:* ${dateLabel}`,
-      `🕐 *Horário:* ${timeLabel}`,
-    ];
-
-    const totalRemainingAfter = (bal?.remaining ?? 0) <= 0
-      ? (bal?.remaining ?? 0) - 1
-      : (bal?.remaining ?? 0) - 1;
-
-    if (totalRemainingAfter < 0) {
-      lines.push(``);
-      lines.push(`ℹ️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
-      lines.push(``);
-      lines.push(`Aula registrada: ${totalRemainingAfter}`);
-    } else if (chosen && bal) {
-      const isExhausted = bal.remaining === 0;
-      const usedAfter = isExhausted ? chosen.contracted : Math.min(chosen.contracted, chosen.used + 1);
-      const otherRemaining = bal.packagesWithBalance
-        .filter((p) => p.id !== chosen.id)
-        .reduce((acc, p) => acc + p.remaining, 0);
-      const otherCount = bal.packagesWithBalance.filter((p) => p.id !== chosen.id && p.remaining > 0).length;
-      const openPackages = bal.packagesWithBalance.length;
-
-      lines.push(``);
-      if (openPackages > 1) {
-        lines.push(`📦 *Saldo restante:* ${totalRemainingAfter} aula(s) em ${openPackages} pacote(s)`);
-      } else {
-        lines.push(`📦 *Saldo restante:* ${totalRemainingAfter} aula(s)`);
-      }
-      lines.push(`   • ${usedAfter} de ${chosen.contracted} aulas utilizadas`);
-      if (otherCount > 0) {
-        lines.push(`   • Outros pacotes em aberto: ${otherCount} pacote(s), ${otherRemaining} aula(s)`);
-      }
-      if (totalRemainingAfter === 0) {
-        lines.push(``);
-        lines.push(
-          isExhausted
-            ? `⚠️ Check-in registrado, mas o pacote de aulas está esgotado (${chosen.contracted}/${chosen.contracted}). Fale com seu treinador para renovar.`
-            : `ℹ️ Pacote concluído! Você completou todas as ${chosen.contracted} aulas. Fale com seu treinador para renovar.`
-        );
-      }
-    } else {
-      lines.push(``);
-      if (bal && bal.contracted > 0 && bal.remaining === 0) {
-        lines.push(`⚠️ Check-in registrado, mas você está sem aulas em aberto. Fale com seu treinador para renovar.`);
-      } else if (bal && bal.remaining > 0) {
-        lines.push(`📦 *Saldo atual:* ${bal.remaining} aula(s)`);
-        lines.push(`ℹ️ Check-in registrado com sucesso.`);
-      } else {
-        lines.push(`ℹ️ Check-in registrado com sucesso.`);
-      }
-    }
-
-    lines.push(``);
-    lines.push(`Bom treino! 💪`);
-
-    const defaultMessage = lines.join("\n");
-    const usedAfterCalc = chosen && bal
-      ? (bal.remaining <= 0 ? chosen.used + 1 : Math.min(chosen.contracted, chosen.used + 1))
-      : 0;
-    let whatsappMessage = waTemplate.trim()
-      ? applyTemplate(waTemplate, {
-          aluno: targetStudent.name,
-          data: dateLabel,
-          hora: timeLabel,
-          duracao: `${duration} min`,
-          saldo: String(totalRemainingAfter),
-          utilizadas: chosen ? String(usedAfterCalc) : "0",
-          contratadas: chosen ? String(chosen.contracted) : "0",
-          plano: chosen?.planName ?? "",
-        })
-      : defaultMessage;
-
-    // Sanitiza link caso o template personalizado ainda cite lovable
-    whatsappMessage = whatsappMessage.replace(
-      /https?:\/\/[a-zA-Z0-9.-]*lovable\.app[^\s]*/gi,
-      "https://montanha-personal-studio.vercel.app"
-    );
+    const whatsappMessage = buildCheckinWhatsAppMessage({
+      studentName: targetStudent.name,
+      dateLabel,
+      timeLabel,
+      durationLabel: `${duration} min`,
+      bal,
+      chosen,
+      isAlreadyRecorded: false,
+      customTemplate: waTemplate,
+    });
 
     const phone = targetStudent.phone.replace(/\D/g, "");
-    const url = `https://wa.me/55${phone}?text=${encodeURIComponent(whatsappMessage)}`;
+    const cleanPhone = phone.startsWith("55") ? phone : `55${phone}`;
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMessage)}`;
     window.open(url, "_blank");
   }
 
@@ -443,16 +374,21 @@ function CheckinPage() {
         if (chosen) {
           chosenPkg = chosen;
         } else if (latestPaid) {
-          const contracted = Number(latestPaid.pt_plans?.sessions_per_month ?? latestPaid.sessions_paid ?? 0) || 0;
-          chosenPkg = {
-            id: latestPaid.id,
-            payment_date: latestPaid.payment_date,
-            reference_month: latestPaid.reference_month ?? null,
-            planName: latestPaid.pt_plans?.name ?? null,
-            contracted,
-            used: contracted,
-            remaining: 0,
-          };
+          const matching = effBal.payments.find((p) => p.id === latestPaid.id) ?? effBal.payments[effBal.payments.length - 1];
+          if (matching) {
+            chosenPkg = matching;
+          } else {
+            const contracted = Number(latestPaid.pt_plans?.sessions_per_month ?? latestPaid.sessions_paid ?? 0) || 0;
+            chosenPkg = {
+              id: latestPaid.id,
+              payment_date: latestPaid.payment_date,
+              reference_month: latestPaid.reference_month ?? null,
+              planName: latestPaid.pt_plans?.name ?? null,
+              contracted,
+              used: contracted,
+              remaining: 0,
+            };
+          }
         }
       }
 
