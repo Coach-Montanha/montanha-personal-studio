@@ -259,30 +259,30 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // 1. Validar rigorosamente formato do PIN (exatamente 10 dígitos numéricos)
-    if (!/^\d{10}$/.test(password)) {
+    // 1. Validar rigorosamente formato do PIN / senha numérica (6 a 10 dígitos)
+    if (!/^\d{6,10}$/.test(password)) {
       return {
         healed: false,
         reason: "INVALID_PIN_FORMAT",
-        message: "O PIN de acesso deve conter exatamente 10 dígitos numéricos.",
+        message: "O PIN ou senha temporária de acesso deve conter entre 6 e 10 dígitos numéricos.",
       };
     }
 
     // 2. Search in students table
     const { data: studioMatch } = await supabaseAdmin
       .from("students")
-      .select("id, name, email, phone, birth_date, account_user_id, access_pin, tenant_id")
+      .select("id, name, email, phone, birth_date, account_user_id, temp_password, tenant_id")
       .ilike("email", email);
 
     // 3. Search in pt_students table
     const { data: ptMatch } = await supabaseAdmin
       .from("pt_students")
-      .select("id, name, email, phone, account_user_id, access_pin, tenant_id")
+      .select("id, name, email, phone, account_user_id, temp_password, tenant_id")
       .ilike("email", email);
 
     const matches = [...(studioMatch || []), ...(ptMatch || [])];
     const isMatchingKnownField =
-      matches.length > 0 && matches.some((m) => m.access_pin === password);
+      matches.length > 0 && matches.some((m: any) => m.access_pin === password || m.temp_password === password);
 
     if (!isMatchingKnownField) {
       // Incrementar tentativas com falha para bloquear brute-force

@@ -105,7 +105,7 @@ function isSameDay(iso: string, ref: Date) {
 }
 
 function PTTreinoPage() {
-  const { user } = useAuth();
+  const { user, loading: loadingAuth } = useAuth();
   const qc = useQueryClient();
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
 
@@ -113,21 +113,39 @@ function PTTreinoPage() {
   useWakeLock(!!selectedDayId);
 
   const { data: student, isLoading: loadingStudent } = useQuery({
-    queryKey: ["pt-portal-treino", user?.id],
+    queryKey: ["pt-portal-treino", user?.id, user?.email],
     enabled: !!user?.id,
     queryFn: async () => {
-      // 1. Tenta aluno Personal Trainer
+      // 1. Tenta aluno Personal Trainer por account_user_id
       const { data: ptData } = await supabase
         .from("pt_students")
-        .select("id,name,training_plan,user_id")
+        .select("id,name,training_plan,user_id,account_user_id,email")
         .eq("account_user_id", user!.id)
         .maybeSingle();
       if (ptData) return ptData;
 
-      // 2. Se for aluno Studio, busca na tabela students
+      // Se não encontrou por account_user_id mas temos email, busca por email
+      if (user?.email) {
+        const { data: ptEmail } = await supabase
+          .from("pt_students")
+          .select("id,name,training_plan,user_id,account_user_id,email")
+          .ilike("email", user.email.trim())
+          .maybeSingle();
+        if (ptEmail) {
+          if (ptEmail.account_user_id !== user.id) {
+            await supabase
+              .from("pt_students")
+              .update({ account_user_id: user.id } as never)
+              .eq("id", ptEmail.id);
+          }
+          return ptEmail;
+        }
+      }
+
+      // 2. Se for aluno Studio, busca na tabela students por account_user_id
       const { data: studioData } = await supabase
         .from("students")
-        .select("id,name,user_id")
+        .select("id,name,user_id,account_user_id,email")
         .eq("account_user_id", user!.id)
         .maybeSingle();
       if (studioData) {
@@ -136,21 +154,69 @@ function PTTreinoPage() {
           name: studioData.name,
           training_plan: null,
           user_id: studioData.user_id,
+          account_user_id: studioData.account_user_id,
+          email: studioData.email,
         };
       }
+
+      // Se não encontrou por account_user_id, busca por email
+      if (user?.email) {
+        const { data: studioEmail } = await supabase
+          .from("students")
+          .select("id,name,user_id,account_user_id,email")
+          .ilike("email", user.email.trim())
+          .maybeSingle();
+        if (studioEmail) {
+          if (studioEmail.account_user_id !== user.id) {
+            await supabase
+              .from("students")
+              .update({ account_user_id: user.id } as never)
+              .eq("id", studioEmail.id);
+          }
+          return {
+            id: studioEmail.id,
+            name: studioEmail.name,
+            training_plan: null,
+            user_id: studioEmail.user_id,
+            account_user_id: studioEmail.account_user_id,
+            email: studioEmail.email,
+          };
+        }
+      }
+
       return null;
     },
   });
 
   const { data: programs = [], isLoading: loadingPrograms } = useQuery({
-    queryKey: ["pt-portal-programs", student?.id],
+    queryKey: ["pt-portal-programs", student?.id, student?.email],
     enabled: !!student?.id,
     queryFn: async () => {
-      const { data } = await supabase
+      // Coleta todos os IDs relacionados ao aluno (Studio + PT)
+      const ids = [student!.id];
+      if (student?.email) {
+        const [{ data: ptRows }, { data: stRows }] = await Promise.all([
+          supabase.from("pt_students").select("id").ilike("email", student.email),
+          supabase.from("students" as never).select("id").ilike("email", student.email),
+        ]);
+        (ptRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
+        (stRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
+      }
+
+      const orClause = ids
+        .flatMap((id) => [`pt_student_id.eq.${id}`, `studio_student_id.eq.${id}`])
+        .join(",");
+
+      const { data, error } = await supabase
         .from("pt_programs" as never)
         .select("*")
-        .eq("pt_student_id", student!.id)
+        .or(orClause)
+        .eq("is_deleted", false)
         .order("start_date", { ascending: false });
+
+      if (error) {
+        console.error("[pt-portal-programs] Erro ao carregar programas:", error);
+      }
       return (data ?? []) as any[];
     },
   });
@@ -204,7 +270,7 @@ function PTTreinoPage() {
     },
   });
 
-  const isLoading = loadingStudent || loadingPrograms;
+  const isLoading = loadingAuth || loadingStudent || (!!student?.id && loadingPrograms);
   const selectedDay = days.find((d) => d.id === selectedDayId) ?? null;
   const [progressionOpen, setProgressionOpen] = useState(false);
   const [selectedProgressEx, setSelectedProgressEx] = useState<string | null>(null);
