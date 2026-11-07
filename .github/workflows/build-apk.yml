@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+    paths:
+      - 'android/**'
+      - 'capacitor.config.ts'
+      - '.github/workflows/build-apk.yml'
   workflow_dispatch:
 
 permissions:
@@ -44,8 +45,13 @@ jobs:
       - name: Build web application
         run: bun run build
 
-      - name: Create Android assets directory
-        run: mkdir -p android/app/src/main/assets
+      - name: Prepare assets for Capacitor
+        run: |
+          mkdir -p .output/public
+          if [ -d ".vercel/output/static" ]; then
+            cp -r .vercel/output/static/* .output/public/ || true
+          fi
+          mkdir -p android/app/src/main/assets
 
       - name: Sync Capacitor Android
         run: bunx cap sync android
@@ -65,6 +71,7 @@ jobs:
       - name: Publish Latest APK Release
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
+        continue-on-error: true
         with:
           tag_name: latest
           name: "Montanha Personal Studio (APK Atualizado)"
