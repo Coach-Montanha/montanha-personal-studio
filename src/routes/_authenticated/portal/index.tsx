@@ -248,15 +248,53 @@ function PortalHome() {
           enabled: !!user?.id,
           queryFn: async () => {
             const [studio, pt] = await Promise.all([
-              supabase.from("students").select("id").eq("account_user_id", user!.id).maybeSingle(),
-              supabase.from("pt_students").select("id,training_plan").eq("account_user_id", user!.id).maybeSingle(),
+              supabase.from("students").select("id,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
+              supabase.from("pt_students").select("id,training_plan,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
             ]);
 
+            let studioId = studio.data?.id;
+            let ptStudentId = pt.data?.id;
+            let ptPlan = pt.data?.training_plan;
+
+            if (!ptStudentId && user?.email) {
+              const { data: ptEmail } = await supabase
+                .from("pt_students")
+                .select("id,training_plan,account_user_id")
+                .ilike("email", user.email.trim())
+                .maybeSingle();
+              if (ptEmail) {
+                ptStudentId = ptEmail.id;
+                ptPlan = ptEmail.training_plan;
+                if (ptEmail.account_user_id !== user.id) {
+                  await supabase
+                    .from("pt_students")
+                    .update({ account_user_id: user.id } as never)
+                    .eq("id", ptEmail.id);
+                }
+              }
+            }
+
+            if (!studioId && user?.email) {
+              const { data: stEmail } = await supabase
+                .from("students")
+                .select("id,account_user_id")
+                .ilike("email", user.email.trim())
+                .maybeSingle();
+              if (stEmail) {
+                studioId = stEmail.id;
+                if (stEmail.account_user_id !== user.id) {
+                  await supabase
+                    .from("students")
+                    .update({ account_user_id: user.id } as never)
+                    .eq("id", stEmail.id);
+                }
+              }
+            }
+
             let hasWorkouts = false;
-            const ptStudentId = pt.data?.id;
 
             if (ptStudentId) {
-              if (pt.data?.training_plan && pt.data.training_plan.trim() !== "") {
+              if (ptPlan && ptPlan.trim() !== "") {
                 hasWorkouts = true;
               } else {
                 const { count } = await supabase
@@ -268,12 +306,11 @@ function PortalHome() {
               }
             }
 
-            if (!hasWorkouts && studio.data?.id) {
-              // Verifica se há programas vinculados ao ID do aluno do Studio
+            if (!hasWorkouts && studioId) {
               const { count } = await supabase
                 .from("pt_programs" as never)
                 .select("id", { count: "exact", head: true })
-                .eq("pt_student_id", studio.data.id)
+                .eq("pt_student_id", studioId)
                 .eq("is_deleted", false);
               hasWorkouts = (count ?? 0) > 0;
             }

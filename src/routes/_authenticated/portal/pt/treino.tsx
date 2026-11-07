@@ -203,14 +203,10 @@ function PTTreinoPage() {
         (stRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
       }
 
-      const orClause = ids
-        .flatMap((id) => [`pt_student_id.eq.${id}`, `studio_student_id.eq.${id}`])
-        .join(",");
-
       const { data, error } = await supabase
         .from("pt_programs" as never)
         .select("*")
-        .or(orClause)
+        .in("pt_student_id", ids)
         .eq("is_deleted", false)
         .order("start_date", { ascending: false });
 

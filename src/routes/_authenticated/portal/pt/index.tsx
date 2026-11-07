@@ -19,14 +19,31 @@ function PTPortalHome() {
   const [progressionOpen, setProgressionOpen] = useState(false);
 
   const { data: student } = useQuery({
-    queryKey: ["pt-portal-me", user?.id],
+    queryKey: ["pt-portal-me", user?.id, user?.email],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data } = await supabase
+      let { data } = await supabase
         .from("pt_students")
-        .select("id,name,email,phone,birth_date,start_date,goal,health_notes,status,training_plan")
+        .select("id,name,email,phone,birth_date,start_date,goal,health_notes,status,training_plan,account_user_id")
         .eq("account_user_id", user!.id)
         .maybeSingle();
+
+      if (!data && user?.email) {
+        const { data: byEmail } = await supabase
+          .from("pt_students")
+          .select("id,name,email,phone,birth_date,start_date,goal,health_notes,status,training_plan,account_user_id")
+          .ilike("email", user.email.trim())
+          .maybeSingle();
+        if (byEmail) {
+          if (byEmail.account_user_id !== user.id) {
+            await supabase
+              .from("pt_students")
+              .update({ account_user_id: user.id } as never)
+              .eq("id", byEmail.id);
+          }
+          data = byEmail;
+        }
+      }
       return data;
     },
   });
@@ -58,13 +75,22 @@ function PTPortalHome() {
   });
 
   const { data: hasPrograms = false } = useQuery({
-    queryKey: ["pt-portal-has-programs", student?.id],
+    queryKey: ["pt-portal-has-programs", student?.id, student?.email],
     enabled: !!student?.id,
     queryFn: async () => {
+      const ids = [student!.id];
+      if (student?.email) {
+        const { data: ptRows } = await supabase
+          .from("pt_students")
+          .select("id")
+          .ilike("email", student.email);
+        (ptRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
+      }
+
       const { count } = await supabase
         .from("pt_programs")
         .select("id", { count: "exact", head: true })
-        .eq("pt_student_id", student!.id)
+        .in("pt_student_id", ids)
         .eq("is_deleted", false);
       return (count ?? 0) > 0;
     },
