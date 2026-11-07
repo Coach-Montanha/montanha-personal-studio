@@ -70,37 +70,48 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
   const { data: userTypes, isLoading: loadingTypes } = useQuery({
-    queryKey: ["portal-user-types-with-workouts", user?.id],
+    queryKey: ["portal-user-types-with-workouts", user?.id, user?.email],
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
     queryFn: async () => {
-      const [studio, pt] = await Promise.all([
-        supabase.from("students").select("id").eq("account_user_id", user!.id).maybeSingle(),
-        supabase.from("pt_students").select("id,training_plan").eq("account_user_id", user!.id).maybeSingle(),
+      let [studio, pt] = await Promise.all([
+        supabase.from("students").select("id,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
+        supabase.from("pt_students").select("id,training_plan,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
       ]);
 
-      let hasWorkouts = false;
-      const ptStudentId = pt.data?.id;
-
-      if (ptStudentId) {
-        if (pt.data?.training_plan && pt.data.training_plan.trim() !== "") {
-          hasWorkouts = true;
-        } else {
-          const { count } = await supabase
-            .from("pt_programs" as never)
-            .select("id", { count: "exact", head: true })
-            .eq("pt_student_id", ptStudentId)
-            .eq("is_deleted", false);
-          hasWorkouts = (count ?? 0) > 0;
+      // Fallback por e-mail para identificação de aluno híbrido
+      if (!studio.data && user?.email) {
+        const resSt = await supabase.from("students").select("id,account_user_id").ilike("email", user.email.trim()).maybeSingle();
+        if (resSt.data) {
+          studio = resSt;
+          if (resSt.data.account_user_id !== user.id) {
+            await supabase.from("students").update({ account_user_id: user.id } as never).eq("id", resSt.data.id);
+          }
         }
       }
 
-      // Se for aluno somente Studio, verificar se existem rotinas de treino para o ID do aluno
-      if (!hasWorkouts && studio.data?.id) {
+      if (!pt.data && user?.email) {
+        const resPt = await supabase.from("pt_students").select("id,training_plan,account_user_id").ilike("email", user.email.trim()).maybeSingle();
+        if (resPt.data) {
+          pt = resPt;
+          if (resPt.data.account_user_id !== user.id) {
+            await supabase.from("pt_students").update({ account_user_id: user.id } as never).eq("id", resPt.data.id);
+          }
+        }
+      }
+
+      let hasWorkouts = false;
+      const allStudentIds: string[] = [];
+      if (pt.data?.id) allStudentIds.push(pt.data.id);
+      if (studio.data?.id) allStudentIds.push(studio.data.id);
+
+      if (pt.data?.training_plan && pt.data.training_plan.trim() !== "") {
+        hasWorkouts = true;
+      } else if (allStudentIds.length > 0) {
         const { count } = await supabase
           .from("pt_programs" as never)
           .select("id", { count: "exact", head: true })
-          .eq("pt_student_id", studio.data.id)
+          .in("pt_student_id", allStudentIds)
           .eq("is_deleted", false);
         hasWorkouts = (count ?? 0) > 0;
       }

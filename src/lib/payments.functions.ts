@@ -54,8 +54,40 @@ export const getMyAvailablePlans = createServerFn({ method: "GET" })
         .maybeSingle(),
     ]);
 
-    const studioStudent = studioRes.data;
-    const ptStudent = ptRes.data;
+    let studioStudent = studioRes.data;
+    let ptStudent = ptRes.data;
+
+    // Resolução resiliente para alunos híbridos por e-mail
+    if ((!studioStudent || !ptStudent) && userId) {
+      const { data: userAuth } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const userEmail = userAuth?.user?.email?.toLowerCase().trim();
+
+      if (!studioStudent && userEmail) {
+        const byEmail = await supabaseAdmin
+          .from("students")
+          .select("id, user_id, name, email, phone")
+          .ilike("email", userEmail)
+          .is("deleted_at", null)
+          .maybeSingle();
+        if (byEmail.data) {
+          studioStudent = byEmail.data;
+          await supabaseAdmin.from("students").update({ account_user_id: userId }).eq("id", studioStudent.id);
+        }
+      }
+
+      if (!ptStudent && userEmail) {
+        const byEmailPt = await supabaseAdmin
+          .from("pt_students")
+          .select("id, user_id, name, email, phone, training_plan")
+          .ilike("email", userEmail)
+          .is("deleted_at", null)
+          .maybeSingle();
+        if (byEmailPt.data) {
+          ptStudent = byEmailPt.data;
+          await supabaseAdmin.from("pt_students").update({ account_user_id: userId }).eq("id", ptStudent.id);
+        }
+      }
+    }
 
     let mode: "studio" | "pt" | "both" = "studio";
     if (studioStudent && ptStudent) {
