@@ -29,6 +29,9 @@ import {
   ExternalLink,
   User,
   MoreVertical,
+  Clock,
+  AlertTriangle,
+  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -81,6 +84,22 @@ function limparTextoGoals(goals?: string | null): string | null {
   return limpo.length > 0 ? limpo : null;
 }
 
+function getDiasParaVencer(endDateStr?: string | null): number | null {
+  if (!endDateStr) return null;
+  const match = endDateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return null;
+  const year = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10) - 1;
+  const day = parseInt(match[3], 10);
+
+  const targetDate = new Date(year, month, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffMs = targetDate.getTime() - today.getTime();
+  return Math.round(diffMs / (1000 * 60 * 60 * 24));
+}
+
 export const Route = createFileRoute("/_authenticated/treinos")({
   component: TreinosPage,
 });
@@ -104,8 +123,8 @@ type ProgramRow = {
   pt_student_id: string | null;
   created_at: string;
   // Joins
-  students?: { id: string; name: string; email: string | null } | null;
-  pt_students?: { id: string; name: string; email: string | null; notes?: string | null } | null;
+  students?: { id: string; name: string; email: string | null; phone?: string | null } | null;
+  pt_students?: { id: string; name: string; email: string | null; phone?: string | null; notes?: string | null } | null;
   pt_training_days?: Array<{ id: string; name: string; day_label?: string | null; sort_order?: number }> | null;
 };
 
@@ -127,11 +146,12 @@ export function TreinosPage() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<"programas" | "calendario" | "nova-sessao" | "ia">("programas");
   const [busca, setBusca] = useState("");
-  const [tipoAlunoFiltro, setTipoAlunoFiltro] = useState<"todos" | "studio" | "pt" | "modelo">("todos");
+  const [tipoAlunoFiltro, setTipoAlunoFiltro] = useState<"todos" | "studio" | "pt" | "modelo" | "vencendo">("todos");
   const [statusFiltro, setStatusFiltro] = useState<"ativos" | "arquivados">("ativos");
   const [modalidadeFiltro, setModalidadeFiltro] = useState<string>("todas");
 
   // Modais
+  const [alertasVencimentoOpen, setAlertasVencimentoOpen] = useState(false);
   const [prescreverIaOpen, setPrescreverIaOpen] = useState(false);
   const [selectedProgramForIa, setSelectedProgramForIa] = useState<any | null>(null);
   const [studentViewOpen, setStudentViewOpen] = useState(false);
@@ -157,7 +177,7 @@ export function TreinosPage() {
         .from("pt_programs" as never)
         .select(`
           *,
-          pt_students:pt_student_id (id, name, email, notes),
+          pt_students:pt_student_id (id, name, email, phone, notes),
           pt_training_days (id, name, day_label, sort_order)
         ` as never);
 
@@ -181,8 +201,8 @@ export function TreinosPage() {
     queryKey: ["studio-students-list-cached"],
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
-      const { data } = await supabase.from("students" as never).select("id, name, email");
-      return (data || []) as Array<{ id: string; name: string; email: string | null }>;
+      const { data } = await supabase.from("students" as never).select("id, name, email, phone");
+      return (data || []) as Array<{ id: string; name: string; email: string | null; phone?: string | null }>;
     },
   });
 
@@ -204,6 +224,15 @@ export function TreinosPage() {
       return (data || []) as any[];
     },
   });
+
+  // Mapa rapido de alunos Studio para deteccao precisa
+  const studioNamesSet = useMemo(() => {
+    return new Set(studioStudentsList.map((s) => s.name.trim().toLowerCase()));
+  }, [studioStudentsList]);
+
+  const studioIdsSet = useMemo(() => {
+    return new Set(studioStudentsList.map((s) => s.id));
+  }, [studioStudentsList]);
 
   // Filtros em memória
   const programasFiltrados = useMemo(() => {
@@ -227,6 +256,11 @@ export function TreinosPage() {
       if (tipoAlunoFiltro === "studio" && !isStudio) return false;
       if (tipoAlunoFiltro === "pt" && !isPt) return false;
       if (tipoAlunoFiltro === "modelo" && !isTemplate) return false;
+      if (tipoAlunoFiltro === "vencendo") {
+        if (isTemplate) return false;
+        const diff = getDiasParaVencer(p.end_date);
+        if (diff === null || diff >= 8) return false;
+      }
 
       // Filtro por modalidade
       if (modalidadeFiltro !== "todas") {
@@ -256,14 +290,39 @@ export function TreinosPage() {
       (!p.pt_student_id)
   ).length;
 
-  // Mapa rapido de alunos Studio para deteccao precisa
-  const studioNamesSet = useMemo(() => {
-    return new Set(studioStudentsList.map((s) => s.name.trim().toLowerCase()));
-  }, [studioStudentsList]);
+  // Treinos que vencem em menos de 8 dias (ou já expiraram) para alerta rápido
+  const programasVencendo = useMemo(() => {
+    return programs
+      .filter((p) => {
+        const isTemplate =
+          p.pt_student_id === "00000000-0000-0000-0000-000000000001" || !p.pt_student_id;
+        if (isTemplate || p.is_archived || p.is_deleted) return false;
+        const diff = getDiasParaVencer(p.end_date);
+        return diff !== null && diff < 8;
+      })
+      .map((p) => {
+        const isTemplate =
+          p.pt_student_id === "00000000-0000-0000-0000-000000000001" || !p.pt_student_id;
+        const studentName = p.pt_students?.name?.trim() || p.students?.name?.trim() || "";
+        const studentNotes = p.pt_students?.notes || "";
+        const hasStudioTag =
+          studentNotes.includes("[Studio]") || studentNotes.includes("[Aluno Studio]");
+        const isInStudioTable =
+          (p.pt_student_id ? studioIdsSet.has(p.pt_student_id) : false) ||
+          studioNamesSet.has(studentName.toLowerCase());
+        const isStudio = hasStudioTag || isInStudioTable;
+        const aluno = isTemplate ? null : (p.students || p.pt_students);
+        const diff = getDiasParaVencer(p.end_date) ?? 0;
 
-  const studioIdsSet = useMemo(() => {
-    return new Set(studioStudentsList.map((s) => s.id));
-  }, [studioStudentsList]);
+        return {
+          program: p,
+          aluno,
+          isStudio,
+          diff,
+        };
+      })
+      .sort((a, b) => a.diff - b.diff);
+  }, [programs, studioIdsSet, studioNamesSet]);
 
   // Lista processada de alunos com treinos cadastrados para o Calendario
   const calendarStudentItems = useMemo(() => {
@@ -484,9 +543,70 @@ export function TreinosPage() {
             </Badge>
           </div>
         </Card>
-        <Card className="p-4 bg-card/70 border-border/70 space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Modelos / Templates</p>
-          <p className="text-2xl font-bold tracking-tight text-muted-foreground">{totalModelos}</p>
+        <Card
+          onClick={() => setAlertasVencimentoOpen(true)}
+          className={cn(
+            "p-4 transition-all cursor-pointer relative overflow-hidden group space-y-1 select-none",
+            programasVencendo.length > 0
+              ? "bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/40 hover:border-amber-500 hover:shadow-md"
+              : "bg-card/70 border-border/70 hover:border-primary/40 hover:bg-card/90"
+          )}
+          title="Clique para ver detalhes das rotinas que vencem em menos de 8 dias"
+        >
+          <div className="flex items-center justify-between">
+            <p
+              className={cn(
+                "text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5",
+                programasVencendo.length > 0
+                  ? "text-amber-700 dark:text-amber-400 font-bold"
+                  : "text-muted-foreground"
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              <span>A Vencer (&lt; 8 dias)</span>
+            </p>
+            {programasVencendo.length > 0 && (
+              <span className="relative flex h-2 w-2" title="Alerta ativo">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-baseline justify-between gap-2 pt-0.5">
+            <p
+              className={cn(
+                "text-2xl font-bold tracking-tight",
+                programasVencendo.length > 0
+                  ? "text-amber-800 dark:text-amber-200"
+                  : "text-foreground"
+              )}
+            >
+              {programasVencendo.length}
+            </p>
+            {programasVencendo.length > 0 ? (
+              <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 hover:bg-amber-500/30 border-amber-500/40 text-[10px] font-bold gap-1 px-1.5 py-0.5">
+                <AlertTriangle className="h-3 w-3" />
+                Ver Alertas
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                <CheckCircle2 className="h-3 w-3 mr-0.5" />
+                Em dia
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+            <span className="truncate">
+              {programasVencendo.length > 0
+                ? "Clique para abrir lista"
+                : `${totalModelos} modelo${totalModelos === 1 ? "" : "s"} no acervo`}
+            </span>
+            <span className="text-primary font-medium group-hover:underline text-[10px]">
+              Abrir &rarr;
+            </span>
+          </div>
         </Card>
       </div>
 
@@ -534,14 +654,17 @@ export function TreinosPage() {
 
             <div className="flex flex-wrap items-center gap-2">
               <Select value={tipoAlunoFiltro} onValueChange={(v: any) => setTipoAlunoFiltro(v)}>
-                <SelectTrigger className="h-9 w-[130px] text-xs bg-background">
+                <SelectTrigger className="h-9 w-[160px] text-xs bg-background">
                   <SelectValue placeholder="Tipo de Aluno" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos os Alunos</SelectItem>
                   <SelectItem value="studio">Studio</SelectItem>
                   <SelectItem value="pt">Personal</SelectItem>
-                  <SelectItem value="modelo">Modelos</SelectItem>
+                  <SelectItem value="modelo">Modelos ({totalModelos})</SelectItem>
+                  <SelectItem value="vencendo" className="text-amber-700 dark:text-amber-400 font-semibold">
+                    A Vencer (&lt; 8 dias)
+                  </SelectItem>
                 </SelectContent>
               </Select>
 
@@ -702,6 +825,43 @@ export function TreinosPage() {
 
                         <span className="text-muted-foreground/60">•</span>
                         <span className="text-muted-foreground text-[10px]">Início: {formatDateBR(prog.start_date)}</span>
+                        {prog.end_date && (
+                          <>
+                            <span className="text-muted-foreground/60">•</span>
+                            <span className="text-muted-foreground text-[10px]">Fim: {formatDateBR(prog.end_date)}</span>
+                          </>
+                        )}
+                        {(() => {
+                          if (isTemplate) return null;
+                          const diff = getDiasParaVencer(prog.end_date);
+                          if (diff === null || diff >= 8) return null;
+                          if (diff < 0) {
+                            return (
+                              <Badge variant="destructive" className="text-[10px] font-bold px-1.5 py-0">
+                                Vencido ({Math.abs(diff)}d)
+                              </Badge>
+                            );
+                          }
+                          if (diff === 0) {
+                            return (
+                              <Badge className="bg-rose-600 text-white hover:bg-rose-700 text-[10px] font-bold px-1.5 py-0">
+                                Vence Hoje
+                              </Badge>
+                            );
+                          }
+                          if (diff === 1) {
+                            return (
+                              <Badge className="bg-amber-600 text-white hover:bg-amber-700 text-[10px] font-bold px-1.5 py-0">
+                                Vence Amanhã
+                              </Badge>
+                            );
+                          }
+                          return (
+                            <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 text-[10px] font-bold px-1.5 py-0">
+                              Vence em {diff}d
+                            </Badge>
+                          );
+                        })()}
                       </div>
 
                       {goalsLimpo && (
@@ -1375,6 +1535,207 @@ export function TreinosPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Alertas de Treinos com Vencimento Próximo (< 8 dias) */}
+      <Dialog open={alertasVencimentoOpen} onOpenChange={setAlertasVencimentoOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="p-5 pb-3 border-b border-border/70 bg-card">
+            <div className="flex items-center justify-between pr-6">
+              <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+                <Clock className="h-5 w-5 text-amber-500" />
+                <span>Alertas de Vencimento de Treinos</span>
+                <Badge variant="secondary" className="ml-1 text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30">
+                  {programasVencendo.length} {programasVencendo.length === 1 ? "rotina" : "rotinas"}
+                </Badge>
+              </DialogTitle>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground pt-1">
+              Rotinas de treino que vencem nos próximos 7 dias ou que já encerraram o ciclo e necessitam de nova prescrição/periodização.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-5 space-y-3">
+            {programasVencendo.length === 0 ? (
+              <div className="py-12 text-center space-y-3 border rounded-xl border-dashed border-border/80 bg-muted/10">
+                <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">Nenhum treino a vencer nos próximos 8 dias</p>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Todas as periodizações ativas dos alunos Studio e Personal Trainer estão com prazos regulares em dia.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              programasVencendo.map(({ program, aluno, isStudio, diff }) => {
+                const phone = aluno?.phone || (program.pt_students as any)?.phone;
+                const whatsAppUrl = phone
+                  ? `https://wa.me/${phone.replace(/\D/g, "").startsWith("55") ? phone.replace(/\D/g, "") : `55${phone.replace(/\D/g, "")}`}?text=${encodeURIComponent(
+                      `Olá, ${aluno?.name || "atleta"}! Seu programa de treino "${program.name}" ${diff < 0 ? "já encerrou seu ciclo" : diff === 0 ? "vence hoje" : `vence em ${diff} dias`}. Vamos renovar e montar a próxima fase da sua periodização?`
+                    )}`
+                  : null;
+
+                const alunoUrl = isStudio
+                  ? `/students/${aluno?.id}`
+                  : `/personal-trainer/students/${aluno?.id}`;
+
+                return (
+                  <div
+                    key={program.id}
+                    className={cn(
+                      "rounded-xl border p-3.5 space-y-2.5 transition-all shadow-xs",
+                      diff < 0
+                        ? "bg-rose-500/5 border-rose-500/30 dark:bg-rose-950/20"
+                        : diff <= 2
+                        ? "bg-amber-500/10 border-amber-500/40 dark:bg-amber-950/20"
+                        : "bg-card border-border/80 hover:border-border"
+                    )}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-sm text-foreground truncate">{program.name}</h4>
+                          <Badge variant="outline" className="text-[10px] font-semibold">
+                            {CATEGORIA_LABELS[program.training_type] || CATEGORIA_LABELS[program.category] || program.training_type || "Musculação"}
+                          </Badge>
+                        </div>
+                        {aluno && (
+                          <div className="flex items-center gap-2 text-xs flex-wrap">
+                            <span className="font-semibold text-foreground">{aluno.name}</span>
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                "text-[10px] font-bold border-0 px-1.5 py-0",
+                                isStudio ? "bg-primary/10 text-primary" : "bg-muted text-foreground"
+                              )}
+                            >
+                              {isStudio ? "Studio" : "Personal"}
+                            </Badge>
+                            {phone && (
+                              <span className="text-[11px] font-mono text-muted-foreground">{phone}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Badge de Urgência / Dias Faltantes */}
+                      <div className="shrink-0 flex sm:flex-col items-end gap-1">
+                        {diff < 0 ? (
+                          <Badge variant="destructive" className="text-[10px] font-bold">
+                            Vencido há {Math.abs(diff)} dia{Math.abs(diff) === 1 ? "" : "s"}
+                          </Badge>
+                        ) : diff === 0 ? (
+                          <Badge className="bg-rose-600 text-white hover:bg-rose-700 text-[10px] font-bold">
+                            Vence HOJE!
+                          </Badge>
+                        ) : diff === 1 ? (
+                          <Badge className="bg-amber-600 text-white hover:bg-amber-700 text-[10px] font-bold">
+                            Vence Amanhã
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40 text-[10px] font-bold">
+                            Vence em {diff} dias
+                          </Badge>
+                        )}
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Término: {formatDateBR(program.end_date)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Barra de Ações Rápidas */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs px-2.5 gap-1.5 font-semibold text-foreground hover:bg-primary/10 hover:text-primary"
+                          onClick={() => {
+                            setAlertasVencimentoOpen(false);
+                            setSelectedProgramIdForEdit(program.id);
+                            setInitialDayIdForEdit(null);
+                            setProgramEditorOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-3 w-3 text-primary" />
+                          <span>Prorrogar / Editar</span>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs px-2.5 gap-1.5 text-primary hover:bg-primary/10 font-semibold"
+                          onClick={() => {
+                            setAlertasVencimentoOpen(false);
+                            setSelectedProgramForIa({
+                              id: program.id,
+                              titulo: program.name,
+                              metodologia: program.training_type,
+                              alunoNome: aluno?.name,
+                            });
+                            setPrescreverIaOpen(true);
+                          }}
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          <span>Nova Periodização IA</span>
+                        </Button>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 ml-auto flex-wrap">
+                        {whatsAppUrl && (
+                          <Button asChild size="sm" variant="ghost" className="h-7 text-xs px-2 gap-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10">
+                            <a href={whatsAppUrl} target="_blank" rel="noopener noreferrer">
+                              <MessageCircle className="h-3 w-3" />
+                              <span>WhatsApp</span>
+                            </a>
+                          </Button>
+                        )}
+
+                        {aluno && (
+                          <Button asChild size="sm" variant="ghost" className="h-7 text-xs px-2 gap-1 text-muted-foreground hover:text-foreground">
+                            <Link to={alunoUrl}>
+                              <span>Ver Aluno</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <div className="p-3 border-t border-border/70 bg-card/60 flex items-center justify-between gap-2">
+            {programasVencendo.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                onClick={() => {
+                  setTipoAlunoFiltro("vencendo");
+                  setAlertasVencimentoOpen(false);
+                }}
+              >
+                <Filter className="h-3.5 w-3.5 text-primary" />
+                <span>Filtrar estes treinos na tabela</span>
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="ml-auto text-xs"
+              onClick={() => setAlertasVencimentoOpen(false)}
+            >
+              Fechar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
