@@ -716,27 +716,32 @@ export function FormSubmissionsDialog({
                     return (
                       <button
                         key={sub.id}
+                        type="button"
                         onClick={() => {
                           setSelectedSubmission(sub);
                           setIndividualIdx(sIdx);
                         }}
-                        className={`w-full text-left p-3.5 transition-colors flex flex-col gap-1.5 ${
+                        className={`w-full text-left p-3.5 transition-all flex flex-col gap-1.5 border-l-4 ${
                           isSelected
-                            ? "bg-primary/10 border-l-4 border-l-primary"
-                            : "hover:bg-muted/40 border-l-4 border-l-transparent"
+                            ? "bg-blue-500/10 dark:bg-blue-500/20 backdrop-blur-sm border-l-[#0071e3] dark:border-l-[#0a84ff] shadow-xs"
+                            : "bg-transparent hover:bg-muted/60 border-l-transparent"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span
-                            className={`font-semibold text-sm truncate ${
-                              isSelected ? "text-primary dark:text-white" : "text-foreground"
+                            className={`font-bold text-sm truncate ${
+                              isSelected
+                                ? "text-[#005bb5] dark:text-[#60a5fa]"
+                                : "text-foreground"
                             }`}
                           >
                             {sub.respondentName}
                           </span>
                           <span
-                            className={`text-[10px] flex items-center gap-1 flex-shrink-0 ${
-                              isSelected ? "text-primary/80 dark:text-slate-300" : "text-muted-foreground"
+                            className={`text-[10px] flex items-center gap-1 flex-shrink-0 font-medium ${
+                              isSelected
+                                ? "text-blue-700/80 dark:text-blue-300/80"
+                                : "text-muted-foreground"
                             }`}
                           >
                             <Clock className="h-3 w-3" />
@@ -745,8 +750,10 @@ export function FormSubmissionsDialog({
                         </div>
 
                         <p
-                          className={`text-xs font-semibold truncate ${
-                            isSelected ? "text-primary dark:text-white" : "text-primary"
+                          className={`text-xs truncate ${
+                            isSelected
+                              ? "text-slate-800 dark:text-slate-200 font-semibold"
+                              : "text-muted-foreground"
                           }`}
                         >
                           {sub.formTitle}
@@ -754,21 +761,29 @@ export function FormSubmissionsDialog({
 
                         <div
                           className={`flex items-center justify-between text-[11px] mt-0.5 ${
-                            isSelected ? "text-foreground/90 dark:text-slate-200" : "text-muted-foreground"
+                            isSelected
+                              ? "text-slate-700 dark:text-slate-300"
+                              : "text-muted-foreground"
                           }`}
                         >
-                          <span className="truncate max-w-[130px] font-medium">
+                          <span className="truncate max-w-[130px] font-mono font-medium text-[11px]">
                             {sub.respondentContact || "Sem telefone"}
                           </span>
                           {sub.studentId ? (
-                            <span className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 font-medium text-[10px]">
+                            <span
+                              className={`inline-flex items-center gap-0.5 font-bold text-[10px] px-1.5 py-0.5 rounded ${
+                                isSelected
+                                  ? "text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30"
+                                  : "text-emerald-600 dark:text-emerald-400"
+                              }`}
+                            >
                               <CheckCircle2 className="h-3 w-3" /> Vinculado
                             </span>
                           ) : (
                             <span
-                              className={`text-[10px] font-medium ${
+                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                                 isSelected
-                                  ? "text-amber-700 dark:text-amber-300 font-bold"
+                                  ? "text-amber-800 dark:text-amber-300 bg-amber-500/15 border border-amber-500/30"
                                   : "text-amber-600 dark:text-amber-400"
                               }`}
                             >

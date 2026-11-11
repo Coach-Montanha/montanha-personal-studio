@@ -581,8 +581,9 @@
 }
 
 /* Botões primários no padrão Apple HIG — sólidos, táteis e sem gradientes artificiais */
-[data-tema="midnight"] .bg-primary,
-[data-tema="midnight"] button[class*="bg-primary"],
+/* Aplica exclusivamente em .bg-primary puro, preservando variantes translúcidas (bg-primary/10, etc.) */
+[data-tema="midnight"] .bg-primary:not([class*="/"]):not([class*="hover:"]),
+[data-tema="midnight"] button.bg-primary:not([class*="/"]):not([class*="hover:"]),
 [data-tema="midnight"] .btn-gradient {
   background: #0071e3 !important;
   color: #ffffff !important;
@@ -592,23 +593,28 @@
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dark[data-tema="midnight"] .bg-primary,
-.dark[data-tema="midnight"] button[class*="bg-primary"],
+.dark[data-tema="midnight"] .bg-primary:not([class*="/"]):not([class*="hover:"]),
+.dark[data-tema="midnight"] button.bg-primary:not([class*="/"]):not([class*="hover:"]),
 .dark[data-tema="midnight"] .btn-gradient,
-[data-tema="midnight"].dark .bg-primary,
-[data-tema="midnight"].dark button[class*="bg-primary"],
+[data-tema="midnight"].dark .bg-primary:not([class*="/"]):not([class*="hover:"]),
+[data-tema="midnight"].dark button.bg-primary:not([class*="/"]):not([class*="hover:"]),
 [data-tema="midnight"].dark .btn-gradient {
   background: #0a84ff !important;
   color: #ffffff !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
-[data-tema="midnight"] .bg-primary:hover,
-[data-tema="midnight"] button[class*="bg-primary"]:hover,
+[data-tema="midnight"] .bg-primary:not([class*="/"]):not([class*="hover:"]):hover,
+[data-tema="midnight"] button.bg-primary:not([class*="/"]):not([class*="hover:"]):hover,
 [data-tema="midnight"] .btn-gradient:hover {
   opacity: 0.92;
   box-shadow: 0 2px 8px rgba(0, 113, 227, 0.28);
   transform: translateY(-0.5px);
+}
+
+/* Salvaguarda de Alto Contraste Apple: se qualquer elemento receber .bg-primary sólido, seus textos e ícones tornam-se 100% brancos e legíveis */
+[data-tema="midnight"] .bg-primary:not([class*="/"]) :is(span, p, h1, h2, h3, h4, div, a, svg):not([class*="bg-"]):not([class*="text-amber"]):not([class*="text-emerald"]):not([class*="text-red"]) {
+  color: #ffffff !important;
 }
 
 /* Tabs: container pill no Modo Claro */
