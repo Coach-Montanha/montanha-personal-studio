@@ -133,7 +133,7 @@ function AuthPage() {
     } catch {}
   }, []);
 
-  // Brand Color: #6958e2 (Midnight Violet)
+  // Brand Color: #0071e3 (Apple System Blue)
 
   
   async function handleQuickLogin(acc: SavedAccount) {
@@ -365,8 +365,8 @@ function AuthPage() {
     <div className="min-h-dvh w-full bg-slate-950 text-slate-100 flex items-center justify-center p-3 sm:p-4 pt-[calc(0.75rem+var(--safe-area-inset-top,0px))] pb-[calc(1.5rem+var(--safe-area-inset-bottom,0px))] pl-[calc(0.75rem+var(--safe-area-inset-left,0px))] pr-[calc(0.75rem+var(--safe-area-inset-right,0px))] font-sans relative overflow-y-auto">
       {/* Dynamic Background Mesh */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-[#6958e2]/20 blur-[160px]" />
-        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-[#8b5cf6]/15 blur-[160px]" />
+        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-[#0071e3]/15 blur-[160px]" />
+        <div className="absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-[#0071e3]/10 blur-[160px]" />
       </div>
 
       {/* Floating Hero Stage Card Container */}
@@ -374,9 +374,9 @@ function AuthPage() {
         {/* A) NAV RAIL */}
         <nav className="w-full md:w-24 bg-slate-950 border-b md:border-b-0 md:border-r border-slate-800 p-3 md:p-4 flex md:flex-col items-center justify-between z-20 flex-shrink-0">
           <div className="flex flex-row md:flex-col items-center gap-2 md:gap-1.5">
-            <div className="h-9 w-9 md:h-11 md:w-11 rounded-2xl bg-gradient-to-br from-[#6958e2] to-[#8b5cf6] p-0.5 shadow-md flex items-center justify-center">
+            <div className="h-9 w-9 md:h-11 md:w-11 rounded-2xl bg-[#0071e3] p-0.5 shadow-md flex items-center justify-center">
               <div className="h-full w-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-[#6958e2]" />
+                <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-[#0071e3]" />
               </div>
             </div>
             <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
@@ -391,7 +391,7 @@ function AuthPage() {
               aria-label="Entrar na conta"
               className={`min-h-[40px] md:min-h-[44px] min-w-[40px] md:min-w-[44px] px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 transition-all text-xs font-bold ${
                 view === "signin"
-                  ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
+                  ? "bg-[#0071e3] text-white shadow-md shadow-[#0071e3]/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
@@ -405,7 +405,7 @@ function AuthPage() {
               aria-label="Criar nova conta"
               className={`min-h-[40px] md:min-h-[44px] min-w-[40px] md:min-w-[44px] px-3 md:px-4 py-2 md:py-2.5 rounded-xl flex flex-row md:flex-col items-center justify-center gap-1.5 md:gap-1 transition-all text-xs font-bold ${
                 view === "signup"
-                  ? "bg-[#6958e2] text-white shadow-md shadow-[#6958e2]/30"
+                  ? "bg-[#0071e3] text-white shadow-md shadow-[#0071e3]/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
@@ -415,7 +415,7 @@ function AuthPage() {
           </div>
 
           <div className="hidden md:flex flex-col items-center text-[10px] text-slate-500">
-            <ShieldCheck className="h-4 w-4 text-[#6958e2] mb-0.5" />
+            <ShieldCheck className="h-4 w-4 text-[#0071e3] mb-0.5" />
             <span>SSL 256</span>
           </div>
         </nav>
@@ -424,7 +424,7 @@ function AuthPage() {
         <div className="hidden md:flex w-full md:w-80 relative overflow-hidden bg-slate-950/90 p-6 md:p-8 flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800">
           <div
             aria-hidden
-            className="absolute -top-24 -left-24 w-64 h-64 bg-[#6958e2]/20 rounded-full blur-3xl pointer-events-none"
+            className="absolute -top-24 -left-24 w-64 h-64 bg-[#0071e3]/15 rounded-full blur-3xl pointer-events-none"
           />
 
           <div className="relative z-10 space-y-4">
@@ -459,11 +459,11 @@ function AuthPage() {
 
           <div className="relative z-10 pt-6 border-t border-slate-800/80 space-y-3">
             <div className="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
-              <CheckCircle2 className="h-4 w-4 text-[#6958e2] flex-shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-[#0071e3] flex-shrink-0" />
               <span>Autenticação rápida e segura por PIN</span>
             </div>
             <div className="flex items-center gap-2.5 text-xs text-slate-300 font-medium">
-              <CheckCircle2 className="h-4 w-4 text-[#6958e2] flex-shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-[#0071e3] flex-shrink-0" />
               <span>Criptografia de ponta a ponta</span>
             </div>
           </div>
@@ -500,7 +500,7 @@ function AuthPage() {
                       setShowReset(false);
                       setResetSent(false);
                     }}
-                    className="text-xs font-bold text-[#6958e2] hover:underline block pt-2"
+                    className="text-xs font-bold text-[#0071e3] hover:underline block pt-2"
                   >
                     ← Voltar para o login
                   </button>
@@ -530,7 +530,7 @@ function AuthPage() {
                           colorScheme: "light",
                           WebkitTextFillColor: "#0f172a",
                         }}
-                        className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                        className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 text-base md:text-sm"
                       />
                     </div>
                     {resetError && (
@@ -541,7 +541,7 @@ function AuthPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-12 rounded-xl bg-[#6958e2] hover:bg-[#5b4bc4] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 min-h-[44px]"
+                    className="w-full h-12 rounded-xl bg-[#0071e3] hover:bg-[#0062c4] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 min-h-[44px]"
                   >
                     {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                     <span>Enviar Link de Recuperação</span>
@@ -578,7 +578,7 @@ function AuthPage() {
                 <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2.5 shadow-md">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5 text-[#6958e2]" />
+                      <Users className="h-3.5 w-3.5 text-[#0071e3]" />
                       Contas Salvas neste Celular
                     </span>
                     <span className="text-[10px] text-slate-400">Acesso rápido</span>
@@ -590,10 +590,10 @@ function AuthPage() {
                         <div
                           key={acc.id}
                           onClick={() => !isLogging && handleQuickLogin(acc)}
-                          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 hover:bg-[#6958e2]/20 border border-slate-700 hover:border-[#6958e2]/50 cursor-pointer transition-all"
+                          className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 hover:bg-[#0071e3]/20 border border-slate-700 hover:border-[#0071e3]/50 cursor-pointer transition-all"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="h-7 w-7 rounded-full bg-[#6958e2]/20 text-[#6958e2] font-bold text-xs flex items-center justify-center border border-[#6958e2]/30 shrink-0">
+                            <div className="h-7 w-7 rounded-full bg-[#0071e3]/20 text-[#0071e3] font-bold text-xs flex items-center justify-center border border-[#0071e3]/30 shrink-0">
                               {acc.name ? acc.name.slice(0, 2).toUpperCase() : acc.email.slice(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
@@ -605,7 +605,7 @@ function AuthPage() {
                             <button
                               type="button"
                               disabled={isLogging}
-                              className="h-6 text-[10px] px-2.5 rounded-lg font-bold bg-[#6958e2] hover:bg-[#5b4bc4] text-white transition-all"
+                              className="h-6 text-[10px] px-2.5 rounded-lg font-bold bg-[#0071e3] hover:bg-[#0062c4] text-white transition-all"
                             >
                               {isLogging ? "Entrando..." : "Entrar"}
                             </button>
@@ -657,7 +657,7 @@ function AuthPage() {
                             colorScheme: "light",
                             WebkitTextFillColor: "#0f172a",
                           }}
-                          className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                          className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 text-base md:text-sm"
                         />
                       </div>
                     </div>
@@ -670,7 +670,7 @@ function AuthPage() {
                         >
                           Data de Nascimento
                         </label>
-                        <span className="text-[10px] text-purple-400 font-medium">
+                        <span className="text-[10px] text-blue-400 font-medium">
                           ECA & LGPD (+18 anos)
                         </span>
                       </div>
@@ -690,7 +690,7 @@ function AuthPage() {
                             colorScheme: "light",
                             WebkitTextFillColor: "#0f172a",
                           }}
-                          className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                          className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 text-base md:text-sm"
                         />
                       </div>
                     </div>
@@ -722,7 +722,7 @@ function AuthPage() {
                         colorScheme: "light",
                         WebkitTextFillColor: "#0f172a",
                       }}
-                      className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                      className="w-full h-11 pl-10 pr-4 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 text-base md:text-sm"
                     />
                   </div>
                 </div>
@@ -756,7 +756,7 @@ function AuthPage() {
                         colorScheme: "light",
                         WebkitTextFillColor: "#0f172a",
                       }}
-                      className="w-full h-11 pl-10 pr-12 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#6958e2] focus:ring-2 focus:ring-[#6958e2]/20 text-base md:text-sm"
+                      className="w-full h-11 pl-10 pr-12 !bg-white !text-slate-900 border border-slate-300 rounded-xl font-medium placeholder-slate-400 focus:outline-none focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20 text-base md:text-sm"
                     />
                     <button
                       type="button"
@@ -776,7 +776,7 @@ function AuthPage() {
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="rounded border-slate-800 bg-slate-950 text-[#6958e2] focus:ring-[#6958e2]"
+                        className="rounded border-slate-800 bg-slate-950 text-[#0071e3] focus:ring-[#0071e3]"
                       />
                       <span>Lembrar neste dispositivo</span>
                     </label>
@@ -784,7 +784,7 @@ function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setShowReset(true)}
-                      className="text-xs font-bold text-[#6958e2] hover:underline"
+                      className="text-xs font-bold text-[#0071e3] hover:underline"
                     >
                       Esqueci a senha
                     </button>
@@ -795,7 +795,7 @@ function AuthPage() {
                   type="submit"
                   disabled={loading}
                   aria-label={view === "signin" ? "Entrar no Personal Studio" : "Cadastrar conta"}
-                  className="w-full h-12 rounded-xl bg-[#6958e2] hover:bg-[#5b4bc4] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 min-h-[44px]"
+                  className="w-full h-12 rounded-xl bg-[#0071e3] hover:bg-[#0062c4] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 min-h-[44px]"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>
@@ -812,7 +812,7 @@ function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setView("signup")}
-                      className="font-bold text-[#6958e2] hover:underline ml-1"
+                      className="font-bold text-[#0071e3] hover:underline ml-1"
                     >
                       Cadastre-se aqui
                     </button>
@@ -823,7 +823,7 @@ function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setView("signin")}
-                      className="font-bold text-[#6958e2] hover:underline ml-1"
+                      className="font-bold text-[#0071e3] hover:underline ml-1"
                     >
                       Fazer login
                     </button>
