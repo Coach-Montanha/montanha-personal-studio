@@ -28,6 +28,7 @@ import { Users } from "lucide-react";
 import { PortalAnnouncementPopup } from "@/components/portal/PortalAnnouncementPopup";
 import { PortalPersistGate, clearPortalCache } from "@/components/portal/PortalPersistGate";
 import { openTrainingTimer } from "@/hooks/use-training-timer";
+import { getMyTrainingPortalDataServerFn } from "@/lib/student-access.functions";
 
 type PortalMode = "studio" | "pt" | "both";
 
@@ -39,8 +40,10 @@ type NavItem = {
   exact?: boolean;
 };
 
+// Regra Unificada Montanha: Todo aluno (Studio, Personal ou Híbrido) possui acesso integral ao "Meu treino"
 const studioNav: NavItem[] = [
   { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
+  { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
   { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
   { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
@@ -53,11 +56,12 @@ const ptNav: NavItem[] = [
   { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
   { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
+  { to: "/portal/perfil", label: "Meus dados", icon: User },
 ];
 
 const bothNav: NavItem[] = [
   { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
-  { to: "/portal/pt/treino", label: "Treino Personal", icon: ClipboardList },
+  { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
   { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
   { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
   { to: "/portal/formularios", label: "Formulários", icon: FileText },
@@ -72,8 +76,16 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const { data: userTypes, isLoading: loadingTypes } = useQuery({
     queryKey: ["portal-user-types-with-workouts", user?.id, user?.email],
     enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
     queryFn: async () => {
+      let hasWorkouts = false;
+      try {
+        const portalData = await getMyTrainingPortalDataServerFn();
+        hasWorkouts = !!portalData?.hasWorkouts;
+      } catch (e) {
+        console.warn("[PortalShell] getMyTrainingPortalDataServerFn fallback:", e);
+      }
+
       let [studio, pt] = await Promise.all([
         supabase.from("students").select("id,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
         supabase.from("pt_students").select("id,training_plan,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
@@ -84,9 +96,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
         const resSt = await supabase.from("students").select("id,account_user_id").ilike("email", user.email.trim()).maybeSingle();
         if (resSt.data) {
           studio = resSt;
-          if (resSt.data.account_user_id !== user.id) {
-            await supabase.from("students").update({ account_user_id: user.id } as never).eq("id", resSt.data.id);
-          }
         }
       }
 
@@ -94,26 +103,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
         const resPt = await supabase.from("pt_students").select("id,training_plan,account_user_id").ilike("email", user.email.trim()).maybeSingle();
         if (resPt.data) {
           pt = resPt;
-          if (resPt.data.account_user_id !== user.id) {
-            await supabase.from("pt_students").update({ account_user_id: user.id } as never).eq("id", resPt.data.id);
-          }
         }
-      }
-
-      let hasWorkouts = false;
-      const allStudentIds: string[] = [];
-      if (pt.data?.id) allStudentIds.push(pt.data.id);
-      if (studio.data?.id) allStudentIds.push(studio.data.id);
-
-      if (pt.data?.training_plan && pt.data.training_plan.trim() !== "") {
-        hasWorkouts = true;
-      } else if (allStudentIds.length > 0) {
-        const { count } = await supabase
-          .from("pt_programs" as never)
-          .select("id", { count: "exact", head: true })
-          .in("pt_student_id", allStudentIds)
-          .eq("is_deleted", false);
-        hasWorkouts = (count ?? 0) > 0;
       }
 
       return {
@@ -122,7 +112,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
         hasWorkouts,
       };
     },
-    staleTime: 60_000,
   });
 
   const mode: PortalMode =
@@ -134,42 +123,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
           ? "pt"
           : "studio";
 
-  // Só exibe links de treino se o aluno tiver treinos cadastrados!
-  const hasWorkouts = !!userTypes?.hasWorkouts;
-
-  const dynamicStudioNav: NavItem[] = hasWorkouts
-    ? [
-        { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
-        { to: "/portal/pt/treino", label: "Meu treino", icon: ClipboardList },
-        { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
-        { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
-        { to: "/portal/formularios", label: "Formulários", icon: FileText },
-        { to: "/portal/perfil", label: "Meus dados", icon: User },
-      ]
-    : studioNav;
-
-  const dynamicPtNav: NavItem[] = hasWorkouts
-    ? ptNav
-    : [
-        { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
-        { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
-        { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
-        { to: "/portal/formularios", label: "Formulários", icon: FileText },
-        { to: "/portal/perfil", label: "Meus dados", icon: User },
-      ];
-
-  const dynamicBothNav: NavItem[] = hasWorkouts
-    ? bothNav
-    : [
-        { to: "/portal", label: "Check-ins Studio", icon: Calendar, exact: true },
-        { to: "/portal/pt", label: "Dados Personal", icon: User, exact: true },
-        { href: "/materiais?student=1", label: "Artigos & E-books", icon: BookOpen },
-        { to: "/portal/planos", label: "Planos & Assinatura", icon: CreditCard },
-        { to: "/portal/formularios", label: "Formulários", icon: FileText },
-        { to: "/portal/perfil", label: "Meus dados", icon: User },
-      ];
-
-  const nav = mode === "both" ? dynamicBothNav : mode === "pt" ? dynamicPtNav : dynamicStudioNav;
+  // Regra Inegociável: Todo aluno tem acesso irrestrito e direto a "Meu treino"
+  const nav = mode === "both" ? bothNav : mode === "pt" ? ptNav : studioNav;
   const areaLabel =
     mode === "both" ? "Portal Híbrido" : mode === "pt" ? "Personal Trainer" : "Área do aluno";
 

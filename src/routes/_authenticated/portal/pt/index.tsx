@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatBRL, formatDateBR } from "@/lib/format";
 import { CalendarDays, User as UserIcon, Wallet, Activity, Layers, Target, TrendingUp, Dumbbell } from "lucide-react";
 import { WorkoutProgressionDialog } from "@/components/pt/WorkoutProgressionDialog";
+import { getMyTrainingPortalDataServerFn } from "@/lib/student-access.functions";
 
 export const Route = createFileRoute("/_authenticated/portal/pt/")({
   head: () => ({ meta: [{ title: "Minhas informações — Personal Trainer" }] }),
@@ -74,31 +75,15 @@ function PTPortalHome() {
     },
   });
 
-  const { data: hasPrograms = false } = useQuery({
-    queryKey: ["pt-portal-has-programs", student?.id, student?.email],
+  const { data: serverPortalData } = useQuery({
+    queryKey: ["pt-portal-programs-server", student?.id],
     enabled: !!student?.id,
-    queryFn: async () => {
-      const ids = [student!.id];
-      if (student?.email) {
-        const { data: ptRows } = await supabase
-          .from("pt_students")
-          .select("id")
-          .ilike("email", student.email);
-        (ptRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
-      }
-
-      const { count } = await supabase
-        .from("pt_programs")
-        .select("id", { count: "exact", head: true })
-        .in("pt_student_id", ids)
-        .eq("is_deleted", false);
-      return (count ?? 0) > 0;
-    },
+    queryFn: () => getMyTrainingPortalDataServerFn(),
   });
 
   if (!student) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
-  const hasWorkouts = !!(student.training_plan?.trim() || hasPrograms);
+  const hasWorkouts = !!(student.training_plan?.trim() || serverPortalData?.hasWorkouts);
 
   const latestPaid = payments.find((p) => p.status === "paid");
   const plan = latestPaid?.pt_plans;
@@ -131,14 +116,12 @@ function PTPortalHome() {
             <TrendingUp className="h-4 w-4 text-primary" />
             Evolução de Cargas
           </Button>
-          {hasWorkouts && (
-            <Button asChild size="sm" className="gap-1.5">
-              <Link to="/portal/pt/treino">
-                <Dumbbell className="h-4 w-4" />
-                Ver Treinos
-              </Link>
-            </Button>
-          )}
+          <Button asChild size="sm" className="gap-1.5 font-semibold">
+            <Link to="/portal/pt/treino">
+              <Dumbbell className="h-4 w-4" />
+              Meu Treino
+            </Link>
+          </Button>
         </div>
       </div>
 

@@ -1,9 +1,9 @@
 # Graphify Knowledge Graph Report
 
 ## 📌 Project Architecture Overview
-- **Root Directory:** `C:\Users\Administrator\Documents\Projetos\Montanha Personal Studio`
-- **Total Indexable Files:** 1215
-- **Total Relationships:** 4691
+- **Root Directory:** `c:\Users\Administrator\Documents\Projetos\Ecossistema Montanha\Montanha Personal Studio`
+- **Total Indexable Files:** 2809
+- **Total Relationships:** 5668
 
 ## 🏛️ Key Modules ("God Nodes")
 - **`.agent/skills/backend-security-coder/resources/implementation-playbook.md`** (1.2 KB)
@@ -600,17 +600,17 @@
 ### `.vercel/output/functions/__server.func/index.mjs`
   Imports: `./_libs/h3+rou3+srvx.mjs`
 
-### `.vercel/output/functions/__server.func/_._lovable.oauth.consent-Bflqn6OV.mjs`
-  Imports: `./_ssr/client-BkeAE24_.mjs`, `./_libs/@tanstack/react-router+[...].mjs`
+### `.vercel/output/functions/__server.func/_._lovable.oauth.consent-CE2F9BWZ.mjs`
+  Imports: `./_runtime.mjs`, `./_libs/dnd-kit__accessibility+react.mjs`, `./_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./_libs/lucide-react.mjs`, `./_ssr/button-CR6R18Wd.mjs`, `./_ssr/card-Cwm6rIH9.mjs`, `./_._lovable.oauth.consent-D_wgWV0t.mjs`
 
-### `.vercel/output/functions/__server.func/_._lovable.oauth.consent-C7KIV-gA.mjs`
-  Imports: `./_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./_ssr/card-BQ4bpKnp.mjs`
+### `.vercel/output/functions/__server.func/_._lovable.oauth.consent-CrpmuMZ2.mjs`
+  Imports: `./_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./_ssr/card-Cwm6rIH9.mjs`
 
-### `.vercel/output/functions/__server.func/_._lovable.oauth.consent-DP6RkzWV.mjs`
-  Imports: `./_runtime.mjs`, `./_libs/dnd-kit__accessibility+react.mjs`, `./_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./_ssr/card-BQ4bpKnp.mjs`, `./_libs/lucide-react.mjs`, `./_ssr/button-C0L5fFXX.mjs`, `./_._lovable.oauth.consent-Bflqn6OV.mjs`
+### `.vercel/output/functions/__server.func/_._lovable.oauth.consent-D_wgWV0t.mjs`
+  Imports: `./_libs/@tanstack/react-router+[...].mjs`, `./_ssr/client-BkeAE24_.mjs`
 
-### `.vercel/output/functions/__server.func/_authenticated-6BlLekM6.mjs`
-  Imports: `./_runtime.mjs`, `./_ssr/utils-C_uf36nf.mjs`, `./_libs/dnd-kit__accessibility+react.mjs`, `./_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./_ssr/card-BQ4bpKnp.mjs`, `./_libs/lucide-react.mjs`, `./_ssr/button-C0L5fFXX.mjs`, `./_ssr/client-BkeAE24_.mjs`, `./_libs/@tanstack/react-router+[...].mjs`, `./_ssr/useServerFn-CrZF2pjq.mjs`, `./_ssr/badge-DB22ix_c.mjs`, `./_ssr/PageHeader-BFFBazYd.mjs`, `./_libs/@dnd-kit/core+[...].mjs`, `./_ssr/dialog-C26xL9O3.mjs`, `./_ssr/table-DEnZ0u5J.mjs`, `./_ssr/EmptyState-DK3vCNbs.mjs`, `./_ssr/format-_4Zq3xTL.mjs`, `./_ssr/notifications.functions-D4oEvE8p.mjs`, `./_ssr/Badges-COyI62Ul.mjs`, `./_libs/tanstack__react-query.mjs`, `./_ssr/use-scope-filter-DfSLR4FQ.mjs`, `./_ssr/chart-theme-DG2ASWF8.mjs`, `./_ssr/KPICard-C1l5ErUy.mjs`, `./_ssr/MonthYearPicker-OMh-9hnr.mjs`, `./_ssr/skeleton-D9W9wFsj.mjs`, `./_libs/dnd-kit__sortable.mjs`, `./_ssr/SortableChartCard-C38x-lr8.mjs`, `./_ssr/use-landing-page-Z3G1F5Iv.mjs`, `./_ssr/SectionCard-Dhxnzc2Q.mjs`, `./_ssr/checkins-CyfT8Rv0.mjs`, `./_ssr/use-portal-mode-DxDOhk8V.mjs`, `./_libs/sonner.mjs`, `./_libs/recharts+[...].mjs`
+### `.vercel/output/functions/__server.func/_authenticated-CSoIhgrY.mjs`
+  Imports: `./_runtime.mjs`, `./_libs/@tanstack/react-router+[...].mjs`, `./_libs/dnd-kit__accessibility+react.mjs`, `./_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./_libs/tanstack__react-query.mjs`, `./_ssr/athlete-memory-DNSAdENZ.mjs`, `./_ssr/utils-C_uf36nf.mjs`, `./_ssr/badge-DB22ix_c.mjs`, `./_libs/lucide-react.mjs`, `./_ssr/button-CR6R18Wd.mjs`, `./_libs/@dnd-kit/core+[...].mjs`, `./_ssr/dialog-kZIGUypc.mjs`, `./_ssr/client-BkeAE24_.mjs`, `./_libs/sonner.mjs`, `./_ssr/card-Cwm6rIH9.mjs`, `./_ssr/table-DGJDL6bT.mjs`, `./_ssr/PageHeader-EOhs2t87.mjs`, `./_ssr/format-_4Zq3xTL.mjs`, `./_ssr/skeleton-D9W9wFsj.mjs`, `./_ssr/EmptyState-DK3vCNbs.mjs`, `./_ssr/notifications.functions-BUSmd6ie.mjs`, `./_ssr/Badges-Cz64Cjtf.mjs`, `./_ssr/use-scope-filter-C-QaRXoY.mjs`, `./_ssr/chart-theme-DG2ASWF8.mjs`, `./_ssr/KPICard-D53--08z.mjs`, `./_ssr/MonthYearPicker-CYvJca0K.mjs`, `./_libs/dnd-kit__sortable.mjs`, `./_ssr/SortableChartCard-B_Z6gmBC.mjs`, `./_ssr/SectionCard-DeZ0qz1r.mjs`, `./_ssr/checkins-CyfT8Rv0.mjs`, `./_ssr/use-portal-mode-B64OWjXt.mjs`, `./_libs/recharts+[...].mjs`
 
 ### `.vercel/output/functions/__server.func/_chunks/ssr-renderer.mjs`
   Imports: `../_libs/h3+rou3+srvx.mjs`
@@ -637,7 +637,7 @@
   Imports: `../../_runtime.mjs`, `../dnd-kit__accessibility+react.mjs`, `./react-alert-dialog+[...].mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/@radix-ui/react-dropdown-menu+[...].mjs`
-  Imports: `../../_runtime.mjs`, `../dnd-kit__accessibility+react.mjs`, `./react-alert-dialog+[...].mjs`, `../radix-ui__primitive.mjs`, `../@floating-ui/dom+[...].mjs`, `../floating-ui__react-dom.mjs`, `../radix-ui__react-arrow.mjs`, `./react-checkbox+[...].mjs`, `./react-collection+[...].mjs`, `../radix-ui__react-direction.mjs`
+  Imports: `../../_runtime.mjs`, `../dnd-kit__accessibility+react.mjs`, `./react-alert-dialog+[...].mjs`, `../radix-ui__primitive.mjs`, `./react-collection+[...].mjs`, `../radix-ui__react-direction.mjs`, `../@floating-ui/dom+[...].mjs`, `../floating-ui__react-dom.mjs`, `../radix-ui__react-arrow.mjs`, `./react-checkbox+[...].mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/@radix-ui/react-label+[...].mjs`
   Imports: `../../_runtime.mjs`, `../dnd-kit__accessibility+react.mjs`, `./react-alert-dialog+[...].mjs`, `./react-avatar+[...].mjs`, `../@dnd-kit/core+[...].mjs`
@@ -646,7 +646,7 @@
   Imports: `../../_runtime.mjs`, `../dnd-kit__accessibility+react.mjs`, `./react-alert-dialog+[...].mjs`, `../radix-ui__primitive.mjs`, `./react-dropdown-menu+[...].mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/@radix-ui/react-select+[...].mjs`
-  Imports: `../../_runtime.mjs`, `../dnd-kit__accessibility+react.mjs`, `./react-alert-dialog+[...].mjs`, `../radix-ui__primitive.mjs`, `../@dnd-kit/core+[...].mjs`, `./react-checkbox+[...].mjs`, `./react-dropdown-menu+[...].mjs`, `../radix-ui__number.mjs`, `./react-collection+[...].mjs`, `../radix-ui__react-direction.mjs`
+  Imports: `../../_runtime.mjs`, `../dnd-kit__accessibility+react.mjs`, `./react-alert-dialog+[...].mjs`, `../radix-ui__primitive.mjs`, `../@dnd-kit/core+[...].mjs`, `../radix-ui__number.mjs`, `./react-collection+[...].mjs`, `../radix-ui__react-direction.mjs`, `./react-checkbox+[...].mjs`, `./react-dropdown-menu+[...].mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/@supabase/storage-js+[...].mjs`
   Imports: `base64-arraybuffer`, `base64-arraybuffer`, `@supabase/supabase-js`, `@supabase/storage-js`, `@supabase/supabase-js`, `@supabase/storage-js`, `@supabase/supabase-js`, `@supabase/storage-js`
@@ -658,7 +658,7 @@
   Imports: `../tanstack__query-core.mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/@tanstack/react-router+[...].mjs`
-  Imports: `../../_runtime.mjs`, `../dnd-kit__accessibility+react.mjs`, `../@radix-ui/react-alert-dialog+[...].mjs`, `../@radix-ui/react-avatar+[...].mjs`, `../tanstack__history.mjs`, `../@dnd-kit/core+[...].mjs`, `node:stream`, `util`, `crypto`, `async_hooks`, `stream`
+  Imports: `../../_runtime.mjs`, `../tanstack__history.mjs`, `../dnd-kit__accessibility+react.mjs`, `../@radix-ui/react-alert-dialog+[...].mjs`, `../@radix-ui/react-avatar+[...].mjs`, `../@dnd-kit/core+[...].mjs`, `node:stream`, `util`, `crypto`, `async_hooks`, `stream`
 
 ### `.vercel/output/functions/__server.func/_libs/@tanstack/router-core+[...].mjs`
   Imports: `./react-router+[...].mjs`
@@ -668,6 +668,9 @@
 
 ### `.vercel/output/functions/__server.func/_libs/canvg+[...].mjs`
   Imports: `../_runtime.mjs`, `./babel__runtime.mjs`
+
+### `.vercel/output/functions/__server.func/_libs/capacitor__local-notifications.mjs`
+  Imports: `../_runtime.mjs`, `./capacitor__core.mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/cmdk.mjs`
   Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__react-primitive.mjs`
@@ -751,7 +754,13 @@
   Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__react-context.mjs`, `./radix-ui__react-primitive.mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/radix-ui__react-radio-group.mjs`
-  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./@radix-ui/react-checkbox+[...].mjs`, `./@radix-ui/react-dropdown-menu+[...].mjs`, `./radix-ui__react-direction.mjs`
+  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./radix-ui__react-direction.mjs`, `./@radix-ui/react-checkbox+[...].mjs`, `./@radix-ui/react-dropdown-menu+[...].mjs`
+
+### `.vercel/output/functions/__server.func/_libs/radix-ui__react-scroll-area.mjs`
+  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./radix-ui__number.mjs`, `./radix-ui__react-direction.mjs`
+
+### `.vercel/output/functions/__server.func/_libs/radix-ui__react-slider.mjs`
+  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./radix-ui__number.mjs`, `./@radix-ui/react-collection+[...].mjs`, `./radix-ui__react-direction.mjs`, `./@radix-ui/react-checkbox+[...].mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/radix-ui__react-slot.mjs`
   Imports: `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`
@@ -760,10 +769,16 @@
   Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./@radix-ui/react-checkbox+[...].mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/radix-ui__react-tabs.mjs`
-  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./@radix-ui/react-dropdown-menu+[...].mjs`, `./radix-ui__react-direction.mjs`
+  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./radix-ui__react-direction.mjs`, `./@radix-ui/react-dropdown-menu+[...].mjs`
+
+### `.vercel/output/functions/__server.func/_libs/radix-ui__react-toggle-group.mjs`
+  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__react-direction.mjs`, `./@radix-ui/react-dropdown-menu+[...].mjs`, `./radix-ui__react-toggle.mjs`
+
+### `.vercel/output/functions/__server.func/_libs/radix-ui__react-toggle.mjs`
+  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/radix-ui__react-tooltip.mjs`
-  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./@radix-ui/react-dropdown-menu+[...].mjs`, `./radix-ui__react-slot.mjs`, `./@radix-ui/react-select+[...].mjs`
+  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./radix-ui__primitive.mjs`, `./@radix-ui/react-dropdown-menu+[...].mjs`, `./@radix-ui/react-select+[...].mjs`, `./radix-ui__react-slot.mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/react-is.mjs`
   Imports: `../_runtime.mjs`
@@ -772,7 +787,7 @@
   Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./prop-types.mjs`, `./fast-equals.mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/recharts+[...].mjs`
-  Imports: `../_runtime.mjs`, `./class-variance-authority+clsx.mjs`, `./dnd-kit__accessibility+react.mjs`, `./lodash.mjs`, `./react-is.mjs`, `./d3-shape.mjs`, `./d3-scale+[...].mjs`, `./decimal.js-light.mjs`, `./react-smooth.mjs`, `./eventemitter3.mjs`
+  Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./class-variance-authority+clsx.mjs`, `./lodash.mjs`, `./react-is.mjs`, `./d3-shape.mjs`, `./d3-scale+[...].mjs`, `./decimal.js-light.mjs`, `./react-smooth.mjs`, `./eventemitter3.mjs`
 
 ### `.vercel/output/functions/__server.func/_libs/sonner.mjs`
   Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@dnd-kit/core+[...].mjs`
@@ -790,7 +805,7 @@
   Imports: `./supabase__phoenix.mjs`, `@supabase/supabase-js`, `@supabase/realtime-js`, `@supabase/supabase-js`, `@supabase/realtime-js`, `ws`
 
 ### `.vercel/output/functions/__server.func/_libs/supabase__supabase-js.mjs`
-  Imports: `./supabase__functions-js.mjs`, `./supabase__postgrest-js.mjs`, `./supabase__realtime-js.mjs`, `./@supabase/storage-js+[...].mjs`, `./supabase__auth-js.mjs`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@react-native-async-storage/async-storage`, `@supabase/supabase-js`, `@react-native-async-storage/async-storage`, `expo-secure-store`, `aes-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@opentelemetry/api`, `@supabase/supabase-js`
+  Imports: `../_runtime.mjs`, `./supabase__functions-js.mjs`, `./supabase__postgrest-js.mjs`, `./supabase__realtime-js.mjs`, `./@supabase/storage-js+[...].mjs`, `./supabase__auth-js.mjs`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@react-native-async-storage/async-storage`, `@supabase/supabase-js`, `@react-native-async-storage/async-storage`, `expo-secure-store`, `aes-js`, `@supabase/supabase-js`, `@supabase/supabase-js`, `@opentelemetry/api`, `@supabase/supabase-js`
 
 ### `.vercel/output/functions/__server.func/_libs/tanstack__react-query.mjs`
   Imports: `../_runtime.mjs`, `./dnd-kit__accessibility+react.mjs`, `./@radix-ui/react-alert-dialog+[...].mjs`, `./tanstack__query-core.mjs`
@@ -801,368 +816,446 @@
 ### `.vercel/output/functions/__server.func/_runtime.mjs`
   Imports: `node:module`
 
-### `.vercel/output/functions/__server.func/_ssr/agenda-BZGprLic.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./useServerFn-CrZF2pjq.mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./alert-dialog-BymSQoye.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./classes.functions-BbfvRgnE.mjs`, `./switch-Cn1w-cIH.mjs`, `./AgendaView-CDOvSN3C.mjs`, `./radio-group-BJ3sdkEm.mjs`
+### `.vercel/output/functions/__server.func/_ssr/agenda-6ikSw_Dn.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./PageHeader-EOhs2t87.mjs`, `./alert-dialog-CvzeSe0O.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./search-utils-CzrYaHvg.mjs`, `./classes.functions-DM0GEZQg.mjs`, `./switch-C_mzcXif.mjs`, `./AgendaView-CPwAUQv1.mjs`, `./radio-group-DIl2HLuD.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/AgendaView-CDOvSN3C.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/tanstack__react-query.mjs`, `./select-CLfamRsg.mjs`, `./classes.functions-BbfvRgnE.mjs`
+### `.vercel/output/functions/__server.func/_ssr/AgendaView-CPwAUQv1.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `./classes.functions-DM0GEZQg.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/ai-image.functions-By73AwbG.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`, `crypto`
+### `.vercel/output/functions/__server.func/_ssr/ai-image.functions-C3hLxm24.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`, `crypto`
 
-### `.vercel/output/functions/__server.func/_ssr/alert-dialog-BymSQoye.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./button-C0L5fFXX.mjs`
+### `.vercel/output/functions/__server.func/_ssr/ai-key.functions-Cli33pcr.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/announcements.functions-BiMn4-fF.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`
+### `.vercel/output/functions/__server.func/_ssr/ai-key.functions-Dk0Y7tep.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./athlete-memory-DNSAdENZ.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/announcements.functions-Lk2Lhrlt.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`
+### `.vercel/output/functions/__server.func/_ssr/alert-dialog-CvzeSe0O.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `./button-CR6R18Wd.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/auth-DrRdYTT5.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/sonner.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./auth-E1kCEgfl.mjs`, `./tabs-DT1SSYuq.mjs`, `./checkbox-kt6FvQcE.mjs`, `./ecosystem-auth-service-DEyx_Dsu.mjs`
+### `.vercel/output/functions/__server.func/_ssr/announcements.functions-CC_4z_VN.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/auth-E1kCEgfl.mjs`
-  Imports: `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/announcements.functions-CYaP4yOT.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./athlete-memory-DNSAdENZ.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/auth-middleware-DWAxgVNA.mjs`
-  Imports: `../_libs/supabase__supabase-js.mjs`, `./createStart-Dt05N14y.mjs`, `./esm-B8uG0sol.mjs`
+### `.vercel/output/functions/__server.func/_ssr/athlete-memory-DNSAdENZ.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./esm-jn-8bugd.mjs`, `../__23tanstack-start-server-fn-resolver-N7OWG1hY.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/auth-D3SYSsnm.mjs`
+  Imports: `../_libs/@tanstack/react-router+[...].mjs`, `./client-BkeAE24_.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/auth-Df2sVtOF.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./athlete-memory-DNSAdENZ.mjs`, `../_libs/lucide-react.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./multi-account-D_jnSZqs.mjs`, `./auth-D3SYSsnm.mjs`, `./student-access.functions-CW8KMZ0e.mjs`, `./ecosystem-auth-service-DtP11Xdl.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/auth-middleware-BoGsbigB.mjs`
+  Imports: `./createStart-Dt05N14y.mjs`, `./request-response-B7GxCXoC.mjs`, `../_libs/supabase__supabase-js.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/avatar-D0f6amyY.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/@radix-ui/react-avatar+[...].mjs`, `./utils-C_uf36nf.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/badge-DB22ix_c.mjs`
-  Imports: `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+  Imports: `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/Badges-COyI62Ul.mjs`
-  Imports: `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./format-_4Zq3xTL.mjs`, `./tooltip-CJZST3UV.mjs`
+### `.vercel/output/functions/__server.func/_ssr/Badges-Cz64Cjtf.mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `./format-_4Zq3xTL.mjs`, `./tooltip-BHZfPEQ6.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/biblioteca-CVIlRd3D.mjs`
-  Imports: `../_libs/@tanstack/react-router+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/biblioteca-B800qitQ.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/biblioteca-D33db2Wq.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./useServerFn-CrZF2pjq.mjs`, `./badge-DB22ix_c.mjs`, `./dialog-C26xL9O3.mjs`, `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`, `../_libs/tanstack__react-query.mjs`, `./skeleton-D9W9wFsj.mjs`, `./SectionCard-Dhxnzc2Q.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./switch-Cn1w-cIH.mjs`, `./tabs-DT1SSYuq.mjs`, `./checkbox-kt6FvQcE.mjs`, `./progress-DOIEKRJF.mjs`, `./biblioteca-CVIlRd3D.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/biblioteca-C5P5tsAo.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./tabs-SqpqlIBn.mjs`, `./thumbnail-utils-Ciwh_Yng.mjs`, `./progress-DhBKNgLJ.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/bonus.functions-CcXEDen9.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`
+### `.vercel/output/functions/__server.func/_ssr/blog-management.functions-BaGbdfrD.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/button-C0L5fFXX.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/@radix-ui/react-avatar+[...].mjs`, `../_libs/lucide-react.mjs`
+### `.vercel/output/functions/__server.func/_ssr/bonus.functions-Cm20cUrd.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/card-BQ4bpKnp.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/bonus.functions-CrOKAWrO.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./athlete-memory-DNSAdENZ.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/checkbox-kt6FvQcE.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `../_libs/@radix-ui/react-checkbox+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/button-CR6R18Wd.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/@radix-ui/react-avatar+[...].mjs`, `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/checkin-tmGWstLS.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./PTBadges-CcuDhA9u.mjs`, `./pt-duo-BmRm_tCB.mjs`
+### `.vercel/output/functions/__server.func/_ssr/card-Cwm6rIH9.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/chunk-BdkLduGY.mjs`
+### `.vercel/output/functions/__server.func/_ssr/catalog-sync.functions-CwZ1vrB2.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./methodology-DF-HMT6m.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/checkbox-BhwBotB1.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `../_libs/@radix-ui/react-checkbox+[...].mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/checkin-CTp_Jj8w.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./PageHeader-EOhs2t87.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./search-utils-CzrYaHvg.mjs`, `./PTBadges-H0bCMVXX.mjs`, `./pt-duo-BmRm_tCB.mjs`, `./pt-messages-y3ICrHCP.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/chunk-z9aeyW2b.mjs`
   Imports: `node:module`
 
-### `.vercel/output/functions/__server.func/_ssr/classes.functions-BbfvRgnE.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`
+### `.vercel/output/functions/__server.func/_ssr/classes.functions-BAbHu8sm.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/classes.functions-DGVYssVC.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`
+### `.vercel/output/functions/__server.func/_ssr/classes.functions-DM0GEZQg.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./athlete-memory-DNSAdENZ.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/client-BkeAE24_.mjs`
   Imports: `../_libs/supabase__supabase-js.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/client.server-bHLIkpfQ.mjs`
-  Imports: `../_libs/supabase__supabase-js.mjs`
+### `.vercel/output/functions/__server.func/_ssr/client.server-ZqQe6Tue.mjs`
+  Imports: `./chunk-z9aeyW2b.mjs`, `../_libs/supabase__supabase-js.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/ClinicalAlertBadge-DV9w_vYG.mjs`
-  Imports: `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./client-BkeAE24_.mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./client-BkeAE24_.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/command-CfJ4Rdty.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/cmdk.mjs`
+### `.vercel/output/functions/__server.func/_ssr/collapsible-Ct2uArBC.mjs`
+  Imports: `../_libs/radix-ui__react-collapsible.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/confirm-dialog-loCJ8q2f.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./alert-dialog-BymSQoye.mjs`
+### `.vercel/output/functions/__server.func/_ssr/command-BOMR8Bqw.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./dialog-kZIGUypc.mjs`, `../_libs/cmdk.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/createServerRpc-BrXEvpC9.mjs`
-  Imports: `./esm-B8uG0sol.mjs`
+### `.vercel/output/functions/__server.func/_ssr/confirm-dialog-CcyA3C4B.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./alert-dialog-CvzeSe0O.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/createSsrRpc-DdYDqtX4.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `../__23tanstack-start-server-fn-resolver-DekkOHKp.mjs`
+### `.vercel/output/functions/__server.func/_ssr/copyright-C54mE-4Q.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `../_libs/sonner.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/crm-BaG940hP.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./useServerFn-CrZF2pjq.mjs`, `./PageHeader-BFFBazYd.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `./dialog-C26xL9O3.mjs`, `./table-DEnZ0u5J.mjs`, `./format-_4Zq3xTL.mjs`, `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`, `./notifications.functions-D4oEvE8p.mjs`, `./Badges-COyI62Ul.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `../_libs/dnd-kit__sortable.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./switch-Cn1w-cIH.mjs`, `./tabs-DT1SSYuq.mjs`, `./email.functions-DREPQe4C.mjs`, `./announcements.functions-BiMn4-fF.mjs`, `./popover-Cmlz_mk1.mjs`
+### `.vercel/output/functions/__server.func/_ssr/createServerRpc-Tu4ILPlO.mjs`
+  Imports: `./esm-jn-8bugd.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/diagnostics-D_8k6dOY.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./table-DEnZ0u5J.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./alert-dialog-BymSQoye.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./select-CLfamRsg.mjs`, `./checkbox-kt6FvQcE.mjs`
+### `.vercel/output/functions/__server.func/_ssr/crm-Du8mPJQE.mjs`
+  Imports: `../_runtime.mjs`, `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `./PageHeader-EOhs2t87.mjs`, `./format-_4Zq3xTL.mjs`, `./notifications.functions-BUSmd6ie.mjs`, `./Badges-Cz64Cjtf.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `../_libs/dnd-kit__sortable.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./search-utils-CzrYaHvg.mjs`, `./switch-C_mzcXif.mjs`, `./tabs-SqpqlIBn.mjs`, `./popover-C4q8I-xJ.mjs`, `./email.functions-BKrool7B.mjs`, `./announcements.functions-CYaP4yOT.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/dialog-C26xL9O3.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`
+### `.vercel/output/functions/__server.func/_ssr/diagnostics-QdF3UPP7.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./button-CR6R18Wd.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `./format-_4Zq3xTL.mjs`, `./alert-dialog-CvzeSe0O.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./search-utils-CzrYaHvg.mjs`, `./checkbox-BhwBotB1.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/DialogHeadline-BQ9h1Ac-.mjs`
-  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./dialog-C26xL9O3.mjs`
+### `.vercel/output/functions/__server.func/_ssr/dialog-kZIGUypc.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/dropdown-menu-BosDdXX7.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `../_libs/@radix-ui/react-dropdown-menu+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/DialogHeadline-CesMIGRy.mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./dialog-kZIGUypc.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/ecosystem-auth-service-DEyx_Dsu.mjs`
-  Imports: `../_libs/supabase__supabase-js.mjs`
+### `.vercel/output/functions/__server.func/_ssr/dropdown-menu-Qgr7cu0o.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `../_libs/@radix-ui/react-dropdown-menu+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/email.functions-D2kqRdmN.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`
+### `.vercel/output/functions/__server.func/_ssr/ecosystem-auth-service-DtP11Xdl.mjs`
+  Imports: `../_libs/supabase__supabase-js.mjs`, `./client-BkeAE24_.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/email.functions-DREPQe4C.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`
+### `.vercel/output/functions/__server.func/_ssr/email.functions-BKrool7B.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./athlete-memory-DNSAdENZ.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/email.functions-CYQrdvly.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/EmptyState-DK3vCNbs.mjs`
-  Imports: `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/esm-B8uG0sol.mjs`
-  Imports: `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/@tanstack/router-core+[...].mjs`, `./createStart-Dt05N14y.mjs`, `../_libs/h3-v2+srvx.mjs`, `node:async_hooks`
+### `.vercel/output/functions/__server.func/_ssr/esm-jn-8bugd.mjs`
+  Imports: `./createStart-Dt05N14y.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/@tanstack/router-core+[...].mjs`, `node:async_hooks`
 
-### `.vercel/output/functions/__server.func/_ssr/financeiro-CcIky5vr.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./PageHeader-BFFBazYd.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `./dialog-C26xL9O3.mjs`, `./table-DEnZ0u5J.mjs`, `./EmptyState-DK3vCNbs.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `./chart-theme-DG2ASWF8.mjs`, `./KPICard-C1l5ErUy.mjs`, `./MonthYearPicker-OMh-9hnr.mjs`, `./skeleton-D9W9wFsj.mjs`, `../_libs/dnd-kit__sortable.mjs`, `./SortableChartCard-C38x-lr8.mjs`, `./use-modules-Do1LHcRe.mjs`, `../_libs/sonner.mjs`, `../_libs/recharts+[...].mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./tabs-DT1SSYuq.mjs`, `./financeiro-CDKEYjnM.mjs`, `./DialogHeadline-BQ9h1Ac-.mjs`
-
-### `.vercel/output/functions/__server.func/_ssr/financeiro-CDKEYjnM.mjs`
+### `.vercel/output/functions/__server.func/_ssr/f._slug-B1OU4DN9.mjs`
   Imports: `../_libs/@tanstack/react-router+[...].mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/f._slug-CwE6mabV.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./textarea-CxWcjywR.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./forms-definitions-mlVD3F1o.mjs`, `./use-theme-FNNvhyxv.mjs`, `./f._slug-B1OU4DN9.mjs`, `./forms.functions-KT88ljRW.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/financeiro-BqyesytE.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `./PageHeader-EOhs2t87.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./skeleton-D9W9wFsj.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./chart-theme-DG2ASWF8.mjs`, `./KPICard-D53--08z.mjs`, `./MonthYearPicker-CYvJca0K.mjs`, `../_libs/dnd-kit__sortable.mjs`, `./SortableChartCard-B_Z6gmBC.mjs`, `./use-modules-B8XaHeaT.mjs`, `../_libs/recharts+[...].mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./tabs-SqpqlIBn.mjs`, `./checkbox-BhwBotB1.mjs`, `./financeiro-DOqqjzZy.mjs`, `./DialogHeadline-CesMIGRy.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/financeiro-DOqqjzZy.mjs`
+  Imports: `../_libs/@tanstack/react-router+[...].mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/FocusedDayView-CjLDuQcD.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./format-_4Zq3xTL.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./tabs-SqpqlIBn.mjs`, `./thumbnail-utils-Ciwh_Yng.mjs`, `./WorkoutSummaryDialog-BgXMHymG.mjs`, `./use-wake-lock-BSanvaPC.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/form-submission-pdf-Dv9mOPow.mjs`
+  Imports: `../_runtime.mjs`, `./forms-definitions-mlVD3F1o.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/format-_4Zq3xTL.mjs`
   Imports: `../_libs/date-fns.mjs`
 
+### `.vercel/output/functions/__server.func/_ssr/forms.functions-Cl8FkkEl.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./createServerRpc-Tu4ILPlO.mjs`, `./forms-definitions-mlVD3F1o.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/forms.functions-KT88ljRW.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./athlete-memory-DNSAdENZ.mjs`
+
 ### `.vercel/output/functions/__server.func/_ssr/FormSection-CxKu2XVA.mjs`
-  Imports: `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/FreezeDialog-DpQGtgop.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/date-fns.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`
+### `.vercel/output/functions/__server.func/_ssr/formularios-Drh0xuMd.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./use-auth-V13mT_VL.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./switch-C_mzcXif.mjs`, `./forms-definitions-mlVD3F1o.mjs`, `./forms.functions-KT88ljRW.mjs`, `./forms-store-D6FuJvx_.mjs`, `./form-submission-pdf-Dv9mOPow.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/hybrid-import.functions-CxWbGN51.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/formularios-DSuPlns8.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./use-auth-V13mT_VL.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./forms.functions-KT88ljRW.mjs`, `./forms-store-D6FuJvx_.mjs`, `./form-submission-pdf-Dv9mOPow.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/input-9fokkwDC.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/input-BDpPtb3u.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/KPICard-C1l5ErUy.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`
+### `.vercel/output/functions/__server.func/_ssr/KPICard-D53--08z.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./card-Cwm6rIH9.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/label-DBD1bRRP.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/@radix-ui/react-label+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/label-BPuF5-mq.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-label+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/master-admin-OGNXkUbl.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./client-BkeAE24_.mjs`, `./ecosystem-auth-service-DEyx_Dsu.mjs`
+### `.vercel/output/functions/__server.func/_ssr/master-admin-BKnEk-Ik.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./client-BkeAE24_.mjs`, `./ecosystem-auth-service-DtP11Xdl.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/MigrateStudentsDialog-ipQx3MA3.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./useServerFn-CrZF2pjq.mjs`, `./dialog-C26xL9O3.mjs`, `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./radio-group-BJ3sdkEm.mjs`
+### `.vercel/output/functions/__server.func/_ssr/MigrateStudentsDialog-B7sG_Ke6.mjs`
+  Imports: `../_runtime.mjs`, `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `../_libs/sonner.mjs`, `./radio-group-DIl2HLuD.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/MonthYearPicker-OMh-9hnr.mjs`
-  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./format-_4Zq3xTL.mjs`
+### `.vercel/output/functions/__server.func/_ssr/MonthYearPicker-CYvJca0K.mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./format-_4Zq3xTL.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/notifications.functions-D4oEvE8p.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`
+### `.vercel/output/functions/__server.func/_ssr/multi-account-D_jnSZqs.mjs`
+  Imports: `./client-BkeAE24_.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/notifications.functions-twe3OOAA.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`
+### `.vercel/output/functions/__server.func/_ssr/notifications.functions-BUSmd6ie.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./athlete-memory-DNSAdENZ.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/PageHeader-BFFBazYd.mjs`
-  Imports: `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/notifications.functions-CWeULscL.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/PaymentActionsDock-DPrUa8M0.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./tooltip-CJZST3UV.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./input-9fokkwDC.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./use-payment-methods-C1lBcOaG.mjs`, `./FormSection-CxKu2XVA.mjs`
+### `.vercel/output/functions/__server.func/_ssr/notifications.native-C_gU6ZFT.mjs`
+  Imports: `../_libs/capacitor__core.mjs`, `../_libs/capacitor__local-notifications.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/payments-Fa0kAsh2.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./PageHeader-BFFBazYd.mjs`, `./table-DEnZ0u5J.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./format-_4Zq3xTL.mjs`, `./tooltip-CJZST3UV.mjs`, `./Badges-COyI62Ul.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `./MonthYearPicker-OMh-9hnr.mjs`, `../_libs/sonner.mjs`, `./alert-dialog-BymSQoye.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./select-CLfamRsg.mjs`, `./checkbox-kt6FvQcE.mjs`, `./receipt-pdf-B2k8Age7.mjs`, `./use-payment-methods-C1lBcOaG.mjs`, `./PaymentActionsDock-DPrUa8M0.mjs`, `./PTPaymentDialog-p0_PGEwK.mjs`
+### `.vercel/output/functions/__server.func/_ssr/PageHeader-EOhs2t87.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/perfil-DIBY5GH6.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./badge-DB22ix_c.mjs`, `./dialog-C26xL9O3.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./SessionTimer-BAIBXzxF.mjs`, `./WorkoutSummaryDialog-CkfC112V.mjs`
+### `.vercel/output/functions/__server.func/_ssr/PaymentActionsDock-WeP8kx-Y.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./tooltip-BHZfPEQ6.mjs`, `./input-BDpPtb3u.mjs`, `./use-payment-methods-C1lBcOaG.mjs`, `./FormSection-CxKu2XVA.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/personal-trainer-DxRnEEei.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `./table-DEnZ0u5J.mjs`, `./EmptyState-DK3vCNbs.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `./KPICard-C1l5ErUy.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./select-CLfamRsg.mjs`, `./tabs-DT1SSYuq.mjs`, `./PTBadges-CcuDhA9u.mjs`, `./pt-duo-BmRm_tCB.mjs`, `./PTPaymentDialog-p0_PGEwK.mjs`, `./TrainingTimerDialog-B0Wg34Es.mjs`, `./MigrateStudentsDialog-ipQx3MA3.mjs`, `./PTSessionDialog-BOh-mKqz.mjs`
+### `.vercel/output/functions/__server.func/_ssr/payments-43jo6ViE.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `./PageHeader-EOhs2t87.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./tooltip-BHZfPEQ6.mjs`, `./Badges-Cz64Cjtf.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./MonthYearPicker-CYvJca0K.mjs`, `./alert-dialog-CvzeSe0O.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./search-utils-CzrYaHvg.mjs`, `./checkbox-BhwBotB1.mjs`, `./receipt-pdf-m9O3aPna.mjs`, `./use-payment-methods-C1lBcOaG.mjs`, `./PaymentActionsDock-WeP8kx-Y.mjs`, `./PTPaymentDialog-Fn8HpnyX.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/plans-BBXrA7cz.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`
+### `.vercel/output/functions/__server.func/_ssr/payments.functions-CB18c1RT.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./createServerRpc-Tu4ILPlO.mjs`, `./client.server-ZqQe6Tue.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/plans-CTbmVswZ.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `../_libs/sonner.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./switch-Cn1w-cIH.mjs`, `./PTBadges-CcuDhA9u.mjs`, `./DialogHeadline-BQ9h1Ac-.mjs`
+### `.vercel/output/functions/__server.func/_ssr/perfil-C_19rkGh.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./format-_4Zq3xTL.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./WorkoutSummaryDialog-BgXMHymG.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/popover-Cmlz_mk1.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/@radix-ui/react-popover+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/personal-trainer-13j_C7qt.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `./PageHeader-EOhs2t87.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./KPICard-D53--08z.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./tabs-SqpqlIBn.mjs`, `./PTBadges-H0bCMVXX.mjs`, `./pt-duo-BmRm_tCB.mjs`, `./pt-messages-y3ICrHCP.mjs`, `./PTPaymentDialog-Fn8HpnyX.mjs`, `./TrainingTimerDialog-Bf25JslI.mjs`, `./MigrateStudentsDialog-B7sG_Ke6.mjs`, `./PTSessionDialog-B-gIptAJ.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/portal-DYtofOA-.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./useServerFn-CrZF2pjq.mjs`, `./dialog-C26xL9O3.mjs`, `./format-_4Zq3xTL.mjs`, `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./alert-dialog-BymSQoye.mjs`, `./classes.functions-BbfvRgnE.mjs`, `./AgendaView-CDOvSN3C.mjs`, `./use-wake-lock-PVcvsvFx.mjs`
+### `.vercel/output/functions/__server.func/_ssr/planos-p5YqsTnV.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./card-Cwm6rIH9.mjs`, `./format-_4Zq3xTL.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/programs-pZXQuS9-.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./switch-Cn1w-cIH.mjs`
+### `.vercel/output/functions/__server.func/_ssr/plans-B741tGtI.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./PageHeader-EOhs2t87.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/progress-DOIEKRJF.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/radix-ui__react-progress.mjs`
+### `.vercel/output/functions/__server.func/_ssr/plans-RlhN9KDU.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./PageHeader-EOhs2t87.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./switch-C_mzcXif.mjs`, `./PTBadges-H0bCMVXX.mjs`, `./DialogHeadline-CesMIGRy.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/pt-ai.functions-OQqjrOWJ.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/popover-C4q8I-xJ.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-popover+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/pt-Coxlgi78.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./format-_4Zq3xTL.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`, `./WorkoutProgressionDialog-DaEoPgE8.mjs`
+### `.vercel/output/functions/__server.func/_ssr/portal-B8R5H2ir.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./format-_4Zq3xTL.mjs`, `./use-auth-V13mT_VL.mjs`, `./alert-dialog-CvzeSe0O.mjs`, `./classes.functions-DM0GEZQg.mjs`, `./AgendaView-CPwAUQv1.mjs`, `./student-access.functions-CW8KMZ0e.mjs`, `./use-wake-lock-BSanvaPC.mjs`, `./bonus.functions-CrOKAWrO.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/PrescreverIaDialog-CV6sXT_V.mjs`
+  Imports: `../_runtime.mjs`, `./chunk-z9aeyW2b.mjs`, `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./ai-key.functions-Dk0Y7tep.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./collapsible-Ct2uArBC.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `./methodology-DF-HMT6m.mjs`, `../_libs/sonner.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/prescricao-ia.functions-98SM1H3g.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/programs-DnPRx9UB.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./PageHeader-EOhs2t87.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./switch-C_mzcXif.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/progress-DhBKNgLJ.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `./search-utils-CzrYaHvg.mjs`, `../_libs/radix-ui__react-progress.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/pt-ai.functions-B-yFhfyW.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./ai-gateway.server-BpePepf2.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/pt-C2BXcrYW.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./client-BkeAE24_.mjs`, `./card-Cwm6rIH9.mjs`, `./format-_4Zq3xTL.mjs`, `./use-auth-V13mT_VL.mjs`, `./WorkoutProgressionDialog-5OalQQ1E.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/pt-duo-BmRm_tCB.mjs`
   Imports: `./client-BkeAE24_.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/pt-program-migrate.functions-BIRlGlqO.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/pt-program-migrate.functions-BGMbSAQ9.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/pt-student-access.functions-CUrJhre1.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`, `./chunk-BdkLduGY.mjs`, `crypto`
+### `.vercel/output/functions/__server.func/_ssr/pt-program-pdf-BqY-p-JW.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/dnd-kit__sortable.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./thumbnail-utils-Ciwh_Yng.mjs`, `./progress-DhBKNgLJ.mjs`, `./dropdown-menu-Qgr7cu0o.mjs`, `./training-weeks-DXp0iUug.mjs`, `../_libs/dnd-kit__modifiers.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/PTBadges-CcuDhA9u.mjs`
-  Imports: `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./tooltip-CJZST3UV.mjs`
+### `.vercel/output/functions/__server.func/_ssr/pt-student-access.functions-Ch7JhUPn.mjs`
+  Imports: `./chunk-z9aeyW2b.mjs`, `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`, `crypto`
 
-### `.vercel/output/functions/__server.func/_ssr/PTPaymentDialog-p0_PGEwK.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./DialogHeadline-BQ9h1Ac-.mjs`
+### `.vercel/output/functions/__server.func/_ssr/PTBadges-H0bCMVXX.mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `./tooltip-BHZfPEQ6.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/PTSessionDialog-BOh-mKqz.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./useServerFn-CrZF2pjq.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/date-fns.mjs`, `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./pt-duo-BmRm_tCB.mjs`, `./DialogHeadline-BQ9h1Ac-.mjs`, `./MigrateStudentsDialog-ipQx3MA3.mjs`
+### `.vercel/output/functions/__server.func/_ssr/PTPaymentDialog-Fn8HpnyX.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./DialogHeadline-CesMIGRy.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/radio-group-BJ3sdkEm.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `../_libs/radix-ui__react-radio-group.mjs`
+### `.vercel/output/functions/__server.func/_ssr/PTSessionDialog-B-gIptAJ.mjs`
+  Imports: `../_runtime.mjs`, `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `../_libs/date-fns.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./pt-duo-BmRm_tCB.mjs`, `./DialogHeadline-CesMIGRy.mjs`, `./MigrateStudentsDialog-B7sG_Ke6.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/receipt-pdf-B2k8Age7.mjs`
-  Imports: `../_runtime.mjs`, `./client-BkeAE24_.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/sonner.mjs`
+### `.vercel/output/functions/__server.func/_ssr/radio-group-DIl2HLuD.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `../_libs/radix-ui__react-radio-group.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/reset-password-DUszLAHK.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./useServerFn-CrZF2pjq.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./student-access.functions-iTuu_hpP.mjs`
+### `.vercel/output/functions/__server.func/_ssr/receipt-pdf-m9O3aPna.mjs`
+  Imports: `../_runtime.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/route-NBltC6uN.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./useServerFn-CrZF2pjq.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/date-fns.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `./use-modules-Do1LHcRe.mjs`, `./use-portal-mode-DxDOhk8V.mjs`, `../_libs/sonner.mjs`, `./select-CLfamRsg.mjs`, `./announcements.functions-BiMn4-fF.mjs`, `./popover-Cmlz_mk1.mjs`, `./TrainingTimerDialog-B0Wg34Es.mjs`, `./use-theme-FNNvhyxv.mjs`, `./use-impersonate-D1wFi3Sj.mjs`, `./dropdown-menu-BosDdXX7.mjs`, `./tenants.functions-C1GGgpCt.mjs`, `./command-CfJ4Rdty.mjs`, `../_libs/@tanstack/query-sync-storage-persister+[...].mjs`, `../_libs/@tanstack/query-persist-client-core+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/request-response-B7GxCXoC.mjs`
+  Imports: `../_libs/h3-v2+srvx.mjs`, `node:async_hooks`
 
-### `.vercel/output/functions/__server.func/_ssr/router-CieYazNL.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/@radix-ui/react-avatar+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `../_libs/supabase__supabase-js.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_._lovable.oauth.consent-Bflqn6OV.mjs`, `./badge-DB22ix_c.mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `./tooltip-CJZST3UV.mjs`, `../_libs/tanstack__query-core.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./classes.functions-BbfvRgnE.mjs`, `./auth-E1kCEgfl.mjs`, `./tabs-DT1SSYuq.mjs`, `./progress-DOIEKRJF.mjs`, `./biblioteca-CVIlRd3D.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./financeiro-CDKEYjnM.mjs`, `./use-theme-FNNvhyxv.mjs`, `./use-impersonate-D1wFi3Sj.mjs`, `./dropdown-menu-BosDdXX7.mjs`, `./settings-CgaPZPvL.mjs`, `./students._id-DtXlVseI.mjs`, `./students._id-DwhSb8RN.mjs`
+### `.vercel/output/functions/__server.func/_ssr/reset-password-0uwdesHF.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./athlete-memory-DNSAdENZ.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./client-BkeAE24_.mjs`, `./card-Cwm6rIH9.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./student-access.functions-CW8KMZ0e.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/SectionCard-Dhxnzc2Q.mjs`
-  Imports: `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/route-CdPdhWK5.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `../_libs/date-fns.mjs`, `./multi-account-D_jnSZqs.mjs`, `./use-auth-V13mT_VL.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./use-modules-B8XaHeaT.mjs`, `./use-portal-mode-B64OWjXt.mjs`, `./popover-C4q8I-xJ.mjs`, `./announcements.functions-CYaP4yOT.mjs`, `./use-theme-FNNvhyxv.mjs`, `./TrainingTimerDialog-Bf25JslI.mjs`, `./use-impersonate-Ckt3Td8V.mjs`, `./dropdown-menu-Qgr7cu0o.mjs`, `./command-BOMR8Bqw.mjs`, `./avatar-D0f6amyY.mjs`, `./tenants.functions-BKIF_e_S.mjs`, `./notifications.native-C_gU6ZFT.mjs`, `../_libs/@tanstack/query-sync-storage-persister+[...].mjs`, `../_libs/@tanstack/query-persist-client-core+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/select-CLfamRsg.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `../_libs/@radix-ui/react-select+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/router-BulsLEQI.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./esm-jn-8bugd.mjs`, `../_libs/supabase__supabase-js.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__query-core.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./athlete-memory-DNSAdENZ.mjs`, `../_libs/class-variance-authority+clsx.mjs`, `./utils-C_uf36nf.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `./methodology-DF-HMT6m.mjs`, `../_libs/sonner.mjs`, `./PrescreverIaDialog-CV6sXT_V.mjs`, `./card-Cwm6rIH9.mjs`, `../_._lovable.oauth.consent-D_wgWV0t.mjs`, `./table-DGJDL6bT.mjs`, `./PageHeader-EOhs2t87.mjs`, `./format-_4Zq3xTL.mjs`, `./skeleton-D9W9wFsj.mjs`, `./tooltip-BHZfPEQ6.mjs`, `./impersonate-helper-ByQjI8g4.mjs`, `../_libs/dnd-kit__sortable.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./search-utils-CzrYaHvg.mjs`, `./classes.functions-DM0GEZQg.mjs`, `./auth-D3SYSsnm.mjs`, `./tabs-SqpqlIBn.mjs`, `./progress-DhBKNgLJ.mjs`, `./client.server-ZqQe6Tue.mjs`, `./popover-C4q8I-xJ.mjs`, `./use-theme-FNNvhyxv.mjs`, `./f._slug-B1OU4DN9.mjs`, `./financeiro-DOqqjzZy.mjs`, `./use-impersonate-Ckt3Td8V.mjs`, `./dropdown-menu-Qgr7cu0o.mjs`, `./command-BOMR8Bqw.mjs`, `./avatar-D0f6amyY.mjs`, `../_libs/capacitor__core.mjs`, `./whatsapp.server-DJqHAwEr.mjs`, `./settings-DqawRHMG.mjs`, `./treino-BcrRcLps.mjs`, `./training-weeks-DXp0iUug.mjs`, `../_libs/dnd-kit__modifiers.mjs`, `./pt-program-pdf-BqY-p-JW.mjs`, `./students._id-BKuBEVv5.mjs`, `./students._id-DMreSOUp.mjs`, `../_libs/radix-ui__react-toggle.mjs`, `../_libs/radix-ui__react-toggle-group.mjs`, `../_libs/radix-ui__react-scroll-area.mjs`, `../_libs/radix-ui__react-slider.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/server-A8WWuR3b.mjs`
-  Imports: `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/tanstack__history.mjs`, `../_libs/@tanstack/router-core+[...].mjs`, `./esm-B8uG0sol.mjs`, `../__23tanstack-start-server-fn-resolver-DekkOHKp.mjs`
+### `.vercel/output/functions/__server.func/_ssr/SectionCard-DeZ0qz1r.mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `./use-modules-B8XaHeaT.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/SessionTimer-BAIBXzxF.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `../_libs/sonner.mjs`
+### `.vercel/output/functions/__server.func/_ssr/select-AE728x14.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `../_libs/@radix-ui/react-select+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/settings-CgaPZPvL.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@tanstack/react-router+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/server-D_pXY76B.mjs`
+  Imports: `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/tanstack__history.mjs`, `../_libs/@tanstack/router-core+[...].mjs`, `./esm-jn-8bugd.mjs`, `../__23tanstack-start-server-fn-resolver-N7OWG1hY.mjs`, `./request-response-B7GxCXoC.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/settings-kH8wUR-K.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./useServerFn-CrZF2pjq.mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./format-_4Zq3xTL.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `./use-landing-page-Z3G1F5Iv.mjs`, `./SectionCard-Dhxnzc2Q.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./select-CLfamRsg.mjs`, `./switch-Cn1w-cIH.mjs`, `./tabs-DT1SSYuq.mjs`, `./checkbox-kt6FvQcE.mjs`, `./email.functions-DREPQe4C.mjs`, `./use-payment-methods-C1lBcOaG.mjs`, `./use-theme-FNNvhyxv.mjs`, `./settings-CgaPZPvL.mjs`
+### `.vercel/output/functions/__server.func/_ssr/settings-C_EziO8m.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./ai-key.functions-Dk0Y7tep.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./PageHeader-EOhs2t87.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./use-auth-V13mT_VL.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./SectionCard-DeZ0qz1r.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./search-utils-CzrYaHvg.mjs`, `./switch-C_mzcXif.mjs`, `./tabs-SqpqlIBn.mjs`, `./email.functions-BKrool7B.mjs`, `./checkbox-BhwBotB1.mjs`, `./use-theme-FNNvhyxv.mjs`, `./use-payment-methods-C1lBcOaG.mjs`, `./notifications.native-C_gU6ZFT.mjs`, `./settings-DqawRHMG.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/settings-DqawRHMG.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/skeleton-D9W9wFsj.mjs`
-  Imports: `./utils-C_uf36nf.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/SortableChartCard-C38x-lr8.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `../_libs/dnd-kit__sortable.mjs`
+### `.vercel/output/functions/__server.func/_ssr/SortableChartCard-B_Z6gmBC.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `./card-Cwm6rIH9.mjs`, `../_libs/dnd-kit__sortable.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/start-C2Mc8EoS.mjs`
-  Imports: `./client-BkeAE24_.mjs`, `./createStart-Dt05N14y.mjs`, `./ssr.mjs`
+  Imports: `./createStart-Dt05N14y.mjs`, `./client-BkeAE24_.mjs`, `./ssr.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/storage-browser.functions-CXtRBZZB.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`
+### `.vercel/output/functions/__server.func/_ssr/storage-browser.functions-DH66Giao.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/storage-DHwvv6yO.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./useServerFn-CrZF2pjq.mjs`, `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./tabs-DT1SSYuq.mjs`
+### `.vercel/output/functions/__server.func/_ssr/storage-D54iFbWm.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./tabs-SqpqlIBn.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/student-access.functions-iTuu_hpP.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`
+### `.vercel/output/functions/__server.func/_ssr/student-access.functions-CW8KMZ0e.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./athlete-memory-DNSAdENZ.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/student-access.functions-vbACj-lt.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`, `./chunk-BdkLduGY.mjs`, `crypto`
+### `.vercel/output/functions/__server.func/_ssr/student-access.functions-CYsbKeqP.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`, `node:crypto`
 
-### `.vercel/output/functions/__server.func/_ssr/student-migration.functions-Cbg3j8g_.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`
+### `.vercel/output/functions/__server.func/_ssr/student-migration.functions-BqOKr1qH.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/StudentDialog-D-Q-G0Mb.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./useServerFn-CrZF2pjq.mjs`, `./dialog-C26xL9O3.mjs`, `./format-_4Zq3xTL.mjs`, `./Badges-COyI62Ul.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./FormSection-CxKu2XVA.mjs`, `./MigrateStudentsDialog-ipQx3MA3.mjs`, `./student-access.functions-iTuu_hpP.mjs`, `../_libs/radix-ui__react-collapsible.mjs`
+### `.vercel/output/functions/__server.func/_ssr/StudentDialog-BSf-W7Ic.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./collapsible-Ct2uArBC.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./format-_4Zq3xTL.mjs`, `./Badges-Cz64Cjtf.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./student-access.functions-CW8KMZ0e.mjs`, `./FormSection-CxKu2XVA.mjs`, `./MigrateStudentsDialog-B7sG_Ke6.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/students.index-A_hPLV-C.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./PageHeader-BFFBazYd.mjs`, `./dialog-C26xL9O3.mjs`, `./table-DEnZ0u5J.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./format-_4Zq3xTL.mjs`, `./Badges-COyI62Ul.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`, `./skeleton-D9W9wFsj.mjs`, `./checkins-CyfT8Rv0.mjs`, `../_libs/sonner.mjs`, `./alert-dialog-BymSQoye.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./TrainingTimerDialog-B0Wg34Es.mjs`, `./MigrateStudentsDialog-ipQx3MA3.mjs`, `./StudentDialog-D-Q-G0Mb.mjs`
+### `.vercel/output/functions/__server.func/_ssr/StudentObservationsCard-BPcRnIGn.mjs`
+  Imports: `../_runtime.mjs`, `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./PrescreverIaDialog-CV6sXT_V.mjs`, `./card-Cwm6rIH9.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `../_libs/recharts+[...].mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./search-utils-CzrYaHvg.mjs`, `./radio-group-DIl2HLuD.mjs`, `./popover-C4q8I-xJ.mjs`, `./WorkoutSummaryDialog-BgXMHymG.mjs`, `./dropdown-menu-Qgr7cu0o.mjs`, `./training-weeks-DXp0iUug.mjs`, `./pt-program-pdf-BqY-p-JW.mjs`, `./FocusedDayView-CjLDuQcD.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/students.index-CmNh60Bt.mjs`
-  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./button-C0L5fFXX.mjs`
+### `.vercel/output/functions/__server.func/_ssr/students.index-Cdr-OkXc.mjs`
+  Imports: `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./button-CR6R18Wd.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/students._id-DCfPpHii.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./useServerFn-CrZF2pjq.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/@dnd-kit/core+[...].mjs`, `./dialog-C26xL9O3.mjs`, `./table-DEnZ0u5J.mjs`, `./EmptyState-DK3vCNbs.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`, `./Badges-COyI62Ul.mjs`, `../_libs/tanstack__react-query.mjs`, `./chart-theme-DG2ASWF8.mjs`, `./KPICard-C1l5ErUy.mjs`, `../_libs/dnd-kit__sortable.mjs`, `../_libs/sonner.mjs`, `../_libs/recharts+[...].mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./tabs-DT1SSYuq.mjs`, `./checkbox-kt6FvQcE.mjs`, `./progress-DOIEKRJF.mjs`, `../_libs/@lovable.dev/mcp-js+[...].mjs`, `./PTBadges-CcuDhA9u.mjs`, `./pt-duo-BmRm_tCB.mjs`, `./popover-Cmlz_mk1.mjs`, `./receipt-pdf-B2k8Age7.mjs`, `./PTPaymentDialog-p0_PGEwK.mjs`, `./SessionTimer-BAIBXzxF.mjs`, `../_libs/html-to-image.mjs`, `./PTSessionDialog-BOh-mKqz.mjs`, `./dropdown-menu-BosDdXX7.mjs`, `./students._id-DwhSb8RN.mjs`, `./FreezeDialog-DpQGtgop.mjs`, `./ClinicalAlertBadge-DV9w_vYG.mjs`, `../_libs/dnd-kit__modifiers.mjs`
+### `.vercel/output/functions/__server.func/_ssr/students.index-D_E7k-fe.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `./PageHeader-EOhs2t87.mjs`, `./format-_4Zq3xTL.mjs`, `./skeleton-D9W9wFsj.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./Badges-Cz64Cjtf.mjs`, `./use-scope-filter-C-QaRXoY.mjs`, `./checkins-CyfT8Rv0.mjs`, `./alert-dialog-CvzeSe0O.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./search-utils-CzrYaHvg.mjs`, `./TrainingTimerDialog-Bf25JslI.mjs`, `./MigrateStudentsDialog-B7sG_Ke6.mjs`, `./StudentDialog-BSf-W7Ic.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/students._id-DtXlVseI.mjs`
+### `.vercel/output/functions/__server.func/_ssr/students._id-AMAdFGBm.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./utils-C_uf36nf.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./tooltip-BHZfPEQ6.mjs`, `./Badges-Cz64Cjtf.mjs`, `./use-auth-V13mT_VL.mjs`, `./chart-theme-DG2ASWF8.mjs`, `./KPICard-D53--08z.mjs`, `./checkins-CyfT8Rv0.mjs`, `../_libs/recharts+[...].mjs`, `./alert-dialog-CvzeSe0O.mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./tabs-SqpqlIBn.mjs`, `./progress-DhBKNgLJ.mjs`, `./popover-C4q8I-xJ.mjs`, `./forms-definitions-mlVD3F1o.mjs`, `./forms.functions-KT88ljRW.mjs`, `./form-submission-pdf-Dv9mOPow.mjs`, `./receipt-pdf-m9O3aPna.mjs`, `./PaymentActionsDock-WeP8kx-Y.mjs`, `./bonus.functions-CrOKAWrO.mjs`, `./dropdown-menu-Qgr7cu0o.mjs`, `./command-BOMR8Bqw.mjs`, `./students._id-BKuBEVv5.mjs`, `./StudentObservationsCard-BPcRnIGn.mjs`, `./StudentDialog-BSf-W7Ic.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/students._id-BKuBEVv5.mjs`
   Imports: `../_libs/@tanstack/react-router+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/students._id-DwhSb8RN.mjs`
+### `.vercel/output/functions/__server.func/_ssr/students._id-CrmvLijt.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./textarea-CxWcjywR.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `../_libs/date-fns.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./Badges-Cz64Cjtf.mjs`, `./chart-theme-DG2ASWF8.mjs`, `./KPICard-D53--08z.mjs`, `../_libs/recharts+[...].mjs`, `./confirm-dialog-CcyA3C4B.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./tabs-SqpqlIBn.mjs`, `./progress-DhBKNgLJ.mjs`, `./PTBadges-H0bCMVXX.mjs`, `./pt-duo-BmRm_tCB.mjs`, `./checkbox-BhwBotB1.mjs`, `./receipt-pdf-m9O3aPna.mjs`, `./PTPaymentDialog-Fn8HpnyX.mjs`, `../_libs/html-to-image.mjs`, `./WorkoutSummaryDialog-BgXMHymG.mjs`, `./PTSessionDialog-B-gIptAJ.mjs`, `./students._id-DMreSOUp.mjs`, `./StudentObservationsCard-BPcRnIGn.mjs`, `./ClinicalAlertBadge-DV9w_vYG.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/students._id-DMreSOUp.mjs`
   Imports: `../_libs/@tanstack/react-router+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/students._id-DXQtzLb6.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./badge-DB22ix_c.mjs`, `./dialog-C26xL9O3.mjs`, `./table-DEnZ0u5J.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./format-_4Zq3xTL.mjs`, `./tooltip-CJZST3UV.mjs`, `./Badges-COyI62Ul.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`, `./chart-theme-DG2ASWF8.mjs`, `./KPICard-C1l5ErUy.mjs`, `./checkins-CyfT8Rv0.mjs`, `../_libs/sonner.mjs`, `../_libs/recharts+[...].mjs`, `./alert-dialog-BymSQoye.mjs`, `./confirm-dialog-loCJ8q2f.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./select-CLfamRsg.mjs`, `./tabs-DT1SSYuq.mjs`, `./progress-DOIEKRJF.mjs`, `./popover-Cmlz_mk1.mjs`, `./receipt-pdf-B2k8Age7.mjs`, `./PaymentActionsDock-DPrUa8M0.mjs`, `./dropdown-menu-BosDdXX7.mjs`, `./command-CfJ4Rdty.mjs`, `./students._id-DtXlVseI.mjs`, `./FreezeDialog-DpQGtgop.mjs`, `./StudentDialog-D-Q-G0Mb.mjs`
+### `.vercel/output/functions/__server.func/_ssr/switch-C_mzcXif.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/radix-ui__react-switch.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/switch-Cn1w-cIH.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/radix-ui__react-switch.mjs`
+### `.vercel/output/functions/__server.func/_ssr/table-DGJDL6bT.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/table-DEnZ0u5J.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/tabs-SqpqlIBn.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/radix-ui__react-tabs.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/tabs-DT1SSYuq.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/radix-ui__react-tabs.mjs`
+### `.vercel/output/functions/__server.func/_ssr/tenants-CZXjqTSx.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./athlete-memory-DNSAdENZ.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `./card-Cwm6rIH9.mjs`, `./table-DGJDL6bT.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./input-BDpPtb3u.mjs`, `./label-BPuF5-mq.mjs`, `./switch-C_mzcXif.mjs`, `./checkbox-BhwBotB1.mjs`, `./use-impersonate-Ckt3Td8V.mjs`, `./tenants.functions-BKIF_e_S.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/tenants-CBlMYbgR.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `../_libs/@tanstack/react-router+[...].mjs`, `./useServerFn-CrZF2pjq.mjs`, `./badge-DB22ix_c.mjs`, `./dialog-C26xL9O3.mjs`, `./table-DEnZ0u5J.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./switch-Cn1w-cIH.mjs`, `./checkbox-kt6FvQcE.mjs`, `./use-impersonate-D1wFi3Sj.mjs`, `./tenants.functions-C1GGgpCt.mjs`
+### `.vercel/output/functions/__server.func/_ssr/tenants.functions-BKIF_e_S.mjs`
+  Imports: `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./athlete-memory-DNSAdENZ.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/tenants.functions-C1GGgpCt.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createSsrRpc-DdYDqtX4.mjs`
+### `.vercel/output/functions/__server.func/_ssr/tenants.functions-CfS6kW0v.mjs`
+  Imports: `./chunk-z9aeyW2b.mjs`, `./esm-jn-8bugd.mjs`, `./auth-middleware-BoGsbigB.mjs`, `./createServerRpc-Tu4ILPlO.mjs`, `crypto`, `crypto`
 
-### `.vercel/output/functions/__server.func/_ssr/tenants.functions-CN9cUuE1.mjs`
-  Imports: `./esm-B8uG0sol.mjs`, `./auth-middleware-DWAxgVNA.mjs`, `./createServerRpc-BrXEvpC9.mjs`, `./chunk-BdkLduGY.mjs`, `crypto`, `crypto`
+### `.vercel/output/functions/__server.func/_ssr/textarea-CxWcjywR.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/textarea-iwNaZIEJ.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
+### `.vercel/output/functions/__server.func/_ssr/thumbnail-utils-Ciwh_Yng.mjs`
+  Imports: `./client-BkeAE24_.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/tooltip-CJZST3UV.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/radix-ui__react-tooltip.mjs`
+### `.vercel/output/functions/__server.func/_ssr/tooltip-BHZfPEQ6.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/radix-ui__react-tooltip.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/TrainingTimerDialog-B0Wg34Es.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./dialog-C26xL9O3.mjs`, `./input-9fokkwDC.mjs`
+### `.vercel/output/functions/__server.func/_ssr/TrainingTimerDialog-Bf25JslI.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./input-BDpPtb3u.mjs`, `./use-wake-lock-BSanvaPC.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/treino-qm4POig-.mjs`
-  Imports: `../_runtime.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./dialog-C26xL9O3.mjs`, `./format-_4Zq3xTL.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/sonner.mjs`, `./input-9fokkwDC.mjs`, `./label-DBD1bRRP.mjs`, `./textarea-iwNaZIEJ.mjs`, `./SessionTimer-BAIBXzxF.mjs`, `./WorkoutSummaryDialog-CkfC112V.mjs`, `./use-wake-lock-PVcvsvFx.mjs`, `./WorkoutProgressionDialog-DaEoPgE8.mjs`, `./ClinicalAlertBadge-DV9w_vYG.mjs`
+### `.vercel/output/functions/__server.func/_ssr/treino-BcrRcLps.mjs`
+  Imports: `../_libs/@tanstack/react-router+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/use-auth-vDsPuGV5.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `./client-BkeAE24_.mjs`
+### `.vercel/output/functions/__server.func/_ssr/treino-BGPxR2-d.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./client-BkeAE24_.mjs`, `./card-Cwm6rIH9.mjs`, `./format-_4Zq3xTL.mjs`, `./use-auth-V13mT_VL.mjs`, `./student-access.functions-CW8KMZ0e.mjs`, `./WorkoutSummaryDialog-BgXMHymG.mjs`, `./use-wake-lock-BSanvaPC.mjs`, `./WorkoutProgressionDialog-5OalQQ1E.mjs`, `./training-weeks-DXp0iUug.mjs`, `./FocusedDayView-CjLDuQcD.mjs`, `./ClinicalAlertBadge-DV9w_vYG.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/use-impersonate-D1wFi3Sj.mjs`
+### `.vercel/output/functions/__server.func/_ssr/treino-BHWqnJBD.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./utils-C_uf36nf.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./client-BkeAE24_.mjs`, `./card-Cwm6rIH9.mjs`, `./format-_4Zq3xTL.mjs`, `./WorkoutSummaryDialog-BgXMHymG.mjs`, `./treino-BcrRcLps.mjs`, `./training-weeks-DXp0iUug.mjs`, `./FocusedDayView-CjLDuQcD.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/use-auth-V13mT_VL.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `./client-BkeAE24_.mjs`, `./impersonate-helper-ByQjI8g4.mjs`, `./multi-account-D_jnSZqs.mjs`
+
+### `.vercel/output/functions/__server.func/_ssr/use-impersonate-Ckt3Td8V.mjs`
   Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/use-landing-page-Z3G1F5Iv.mjs`
-  Imports: `./use-modules-Do1LHcRe.mjs`
-
-### `.vercel/output/functions/__server.func/_ssr/use-modules-Do1LHcRe.mjs`
-  Imports: `./client-BkeAE24_.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`, `./use-scope-filter-DfSLR4FQ.mjs`
+### `.vercel/output/functions/__server.func/_ssr/use-modules-B8XaHeaT.mjs`
+  Imports: `../_libs/tanstack__react-query.mjs`, `./client-BkeAE24_.mjs`, `./use-auth-V13mT_VL.mjs`, `./use-scope-filter-C-QaRXoY.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/use-payment-methods-C1lBcOaG.mjs`
-  Imports: `./client-BkeAE24_.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`
+  Imports: `../_libs/tanstack__react-query.mjs`, `./client-BkeAE24_.mjs`, `./format-_4Zq3xTL.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/use-portal-mode-DxDOhk8V.mjs`
-  Imports: `./client-BkeAE24_.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`
+### `.vercel/output/functions/__server.func/_ssr/use-portal-mode-B64OWjXt.mjs`
+  Imports: `../_libs/tanstack__react-query.mjs`, `./client-BkeAE24_.mjs`, `./use-auth-V13mT_VL.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/use-scope-filter-DfSLR4FQ.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `./client-BkeAE24_.mjs`, `./use-auth-vDsPuGV5.mjs`, `../_libs/tanstack__react-query.mjs`
+### `.vercel/output/functions/__server.func/_ssr/use-scope-filter-C-QaRXoY.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/tanstack__react-query.mjs`, `./client-BkeAE24_.mjs`, `./use-auth-V13mT_VL.mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/use-theme-FNNvhyxv.mjs`
   Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/use-wake-lock-PVcvsvFx.mjs`
+### `.vercel/output/functions/__server.func/_ssr/use-wake-lock-BSanvaPC.mjs`
   Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`
-
-### `.vercel/output/functions/__server.func/_ssr/useServerFn-CrZF2pjq.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@tanstack/react-router+[...].mjs`
 
 ### `.vercel/output/functions/__server.func/_ssr/utils-C_uf36nf.mjs`
   Imports: `../_libs/class-variance-authority+clsx.mjs`, `../_libs/tailwind-merge.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/WorkoutProgressionDialog-DaEoPgE8.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./card-BQ4bpKnp.mjs`, `../_libs/lucide-react.mjs`, `./client-BkeAE24_.mjs`, `./badge-DB22ix_c.mjs`, `./dialog-C26xL9O3.mjs`, `./EmptyState-DK3vCNbs.mjs`, `./format-_4Zq3xTL.mjs`, `../_libs/tanstack__react-query.mjs`, `../_libs/recharts+[...].mjs`, `./select-CLfamRsg.mjs`
+### `.vercel/output/functions/__server.func/_ssr/whatsapp.server-DJqHAwEr.mjs`
+  Imports: `./chunk-z9aeyW2b.mjs`
 
-### `.vercel/output/functions/__server.func/_ssr/WorkoutSummaryDialog-CkfC112V.mjs`
-  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/lucide-react.mjs`, `./button-C0L5fFXX.mjs`, `./client-BkeAE24_.mjs`, `./dialog-C26xL9O3.mjs`, `../_libs/sonner.mjs`, `../_libs/html-to-image.mjs`
+### `.vercel/output/functions/__server.func/_ssr/WorkoutProgressionDialog-5OalQQ1E.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `../_libs/tanstack__react-query.mjs`, `./badge-DB22ix_c.mjs`, `../_libs/lucide-react.mjs`, `./dialog-kZIGUypc.mjs`, `./select-AE728x14.mjs`, `./client-BkeAE24_.mjs`, `./card-Cwm6rIH9.mjs`, `./format-_4Zq3xTL.mjs`, `./EmptyState-DK3vCNbs.mjs`, `../_libs/recharts+[...].mjs`
 
-### `.vercel/output/static/assets/index-ByZZZPBi.js`
+### `.vercel/output/functions/__server.func/_ssr/WorkoutSummaryDialog-BgXMHymG.mjs`
+  Imports: `../_runtime.mjs`, `../_libs/dnd-kit__accessibility+react.mjs`, `../_libs/@radix-ui/react-alert-dialog+[...].mjs`, `./utils-C_uf36nf.mjs`, `../_libs/lucide-react.mjs`, `./button-CR6R18Wd.mjs`, `./dialog-kZIGUypc.mjs`, `./client-BkeAE24_.mjs`, `../_libs/sonner.mjs`, `../_libs/html-to-image.mjs`
+
+### `.vercel/output/static/assets/index-Nm63Tjt7.js`
   Imports: `ws`, `ws`
+
+### `android/app/src/main/assets/public/assets/dist-hNsHRjxP.js`
+  Imports: `ws`, `ws`
+
+### `capacitor.config.ts`
+  Imports: `@capacitor/cli`
 
 ### `e2e/auth.spec.ts`
   Imports: `./fixtures/auth.fixture`
@@ -1203,17 +1296,38 @@
 ### `playwright.config.ts`
   Imports: `@playwright/test`
 
+### `scripts/download-all-mfit.js`
+  Imports: `fs`
+
+### `scripts/process-mfit.js`
+  Imports: `fs`, `path`
+
+### `scripts/scan-and-link-exercises.js`
+  Imports: `fs`, `@supabase/supabase-js`
+
+### `scripts/sync-cmv-videos.cjs`
+  Imports: `fs`, `path`, `@supabase/supabase-js`
+
+### `scripts/test_suite_all_models.cjs`
+  Imports: `fs`, `path`, `jspdf`, `jspdf-autotable`, `jspdf-autotable`
+
+### `src/components/auth/AccountSwitcherDialog.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/avatar`, `lucide-react`, `@/lib/multi-account`, `@/hooks/use-auth`, `sonner`
+
 ### `src/components/crm/AiImageGenerator.tsx`
   Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `sonner`, `lucide-react`, `@/components/ui/button`, `@/components/ui/textarea`, `@/components/ui/label`, `@/components/ui/input`, `@/components/ui/select`, `@/components/ui/popover`, `@/lib/ai-image.functions`, `@/lib/announcements.functions`
 
 ### `src/components/crm/AnnouncementsTab.tsx`
   Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `sonner`, `lucide-react`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/switch`, `@/components/ui/dialog`, `@/integrations/supabase/client`, `@/lib/confirm-dialog`, `@/lib/announcements.functions`, `@/components/crm/AiImageGenerator`, `@/lib/format`
 
+### `src/components/dnd/sortable-list.tsx`
+  Imports: `react`, `@dnd-kit/core`, `@dnd-kit/modifiers`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `lucide-react`, `@/lib/utils`
+
 ### `src/components/edufinance/AgendaView.tsx`
   Imports: `react`, `@tanstack/react-query`, `lucide-react`, `@/components/ui/button`, `@/components/ui/select`, `@/integrations/supabase/client`, `@/lib/agenda-fetch`, `@/lib/classes.functions`, `@/lib/utils`
 
 ### `src/components/edufinance/AppShell.tsx`
-  Imports: `react`, `@tanstack/react-router`, `lucide-react`, `@/hooks/use-theme`, `@/integrations/supabase/client`, `@/lib/utils`, `@/components/ui/button`, `@/hooks/use-auth`, `@tanstack/react-query`, `@tanstack/react-start`, `@/hooks/use-modules`, `@/hooks/use-impersonate`, `@/components/edufinance/TenantScopeSelector`, `@/hooks/use-profile-mode`, `@/hooks/use-tenant-scope`, `@/hooks/use-scope-filter`, `@/lib/tenants.functions`, `lucide-react`, `@/components/edufinance/GlobalSearch`, `@/components/edufinance/NotificationCenter`, `@/components/pt/TrainingTimerDialog`
+  Imports: `react`, `@tanstack/react-router`, `lucide-react`, `@/hooks/use-theme`, `@/integrations/supabase/client`, `@/lib/utils`, `@/components/ui/button`, `@/hooks/use-auth`, `@tanstack/react-query`, `@tanstack/react-start`, `@/hooks/use-modules`, `@/hooks/use-impersonate`, `@/components/edufinance/TenantScopeSelector`, `@/hooks/use-profile-mode`, `@/hooks/use-tenant-scope`, `@/hooks/use-scope-filter`, `@/lib/tenants.functions`, `lucide-react`, `@/components/edufinance/GlobalSearch`, `@/components/edufinance/NotificationCenter`, `@/components/auth/AccountSwitcherDialog`, `@/hooks/use-training-timer`
 
 ### `src/components/edufinance/Badges.tsx`
   Imports: `@/lib/utils`, `@/lib/format`, `@/components/ui/tooltip`
@@ -1252,7 +1366,7 @@
   Imports: `lucide-react`, `@/components/ui/button`, `@/lib/format`
 
 ### `src/components/edufinance/NotificationCenter.tsx`
-  Imports: `lucide-react`, `@/integrations/supabase/client`, `@/hooks/use-auth`, `@/components/ui/dropdown-menu`, `@/components/ui/button`, `@tanstack/react-query`, `date-fns`, `date-fns/locale`, `@/lib/utils`, `@tanstack/react-router`
+  Imports: `react`, `lucide-react`, `@/integrations/supabase/client`, `@/hooks/use-auth`, `@/components/ui/dropdown-menu`, `@/components/ui/button`, `@tanstack/react-query`, `date-fns`, `date-fns/locale`, `@/lib/utils`, `@tanstack/react-router`, `sonner`, `@/lib/notifications.native`
 
 ### `src/components/edufinance/PackageAlerts.tsx`
   Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `@tanstack/react-router`, `lucide-react`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/hooks/use-scope-filter`, `@/lib/checkins`, `@/lib/notifications.functions`, `@/components/ui-kit/SectionCard`, `@/components/ui/button`, `@/components/ui/dialog`, `@/lib/format`, `@/lib/utils`
@@ -1261,13 +1375,13 @@
   Imports: `lucide-react`, `@/components/ui/tooltip`, `@/lib/utils`
 
 ### `src/components/edufinance/PaymentDialog.tsx`
-  Imports: `react`, `@/components/ui/dialog`, `@/components/ui-kit/FormSection`, `lucide-react`, `@/components/ui/input`, `@/components/ui/button`, `@/components/ui/textarea`, `@/components/ui/select`, `@/integrations/supabase/client`, `@tanstack/react-query`, `sonner`, `@/lib/format`, `@/hooks/use-payment-methods`, `date-fns`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui-kit/FormSection`, `lucide-react`, `@/components/ui/input`, `@/components/ui/button`, `@/components/ui/textarea`, `@/components/ui/select`, `@/integrations/supabase/client`, `@tanstack/react-query`, `sonner`, `zod`, `@/lib/format`, `@/hooks/use-payment-methods`, `date-fns`
 
 ### `src/components/edufinance/PaymentMethodsSettings.tsx`
   Imports: `react`, `@/lib/confirm-dialog`, `lucide-react`, `sonner`, `@tanstack/react-query`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/switch`, `@/components/ui/dialog`, `@/integrations/supabase/client`, `@/hooks/use-auth`, `@/hooks/use-payment-methods`
 
 ### `src/components/edufinance/PerStudentExport.tsx`
-  Imports: `react`, `@tanstack/react-query`, `sonner`, `lucide-react`, `@/integrations/supabase/client`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/checkbox`, `@/components/ui/card`, `@/lib/format`
+  Imports: `react`, `@tanstack/react-query`, `sonner`, `lucide-react`, `@/integrations/supabase/client`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/checkbox`, `@/components/ui/card`, `@/lib/format`, `@/lib/search-utils`
 
 ### `src/components/edufinance/PlanDialog.tsx`
   Imports: `react`, `@/components/ui/dialog`, `lucide-react`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`, `@/components/ui/textarea`, `@/components/ui/select`, `@/integrations/supabase/client`, `@tanstack/react-query`, `sonner`, `@/lib/format`
@@ -1287,11 +1401,29 @@
 ### `src/components/financeiro/ExpenseDialog.tsx`
   Imports: `lucide-react`, `@/components/ui-kit/DialogHeadline`, `react`, `@/components/ui/dialog`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`, `@/components/ui/textarea`, `@/components/ui/select`, `@/integrations/supabase/client`, `@tanstack/react-query`, `sonner`, `date-fns`, `@/lib/format`
 
+### `src/components/financeiro/ExpenseRenewalDialog.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/badge`, `@/components/ui/checkbox`, `@/components/ui/select`, `@/integrations/supabase/client`, `@tanstack/react-query`, `sonner`, `lucide-react`, `@/lib/format`
+
+### `src/components/financeiro/ExpenseSearchDialog.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/badge`, `@/components/ui/select`, `@/components/ui/table`, `@/integrations/supabase/client`, `@tanstack/react-query`, `sonner`, `lucide-react`, `@/lib/format`
+
+### `src/components/financeiro/ExportExpensesDialog.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/badge`, `@/components/ui/select`, `@/components/ui/input`, `@/components/ui/label`, `sonner`, `lucide-react`, `@/lib/format`, `@/lib/expense-export`
+
 ### `src/components/financeiro/PtAnalyticsPanel.tsx`
   Imports: `@/lib/chart-theme`, `react`, `@tanstack/react-query`, `recharts`, `date-fns`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/table`, `@/lib/format`, `@/hooks/use-scope-filter`
 
 ### `src/components/financeiro/StudioAnalyticsPanel.tsx`
   Imports: `@/lib/chart-theme`, `react`, `@tanstack/react-query`, `recharts`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/table`, `@/components/ui/button`, `@/components/ui/select`, `@/components/edufinance/MonthYearPicker`, `@/lib/format`, `@/components/edufinance/EmptyState`, `@/hooks/use-scope-filter`
+
+### `src/components/forms/FormEditDialog.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/switch`, `@/components/ui/select`, `@/lib/forms-store`, `@/lib/forms-definitions`, `@/lib/forms.functions`, `sonner`, `lucide-react`
+
+### `src/components/forms/FormEmbedDialog.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `lucide-react`, `sonner`, `@/lib/forms-store`
+
+### `src/components/forms/FormSubmissionsDialog.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `lucide-react`, `sonner`, `@/lib/form-submission-pdf`, `@/lib/forms.functions`
 
 ### `src/components/ImpersonationBanner.tsx`
   Imports: `react`, `lucide-react`, `@/hooks/use-impersonate`
@@ -1318,10 +1450,34 @@
   Imports: `react`, `@tanstack/react-query`, `@tanstack/query-sync-storage-persister`, `@tanstack/react-query-persist-client`, `@/hooks/use-auth`
 
 ### `src/components/portal/PortalShell.tsx`
-  Imports: `react`, `@tanstack/react-router`, `lucide-react`, `@/integrations/supabase/client`, `@/hooks/use-auth`, `@tanstack/react-query`, `@/hooks/use-theme`, `@/lib/utils`, `@/components/portal/NotificationsBell`, `@/components/portal/PortalAnnouncementPopup`, `@/components/portal/PortalPersistGate`, `@/components/pt/TrainingTimerDialog`
+  Imports: `react`, `@tanstack/react-router`, `lucide-react`, `@/integrations/supabase/client`, `@/hooks/use-auth`, `@tanstack/react-query`, `@/hooks/use-theme`, `@/lib/utils`, `@/components/portal/NotificationsBell`, `@/components/auth/AccountSwitcherDialog`, `lucide-react`, `@/components/portal/PortalAnnouncementPopup`, `@/components/portal/PortalPersistGate`, `@/hooks/use-training-timer`
+
+### `src/components/portal/StudentFormAnsweringModal.tsx`
+  Imports: `react`, `@/lib/forms-definitions`, `@/lib/forms.functions`, `lucide-react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/textarea`, `@/components/ui/label`, `sonner`
+
+### `src/components/program-image/ProgramImageDialog.tsx`
+  Imports: `react`, `sonner`, `lucide-react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/badge`, `@/components/ui/scroll-area`, `@/components/ui/skeleton`, `@/components/ui/slider`, `@/components/ui/popover`, `@/lib/utils`, `@/lib/program-image-layout`, `@/lib/methodology`, `@/lib/session-image`, `@/lib/image-export`, `./UnifiedCanvasEditor`
+
+### `src/components/program-image/UnifiedCanvasEditor.tsx`
+  Imports: `react`, `@dnd-kit/core`, `@dnd-kit/modifiers`, `@/lib/image-export`, `@/lib/program-image-layout`, `@/lib/utils`
+
+### `src/components/programa/ProgramaEditorDialog.tsx`
+  Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/badge`, `@/components/ui/button`, `@/components/ui/dialog`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/select`, `@/lib/methodology`
+
+### `src/components/programa-ia/ConstrutorMoldeDialog.tsx`
+  Imports: `react`, `@tanstack/react-query`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/badge`, `@/components/ui/select`, `@/components/ui/toggle-group`, `@/components/ui/collapsible`, `@/components/ui/popover`, `lucide-react`, `@/components/dnd/sortable-list`, `@/components/session-builder/ExercisePicker`, `@/lib/hibrido-ia.server`, `@/lib/methodology`, `@/lib/format-registry`, `@/lib/set-type-registry`
+
+### `src/components/programa-ia/GerarTreinoModal.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/label`, `@/components/ui/input`, `@/components/ui/switch`, `@/components/ui/select`, `lucide-react`, `@/lib/kb-sport-ia.server`, `@/lib/hibrido-ia.server`, `@/lib/weightlifting-ia.server`, `@/lib/funcional-ia.server`, `@/lib/corrida-ia.server`
+
+### `src/components/programa-ia/PrescreverIaDialog.tsx`
+  Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `@/lib/ai-key.functions`, `lucide-react`, `sonner`, `@/components/ui/badge`, `@/components/ui/button`, `@/components/ui/dialog`, `@/components/ui/textarea`, `@/components/ui/collapsible`, `@/components/ui/select`, `@/integrations/supabase/client`, `@/lib/prescricao-ia.functions`, `@/lib/set-type-registry`, `@/lib/format-registry`, `@/lib/methodology`, `@/lib/prescricao-ia.server`, `@/lib/kb-sport-ia.server`, `@/lib/weightlifting-ia.server`, `@/lib/funcional-ia.server`, `@/lib/hibrido-ia.server`, `@/lib/athlete-memory`, `@/lib/parse-planilha`
 
 ### `src/components/pt/AddExerciseDialog.tsx`
-  Imports: `react`, `@tanstack/react-query`, `@tanstack/react-router`, `lucide-react`, `sonner`, `@/components/ui/dialog`, `@/components/ui/input`, `@/components/ui/button`, `@/components/ui/label`, `@/components/ui/badge`, `@/integrations/supabase/client`, `@/lib/utils`
+  Imports: `react`, `@tanstack/react-query`, `@tanstack/react-router`, `lucide-react`, `sonner`, `@/components/ui/dialog`, `@/components/ui/input`, `@/components/ui/button`, `@/components/ui/label`, `@/components/ui/badge`, `@/integrations/supabase/client`, `@/lib/utils`, `@/data/mfit-exercises-normalized.json`, `@/lib/search-exercises`, `@/lib/thumbnail-utils`
+
+### `src/components/pt/AddWeekDialog.tsx`
+  Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/label`, `@/components/ui/select`, `@/lib/training-weeks`
 
 ### `src/components/pt/AiEnginePromptCard.tsx`
   Imports: `react`, `lucide-react`, `sonner`, `@/components/ui/button`, `@/components/ui-kit/SectionCard`
@@ -1334,6 +1490,9 @@
 
 ### `src/components/pt/AnamnesisTab.tsx`
   Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/checkbox`, `@/components/ui/dialog`, `@/components/ui/select`, `@/lib/anamnesis`, `@/lib/utils`, `@/lib/format`
+
+### `src/components/pt/AtribuirTreinoDialog.tsx`
+  Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/badge`, `@/components/ui/select`, `@/integrations/supabase/client`
 
 ### `src/components/pt/BulkPTSessionsDialog.tsx`
   Imports: `react`, `@/components/ui/dialog`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`, `@/components/ui/select`, `@/integrations/supabase/client`, `@tanstack/react-query`, `sonner`, `date-fns`, `lucide-react`
@@ -1348,19 +1507,22 @@
   Imports: `react`, `lucide-react`, `sonner`, `@/components/ui/button`, `@/components/ui-kit/SectionCard`
 
 ### `src/components/pt/ExerciseCard.tsx`
-  Imports: `react`, `@/lib/utils`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/button`, `@/components/ui/dropdown-menu`, `@/components/ui/select`, `./ExerciseMediaUpload`, `./IntervalTimer`, `@/components/ui/dialog`
+  Imports: `react`, `@/lib/utils`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/button`, `@/components/ui/dropdown-menu`, `@/components/ui/select`, `./ExerciseMediaUpload`, `./IntervalTimer`, `./SubstituteExerciseDialog`, `@/components/ui/dialog`
 
 ### `src/components/pt/ExerciseMediaUpload.tsx`
-  Imports: `react`, `lucide-react`, `@/integrations/supabase/client`, `sonner`, `@/lib/utils`
+  Imports: `react`, `lucide-react`, `@/integrations/supabase/client`, `sonner`, `@/lib/thumbnail-utils`, `@/components/ui/button`
+
+### `src/components/pt/FocusedDayView.tsx`
+  Imports: `react`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/lib/utils`, `@/lib/format`, `@/components/pt/SessionTimer`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/pt/WorkoutSummaryDialog`, `@/components/pt/RestCountdownTimer`, `@/components/pt/PlateCalculatorDialog`, `@/components/pt/MuscleHeatmap`, `@/lib/thumbnail-utils`, `@/hooks/use-wake-lock`
 
 ### `src/components/pt/HallOfFameCard.tsx`
-  Imports: `react`, `lucide-react`, `@/components/ui/card`, `@/components/ui/button`, `@/lib/format`, `@/lib/one-rep-max`, `./OneRepMaxDialog`
+  Imports: `react`, `lucide-react`, `@/components/ui/card`, `@/components/ui/button`, `@/lib/format`, `@/lib/one-rep-max`, `./OneRepMaxDialog`, `@/integrations/supabase/client`
 
 ### `src/components/pt/HistoryShareSelector.tsx`
   Imports: `react`, `@tanstack/react-query`, `lucide-react`, `@/integrations/supabase/client`, `@/components/ui/button`, `sonner`, `@/lib/format`, `./SessionTimer`, `@/components/ui/textarea`, `@/components/ui/dialog`, `./WorkoutSummaryDialog`
 
 ### `src/components/pt/ImportExercisesPanel.tsx`
-  Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `sonner`, `lucide-react`, `@/lib/hybrid-import.functions`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/badge`, `@/components/ui/checkbox`
+  Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `sonner`, `lucide-react`, `@/lib/hybrid-import.functions`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/badge`, `@/components/ui/checkbox`, `@/lib/search-utils`
 
 ### `src/components/pt/ImportTrainingPanel.tsx`
   Imports: `@tanstack/react-router`, `react`, `@tanstack/react-query`, `@tanstack/react-start`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/lib/utils`, `@/lib/hybrid-import.functions`, `@/components/ui-kit/PageHeader`, `@/components/ui-kit/SectionCard`, `@/components/ui/button`, `@/components/ui/badge`, `@/components/ui/textarea`, `@/components/ui/label`, `@/components/ui/switch`, `@/components/ui/skeleton`, `@/components/ui/select`, `@/components/ui/tabs`
@@ -1372,7 +1534,10 @@
   Imports: `react`, `@tanstack/react-query`, `recharts`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/select`, `@/components/edufinance/EmptyState`, `lucide-react`, `@/lib/format`
 
 ### `src/components/pt/MigrateProgramDialog.tsx`
-  Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `sonner`, `lucide-react`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/lib/pt-program-migrate.functions`
+  Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `sonner`, `lucide-react`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/lib/pt-program-migrate.functions`, `@/lib/search-utils`
+
+### `src/components/pt/MuscleHeatmap.tsx`
+  Imports: `react`, `./bodyPathsData`, `@/components/ui/badge`, `@/components/ui/button`, `@/lib/utils`
 
 ### `src/components/pt/OneRepMaxDialog.tsx`
   Imports: `react`, `lucide-react`, `@/components/ui/dialog`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/card`, `@/lib/one-rep-max`
@@ -1380,11 +1545,17 @@
 ### `src/components/pt/PhysicalAssessmentTab.tsx`
   Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `recharts`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/dialog`, `@/components/edufinance/EmptyState`, `@/components/ui/image-comparison`, `@/lib/format`, `@/lib/physical-assessment`
 
+### `src/components/pt/PlateCalculatorDialog.tsx`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/badge`, `@/components/ui/select`, `@/components/ui/tabs`, `lucide-react`
+
+### `src/components/pt/ProgramEditorDialog.tsx`
+  Imports: `react`, `@/lib/training-weeks`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/badge`, `@/components/ui/select`, `@/integrations/supabase/client`, `@/lib/confirm-dialog`, `./TrainingDayDetail`
+
 ### `src/components/pt/ProgramLayoutEditor.tsx`
   Imports: `react`, `lucide-react`, `sonner`, `@/components/ui/button`, `@/components/ui/dialog`, `@/lib/utils`, `@/lib/pt-program-layout`, `@/lib/pt-program-render`
 
 ### `src/components/pt/ProgramsTab.tsx`
-  Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/lib/confirm-dialog`, `@/lib/format`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/select`, `@/components/ui/dialog`, `@/components/ui/dropdown-menu`, `@/components/edufinance/EmptyState`, `./TrainingDayDetail`, `./SessionTimer`, `./StudentViewDialog`, `./LoadProgressionDialog`, `./AiPrescribeDialog`, `./AiPromptPopover`, `./MigrateProgramDialog`, `./ProgramLayoutEditor`, `@/components/ui-kit/SortableList`, `@/lib/pt-program-pdf`, `lucide-react`, `@/components/ui/stepper`
+  Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/lib/confirm-dialog`, `@/lib/format`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/select`, `@/components/ui/dialog`, `@/components/ui/dropdown-menu`, `@/components/edufinance/EmptyState`, `./TrainingDayDetail`, `./SessionTimer`, `./StudentViewDialog`, `./LoadProgressionDialog`, `./AiPrescribeDialog`, `./AiPromptPopover`, `./MigrateProgramDialog`, `./ProgramLayoutEditor`, `@/components/ui-kit/SortableList`, `@/lib/pt-program-pdf`, `lucide-react`, `@/components/programa-ia/PrescreverIaDialog`, `./ReprogramDayAiDialog`, `./AddWeekDialog`, `@/lib/training-weeks`, `@/components/ui/stepper`
 
 ### `src/components/pt/PTBadges.tsx`
   Imports: `@/lib/utils`, `@/lib/pt-format`, `@/components/ui/tooltip`
@@ -1401,6 +1572,9 @@
 ### `src/components/pt/PTStudentDialog.tsx`
   Imports: `react`, `@/components/ui-kit/DialogHeadline`, `@/components/ui/dialog`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`, `@/components/ui/textarea`, `@/components/ui/select`, `@/integrations/supabase/client`, `@tanstack/react-query`, `sonner`, `@tanstack/react-start`, `@/lib/pt-student-access.functions`, `@/lib/confirm-dialog`, `lucide-react`, `@/components/MigrateStudentsDialog`, `@/lib/pt-duo`
 
+### `src/components/pt/ReprogramDayAiDialog.tsx`
+  Imports: `react`, `@tanstack/react-query`, `@tanstack/react-start`, `sonner`, `lucide-react`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/textarea`, `@/components/ui/label`, `@/components/ui/radio-group`, `@/lib/pt-ai.functions`
+
 ### `src/components/pt/RestCountdownTimer.tsx`
   Imports: `react`, `lucide-react`, `@/components/ui/button`, `@/lib/utils`, `sonner`
 
@@ -1414,13 +1588,16 @@
   Imports: `react`, `date-fns`, `date-fns/locale`, `lucide-react`, `sonner`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/select`, `@/lib/student-monthly-report-pdf`
 
 ### `src/components/pt/StudentViewDialog.tsx`
-  Imports: `@tanstack/react-query`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `lucide-react`, `@/lib/format`
+  Imports: `react`, `@/lib/training-weeks`, `@tanstack/react-query`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `lucide-react`, `@/components/ui/button`, `@/lib/format`, `@/lib/utils`, `@/components/pt/FocusedDayView`, `@/components/pt/SessionTimer`
+
+### `src/components/pt/SubstituteExerciseDialog.tsx`
+  Imports: `react`, `@tanstack/react-query`, `lucide-react`, `@/components/ui/dialog`, `@/components/ui/input`, `@/components/ui/button`, `@/components/ui/badge`, `@/integrations/supabase/client`, `@/lib/utils`, `@/data/mfit-exercises-normalized.json`, `@/lib/search-exercises`, `@/lib/thumbnail-utils`, `./AddExerciseDialog`
 
 ### `src/components/pt/TrainingDayDetail.tsx`
   Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/button`, `@/lib/confirm-dialog`, `@/components/ui-kit/SortableList`, `./ExerciseCard`, `./AddExerciseDialog`
 
 ### `src/components/pt/TrainingTimerDialog.tsx`
-  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `lucide-react`, `@/lib/utils`
+  Imports: `react`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `lucide-react`, `@/lib/utils`, `@/hooks/use-wake-lock`
 
 ### `src/components/pt/WorkoutProgressionDialog.tsx`
   Imports: `react`, `@tanstack/react-query`, `recharts`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/select`, `@/components/edufinance/EmptyState`, `lucide-react`, `@/lib/format`, `@/components/ui/card`, `@/components/ui/badge`
@@ -1434,11 +1611,35 @@
 ### `src/components/pwa/PwaInstallBanner.tsx`
   Imports: `react`, `lucide-react`, `@/components/ui/button`
 
+### `src/components/session/ExportImageDialog.tsx`
+  Imports: `react`, `sonner`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/toggle-group`, `lucide-react`, `@/lib/session-image`, `@/lib/image-export`, `@/lib/program-image-layout`, `../program-image/UnifiedCanvasEditor`, `@/lib/utils`
+
+### `src/components/session-builder/BlockCard.tsx`
+  Imports: `@dnd-kit/sortable`, `@dnd-kit/utilities`, `lucide-react`, `@/lib/utils`, `@/components/dnd/sortable-list`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/badge`, `@/lib/session-builder-store`, `@/lib/methodology`, `@/lib/format-registry`, `./BlockFormats`
+
+### `src/components/session-builder/BlockFormats.tsx`
+  Imports: `react`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`, `@/components/ui/textarea`, `lucide-react`, `@/components/ui/toggle-group`, `@/components/ui/select`, `./ExercisePicker`, `@/lib/session-builder-store`, `./SetsEditor`, `@/components/dnd/sortable-list`, `lucide-react`, `@/components/ui/dialog`
+
+### `src/components/session-builder/ExercisePicker.tsx`
+  Imports: `react`, `@tanstack/react-query`, `@/integrations/supabase/client`, `@/components/ui/command`, `@/components/ui/popover`, `@/components/ui/button`, `lucide-react`
+
+### `src/components/session-builder/SessionBuilder.tsx`
+  Imports: `react`, `@tanstack/react-router`, `@dnd-kit/core`, `@dnd-kit/modifiers`, `@dnd-kit/sortable`, `@/components/dnd/sortable-list`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/card`, `@/components/ui/dropdown-menu`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/lib/session-builder-store`, `@/lib/methodology`, `@/lib/format-registry`, `./BlockCard`, `@/lib/session-export`, `@/lib/pdf-treino`, `@/components/session/ExportImageDialog`, `@/lib/session-builder-store`
+
+### `src/components/session-builder/SetsEditor.tsx`
+  Imports: `react`, `lucide-react`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/select`, `@/components/ui/popover`, `sonner`, `@/lib/session-builder-store`, `@/lib/exercise-set-presets`, `@/lib/set-type-registry`
+
 ### `src/components/settings/BusinessLogosPanel.tsx`
   Imports: `react`, `@/components/ui/card`, `@/components/ui/button`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/hooks/use-auth`
 
 ### `src/components/settings/DataTransferPanel.tsx`
   Imports: `react`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@tanstack/react-query`, `@/lib/format`, `@/components/edufinance/PerStudentExport`
+
+### `src/components/settings/DownloadApkPanel.tsx`
+  Imports: `lucide-react`, `@/components/ui/card`, `@/components/ui/button`
+
+### `src/components/settings/MobileNotificationsCard.tsx`
+  Imports: `react`, `@/components/ui/card`, `@/components/ui/button`, `lucide-react`, `sonner`, `@/lib/notifications.native`, `@/hooks/use-auth`, `@/integrations/supabase/client`, `@tanstack/react-query`
 
 ### `src/components/settings/TrashPanel.tsx`
   Imports: `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/edufinance/EmptyState`, `@/lib/confirm-dialog`, `@/hooks/use-scope-filter`, `@/lib/format`
@@ -1447,7 +1648,7 @@
   Imports: `react`, `lucide-react`, `@tanstack/react-query`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`
 
 ### `src/components/students/dialogs/EditBonusTransactionDialog.tsx`
-  Imports: `react`, `lucide-react`, `@tanstack/react-query`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/integrations/supabase/types`
+  Imports: `react`, `lucide-react`, `@tanstack/react-query`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/integrations/supabase/types`, `@tanstack/react-start`, `@/lib/bonus.functions`
 
 ### `src/components/students/dialogs/GrantBonusDialog.tsx`
   Imports: `react`, `lucide-react`, `@tanstack/react-query`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`
@@ -1455,8 +1656,11 @@
 ### `src/components/students/dialogs/TransferBonusDialog.tsx`
   Imports: `react`, `lucide-react`, `@tanstack/react-query`, `sonner`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/integrations/supabase/client`, `@/hooks/use-auth`
 
+### `src/components/students/StudentObservationsCard.tsx`
+  Imports: `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/textarea`, `@/components/ui/alert-dialog`, `@/lib/format`
+
 ### `src/components/students/tabs/BonusBalancePanel.tsx`
-  Imports: `react`, `lucide-react`, `@tanstack/react-query`, `sonner`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/badge`, `@/components/ui/alert-dialog`, `@/integrations/supabase/client`, `@/components/students/dialogs/GrantBonusDialog`, `@/components/students/dialogs/TransferBonusDialog`, `@/components/students/dialogs/EditBonusTransactionDialog`, `@/lib/utils`, `@/integrations/supabase/types`
+  Imports: `react`, `lucide-react`, `@tanstack/react-query`, `sonner`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/badge`, `@/components/ui/alert-dialog`, `@/integrations/supabase/client`, `@/components/students/dialogs/GrantBonusDialog`, `@/components/students/dialogs/TransferBonusDialog`, `@/components/students/dialogs/EditBonusTransactionDialog`, `@tanstack/react-start`, `@/lib/bonus.functions`, `@/lib/utils`, `@/integrations/supabase/types`
 
 ### `src/components/students/tabs/StudentAttendanceTab.tsx`
   Imports: `react`, `@/components/ui/card`, `@/components/ui/select`, `@/components/ui/table`, `@/components/ui/progress`, `@/components/edufinance/KPICard`, `@/components/edufinance/EmptyState`, `@/lib/format`, `@/lib/utils`, `./StudentPaymentsTab`
@@ -1464,8 +1668,11 @@
 ### `src/components/students/tabs/StudentCheckinsTab.tsx`
   Imports: `react`, `lucide-react`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/popover`, `@/components/ui/tooltip`, `@/components/ui/dropdown-menu`, `@/lib/format`, `@/lib/checkins`, `@/integrations/supabase/client`, `sonner`, `@tanstack/react-query`, `@/lib/utils`, `./StudentPaymentsTab`
 
+### `src/components/students/tabs/StudentFormsTab.tsx`
+  Imports: `react`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/badge`, `lucide-react`, `sonner`, `@/lib/form-submission-pdf`, `@/components/forms/FormSubmissionsDialog`, `@/lib/forms-definitions`
+
 ### `src/components/students/tabs/StudentOverviewTab.tsx`
-  Imports: `lucide-react`, `recharts`, `@/components/ui/card`, `@/components/ui/select`, `@/components/edufinance/KPICard`, `@/components/edufinance/EmptyState`, `@/lib/chart-theme`, `@/lib/format`
+  Imports: `lucide-react`, `recharts`, `@/components/ui/card`, `@/components/ui/select`, `@/components/edufinance/KPICard`, `@/components/edufinance/EmptyState`, `@/lib/chart-theme`, `@/lib/format`, `@/components/students/StudentObservationsCard`
 
 ### `src/components/students/tabs/StudentPaymentsTab.tsx`
   Imports: `react`, `lucide-react`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/select`, `@/components/ui/table`, `@/components/ui/popover`, `@/components/ui/tooltip`, `@/components/edufinance/PaymentActionsDock`, `@/components/edufinance/Badges`, `@/components/edufinance/EmptyState`, `@/lib/format`, `@/lib/checkins`, `@/lib/receipt-pdf`, `@/integrations/supabase/client`, `sonner`, `@tanstack/react-query`, `@/lib/utils`
@@ -1532,6 +1739,9 @@
 
 ### `src/components/ui/dropdown-menu.tsx`
   Imports: `react`, `@radix-ui/react-dropdown-menu`, `lucide-react`, `@/lib/utils`
+
+### `src/components/ui/event-calendar.tsx`
+  Imports: `react`, `date-fns`, `date-fns/locale`, `lucide-react`, `@/components/ui/button`, `@/components/ui/badge`, `@/lib/utils`, `@/components/ui/dialog`
 
 ### `src/components/ui/file-upload.tsx`
   Imports: `react`, `lucide-react`, `@/lib/utils`, `@/components/ui/button`
@@ -1645,7 +1855,7 @@
   Imports: `react`, `@/lib/utils`
 
 ### `src/components/ui-kit/PageHeader.tsx`
-  Imports: `react`, `lucide-react`, `@/lib/utils`
+  Imports: `react`, `react`, `lucide-react`, `@/lib/utils`
 
 ### `src/components/ui-kit/SectionCard.tsx`
   Imports: `react`, `lucide-react`, `@/lib/utils`
@@ -1657,7 +1867,10 @@
   Imports: `react`, `lucide-react`, `lucide-react`, `@/lib/utils`, `@/components/ui/sparkline`
 
 ### `src/hooks/use-auth.ts`
-  Imports: `react`, `@supabase/supabase-js`, `@/integrations/supabase/client`
+  Imports: `react`, `@supabase/supabase-js`, `@/integrations/supabase/client`, `@/lib/impersonate-helper`, `@/lib/multi-account`
+
+### `src/hooks/use-coach.ts`
+  Imports: `@tanstack/react-query`, `@/integrations/supabase/client`
 
 ### `src/hooks/use-font-size.ts`
   Imports: `react`
@@ -1698,6 +1911,9 @@
 ### `src/hooks/use-theme.tsx`
   Imports: `react`
 
+### `src/hooks/use-training-timer.ts`
+  Imports: `react`, `@/components/pt/TrainingTimerDialog`
+
 ### `src/hooks/use-wake-lock.ts`
   Imports: `react`
 
@@ -1713,11 +1929,17 @@
 ### `src/integrations/supabase/client.ts`
   Imports: `@supabase/supabase-js`, `./types`, `./previewAuthStorage`, `@/integrations/supabase/client`
 
+### `src/lib/a4-image-export.ts`
+  Imports: `jszip`, `./pdf-treino`
+
 ### `src/lib/agenda-fetch.ts`
   Imports: `@/integrations/supabase/client`, `@/lib/classes.functions`
 
 ### `src/lib/ai-image.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`, `crypto`
+
+### `src/lib/ai-key.functions.ts`
+  Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`
 
 ### `src/lib/anamnesis.ts`
   Imports: `@/integrations/supabase/client`
@@ -1725,8 +1947,17 @@
 ### `src/lib/announcements.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`
 
+### `src/lib/athlete-memory.ts`
+  Imports: `zod`
+
+### `src/lib/blog-management.functions.ts`
+  Imports: `@tanstack/react-start`, `zod`
+
 ### `src/lib/bonus.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`, `@/integrations/supabase/types`
+
+### `src/lib/catalog-sync.functions.ts`
+  Imports: `@tanstack/react-start`, `zod`, `@/integrations/supabase/auth-middleware`, `@/integrations/supabase/types`, `./methodology`
 
 ### `src/lib/classes.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`, `./classes.helpers`
@@ -1737,14 +1968,35 @@
 ### `src/lib/confirm-dialog.tsx`
   Imports: `react`, `@/components/ui/alert-dialog`
 
+### `src/lib/continuation.server.ts`
+  Imports: `@supabase/supabase-js`, `@/integrations/supabase/types`
+
 ### `src/lib/dre-export.ts`
   Imports: `@/lib/format`
 
 ### `src/lib/email.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`
 
+### `src/lib/exercise-set-presets.ts`
+  Imports: `react`, `./session-builder-store`
+
+### `src/lib/expense-export.ts`
+  Imports: `@/lib/format`
+
+### `src/lib/export.ts`
+  Imports: `@/lib/export`
+
+### `src/lib/form-submission-pdf.ts`
+  Imports: `@/lib/forms-definitions`
+
+### `src/lib/format-registry.ts`
+  Imports: `@tanstack/react-query`, `@tanstack/react-start`, `./methodology`, `./catalog-sync.functions`
+
 ### `src/lib/format.ts`
   Imports: `date-fns`, `date-fns/locale`
+
+### `src/lib/forms.functions.ts`
+  Imports: `@tanstack/react-start`, `@/lib/forms-definitions`
 
 ### `src/lib/freeze.ts`
   Imports: `@/integrations/supabase/client`, `date-fns`
@@ -1773,17 +2025,35 @@
 ### `src/lib/monthly-report.ts`
   Imports: `@/integrations/supabase/client`
 
+### `src/lib/multi-account.ts`
+  Imports: `@/integrations/supabase/client`, `@supabase/supabase-js`
+
 ### `src/lib/notifications.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`
+
+### `src/lib/notifications.native.ts`
+  Imports: `@capacitor/core`, `@capacitor/local-notifications`
+
+### `src/lib/parse-planilha.ts`
+  Imports: `@/lib/prescricao-ia.server`
 
 ### `src/lib/payment-renew.ts`
   Imports: `@/integrations/supabase/client`, `sonner`, `date-fns`
 
+### `src/lib/payments.functions.ts`
+  Imports: `@tanstack/react-start`, `zod`, `@/integrations/supabase/client.server`, `@/integrations/supabase/auth-middleware`, `@/lib/infinitepay.server`
+
+### `src/lib/pdf-treino.ts`
+  Imports: `@/integrations/supabase/client`, `./methodology`, `./session-export`
+
 ### `src/lib/physical-assessment.ts`
   Imports: `@/integrations/supabase/client`
 
+### `src/lib/prescricao-ia.functions.ts`
+  Imports: `@tanstack/react-start`, `zod`, `@/integrations/supabase/auth-middleware`, `@/lib/prescricao-ia.server`, `@/lib/kb-sport-ia.server`, `@/lib/weightlifting-ia.server`, `@/lib/funcional-ia.server`, `@/lib/corrida-ia.server`, `@/lib/hibrido-ia.server`, `@/lib/set-type-registry`, `@/lib/athlete-memory`
+
 ### `src/lib/pt-ai.functions.ts`
-  Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`, `zod`
+  Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`, `zod`, `@/lib/ai-gateway.server`
 
 ### `src/lib/pt-duo.ts`
   Imports: `@/integrations/supabase/client`
@@ -1792,7 +2062,7 @@
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`, `zod`
 
 ### `src/lib/pt-program-pdf.ts`
-  Imports: `@/integrations/supabase/client`, `@/lib/format`
+  Imports: `@/integrations/supabase/client`, `@/lib/format`, `@/lib/training-weeks`
 
 ### `src/lib/pt-program-render.ts`
   Imports: `@/integrations/supabase/client`, `@/lib/format`, `@/lib/pt-program-layout`
@@ -1806,11 +2076,26 @@
 ### `src/lib/receipt-pdf.ts`
   Imports: `@/lib/format`
 
+### `src/lib/search-exercises.ts`
+  Imports: `./search-utils`
+
+### `src/lib/session-builder-store.ts`
+  Imports: `react`, `./methodology`
+
+### `src/lib/session-export.ts`
+  Imports: `@/integrations/supabase/client`, `./export`
+
+### `src/lib/session-image.ts`
+  Imports: `@/integrations/supabase/client`, `./session-export`, `./methodology`, `./image-export`
+
+### `src/lib/set-type-registry.ts`
+  Imports: `@tanstack/react-query`, `@tanstack/react-start`, `./catalog-sync.functions`
+
 ### `src/lib/storage-browser.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`
 
 ### `src/lib/student-access.functions.ts`
-  Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`, `crypto`
+  Imports: `node:crypto`, `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`
 
 ### `src/lib/student-migration.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`
@@ -1821,23 +2106,44 @@
 ### `src/lib/tenants.functions.ts`
   Imports: `@tanstack/react-start`, `@/integrations/supabase/auth-middleware`, `crypto`, `crypto`
 
+### `src/lib/thumbnail-utils.ts`
+  Imports: `@/integrations/supabase/client`
+
 ### `src/lib/utils.ts`
   Imports: `clsx`, `tailwind-merge`
 
 ### `src/router.tsx`
   Imports: `@tanstack/react-query`, `@tanstack/react-router`, `./routeTree.gen`
 
+### `src/routes/api.cron.pre-class.ts`
+  Imports: `@tanstack/react-router`, `@/integrations/supabase/client.server`, `@/lib/whatsapp.server`
+
+### `src/routes/api.forms.google-webhook.ts`
+  Imports: `@tanstack/react-router`, `@/integrations/supabase/client.server`
+
+### `src/routes/api.notifications.clear.ts`
+  Imports: `@tanstack/react-router`, `@/integrations/supabase/client.server`, `@/integrations/supabase/client`
+
+### `src/routes/api.payments.infinitepay-webhook.ts`
+  Imports: `@tanstack/react-router`, `@/integrations/supabase/client.server`
+
 ### `src/routes/auth.tsx`
-  Imports: `@tanstack/react-router`, `react`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/services/ecosystem-auth-service`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/tabs`, `@/components/ui/card`, `@/components/ui/checkbox`
+  Imports: `@tanstack/react-router`, `@tanstack/react-start`, `react`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/lib/student-access.functions`, `@/services/ecosystem-auth-service`, `@/lib/multi-account`
 
 ### `src/routes/boost.tsx`
   Imports: `react`, `@tanstack/react-router`, `lucide-react`, `@/components/ui/button`, `@/components/ui/card`, `@/components/ui/badge`, `@/components/ui/input`, `@/components/ui/label`
+
+### `src/routes/copyright.tsx`
+  Imports: `@tanstack/react-router`, `react`, `lucide-react`, `sonner`
 
 ### `src/routes/create.tsx`
   Imports: `react`, `@tanstack/react-router`, `lucide-react`, `@/components/ui/button`, `@/components/ui/card`, `@/components/ui/badge`, `@/components/ui/input`, `@/components/ui/label`, `sonner`, `@/integrations/supabase/client`, `@tanstack/react-query`
 
 ### `src/routes/eco.tsx`
   Imports: `react`, `@tanstack/react-router`, `lucide-react`, `@/components/ui/button`, `@/components/ui/card`, `@/components/ui/badge`, `@/hooks/use-impersonate`
+
+### `src/routes/f.$slug.tsx`
+  Imports: `@tanstack/react-router`, `react`, `@/lib/forms-definitions`, `@/lib/forms.functions`, `lucide-react`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/textarea`, `@/components/ui/label`, `sonner`, `@/hooks/use-theme`, `@/integrations/supabase/client`
 
 ### `src/routes/master-admin.tsx`
   Imports: `@tanstack/react-router`, `@/components/MasterAdminDashboard`
@@ -1864,22 +2170,31 @@
   Imports: `@tanstack/react-router`, `@tanstack/react-query`, `@tanstack/react-start`, `react`, `sonner`, `lucide-react`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/checkbox`, `@/components/ui/switch`, `@/components/ui/badge`, `@/components/ui/dialog`, `@/components/ui/table`, `@/components/edufinance/EmptyState`, `@/lib/format`, `@/lib/tenants.functions`, `@/hooks/use-impersonate`
 
 ### `src/routes/_authenticated/agenda.tsx`
-  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@tanstack/react-start`, `@/integrations/supabase/client`, `@/components/ui/button`, `@/components/ui/card`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/switch`, `@/components/ui/dialog`, `@/components/ui/sheet`, `@/components/ui/select`, `@/components/edufinance/AgendaView`, `@/components/edufinance/DaysOfWeekChips`, `@/lib/classes.functions`, `@/components/ui/alert-dialog`, `@/components/ui/radio-group`
+  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@tanstack/react-start`, `@/integrations/supabase/client`, `@/components/ui/button`, `@/components/ui/card`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/switch`, `@/components/ui/dialog`, `@/components/ui/sheet`, `@/components/ui/select`, `@/components/edufinance/AgendaView`, `@/components/edufinance/DaysOfWeekChips`, `@/lib/classes.functions`, `@/components/ui/alert-dialog`, `@/lib/search-utils`, `@/components/ui/radio-group`
 
 ### `src/routes/_authenticated/analytics.tsx`
   Imports: `@tanstack/react-router`
 
+### `src/routes/_authenticated/biblioteca.tsx`
+  Imports: `@tanstack/react-router`, `react`
+
+### `src/routes/_authenticated/blog-editor.tsx`
+  Imports: `@tanstack/react-router`, `react`, `@tanstack/react-query`, `sonner`, `lucide-react`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/tabs`, `@/components/ui/select`, `@/components/ui/table`, `@/components/ui/badge`, `@/components/ui-kit/PageHeader`, `@/components/ui/dialog`, `@/lib/confirm-dialog`, `@/lib/blog-management.functions`
+
 ### `src/routes/_authenticated/crm.tsx`
-  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@tanstack/react-start`, `@dnd-kit/core`, `@/integrations/supabase/client`, `@/lib/email.functions`, `@/lib/notifications.functions`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/tabs`, `@/components/ui/select`, `@/components/ui/table`, `@/components/edufinance/Badges`, `@/lib/utils`, `@/components/crm/AnnouncementsTab`, `@/hooks/use-scope-filter`, `@/components/ui/kanban`
+  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@tanstack/react-start`, `@dnd-kit/core`, `@/integrations/supabase/client`, `@/lib/email.functions`, `@/lib/notifications.functions`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/tabs`, `@/components/ui/select`, `@/components/ui/table`, `@/components/edufinance/Badges`, `@/lib/utils`, `@/components/crm/AnnouncementsTab`, `@/hooks/use-scope-filter`, `@/components/ui/kanban`, `@/lib/search-utils`
 
 ### `src/routes/_authenticated/desafios/index.tsx`
-  Imports: `react`, `@tanstack/react-router`, `lucide-react`, `sonner`, `@/components/ui-kit/PageHeader`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/textarea`, `@/components/ui/label`, `@/components/ui/badge`, `@/components/ui/card`, `@/components/ui/progress`, `@/components/ui/tabs`, `@/components/ui/dialog`, `@/components/ui/select`, `@/components/ui/dropdown-menu`, `@/components/ui/avatar`
+  Imports: `react`, `@tanstack/react-router`, `lucide-react`, `sonner`, `@/lib/search-utils`, `@/components/ui-kit/PageHeader`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/textarea`, `@/components/ui/label`, `@/components/ui/badge`, `@/components/ui/card`, `@/components/ui/progress`, `@/components/ui/tabs`, `@/components/ui/dialog`, `@/components/ui/select`, `@/components/ui/dropdown-menu`, `@/components/ui/avatar`
 
 ### `src/routes/_authenticated/diagnostics.tsx`
-  Imports: `@tanstack/react-router`, `@/lib/confirm-dialog`, `@tanstack/react-query`, `react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/table`, `@/components/ui/checkbox`, `@/components/ui/select`, `@/components/ui/alert-dialog`, `@/lib/format`
+  Imports: `@tanstack/react-router`, `@/lib/confirm-dialog`, `@tanstack/react-query`, `react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/table`, `@/components/ui/checkbox`, `@/components/ui/select`, `@/components/ui/alert-dialog`, `@/lib/format`, `@/lib/search-utils`
 
 ### `src/routes/_authenticated/financeiro.tsx`
-  Imports: `@/lib/chart-theme`, `lucide-react`, `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `@/lib/dre-export`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `recharts`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/select`, `@/components/ui/tabs`, `@/components/ui/table`, `@/components/edufinance/KPICard`, `@/hooks/use-modules`, `@/components/financeiro/StudioAnalyticsPanel`, `@/components/financeiro/PtAnalyticsPanel`, `@/components/ui/skeleton`, `@/components/edufinance/EmptyState`, `@/components/financeiro/ExpenseDialog`, `@/components/edufinance/MonthYearPicker`, `@/lib/format`, `@/hooks/use-scope-filter`, `@/hooks/use-local-storage`, `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `lucide-react`, `@/components/edufinance/SortableChartCard`
+  Imports: `@/lib/chart-theme`, `lucide-react`, `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `@/lib/dre-export`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `recharts`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/badge`, `@/components/ui/button`, `@/components/ui/select`, `@/components/ui/tabs`, `@/components/ui/table`, `@/components/edufinance/KPICard`, `@/hooks/use-modules`, `@/components/financeiro/StudioAnalyticsPanel`, `@/components/financeiro/PtAnalyticsPanel`, `@/components/ui/skeleton`, `@/components/edufinance/EmptyState`, `@/components/financeiro/ExpenseDialog`, `@/components/financeiro/ExpenseRenewalDialog`, `@/components/financeiro/ExpenseSearchDialog`, `@/components/financeiro/ExportExpensesDialog`, `@/components/edufinance/MonthYearPicker`, `@/lib/format`, `@/hooks/use-scope-filter`, `@/hooks/use-local-storage`, `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `lucide-react`, `@/components/edufinance/SortableChartCard`
+
+### `src/routes/_authenticated/formularios.tsx`
+  Imports: `@tanstack/react-router`, `react`, `@/lib/forms-store`, `@/lib/forms.functions`, `@/components/ui/button`, `@/components/ui/input`, `lucide-react`, `sonner`, `@/components/forms/FormEmbedDialog`, `@/components/forms/FormEditDialog`, `@/components/forms/FormSubmissionsDialog`, `@/integrations/supabase/client`, `@/hooks/use-auth`
 
 ### `src/routes/_authenticated/import-export.tsx`
   Imports: `@tanstack/react-router`
@@ -1888,79 +2203,94 @@
   Imports: `@/lib/chart-theme`, `@tanstack/react-router`, `react`, `@/hooks/use-landing-page`, `@/hooks/use-role`, `@tanstack/react-query`, `recharts`, `lucide-react`, `lucide-react`, `@/components/ui-kit/PageHeader`, `@/components/ui-kit/SectionCard`, `@/lib/utils`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/skeleton`, `@/components/ui/dialog`, `@/components/ui/button`, `@/components/ui/table`, `@/components/edufinance/KPICard`, `@/components/edufinance/MonthYearPicker`, `@/lib/format`, `@/components/edufinance/Badges`, `@/components/edufinance/EmptyState`, `@/hooks/use-scope-filter`, `@/components/edufinance/PackageAlerts`, `@/hooks/use-local-storage`, `@/hooks/use-portal-mode`, `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `lucide-react`, `@/components/edufinance/SortableChartCard`, `@/components/edufinance/BirthdayBanner`
 
 ### `src/routes/_authenticated/payments.tsx`
-  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `@/components/ui/tooltip`, `@/lib/payment-renew`, `@/lib/receipt-pdf`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/select`, `@/components/ui/table`, `@/components/edufinance/PaymentDialog`, `@/components/pt/PTPaymentDialog`, `@/components/edufinance/Badges`, `@/components/edufinance/PaymentActionsDock`, `@/components/edufinance/EmptyState`, `@/components/edufinance/MonthYearPicker`, `@/components/edufinance/BulkPaymentEditBar`, `@/components/ui/checkbox`, `@/hooks/use-payment-methods`, `@/lib/format`, `@/hooks/use-scope-filter`
+  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `@/components/ui/tooltip`, `@/lib/payment-renew`, `@/lib/receipt-pdf`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/select`, `@/components/ui/table`, `@/components/edufinance/PaymentDialog`, `@/components/pt/PTPaymentDialog`, `@/components/edufinance/Badges`, `@/components/edufinance/PaymentActionsDock`, `@/components/edufinance/EmptyState`, `@/components/edufinance/MonthYearPicker`, `@/components/edufinance/BulkPaymentEditBar`, `@/components/ui/checkbox`, `@/hooks/use-payment-methods`, `@/lib/format`, `@/hooks/use-scope-filter`, `@/lib/search-utils`
 
 ### `src/routes/_authenticated/personal-trainer/analytics.tsx`
   Imports: `@tanstack/react-router`
 
 ### `src/routes/_authenticated/personal-trainer/biblioteca.tsx`
-  Imports: `@tanstack/react-router`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/pt/ImportTrainingPanel`, `@/components/pt/ImportExercisesPanel`, `@/lib/confirm-dialog`, `@/lib/utils`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/badge`, `@/components/ui/dialog`, `@/components/ui/select`, `@/components/ui/tabs`, `@/components/ui/progress`
+  Imports: `@tanstack/react-router`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/lib/confirm-dialog`, `@/lib/utils`, `@/lib/search-exercises`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/badge`, `@/components/ui/dialog`, `@/components/ui/select`, `@/components/ui/tabs`, `@/components/ui/progress`, `@/lib/thumbnail-utils`
 
 ### `src/routes/_authenticated/personal-trainer/checkin.tsx`
-  Imports: `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `date-fns`, `date-fns/locale`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/dialog`, `@/components/ui/select`, `@/components/pt/PTBadges`, `@/lib/format`, `@/lib/gcal`, `@/lib/utils`, `@/hooks/use-scope-filter`, `@/lib/pt-duo`
+  Imports: `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `date-fns`, `date-fns/locale`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/textarea`, `@/components/ui/dialog`, `@/components/ui/select`, `@/components/pt/PTBadges`, `@/lib/format`, `@/lib/gcal`, `@/lib/utils`, `@/hooks/use-scope-filter`, `@/lib/pt-duo`, `@/lib/search-utils`, `@/lib/pt-messages`
 
 ### `src/routes/_authenticated/personal-trainer/importar-treino.tsx`
   Imports: `@tanstack/react-router`
 
 ### `src/routes/_authenticated/personal-trainer/index.tsx`
-  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `sonner`, `lucide-react`, `@/components/pt/TrainingTimerDialog`, `date-fns`, `date-fns/locale`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/tabs`, `@/components/ui/select`, `@/components/ui/dialog`, `@/components/ui/table`, `@/components/edufinance/KPICard`, `@/components/edufinance/EmptyState`, `@/components/pt/PTBadges`, `@/components/pt/PTStudentDialog`, `@/components/pt/PTSessionDialog`, `@/components/pt/PTPaymentDialog`, `@/components/MigrateStudentsDialog`, `@/lib/format`, `@/hooks/use-scope-filter`, `@/lib/pt-duo`, `@/lib/utils`
+  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `sonner`, `lucide-react`, `@/components/pt/TrainingTimerDialog`, `date-fns`, `date-fns/locale`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/tabs`, `@/components/ui/select`, `@/components/ui/dialog`, `@/components/ui/table`, `@/components/edufinance/KPICard`, `@/components/edufinance/EmptyState`, `@/components/pt/PTBadges`, `@/components/pt/PTStudentDialog`, `@/components/pt/PTSessionDialog`, `@/components/pt/PTPaymentDialog`, `@/components/MigrateStudentsDialog`, `@/lib/format`, `@/hooks/use-scope-filter`, `@/lib/pt-duo`, `@/lib/pt-messages`, `@/lib/utils`
 
 ### `src/routes/_authenticated/personal-trainer/plans.tsx`
   Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/edufinance/EmptyState`, `@/components/pt/PTBadges`, `@/components/pt/PTPlanDialog`, `@/lib/format`, `@/hooks/use-scope-filter`
 
 ### `src/routes/_authenticated/personal-trainer/students.$id.tsx`
-  Imports: `@/lib/chart-theme`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `recharts`, `sonner`, `@/lib/receipt-pdf`, `date-fns`, `@/lib/pt-duo`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/tabs`, `@/components/ui/table`, `@/components/ui/select`, `@/components/ui/checkbox`, `@/components/ui/label`, `@/components/edufinance/KPICard`, `@/components/edufinance/EmptyState`, `@/components/edufinance/Badges`, `@/components/pt/PTBadges`, `@/components/pt/PTStudentDialog`, `@/components/pt/PTSessionDialog`, `@/components/pt/PTPaymentDialog`, `@/components/pt/BulkPTSessionsDialog`, `@/components/edufinance/FreezeDialog`, `@/lib/format`, `@/lib/payment-renew`, `@/components/edufinance/ContractsTab`, `@/components/pt/ProgramsTab`, `@/components/pt/PhysicalAssessmentTab`, `@/components/pt/HallOfFameCard`, `@/components/pt/StudentGamificationWidget`, `@/components/pt/WorkoutStoryModal`, `@/components/pt/StudentMonthlyReportDialog`, `@/components/pt/AnamnesisTab`, `@/components/pt/ClinicalAlertBadge`, `@/components/pt/CoachAiCopilotDialog`, `@/lib/anamnesis`, `@/lib/coach-ai`, `lucide-react`, `@/components/ui/timeline`, `@/lib/utils`
+  Imports: `@/lib/chart-theme`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `recharts`, `sonner`, `@/lib/receipt-pdf`, `date-fns`, `@/lib/pt-duo`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/tabs`, `@/components/ui/table`, `@/components/ui/select`, `@/components/ui/checkbox`, `@/components/ui/label`, `@/components/edufinance/KPICard`, `@/components/edufinance/EmptyState`, `@/components/edufinance/Badges`, `@/components/pt/PTBadges`, `@/components/pt/PTStudentDialog`, `@/components/pt/PTSessionDialog`, `@/components/pt/PTPaymentDialog`, `@/components/pt/BulkPTSessionsDialog`, `@/components/edufinance/FreezeDialog`, `@/lib/format`, `@/lib/payment-renew`, `@/components/edufinance/ContractsTab`, `@/components/pt/ProgramsTab`, `@/components/pt/PhysicalAssessmentTab`, `@/components/pt/HallOfFameCard`, `@/components/pt/StudentGamificationWidget`, `@/components/pt/WorkoutStoryModal`, `@/components/pt/StudentMonthlyReportDialog`, `@/components/pt/AnamnesisTab`, `@/components/pt/ClinicalAlertBadge`, `@/components/pt/CoachAiCopilotDialog`, `@/lib/anamnesis`, `@/lib/coach-ai`, `@/components/students/StudentObservationsCard`, `lucide-react`, `@/components/ui/timeline`, `@/lib/utils`
 
 ### `src/routes/_authenticated/plans.tsx`
   Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/edufinance/PlanDialog`, `@/components/edufinance/EmptyState`, `@/lib/format`, `@/hooks/use-scope-filter`
 
+### `src/routes/_authenticated/portal/formularios.tsx`
+  Imports: `@tanstack/react-router`, `react`, `@/lib/forms-store`, `@/lib/forms.functions`, `@/components/ui/button`, `lucide-react`, `@/hooks/use-auth`, `@/integrations/supabase/client`, `@/lib/form-submission-pdf`, `sonner`, `@/components/portal/StudentFormAnsweringModal`
+
 ### `src/routes/_authenticated/portal/index.tsx`
-  Imports: `@tanstack/react-router`, `react`, `@/hooks/use-auth`, `@tanstack/react-query`, `sonner`, `@/components/ui/card`, `@/components/ui/button`, `@/components/edufinance/AgendaView`, `@tanstack/react-start`, `@/lib/classes.functions`, `@/lib/bonus.functions`, `@/integrations/supabase/client`, `lucide-react`, `@/components/ui/dialog`, `@/components/ui/alert-dialog`, `@/lib/format`, `@/hooks/use-wake-lock`, `@/components/portal/BonusDecisionModal`, `@/components/portal/BonusBalanceCard`
+  Imports: `@tanstack/react-router`, `react`, `@/hooks/use-auth`, `@tanstack/react-query`, `sonner`, `@/components/ui/card`, `@/components/ui/button`, `@/components/edufinance/AgendaView`, `@tanstack/react-start`, `@/lib/classes.functions`, `@/lib/student-access.functions`, `@/lib/bonus.functions`, `@/integrations/supabase/client`, `lucide-react`, `@/components/ui/dialog`, `@/components/ui/alert-dialog`, `@/lib/format`, `@/hooks/use-wake-lock`, `@/components/portal/BonusDecisionModal`, `@/components/portal/BonusBalanceCard`
 
 ### `src/routes/_authenticated/portal/perfil.tsx`
   Imports: `@tanstack/react-router`, `@tanstack/react-query`, `react`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`, `@/components/ui/badge`, `sonner`, `@/lib/format`, `lucide-react`, `@/components/pt/HistoryShareSelector`
+
+### `src/routes/_authenticated/portal/planos.tsx`
+  Imports: `@tanstack/react-router`, `@tanstack/react-query`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/badge`, `@tanstack/react-start`, `@/lib/payments.functions`, `lucide-react`, `@/lib/format`
 
 ### `src/routes/_authenticated/portal/pt/index.tsx`
   Imports: `react`, `@tanstack/react-router`, `@tanstack/react-query`, `@/integrations/supabase/client`, `@/hooks/use-auth`, `@/components/ui/card`, `@/components/ui/button`, `@/lib/format`, `lucide-react`, `@/components/pt/WorkoutProgressionDialog`
 
 ### `src/routes/_authenticated/portal/pt/treino.tsx`
-  Imports: `react`, `@tanstack/react-router`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/hooks/use-auth`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/lib/utils`, `@/lib/format`, `@/components/pt/SessionTimer`, `@/components/ui/label`, `@/components/ui/textarea`, `@/hooks/use-wake-lock`, `@/components/ui/dialog`, `@/components/pt/WorkoutSummaryDialog`, `@/components/pt/WorkoutProgressionDialog`, `@/components/pt/RestCountdownTimer`, `@/components/pt/ClinicalAlertBadge`, `@/lib/anamnesis`
+  Imports: `react`, `@/lib/training-weeks`, `@tanstack/react-router`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/hooks/use-auth`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/lib/utils`, `@/lib/format`, `@/components/pt/SessionTimer`, `@/components/ui/label`, `@/components/ui/textarea`, `@/hooks/use-wake-lock`, `@/components/ui/dialog`, `@/components/pt/WorkoutSummaryDialog`, `@/components/pt/WorkoutProgressionDialog`, `@/components/pt/RestCountdownTimer`, `@/components/pt/FocusedDayView`, `@/components/pt/ClinicalAlertBadge`, `@/lib/anamnesis`, `@/lib/student-access.functions`
 
 ### `src/routes/_authenticated/programs.tsx`
   Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/switch`, `@/components/ui/dialog`, `@/hooks/use-scope-filter`
 
 ### `src/routes/_authenticated/route.tsx`
-  Imports: `@tanstack/react-router`, `react`, `@/integrations/supabase/client`, `@/components/edufinance/AppShell`, `@/components/portal/PortalShell`, `@/hooks/use-role`, `@/hooks/use-portal-mode`
+  Imports: `@tanstack/react-router`, `react`, `@/integrations/supabase/client`, `@/components/edufinance/AppShell`, `@/components/portal/PortalShell`, `@/hooks/use-role`, `@/hooks/use-portal-mode`, `@/lib/impersonate-helper`, `@/components/pt/TrainingTimerDialog`, `@/hooks/use-training-timer`
 
 ### `src/routes/_authenticated/settings.tsx`
-  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@/lib/utils`, `@tanstack/react-router`, `lucide-react`, `@/components/ui/tabs`, `@/components/settings/DataTransferPanel`, `@/components/settings/TrashPanel`, `@/components/pt/DragDropPromptCard`, `@/components/pt/AiEnginePromptCard`, `@/components/settings/BusinessLogosPanel`, `lucide-react`, `react`, `sonner`, `lucide-react`, `@/components/ui/card`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`, `@/hooks/use-auth`, `@/hooks/use-theme`, `@/integrations/supabase/client`, `@tanstack/react-start`, `@tanstack/react-query`, `@/lib/email.functions`, `@/components/edufinance/PaymentMethodsSettings`, `@/hooks/use-font-size`, `@/components/ui/select`, `@/hooks/use-landing-page`, `@/hooks/use-profile-mode`, `@/hooks/use-role`, `lucide-react`
+  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@/lib/utils`, `@tanstack/react-router`, `lucide-react`, `@/components/ui/tabs`, `@/components/settings/DataTransferPanel`, `@/components/settings/TrashPanel`, `@/components/pt/DragDropPromptCard`, `@/components/pt/AiEnginePromptCard`, `@/components/settings/BusinessLogosPanel`, `@/components/settings/DownloadApkPanel`, `@/components/settings/MobileNotificationsCard`, `lucide-react`, `lucide-react`, `react`, `sonner`, `lucide-react`, `@/components/ui/card`, `@/components/ui/input`, `@/components/ui/label`, `@/components/ui/button`, `@/hooks/use-auth`, `@/hooks/use-theme`, `@/integrations/supabase/client`, `@tanstack/react-start`, `@tanstack/react-query`, `@/lib/email.functions`, `@/lib/ai-key.functions`, `@/components/edufinance/PaymentMethodsSettings`, `@/hooks/use-font-size`, `@/components/ui/select`, `@/hooks/use-landing-page`, `@/hooks/use-profile-mode`, `@/hooks/use-role`, `lucide-react`
 
 ### `src/routes/_authenticated/storage.tsx`
   Imports: `@tanstack/react-router`, `react`, `@tanstack/react-query`, `@tanstack/react-start`, `sonner`, `lucide-react`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/tabs`, `@/lib/storage-browser.functions`, `@/lib/confirm-dialog`
 
 ### `src/routes/_authenticated/students.$id.tsx`
-  Imports: `react`, `@tanstack/react-router`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/button`, `@/components/ui/tabs`, `@/components/ui/tooltip`, `@/components/ui/alert-dialog`, `@/components/edufinance/Badges`, `@/components/edufinance/PaymentDialog`, `@/components/edufinance/StudentDialog`, `@/components/edufinance/FreezeDialog`, `@/components/edufinance/TransferPaymentDialog`, `@/lib/payment-renew`, `@/lib/format`, `@/components/students/tabs/StudentOverviewTab`, `@/components/students/tabs/StudentPersonalTab`, `@/components/students/tabs/StudentPlanTab`, `@/components/students/tabs/StudentPaymentsTab`, `@/components/students/tabs/StudentCheckinsTab`, `@/components/students/tabs/StudentAttendanceTab`, `@/components/students/tabs/BonusBalancePanel`
+  Imports: `react`, `@tanstack/react-router`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/integrations/supabase/client`, `@/components/ui/button`, `@/components/ui/tabs`, `@/components/ui/tooltip`, `@/components/ui/alert-dialog`, `@/components/edufinance/Badges`, `@/components/edufinance/PaymentDialog`, `@/components/edufinance/StudentDialog`, `@/components/edufinance/FreezeDialog`, `@/components/edufinance/TransferPaymentDialog`, `@/lib/payment-renew`, `@/lib/format`, `@/components/students/tabs/StudentOverviewTab`, `@/components/students/tabs/StudentPersonalTab`, `@/components/students/tabs/StudentFormsTab`, `@/lib/forms.functions`, `@/components/students/tabs/StudentPlanTab`, `@/components/students/tabs/StudentPaymentsTab`, `@/components/students/tabs/StudentCheckinsTab`, `@/components/students/tabs/StudentAttendanceTab`, `@/components/students/tabs/BonusBalancePanel`, `@/components/pt/ProgramsTab`, `@/lib/form-submission-pdf`
 
 ### `src/routes/_authenticated/students.index.tsx`
-  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/components/pt/TrainingTimerDialog`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/table`, `@/components/ui/select`, `@/components/ui/alert-dialog`, `@/components/edufinance/StudentDialog`, `@/components/ui/skeleton`, `@/components/edufinance/BulkStudentEditDialog`, `@/components/students/dialogs/BulkGrantBonusDialog`, `@/components/MigrateStudentsDialog`, `@/components/edufinance/Badges`, `@/components/edufinance/EmptyState`, `@/lib/format`, `@/hooks/use-scope-filter`, `@/lib/checkins`, `@/lib/utils`, `lucide-react`
+  Imports: `lucide-react`, `@/components/ui-kit/PageHeader`, `@tanstack/react-router`, `@/lib/confirm-dialog`, `react`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/components/pt/TrainingTimerDialog`, `@/integrations/supabase/client`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/table`, `@/components/ui/select`, `@/components/ui/alert-dialog`, `@/components/edufinance/StudentDialog`, `@/components/ui/skeleton`, `@/components/edufinance/BulkStudentEditDialog`, `@/components/students/dialogs/BulkGrantBonusDialog`, `@/components/MigrateStudentsDialog`, `@/components/edufinance/Badges`, `@/components/edufinance/EmptyState`, `@/lib/format`, `@/hooks/use-scope-filter`, `@/lib/checkins`, `@/lib/utils`, `lucide-react`, `@/lib/search-utils`
 
 ### `src/routes/_authenticated/trash.tsx`
   Imports: `@tanstack/react-router`
 
+### `src/routes/_authenticated/treino.tsx`
+  Imports: `react`, `@/lib/training-weeks`, `@tanstack/react-router`, `@tanstack/react-query`, `@/integrations/supabase/client`, `lucide-react`, `@/lib/format`, `@/lib/utils`, `@/components/pt/FocusedDayView`, `@/components/pt/SessionTimer`, `@/components/ui/card`, `@/components/ui/button`, `@/components/ui/badge`
+
+### `src/routes/_authenticated/treinos.tsx`
+  Imports: `react`, `@tanstack/react-router`, `@tanstack/react-query`, `lucide-react`, `sonner`, `@/lib/utils`, `@/integrations/supabase/client`, `@/components/ui/button`, `@/components/ui/input`, `@/components/ui/badge`, `@/components/ui/card`, `@/components/ui/tabs`, `@/components/ui/dropdown-menu`, `@/components/ui/select`, `@/components/ui/dialog`, `@/components/programa-ia/PrescreverIaDialog`, `@/components/pt/AtribuirTreinoDialog`, `@/components/pt/ProgramEditorDialog`, `@/components/session-builder/SessionBuilder`, `@/lib/pt-program-pdf`, `@/lib/format`, `@/lib/confirm-dialog`, `@/components/pt/StudentViewDialog`, `@/components/pt/LoadProgressionDialog`, `@/components/pt/TrainingDayDetail`, `@/components/program-image/ProgramImageDialog`, `@/lib/search-utils`
+
 ### `src/routes/__root.tsx`
-  Imports: `@tanstack/react-query`, `@tanstack/react-router`, `react`, `../styles.css?url`, `@/components/ui/sonner`, `@/components/ui/tooltip`, `@/lib/confirm-dialog`, `@/integrations/supabase/client`, `@/hooks/use-font-size`, `@/hooks/use-theme`, `@/components/pwa/PwaInstallBanner`, `@/hooks/use-impersonate`, `@/components/ImpersonationBanner`
+  Imports: `@tanstack/react-query`, `@tanstack/react-router`, `react`, `../styles.css?url`, `@/components/ui/sonner`, `@/components/ui/tooltip`, `@/lib/confirm-dialog`, `@/integrations/supabase/client`, `@/hooks/use-font-size`, `@/hooks/use-theme`, `@/components/pwa/PwaInstallBanner`, `@/hooks/use-impersonate`, `@/components/ImpersonationBanner`, `@capacitor/core`
 
 ### `src/routeTree.gen.ts`
-  Imports: `./routes/__root`, `./routes/_authenticated/route`, `./routes/auth`, `./routes/boost`, `./routes/create`, `./routes/eco`, `./routes/master-admin`, `./routes/mcp`, `./routes/reset-password`, `./routes/[.mcp]/list-tools`, `./routes/[.well-known]/oauth-protected-resource`, `./routes/_authenticated/index`, `./routes/_authenticated/agenda`, `./routes/_authenticated/analytics`, `./routes/_authenticated/crm`, `./routes/_authenticated/diagnostics`, `./routes/_authenticated/financeiro`, `./routes/_authenticated/import-export`, `./routes/_authenticated/payments`, `./routes/_authenticated/plans`, `./routes/_authenticated/programs`, `./routes/_authenticated/settings`, `./routes/_authenticated/storage`, `./routes/_authenticated/trash`, `./routes/[.]lovable.oauth.consent`, `./routes/[.mcp]/invoke-tool/$tool`, `./routes/_authenticated/admin/tenants`, `./routes/_authenticated/desafios/index`, `./routes/_authenticated/personal-trainer/index`, `./routes/_authenticated/personal-trainer/analytics`, `./routes/_authenticated/personal-trainer/biblioteca`, `./routes/_authenticated/personal-trainer/checkin`, `./routes/_authenticated/personal-trainer/importar-treino`, `./routes/_authenticated/personal-trainer/plans`, `./routes/_authenticated/portal/index`, `./routes/_authenticated/portal/perfil`, `./routes/_authenticated/students.index`, `./routes/_authenticated/students.$id`, `./routes/_authenticated/personal-trainer/students.$id`, `./routes/_authenticated/portal/pt/index`, `./routes/_authenticated/portal/pt/treino`, `./router.tsx`, `./start.ts`
+  Imports: `./routes/__root`, `./routes/_authenticated/route`, `./routes/auth`, `./routes/boost`, `./routes/copyright`, `./routes/create`, `./routes/eco`, `./routes/master-admin`, `./routes/mcp`, `./routes/reset-password`, `./routes/[.mcp]/list-tools`, `./routes/[.well-known]/oauth-protected-resource`, `./routes/_authenticated/index`, `./routes/_authenticated/agenda`, `./routes/_authenticated/analytics`, `./routes/_authenticated/biblioteca`, `./routes/_authenticated/blog-editor`, `./routes/_authenticated/crm`, `./routes/_authenticated/diagnostics`, `./routes/_authenticated/financeiro`, `./routes/_authenticated/formularios`, `./routes/_authenticated/import-export`, `./routes/_authenticated/payments`, `./routes/_authenticated/plans`, `./routes/_authenticated/programs`, `./routes/_authenticated/settings`, `./routes/_authenticated/storage`, `./routes/_authenticated/trash`, `./routes/_authenticated/treino`, `./routes/_authenticated/treinos`, `./routes/f.$slug`, `./routes/[.]lovable.oauth.consent`, `./routes/[.mcp]/invoke-tool/$tool`, `./routes/_authenticated/admin/tenants`, `./routes/_authenticated/desafios/index`, `./routes/_authenticated/personal-trainer/index`, `./routes/_authenticated/personal-trainer/analytics`, `./routes/_authenticated/personal-trainer/biblioteca`, `./routes/_authenticated/personal-trainer/checkin`, `./routes/_authenticated/personal-trainer/importar-treino`, `./routes/_authenticated/personal-trainer/plans`, `./routes/_authenticated/portal/index`, `./routes/_authenticated/portal/formularios`, `./routes/_authenticated/portal/perfil`, `./routes/_authenticated/portal/planos`, `./routes/_authenticated/students.index`, `./routes/_authenticated/students.$id`, `./routes/api.cron.pre-class`, `./routes/api.forms.google-webhook`, `./routes/api.notifications.clear`, `./routes/api.payments.infinitepay-webhook`, `./routes/_authenticated/personal-trainer/students.$id`, `./routes/_authenticated/portal/pt/index`, `./routes/_authenticated/portal/pt/treino`, `./router.tsx`, `./start.ts`
 
 ### `src/server.ts`
   Imports: `./lib/error-capture`, `./lib/error-page`
 
 ### `src/services/ecosystem-auth-service.ts`
-  Imports: `@supabase/supabase-js`
+  Imports: `@supabase/supabase-js`, `@/integrations/supabase/client`
 
 ### `src/start.ts`
   Imports: `@tanstack/react-start`, `./lib/error-page`, `@/integrations/supabase/auth-attacher`
+
+### `test-push-checkin.js`
+  Imports: `@supabase/supabase-js`
 
 ### `tests/e2e/bonus-checkins.test.ts`
   Imports: `bun:test`
@@ -1976,6 +2306,45 @@
 
 ### `tests/e2e/challenger-stress-concurrency.test.ts`
   Imports: `bun:test`, `node:fs`, `node:path`
+
+### `tests/e2e-mobile/contracts.ts`
+  Imports: `node:fs`, `node:path`
+
+### `tests/e2e-mobile/tier1-features.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `./contracts`
+
+### `tests/e2e-mobile/tier2-boundaries.test.ts`
+  Imports: `bun:test`, `./contracts`
+
+### `tests/e2e-mobile/tier3-pairwise.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `./contracts`
+
+### `tests/e2e-mobile/tier4-scenarios.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `./contracts`
+
+### `tests/e2e-mobile/tier5-challenger-m1-resiliency.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `node:vm`
+
+### `tests/e2e-mobile/tier5-challenger-m1.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `node:child_process`, `@capacitor/cli`
+
+### `tests/e2e-mobile/tier5-challenger-m2-assets.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `node:crypto`
+
+### `tests/e2e-mobile/tier5-challenger-m2-manifest.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `node:child_process`
+
+### `tests/e2e-mobile/tier5-challenger-m3-build.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `node:os`, `node:child_process`, `js-yaml`, `./contracts`
+
+### `tests/e2e-mobile/tier5-challenger-m3-ci.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `js-yaml`, `./contracts`
+
+### `tests/e2e-mobile/tier5-challenger-m4-security.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `./contracts`
+
+### `tests/e2e-mobile/tier5-challenger-m4-viewport-touch.test.ts`
+  Imports: `bun:test`, `node:fs`, `node:path`, `./contracts`
 
 ### `vite.config.ts`
   Imports: `@lovable.dev/vite-tanstack-config`, `@lovable.dev/mcp-js/stacks/tanstack/vite`

@@ -5,13 +5,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { AgendaView } from "@/components/edufinance/AgendaView";
 import { useServerFn } from "@tanstack/react-start";
 import { studentCheckIn, studentCancelCheckIn, getMyQuotaUsage, getMyAttendanceStats, getSessionAttendees } from "@/lib/classes.functions";
 import { getMyTrainingPortalDataServerFn } from "@/lib/student-access.functions";
 import { getMyBonusBalance } from "@/lib/bonus.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, AlertTriangle, Trophy, Users, Dumbbell } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Trophy, Users, Dumbbell, ClipboardList } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -241,72 +242,34 @@ function PortalHome() {
         </p>
       </header>
 
-      {/* Link rápido para treino se o aluno tiver treinos cadastrados (Studio, PT ou Híbrido) */}
-      {(() => {
-        const { user } = useAuth();
-        const { data: userTypes } = useQuery({
-          queryKey: ["portal-user-types-with-workouts", user?.id],
-          enabled: !!user?.id,
-          queryFn: async () => {
-            // 1. Tenta carregar via Server Function blindada (bypassa RLS e auto-vincula)
-            try {
-              const res = await getMyTrainingPortalDataServerFn();
-              if (res?.hasWorkouts) {
-                return { hasWorkouts: true };
-              }
-            } catch (err) {
-              console.warn("[portal] Aviso ao consultar treinos via server fn:", err);
-            }
+      {/* Banner Unificado de Acesso ao Treino (Alunos Studio, Personal e Híbridos) */}
+      <Card className="p-4 sm:p-5 border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-xs">
+              <Dumbbell className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-sm sm:text-base text-foreground">Meu Programa de Treino</h3>
+                <Badge variant="secondary" className="text-[10px] font-bold bg-primary/20 text-primary border-0">
+                  Studio & Personal
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Consulte sua periodização, rotinas A/B/C, execuções e evolução de cargas.
+              </p>
+            </div>
+          </div>
 
-            // 2. Fallback fail-safe via Supabase cliente contemplando tanto pt_student_id quanto studio_student_id
-            try {
-              const [studio, pt] = await Promise.all([
-                supabase.from("students").select("id,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
-                supabase.from("pt_students").select("id,training_plan,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
-              ]);
-
-              let studioId = studio.data?.id;
-              let ptStudentId = pt.data?.id;
-              let ptPlan = pt.data?.training_plan;
-
-              if (ptPlan && ptPlan.trim() !== "") {
-                return { hasWorkouts: true };
-              }
-
-              const ids = [user!.id];
-              if (ptStudentId) ids.push(ptStudentId);
-              if (studioId) ids.push(studioId);
-
-              const [resPt, resStudio] = await Promise.all([
-                supabase
-                  .from("pt_programs" as never)
-                  .select("id", { count: "exact", head: true })
-                  .in("pt_student_id", ids)
-                  .eq("is_deleted", false),
-                supabase
-                  .from("pt_programs" as never)
-                  .select("id", { count: "exact", head: true })
-                  .in("studio_student_id", ids)
-                  .eq("is_deleted", false),
-              ]);
-
-              const hasWorkouts = ((resPt?.count ?? 0) > 0) || ((resStudio?.count ?? 0) > 0);
-              return { hasWorkouts };
-            } catch {
-              return { hasWorkouts: false };
-            }
-          },
-        });
-        if (!userTypes?.hasWorkouts) return null;
-        return (
-          <Button asChild variant="secondary" className="w-full gap-2 py-6 border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary">
+          <Button asChild size="default" className="w-full sm:w-auto font-semibold gap-2 shadow-xs shrink-0">
             <Link to="/portal/pt/treino">
-              <Dumbbell className="h-5 w-5" />
-              Acessar meu Treino
+              <span>Abrir Meu Treino</span>
+              <ClipboardList className="h-4 w-4" />
             </Link>
           </Button>
-        );
-      })()}
+        </div>
+      </Card>
 
       {quota && (quota.plan_name || quota.quota_type !== "none") && (() => {
         const hasQuota = quota.quota_type !== "none" && !!quota.quota_amount;

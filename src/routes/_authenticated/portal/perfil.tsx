@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatBRL, formatDateBR } from "@/lib/format";
-import { ChevronDown, ChevronUp, CalendarCheck, CheckCircle2, ShieldCheck } from "lucide-react";
+import { ChevronDown, ChevronUp, CalendarCheck, CheckCircle2, ShieldCheck, Dumbbell } from "lucide-react";
 import { HistoryShareSelector } from "@/components/pt/HistoryShareSelector";
 
 export const Route = createFileRoute("/_authenticated/portal/perfil")({
@@ -164,11 +164,19 @@ function PerfilPage() {
 
   return (
     <div className="w-full max-w-2xl space-y-6 min-w-0 overflow-x-hidden">
-      <header>
-        <p className="text-overline mb-1.5 text-muted-foreground">
-          {userTypes?.studio && userTypes?.pt ? "Portal Híbrido" : "Área do aluno"}
-        </p>
-        <h1 className="text-title text-foreground">Meus dados</h1>
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-overline mb-1.5 text-muted-foreground">
+            {userTypes?.studio && userTypes?.pt ? "Portal Híbrido" : "Área do aluno"}
+          </p>
+          <h1 className="text-title text-foreground">Meus dados</h1>
+        </div>
+        <Button asChild size="sm" variant="outline" className="gap-2 font-semibold">
+          <Link to="/portal/pt/treino">
+            <Dumbbell className="h-4 w-4 text-primary" />
+            <span>Meu Treino</span>
+          </Link>
+        </Button>
       </header>
 
       {/* Dados pessoais */}
