@@ -43,6 +43,7 @@ function AuthenticatedLayout() {
     pathname === "/biblioteca" ||
     pathname.startsWith("/biblioteca");
   const isPTPortalPath = pathname === "/portal/pt" || pathname.startsWith("/portal/pt/");
+  const isWorkoutPath = pathname === "/portal/pt/treino" || pathname.startsWith("/portal/pt/treino");
   const { isOpen: timerOpen, defaultMode: timerMode, setOpen: setTimerOpen } = useTrainingTimer();
 
   useEffect(() => {
@@ -56,14 +57,14 @@ function AuthenticatedLayout() {
         }
       } else if (mode === "pt" && !isPTPortalPath && !modeLoading) {
         navigate({ to: "/portal/pt", replace: true });
-      } else if (mode === "studio" && isPTPortalPath && !modeLoading) {
+      } else if (mode === "studio" && isPTPortalPath && !isWorkoutPath && !modeLoading) {
         navigate({ to: "/portal", replace: true });
       }
     }
     if (isAdmin && isPortalPath) {
       navigate({ to: "/", replace: true });
     }
-  }, [loading, modeLoading, isStudent, isAdmin, mode, isPortalPath, isPTPortalPath, navigate]);
+  }, [loading, modeLoading, isStudent, isAdmin, mode, isPortalPath, isPTPortalPath, isWorkoutPath, navigate]);
 
   if (loading) {
     return (

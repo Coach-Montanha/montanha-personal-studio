@@ -250,22 +250,17 @@ function PortalHome() {
               <Dumbbell className="h-6 w-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm sm:text-base text-foreground">Meu Programa de Treino</h3>
-                <Badge variant="secondary" className="text-[10px] font-bold bg-primary/20 text-primary border-0">
-                  Studio & Personal
-                </Badge>
-              </div>
+              <h3 className="font-bold text-sm sm:text-base text-foreground">Meu Programa de Treino</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Consulte sua periodização, rotinas A/B/C, execuções e evolução de cargas.
               </p>
             </div>
           </div>
 
-          <Button asChild size="default" className="w-full sm:w-auto font-semibold gap-2 shadow-xs shrink-0">
-            <Link to="/portal/pt/treino">
-              <span>Abrir Meu Treino</span>
-              <ClipboardList className="h-4 w-4" />
+          <Button asChild size="default" className="w-full sm:w-auto font-semibold gap-2 shadow-xs shrink-0 bg-primary text-white hover:bg-primary/90">
+            <Link to="/portal/pt/treino" className="!text-white flex items-center gap-2">
+              <span className="!text-white font-semibold">Abrir Meu Treino</span>
+              <ClipboardList className="h-4 w-4 !text-white shrink-0" />
             </Link>
           </Button>
         </div>

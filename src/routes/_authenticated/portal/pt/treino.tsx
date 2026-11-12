@@ -347,9 +347,9 @@ function PTTreinoPage() {
       {!selectedDay && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-title text-foreground">Treino Personal</h1>
+            <h1 className="text-title text-foreground">Meu Programa de Treino</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Rotinas montadas pelo seu Personal Trainer.
+              Acompanhe suas rotinas de treino, execuções e evolução de cargas.
             </p>
           </div>
           {student && (
