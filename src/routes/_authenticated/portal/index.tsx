@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AgendaView } from "@/components/edufinance/AgendaView";
 import { useServerFn } from "@tanstack/react-start";
 import { studentCheckIn, studentCancelCheckIn, getMyQuotaUsage, getMyAttendanceStats, getSessionAttendees } from "@/lib/classes.functions";
+import { getMyTrainingPortalDataServerFn } from "@/lib/student-access.functions";
 import { getMyBonusBalance } from "@/lib/bonus.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, AlertTriangle, Trophy, Users, Dumbbell } from "lucide-react";
@@ -247,75 +248,53 @@ function PortalHome() {
           queryKey: ["portal-user-types-with-workouts", user?.id],
           enabled: !!user?.id,
           queryFn: async () => {
-            const [studio, pt] = await Promise.all([
-              supabase.from("students").select("id,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
-              supabase.from("pt_students").select("id,training_plan,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
-            ]);
-
-            let studioId = studio.data?.id;
-            let ptStudentId = pt.data?.id;
-            let ptPlan = pt.data?.training_plan;
-
-            if (!ptStudentId && user?.email) {
-              const { data: ptEmail } = await supabase
-                .from("pt_students")
-                .select("id,training_plan,account_user_id")
-                .ilike("email", user.email.trim())
-                .maybeSingle();
-              if (ptEmail) {
-                ptStudentId = ptEmail.id;
-                ptPlan = ptEmail.training_plan;
-                if (ptEmail.account_user_id !== user.id) {
-                  await supabase
-                    .from("pt_students")
-                    .update({ account_user_id: user.id } as never)
-                    .eq("id", ptEmail.id);
-                }
+            // 1. Tenta carregar via Server Function blindada (bypassa RLS e auto-vincula)
+            try {
+              const res = await getMyTrainingPortalDataServerFn();
+              if (res?.hasWorkouts) {
+                return { hasWorkouts: true };
               }
+            } catch (err) {
+              console.warn("[portal] Aviso ao consultar treinos via server fn:", err);
             }
 
-            if (!studioId && user?.email) {
-              const { data: stEmail } = await supabase
-                .from("students")
-                .select("id,account_user_id")
-                .ilike("email", user.email.trim())
-                .maybeSingle();
-              if (stEmail) {
-                studioId = stEmail.id;
-                if (stEmail.account_user_id !== user.id) {
-                  await supabase
-                    .from("students")
-                    .update({ account_user_id: user.id } as never)
-                    .eq("id", stEmail.id);
-                }
-              }
-            }
+            // 2. Fallback fail-safe via Supabase cliente contemplando tanto pt_student_id quanto studio_student_id
+            try {
+              const [studio, pt] = await Promise.all([
+                supabase.from("students").select("id,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
+                supabase.from("pt_students").select("id,training_plan,account_user_id").eq("account_user_id", user!.id).maybeSingle(),
+              ]);
 
-            let hasWorkouts = false;
+              let studioId = studio.data?.id;
+              let ptStudentId = pt.data?.id;
+              let ptPlan = pt.data?.training_plan;
 
-            if (ptStudentId) {
               if (ptPlan && ptPlan.trim() !== "") {
-                hasWorkouts = true;
-              } else {
-                const { count } = await supabase
+                return { hasWorkouts: true };
+              }
+
+              const ids = [user!.id];
+              if (ptStudentId) ids.push(ptStudentId);
+              if (studioId) ids.push(studioId);
+
+              const [resPt, resStudio] = await Promise.all([
+                supabase
                   .from("pt_programs" as never)
                   .select("id", { count: "exact", head: true })
-                  .eq("pt_student_id", ptStudentId)
-                  .eq("is_deleted", false);
-                hasWorkouts = (count ?? 0) > 0;
-              }
-            }
+                  .in("pt_student_id", ids)
+                  .eq("is_deleted", false),
+                supabase
+                  .from("pt_programs" as never)
+                  .select("id", { count: "exact", head: true })
+                  .in("studio_student_id", ids)
+                  .eq("is_deleted", false),
+              ]);
 
-            if (!hasWorkouts && studioId) {
-              const { count } = await supabase
-                .from("pt_programs" as never)
-                .select("id", { count: "exact", head: true })
-                .eq("pt_student_id", studioId)
-                .eq("is_deleted", false);
-              hasWorkouts = (count ?? 0) > 0;
+              const hasWorkouts = ((resPt?.count ?? 0) > 0) || ((resStudio?.count ?? 0) > 0);
+              return { hasWorkouts };
+            } catch {
+              return { hasWorkouts: false };
             }
-
-            return { hasWorkouts };
           },
         });
         if (!userTypes?.hasWorkouts) return null;

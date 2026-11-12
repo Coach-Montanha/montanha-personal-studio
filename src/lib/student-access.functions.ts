@@ -356,3 +356,218 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
 
     return { healed: true, name: matches[0].name };
   });
+
+/**
+ * Retorna os dados completos do portal de treino para o aluno logado (Studio, Personal Trainer ou Híbrido),
+ * utilizando supabaseAdmin com service role para contornar qualquer restrição ou falha de RLS,
+ * e auto-vincula o account_user_id caso ainda não estivesse associado.
+ */
+export const getMyTrainingPortalDataServerFn = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId, claims } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Identificar e-mail do usuário autenticado
+    let userEmail = claims?.email ? String(claims.email).trim().toLowerCase() : null;
+    if (!userEmail) {
+      try {
+        const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+        if (userData?.user?.email) {
+          userEmail = userData.user.email.trim().toLowerCase();
+        }
+      } catch {
+        // fallback silencioso
+      }
+    }
+
+    // 2. Busca registros em pt_students por account_user_id e por e-mail
+    const ptMatches: any[] = [];
+    const ptSeen = new Set<string>();
+
+    const { data: ptById } = await supabaseAdmin
+      .from("pt_students")
+      .select("id, name, training_plan, user_id, account_user_id, email")
+      .eq("account_user_id", userId);
+
+    (ptById || []).forEach((p: any) => {
+      if (p?.id && !ptSeen.has(p.id)) {
+        ptSeen.add(p.id);
+        ptMatches.push(p);
+      }
+    });
+
+    if (userEmail) {
+      const { data: ptByEmail } = await supabaseAdmin
+        .from("pt_students")
+        .select("id, name, training_plan, user_id, account_user_id, email")
+        .ilike("email", userEmail);
+
+      (ptByEmail || []).forEach((p: any) => {
+        if (p?.id && !ptSeen.has(p.id)) {
+          ptSeen.add(p.id);
+          ptMatches.push(p);
+        }
+      });
+    }
+
+    // 3. Busca registros em students por account_user_id e por e-mail
+    const studioMatches: any[] = [];
+    const studioSeen = new Set<string>();
+
+    const { data: stById } = await supabaseAdmin
+      .from("students")
+      .select("id, name, user_id, account_user_id, email")
+      .eq("account_user_id", userId);
+
+    (stById || []).forEach((s: any) => {
+      if (s?.id && !studioSeen.has(s.id)) {
+        studioSeen.add(s.id);
+        studioMatches.push(s);
+      }
+    });
+
+    if (userEmail) {
+      const { data: stByEmail } = await supabaseAdmin
+        .from("students")
+        .select("id, name, user_id, account_user_id, email")
+        .ilike("email", userEmail);
+
+      (stByEmail || []).forEach((s: any) => {
+        if (s?.id && !studioSeen.has(s.id)) {
+          studioSeen.add(s.id);
+          studioMatches.push(s);
+        }
+      });
+    }
+
+    // 4. Auto-vincula account_user_id caso esteja nulo ou desatualizado
+    for (const pt of ptMatches) {
+      if (pt.account_user_id !== userId) {
+        try {
+          await supabaseAdmin
+            .from("pt_students")
+            .update({ account_user_id: userId })
+            .eq("id", pt.id);
+          pt.account_user_id = userId;
+        } catch (e) {
+          console.error("[getMyTrainingPortalDataServerFn] Falha ao auto-vincular pt_student:", e);
+        }
+      }
+    }
+
+    for (const st of studioMatches) {
+      if (st.account_user_id !== userId) {
+        try {
+          await supabaseAdmin
+            .from("students")
+            .update({ account_user_id: userId })
+            .eq("id", st.id);
+          st.account_user_id = userId;
+        } catch (e) {
+          console.error("[getMyTrainingPortalDataServerFn] Falha ao auto-vincular student:", e);
+        }
+      }
+    }
+
+    // 5. Coleta todos os IDs de aluno associados (tanto PT quanto Studio)
+    const allStudentIds: string[] = [];
+    ptMatches.forEach((p) => {
+      if (p?.id && !allStudentIds.includes(p.id)) allStudentIds.push(p.id);
+    });
+    studioMatches.forEach((s) => {
+      if (s?.id && !allStudentIds.includes(s.id)) allStudentIds.push(s.id);
+    });
+
+    // 6. Define perfil representativo do aluno
+    let student: any = null;
+    if (ptMatches.length > 0) {
+      student = ptMatches[0];
+    } else if (studioMatches.length > 0) {
+      student = {
+        id: studioMatches[0].id,
+        name: studioMatches[0].name,
+        training_plan: null,
+        user_id: studioMatches[0].user_id,
+        account_user_id: studioMatches[0].account_user_id,
+        email: studioMatches[0].email,
+      };
+    }
+
+    if (allStudentIds.length === 0) {
+      return {
+        student: null,
+        programs: [],
+        days: [],
+        exercises: [],
+        hasWorkouts: false,
+      };
+    }
+
+    // 7. Busca programas não-deletados onde pt_student_id IN (ids) OU studio_student_id IN (ids)
+    const [ptProgRes, studioProgRes] = await Promise.all([
+      supabaseAdmin
+        .from("pt_programs" as any)
+        .select("*")
+        .in("pt_student_id", allStudentIds)
+        .eq("is_deleted", false)
+        .order("start_date", { ascending: false }),
+      supabaseAdmin
+        .from("pt_programs" as any)
+        .select("*")
+        .in("studio_student_id", allStudentIds)
+        .eq("is_deleted", false)
+        .order("start_date", { ascending: false }),
+    ]);
+
+    const programMap = new Map<string, any>();
+    (ptProgRes.data || []).forEach((p: any) => {
+      if (p?.id) programMap.set(p.id, p);
+    });
+    (studioProgRes.data || []).forEach((p: any) => {
+      if (p?.id) programMap.set(p.id, p);
+    });
+
+    const programs = Array.from(programMap.values()).sort(
+      (a, b) => new Date(b.start_date || 0).getTime() - new Date(a.start_date || 0).getTime()
+    );
+
+    const programIds = programs.map((p) => p.id);
+
+    // 8. Busca dias de treino dos programas
+    let days: any[] = [];
+    if (programIds.length > 0) {
+      const { data: daysData } = await supabaseAdmin
+        .from("pt_training_days" as any)
+        .select("*")
+        .in("program_id", programIds)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      days = daysData || [];
+    }
+
+    // 9. Busca exercícios dos dias de treino
+    const dayIds = days.map((d) => d.id);
+    let exercises: any[] = [];
+    if (dayIds.length > 0) {
+      const { data: exData } = await supabaseAdmin
+        .from("pt_training_exercises" as any)
+        .select("*")
+        .in("training_day_id", dayIds)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+      exercises = exData || [];
+    }
+
+    const hasWorkouts =
+      Boolean(student?.training_plan && student.training_plan.trim() !== "") ||
+      programs.length > 0;
+
+    return {
+      student,
+      programs,
+      days,
+      exercises,
+      hasWorkouts,
+    };
+  });

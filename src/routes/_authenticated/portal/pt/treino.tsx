@@ -47,6 +47,7 @@ import { RestCountdownTimer, parseSafeSeconds } from "@/components/pt/RestCountd
 import { FocusedDayView } from "@/components/pt/FocusedDayView";
 import { ClinicalAlertBadge } from "@/components/pt/ClinicalAlertBadge";
 import { getStudentAnamnesis, extractClinicalAlerts } from "@/lib/anamnesis";
+import { getMyTrainingPortalDataServerFn } from "@/lib/student-access.functions";
 
 function parseSetCount(setsReps?: string | null): number {
   if (!setsReps) return 3;
@@ -112,9 +113,23 @@ function PTTreinoPage() {
   // Mantém a tela ligada enquanto o aluno estiver visualizando um treino específico
   useWakeLock(!!selectedDayId);
 
-  const { data: student, isLoading: loadingStudent } = useQuery({
-    queryKey: ["pt-portal-treino", user?.id, user?.email],
+  // 1. Busca resiliente via Server Function com service role (bypassa RLS, auto-vincula e traz PT + Studio)
+  const { data: serverPortalData, isLoading: loadingServerData } = useQuery({
+    queryKey: ["pt-portal-server-data", user?.id],
     enabled: !!user?.id,
+    queryFn: async () => {
+      try {
+        return await getMyTrainingPortalDataServerFn();
+      } catch (err) {
+        console.warn("[pt-portal-treino] Aviso ao consultar via server fn:", err);
+        return null;
+      }
+    },
+  });
+
+  const { data: clientStudent, isLoading: loadingStudent } = useQuery({
+    queryKey: ["pt-portal-treino", user?.id, user?.email],
+    enabled: !!user?.id && !serverPortalData?.student,
     queryFn: async () => {
       // 1. Tenta aluno Personal Trainer por account_user_id
       const { data: ptData } = await supabase
@@ -188,9 +203,11 @@ function PTTreinoPage() {
     },
   });
 
-  const { data: programs = [], isLoading: loadingPrograms } = useQuery({
+  const student = serverPortalData?.student ?? clientStudent ?? null;
+
+  const { data: clientPrograms = [], isLoading: loadingPrograms } = useQuery({
     queryKey: ["pt-portal-programs", student?.id, student?.email],
-    enabled: !!student?.id,
+    enabled: !!student?.id && (!serverPortalData?.programs || serverPortalData.programs.length === 0),
     queryFn: async () => {
       // Coleta todos os IDs relacionados ao aluno (Studio + PT)
       const ids = [student!.id];
@@ -203,24 +220,39 @@ function PTTreinoPage() {
         (stRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
       }
 
-      const { data, error } = await supabase
-        .from("pt_programs" as never)
-        .select("*")
-        .in("pt_student_id", ids)
-        .eq("is_deleted", false)
-        .order("start_date", { ascending: false });
+      const [resPt, resStudio] = await Promise.all([
+        supabase
+          .from("pt_programs" as never)
+          .select("*")
+          .in("pt_student_id", ids)
+          .eq("is_deleted", false)
+          .order("start_date", { ascending: false }),
+        supabase
+          .from("pt_programs" as never)
+          .select("*")
+          .in("studio_student_id", ids)
+          .eq("is_deleted", false)
+          .order("start_date", { ascending: false }),
+      ]);
 
-      if (error) {
-        console.error("[pt-portal-programs] Erro ao carregar programas:", error);
-      }
-      return (data ?? []) as any[];
+      const map = new Map<string, any>();
+      (resPt.data || []).forEach((p: any) => { if (p?.id) map.set(p.id, p); });
+      (resStudio.data || []).forEach((p: any) => { if (p?.id) map.set(p.id, p); });
+
+      return Array.from(map.values()).sort(
+        (a, b) => new Date(b.start_date || 0).getTime() - new Date(a.start_date || 0).getTime()
+      );
     },
   });
 
+  const programs = (serverPortalData?.programs && serverPortalData.programs.length > 0)
+    ? serverPortalData.programs
+    : (clientPrograms ?? []);
+
   const programIds = programs.map((p) => p.id);
-  const { data: days = [] } = useQuery({
+  const { data: clientDays = [] } = useQuery({
     queryKey: ["pt-portal-days", programIds.join(",")],
-    enabled: programIds.length > 0,
+    enabled: programIds.length > 0 && (!serverPortalData?.days || serverPortalData.days.length === 0),
     queryFn: async () => {
       const { data } = await supabase
         .from("pt_training_days" as never)
@@ -232,10 +264,14 @@ function PTTreinoPage() {
     },
   });
 
+  const days = (serverPortalData?.days && serverPortalData.days.length > 0)
+    ? serverPortalData.days
+    : (clientDays ?? []);
+
   const dayIds = days.map((d) => d.id);
-  const { data: exercises = [] } = useQuery({
+  const { data: clientExercises = [] } = useQuery({
     queryKey: ["pt-portal-exercises", dayIds.join(",")],
-    enabled: dayIds.length > 0,
+    enabled: dayIds.length > 0 && (!serverPortalData?.exercises || serverPortalData.exercises.length === 0),
     queryFn: async () => {
       const { data } = await supabase
         .from("pt_training_exercises" as never)
@@ -247,14 +283,28 @@ function PTTreinoPage() {
     },
   });
 
+  const exercises = (serverPortalData?.exercises && serverPortalData.exercises.length > 0)
+    ? serverPortalData.exercises
+    : (clientExercises ?? []);
+
   const { data: executions = [] } = useQuery({
     queryKey: ["pt-portal-executions", student?.id],
     enabled: !!student?.id,
     queryFn: async () => {
+      const ids = [student!.id];
+      if (student?.email) {
+        const [{ data: ptRows }, { data: stRows }] = await Promise.all([
+          supabase.from("pt_students").select("id").ilike("email", student.email),
+          supabase.from("students" as never).select("id").ilike("email", student.email),
+        ]);
+        (ptRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
+        (stRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
+      }
+
       const { data } = await supabase
         .from("pt_training_executions" as never)
         .select("id,training_day_id,executed_at,notes")
-        .eq("pt_student_id", student!.id)
+        .or(`pt_student_id.in.(${ids.join(",")}),studio_student_id.in.(${ids.join(",")})`)
         .order("executed_at", { ascending: false })
         .limit(200);
       return (data ?? []) as Array<{
@@ -266,7 +316,9 @@ function PTTreinoPage() {
     },
   });
 
-  const isLoading = loadingAuth || loadingStudent || (!!student?.id && loadingPrograms);
+  const isLoading =
+    loadingAuth ||
+    (loadingServerData && !serverPortalData && (loadingStudent || (!!student?.id && loadingPrograms)));
   const selectedDay = days.find((d) => d.id === selectedDayId) ?? null;
   const [progressionOpen, setProgressionOpen] = useState(false);
   const [selectedProgressEx, setSelectedProgressEx] = useState<string | null>(null);
