@@ -26,6 +26,7 @@ import {
   Library,
   Timer,
   Trophy,
+  Gift,
   FileText,
   Newspaper,
 } from "lucide-react";
@@ -104,6 +105,7 @@ const nav: NavItem[] = [
   { to: "/crm", label: "CRM", icon: Megaphone, section: "Gestão", module: "crm" },
   { to: "/formularios", label: "Formulários", icon: FileText, section: "Gestão" },
   { to: "/desafios", label: "Desafios", icon: Trophy, section: "Gestão" },
+  { to: "/promocoes", label: "Promoções & Pontos", icon: Gift, section: "Gestão" },
   { to: "/blog-editor", label: "Blog & Artigos", icon: Newspaper, section: "Gestão" },
 ];
 

@@ -33,6 +33,7 @@ import { Route as AuthenticatedImportExportRouteImport } from './routes/_authent
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedProgramsRouteImport } from './routes/_authenticated/programs'
+import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
 import { Route as AuthenticatedTrashRouteImport } from './routes/_authenticated/trash'
@@ -185,6 +186,11 @@ const AuthenticatedPlansRoute = AuthenticatedPlansRouteImport.update({
 const AuthenticatedProgramsRoute = AuthenticatedProgramsRouteImport.update({
   id: '/programs',
   path: '/programs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPromocoesRoute = AuthenticatedPromocoesRouteImport.update({
+  id: '/promocoes',
+  path: '/promocoes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -375,6 +381,7 @@ export interface FileRoutesByFullPath {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/programs': typeof AuthenticatedProgramsRoute
+  '/promocoes': typeof AuthenticatedPromocoesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/trash': typeof AuthenticatedTrashRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/programs': typeof AuthenticatedProgramsRoute
+  '/promocoes': typeof AuthenticatedPromocoesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/trash': typeof AuthenticatedTrashRoute
@@ -484,6 +492,7 @@ export interface FileRoutesById {
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/programs': typeof AuthenticatedProgramsRoute
+  '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
   '/_authenticated/trash': typeof AuthenticatedTrashRoute
@@ -541,6 +550,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/plans'
     | '/programs'
+    | '/promocoes'
     | '/settings'
     | '/storage'
     | '/trash'
@@ -594,6 +604,7 @@ export interface FileRouteTypes {
     | '/payments'
     | '/plans'
     | '/programs'
+    | '/promocoes'
     | '/settings'
     | '/storage'
     | '/trash'
@@ -649,6 +660,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments'
     | '/_authenticated/plans'
     | '/_authenticated/programs'
+    | '/_authenticated/promocoes'
     | '/_authenticated/settings'
     | '/_authenticated/storage'
     | '/_authenticated/trash'
@@ -872,6 +884,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProgramsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/promocoes': {
+      id: '/_authenticated/promocoes'
+      path: '/promocoes'
+      fullPath: '/promocoes'
+      preLoaderRoute: typeof AuthenticatedPromocoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -1091,6 +1110,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
   AuthenticatedProgramsRoute: typeof AuthenticatedProgramsRoute
+  AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
   AuthenticatedTrashRoute: typeof AuthenticatedTrashRoute
@@ -1129,6 +1149,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedPlansRoute: AuthenticatedPlansRoute,
   AuthenticatedProgramsRoute: AuthenticatedProgramsRoute,
+  AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
   AuthenticatedTrashRoute: AuthenticatedTrashRoute,
