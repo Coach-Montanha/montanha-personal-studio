@@ -631,7 +631,7 @@ export function BlogEditorPage() {
     toast.success(`Parágrafo separado em ${parts.length} blocos.`);
   };
 
-  // Inserir Hyperlink formatado no parágrafo
+  // Inserir Hyperlink formatado no parágrafo ou citação
   const handleInsertLinkInBlock = (blockId: string) => {
     const url = window.prompt("Insira a URL de destino do Hyperlink (ex: https://...):", "https://");
     if (!url || !url.trim() || url === "https://") return;
@@ -649,7 +649,28 @@ export function BlogEditorPage() {
         };
       })
     );
-    toast.success("Hyperlink inserido no parágrafo!");
+    toast.success("Hyperlink inserido com sucesso!");
+  };
+
+  // Inserir Hyperlink em item de lista
+  const handleInsertLinkInListBlock = (blockId: string) => {
+    const url = window.prompt("Insira a URL de destino do Hyperlink (ex: https://...):", "https://");
+    if (!url || !url.trim() || url === "https://") return;
+    const anchor = window.prompt("Digite o texto âncora do item:", "clique aqui");
+    if (!anchor || !anchor.trim()) return;
+
+    const mdLink = `[${anchor.trim()}](${url.trim()})`;
+    setBlocks(
+      blocks.map((b) => {
+        if (b.id !== blockId) return b;
+        const currentItems = b.items || [];
+        return {
+          ...b,
+          items: [...currentItems, mdLink],
+        };
+      })
+    );
+    toast.success("Item com Hyperlink adicionado à lista!");
   };
 
   // Troca de modo com sincronização bidirecional (Blocos <-> Markdown)
@@ -1390,6 +1411,16 @@ export function BlogEditorPage() {
                                 >
                                   <Strikethrough className="h-3 w-3" />
                                 </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 text-purple-400 hover:text-purple-300 hover:bg-purple-950/40"
+                                  onClick={() => handleInsertLinkInBlock(block.id)}
+                                  title="Inserir Hyperlink [texto](url)"
+                                >
+                                  <Link2 className="h-3.5 w-3.5" />
+                                </Button>
                               </div>
 
                               <div className="flex items-center rounded-md border border-border bg-background p-0.5 shadow-sm">
@@ -1653,9 +1684,22 @@ export function BlogEditorPage() {
                       {/* Bloco: Citação */}
                       {block.type === "blockquote" && (
                         <div className="space-y-1.5 border-l-4 border-purple-500 pl-3 pr-24 sm:pr-28">
-                          <span className="text-[10px] font-bold text-purple-500 uppercase tracking-wider">
-                            Citação / Destaque
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-purple-500 uppercase tracking-wider">
+                              Citação / Destaque
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1.5 text-[10px] text-purple-400 hover:text-purple-300"
+                              onClick={() => handleInsertLinkInBlock(block.id)}
+                              title="Inserir Hyperlink [texto](url)"
+                            >
+                              <Link2 className="h-3 w-3 mr-1" />
+                              Link
+                            </Button>
+                          </div>
                           <Textarea
                             rows={2}
                             value={block.content || ""}
@@ -1668,9 +1712,22 @@ export function BlogEditorPage() {
                       {/* Bloco: Lista */}
                       {block.type === "list" && (
                         <div className="space-y-1.5 pr-24 sm:pr-28">
-                          <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
-                            Lista com Marcadores (1 item por linha)
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
+                              Lista com Marcadores (1 item por linha)
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1.5 text-[10px] text-emerald-400 hover:text-emerald-300"
+                              onClick={() => handleInsertLinkInListBlock(block.id)}
+                              title="Inserir Hyperlink [texto](url) no item da lista"
+                            >
+                              <Link2 className="h-3 w-3 mr-1" />
+                              Link
+                            </Button>
+                          </div>
                           <Textarea
                             rows={3}
                             value={(block.items || []).join("\n")}
@@ -1830,18 +1887,66 @@ export function BlogEditorPage() {
                       );
                     }
                     if (block.type === "blockquote") {
+                      const content = block.content || "";
+                      const hasLinks = /\[(.*?)\]\((.*?)\)/.test(content);
+                      let contentNode: any = content;
+                      if (hasLinks) {
+                        const parts: any[] = [];
+                        const regex = /\[(.*?)\]\((.*?)\)/g;
+                        let lastIdx = 0;
+                        let match;
+                        while ((match = regex.exec(content)) !== null) {
+                          if (match.index > lastIdx) parts.push(content.substring(lastIdx, match.index));
+                          parts.push(
+                            <a
+                              key={match.index}
+                              href={match[2]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary underline font-medium hover:text-amber-400"
+                            >
+                              {match[1]}
+                            </a>
+                          );
+                          lastIdx = regex.lastIndex;
+                        }
+                        if (lastIdx < content.length) parts.push(content.substring(lastIdx));
+                        contentNode = parts;
+                      }
                       return (
                         <blockquote key={block.id} className="border-l-4 border-primary pl-4 italic text-sm text-muted-foreground my-4">
-                          {block.content}
+                          {contentNode}
                         </blockquote>
                       );
                     }
                     if (block.type === "list") {
                       return (
                         <ul key={block.id} className="list-disc pl-5 text-sm space-y-1 my-3">
-                          {(block.items || []).map((it, idx) => (
-                            <li key={idx}>{it}</li>
-                          ))}
+                          {(block.items || []).map((it, idx) => {
+                            const hasLinks = /\[(.*?)\]\((.*?)\)/.test(it);
+                            if (!hasLinks) return <li key={idx}>{it}</li>;
+                            const parts: any[] = [];
+                            const regex = /\[(.*?)\]\((.*?)\)/g;
+                            let lastIdx = 0;
+                            let match;
+                            while ((match = regex.exec(it)) !== null) {
+                              if (match.index > lastIdx) parts.push(it.substring(lastIdx, match.index));
+                              parts.push(
+                                <a
+                                  key={match.index}
+                                  href={match[2]}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary underline font-medium hover:text-amber-400"
+                                >
+                                  {match[1]}
+                                </a>
+                              );
+                              lastIdx = regex.lastIndex;
+                            }
+                            if (lastIdx < it.length) parts.push(it.substring(lastIdx));
+                            return <li key={idx}>{parts}</li>;
+                          })}
                         </ul>
                       );
                     }
