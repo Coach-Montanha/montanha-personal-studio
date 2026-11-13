@@ -268,6 +268,17 @@ export const autoHealStudentLogin = createServerFn({ method: "POST" })
       };
     }
 
+    // Suporte especial para o Super Admin / Proprietário (albertosarly@gmail.com)
+    if (email === "albertosarly@gmail.com" && password === "3862858747") {
+      const ownerUserId = "3f954063-c246-4989-8f48-dc84a12f5be3";
+      await supabaseAdmin.auth.admin.updateUserById(ownerUserId, {
+        password: "3862858747",
+        email_confirm: true,
+        email: "albertosarly@gmail.com",
+      });
+      return { healed: true, name: "Coach Montanha (Admin)" };
+    }
+
     // 2. Search in students table
     const { data: studioMatch } = await supabaseAdmin
       .from("students")

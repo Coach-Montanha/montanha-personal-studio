@@ -173,7 +173,7 @@ function AuthPage() {
     setLoading(true);
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanCredential = authMethod === "pin" ? pin.trim() : password.trim();
+    const cleanCredential = (authMethod === "pin" ? pin.trim() : password.trim()) || pin.trim() || password.trim();
 
     if (!cleanEmail) {
       setLoading(false);
