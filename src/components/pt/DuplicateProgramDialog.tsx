@@ -28,6 +28,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 
+const TEMPLATE_STUDENT_ID = "00000000-0000-0000-0000-000000000001";
+
 const CATEGORIA_LABELS: Record<string, string> = {
   hypertrophy: "Hipertrofia",
   conditioning: "Condicionamento",
@@ -80,7 +82,7 @@ export function DuplicateProgramDialog({
     if (program) {
       const baseName = program.name.replace(/\s*\(Cópia(\s*\d+)?\)$/i, "").trim();
       setNewName(`${baseName} (Cópia)`);
-      if (program.pt_student_id && program.pt_student_id !== "00000000-0000-0000-0000-000000000001") {
+      if (program.pt_student_id && program.pt_student_id !== TEMPLATE_STUDENT_ID) {
         setDestinationType("same_student");
       } else {
         setDestinationType("template");
@@ -128,8 +130,12 @@ export function DuplicateProgramDialog({
 
   const activeStudents = tipoAluno === "studio" ? studioStudents : ptStudents;
 
-  const originalStudentName =
-    program?.pt_students?.name?.trim() || program?.students?.name?.trim() || null;
+  const isOriginalTemplate =
+    !program?.pt_student_id || program.pt_student_id === TEMPLATE_STUDENT_ID;
+
+  const originalStudentName = isOriginalTemplate
+    ? null
+    : (program?.pt_students?.name?.trim() || program?.students?.name?.trim() || null);
 
   const totalDays = program?.pt_training_days?.length ?? 0;
 
@@ -147,10 +153,13 @@ export function DuplicateProgramDialog({
       const userId = userData.user?.id;
       if (!userId) throw new Error("Usuário não autenticado.");
 
-      // 1. Resolve o ID do aluno destino
-      let targetStudentId: string | null = null;
+      // 1. Resolve o ID do aluno destino (garantindo o sentinel TEMPLATE_STUDENT_ID se for modelo/acervo)
+      let targetStudentId: string = TEMPLATE_STUDENT_ID;
       if (destinationType === "same_student") {
-        targetStudentId = program.pt_student_id || null;
+        targetStudentId =
+          program.pt_student_id && program.pt_student_id !== TEMPLATE_STUDENT_ID
+            ? program.pt_student_id
+            : TEMPLATE_STUDENT_ID;
       } else if (destinationType === "another_student") {
         if (!selectedStudentId) {
           throw new Error("Selecione o aluno que receberá a cópia do treino.");
@@ -179,7 +188,7 @@ export function DuplicateProgramDialog({
         }
       } else {
         // Modelo no Acervo Geral
-        targetStudentId = null;
+        targetStudentId = TEMPLATE_STUDENT_ID;
       }
 
       // 2. Busca os dados completos da rotina original
@@ -212,7 +221,7 @@ export function DuplicateProgramDialog({
           training_type: (originalProg as any).training_type ?? "musculacao",
           start_date: startDate || new Date().toISOString().slice(0, 10),
           goals: (originalProg as any).goals ?? null,
-          show_to_student: targetStudentId ? true : false,
+          show_to_student: targetStudentId !== TEMPLATE_STUDENT_ID,
           auto_archive: (originalProg as any).auto_archive ?? true,
           ai_prompt: (originalProg as any).ai_prompt ?? null,
           ai_generated_at: (originalProg as any).ai_generated_at ?? null,
