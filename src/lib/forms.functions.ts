@@ -147,27 +147,69 @@ export const submitFormServerFn = createServerFn({ method: "POST" })
       }
     }
 
-    const { error } = await supabaseAdmin.from("pt_notifications" as any).insert({
-      user_id: targetUserId,
-      title: `📋 Novo Envio: ${data.formTitle} (${data.respondentName})`,
-      message: `${data.respondentName} (${data.respondentContact || "Sem contato"}) preencheu o formulário "${data.formTitle}".`,
-      type: "form_submission",
-      metadata: {
-        form_slug: data.formSlug,
-        form_title: data.formTitle,
-        respondent_name: data.respondentName,
-        respondent_contact: data.respondentContact,
-        student_id: data.studentId || null,
-        answers: data.answers,
-        submitted_at: new Date().toISOString(),
-      },
-    });
+    const submittedAt = new Date().toISOString();
+    const initialMeta = {
+      form_slug: data.formSlug,
+      form_title: data.formTitle,
+      respondent_name: data.respondentName,
+      respondent_contact: data.respondentContact,
+      student_id: data.studentId || null,
+      answers: data.answers,
+      submitted_at: submittedAt,
+    };
+
+    const { data: insertedRow, error } = await supabaseAdmin
+      .from("pt_notifications" as any)
+      .insert({
+        user_id: targetUserId,
+        title: `📋 Novo Envio: ${data.formTitle} (${data.respondentName})`,
+        message: `${data.respondentName} (${data.respondentContact || "Sem contato"}) preencheu o formulário "${data.formTitle}".`,
+        type: "form_submission",
+        metadata: initialMeta,
+      })
+      .select("id")
+      .single();
 
     if (error) {
       throw new Error(`Erro ao registrar resposta: ${error.message}`);
     }
 
-    return { ok: true, message: "Resposta gravada com sucesso!" };
+    // Camadas de Segurança e Backup Automático (PDF + Supabase Storage + Google Drive)
+    try {
+      const { generateSubmissionPdfBuffer, uploadToSecureStorage, saveToGoogleDriveFolder } = await import("./form-submission-backup");
+      const pdfRes = generateSubmissionPdfBuffer({
+        submissionId: insertedRow.id,
+        formSlug: data.formSlug,
+        formTitle: data.formTitle,
+        respondentName: data.respondentName,
+        respondentContact: data.respondentContact,
+        submittedAt,
+        answers: data.answers,
+        businessName: "MONTANHA PERSONAL STUDIO",
+      });
+
+      const secureUpload = await uploadToSecureStorage(supabaseAdmin, pdfRes.filename, pdfRes.buffer);
+      const driveUpload = saveToGoogleDriveFolder(pdfRes.filename, pdfRes.buffer);
+
+      await supabaseAdmin
+        .from("pt_notifications")
+        .update({
+          metadata: {
+            ...initialMeta,
+            pdf_filename: pdfRes.filename,
+            secure_storage_path: secureUpload?.path || null,
+            secure_storage_url: secureUpload?.publicUrl || null,
+            gdrive_synced: driveUpload.synced,
+            gdrive_path: driveUpload.filePath || null,
+            backed_up_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", insertedRow.id);
+    } catch (backupErr: any) {
+      console.warn("[submitFormServerFn] Backup secundário:", backupErr?.message);
+    }
+
+    return { ok: true, message: "Resposta gravada e cópias de segurança geradas com sucesso!" };
   });
 
 async function parseGoogleFormQuestions(url: string) {
@@ -365,6 +407,12 @@ export const listSubmissionsServerFn = createServerFn({ method: "GET" }).handler
         respondentContact: meta.respondent_contact || "",
         studentId: meta.student_id || null,
         answers: meta.answers || {},
+        pdfFilename: meta.pdf_filename || null,
+        secureStorageUrl: meta.secure_storage_url || null,
+        secureStoragePath: meta.secure_storage_path || null,
+        gdriveSynced: meta.gdrive_synced === true,
+        gdrivePath: meta.gdrive_path || null,
+        backedUpAt: meta.backed_up_at || null,
       };
     });
   } catch (err: any) {
@@ -425,6 +473,196 @@ export const deleteSubmissionServerFn = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+/**
+ * Exclui de forma granular uma camada específica da submissão:
+ * - 'db': apenas o registro do banco de dados (preserva PDF no Storage e no Google Drive)
+ * - 'secure_storage': apenas o PDF da pasta segura no Supabase Storage
+ * - 'gdrive': apenas o arquivo da pasta 'H:\Meu Drive\Formulários do Studio'
+ * - 'all': remove de todas as camadas simultaneamente
+ */
+export const deleteSubmissionLayerServerFn = createServerFn({ method: "POST" })
+  .validator(
+    (input: {
+      submissionId: string;
+      layer: "db" | "secure_storage" | "gdrive" | "all";
+    }) => input
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { deleteFromSecureStorage, deleteFromGoogleDriveFolder } = await import("./form-submission-backup");
+
+    const { data: row } = await supabaseAdmin
+      .from("pt_notifications")
+      .select("id, metadata")
+      .eq("id", data.submissionId)
+      .maybeSingle();
+
+    const meta = (row?.metadata as any) || {};
+    const filename = meta.pdf_filename;
+
+    if (data.layer === "secure_storage" || data.layer === "all") {
+      if (filename) {
+        await deleteFromSecureStorage(supabaseAdmin, filename);
+      }
+      if (data.layer === "secure_storage" && row) {
+        await supabaseAdmin
+          .from("pt_notifications")
+          .update({
+            metadata: {
+              ...meta,
+              secure_storage_path: null,
+              secure_storage_url: null,
+            },
+          })
+          .eq("id", row.id);
+      }
+    }
+
+    if (data.layer === "gdrive" || data.layer === "all") {
+      if (filename) {
+        deleteFromGoogleDriveFolder(filename);
+      }
+      if (data.layer === "gdrive" && row) {
+        await supabaseAdmin
+          .from("pt_notifications")
+          .update({
+            metadata: {
+              ...meta,
+              gdrive_synced: false,
+              gdrive_path: null,
+            },
+          })
+          .eq("id", row.id);
+      }
+    }
+
+    if (data.layer === "db" || data.layer === "all") {
+      await supabaseAdmin
+        .from("pt_notifications")
+        .delete()
+        .eq("id", data.submissionId)
+        .eq("type", "form_submission");
+    }
+
+    return { ok: true, layer: data.layer };
+  });
+
+/**
+ * Força a geração ou atualização de backup de uma submissão
+ */
+export const backupSingleSubmissionServerFn = createServerFn({ method: "POST" })
+  .validator((input: { submissionId: string }) => input)
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { generateSubmissionPdfBuffer, uploadToSecureStorage, saveToGoogleDriveFolder } = await import("./form-submission-backup");
+
+    const { data: row, error: fetchErr } = await supabaseAdmin
+      .from("pt_notifications")
+      .select("id, title, message, created_at, metadata")
+      .eq("id", data.submissionId)
+      .single();
+
+    if (fetchErr || !row) {
+      throw new Error("Submissão não encontrada.");
+    }
+
+    const meta = (row.metadata as any) || {};
+    const pdfRes = generateSubmissionPdfBuffer({
+      submissionId: row.id,
+      formSlug: meta.form_slug || "",
+      formTitle: meta.form_title || row.title || "Formulário",
+      respondentName: meta.respondent_name || "Respondente",
+      respondentContact: meta.respondent_contact || "",
+      submittedAt: meta.submitted_at || row.created_at,
+      answers: meta.answers || {},
+      businessName: "MONTANHA PERSONAL STUDIO",
+    });
+
+    const secureUpload = await uploadToSecureStorage(supabaseAdmin, pdfRes.filename, pdfRes.buffer);
+    const driveUpload = saveToGoogleDriveFolder(pdfRes.filename, pdfRes.buffer);
+
+    const updatedMeta = {
+      ...meta,
+      pdf_filename: pdfRes.filename,
+      secure_storage_path: secureUpload?.path || meta.secure_storage_path || null,
+      secure_storage_url: secureUpload?.publicUrl || meta.secure_storage_url || null,
+      gdrive_synced: driveUpload.synced,
+      gdrive_path: driveUpload.filePath || meta.gdrive_path || null,
+      backed_up_at: new Date().toISOString(),
+    };
+
+    await supabaseAdmin
+      .from("pt_notifications")
+      .update({ metadata: updatedMeta })
+      .eq("id", row.id);
+
+    return {
+      ok: true,
+      filename: pdfRes.filename,
+      secureUrl: secureUpload?.publicUrl,
+      gdriveSynced: driveUpload.synced,
+    };
+  });
+
+/**
+ * Varre todas as submissões registradas e garante cópia em PDF em ambas as camadas de backup
+ */
+export const syncAllSubmissionsBackupsServerFn = createServerFn({ method: "POST" }).handler(async () => {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { generateSubmissionPdfBuffer, uploadToSecureStorage, saveToGoogleDriveFolder } = await import("./form-submission-backup");
+
+  const { data: rows, error } = await supabaseAdmin
+    .from("pt_notifications")
+    .select("id, title, message, created_at, metadata")
+    .eq("type", "form_submission")
+    .order("created_at", { ascending: false });
+
+  if (error || !rows) {
+    return { ok: false, error: error?.message || "Nenhuma submissão encontrada" };
+  }
+
+  let backedUp = 0;
+  for (const row of rows) {
+    const meta = (row.metadata as any) || {};
+    try {
+      const pdfRes = generateSubmissionPdfBuffer({
+        submissionId: row.id,
+        formSlug: meta.form_slug || "",
+        formTitle: meta.form_title || row.title || "Formulário",
+        respondentName: meta.respondent_name || "Respondente",
+        respondentContact: meta.respondent_contact || "",
+        submittedAt: meta.submitted_at || row.created_at,
+        answers: meta.answers || {},
+        businessName: "MONTANHA PERSONAL STUDIO",
+      });
+
+      const secureUpload = await uploadToSecureStorage(supabaseAdmin, pdfRes.filename, pdfRes.buffer);
+      const driveUpload = saveToGoogleDriveFolder(pdfRes.filename, pdfRes.buffer);
+
+      await supabaseAdmin
+        .from("pt_notifications")
+        .update({
+          metadata: {
+            ...meta,
+            pdf_filename: pdfRes.filename,
+            secure_storage_path: secureUpload?.path || meta.secure_storage_path || null,
+            secure_storage_url: secureUpload?.publicUrl || meta.secure_storage_url || null,
+            gdrive_synced: driveUpload.synced,
+            gdrive_path: driveUpload.filePath || meta.gdrive_path || null,
+            backed_up_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", row.id);
+
+      backedUp++;
+    } catch (err: any) {
+      console.warn(`[syncAllSubmissionsBackupsServerFn] Falha na submissão ${row.id}:`, err?.message);
+    }
+  }
+
+  return { ok: true, total: rows.length, backedUp };
+});
 
 export const importGoogleFormSubmissionsServerFn = createServerFn({ method: "POST" })
   .validator(

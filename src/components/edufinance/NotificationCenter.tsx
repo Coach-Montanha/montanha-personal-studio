@@ -125,8 +125,17 @@ export function NotificationCenter() {
         .eq("user_id", user!.id)
         .neq("type", "custom_form_definition")
         .order("created_at", { ascending: false })
-        .limit(40);
-      return (data ?? []) as any[];
+        .limit(50);
+
+      // Filtra notificações que já foram limpas da central pelo usuário
+      const activeNotifications = (data ?? []).filter((n: any) => {
+        if (n.metadata?.notification_cleared === true || n.metadata?.notification_cleared === "true") {
+          return false;
+        }
+        return true;
+      });
+
+      return activeNotifications as any[];
     },
     refetchInterval: 30000,
   });
@@ -396,6 +405,31 @@ export function NotificationCenter() {
         .neq("type", "custom_form_definition")
         .neq("type", "form_submission")
         .catch(() => null);
+
+      // Marca notificações de formulários como lidas e limpas da central de alertas
+      const { data: formNotifs } = await supabase
+        .from("pt_notifications" as any)
+        .select("id, metadata")
+        .eq("user_id", user.id)
+        .eq("type", "form_submission");
+
+      if (formNotifs && formNotifs.length > 0) {
+        for (const item of formNotifs) {
+          const currentMeta = (item.metadata as any) || {};
+          await supabase
+            .from("pt_notifications" as any)
+            .update({
+              read: true,
+              metadata: {
+                ...currentMeta,
+                notification_cleared: true,
+                cleared_at: new Date().toISOString(),
+              },
+            })
+            .eq("id", item.id)
+            .catch(() => null);
+        }
+      }
 
       toast.success("Notificações apagadas com sucesso!");
     } catch {

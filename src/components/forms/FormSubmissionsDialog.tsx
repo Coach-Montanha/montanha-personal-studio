@@ -26,10 +26,23 @@ import {
   Trash2,
   Unlink,
   Filter,
+  Cloud,
+  HardDrive,
+  Database,
+  ShieldCheck,
+  RefreshCw,
+  FolderSync,
 } from "lucide-react";
 import { toast } from "sonner";
 import { downloadFormSubmissionPdf } from "@/lib/form-submission-pdf";
-import { linkSubmissionToStudentServerFn, importGoogleFormSubmissionsServerFn, deleteSubmissionServerFn } from "@/lib/forms.functions";
+import {
+  linkSubmissionToStudentServerFn,
+  importGoogleFormSubmissionsServerFn,
+  deleteSubmissionServerFn,
+  deleteSubmissionLayerServerFn,
+  backupSingleSubmissionServerFn,
+  syncAllSubmissionsBackupsServerFn,
+} from "@/lib/forms.functions";
 
 export interface FormSubmissionItem {
   id: string;
@@ -42,6 +55,12 @@ export interface FormSubmissionItem {
   respondentContact: string;
   studentId: string | null;
   answers: Record<string, any>;
+  pdfFilename?: string | null;
+  secureStorageUrl?: string | null;
+  secureStoragePath?: string | null;
+  gdriveSynced?: boolean;
+  gdrivePath?: string | null;
+  backedUpAt?: string | null;
 }
 
 interface FormSubmissionsDialogProps {
@@ -70,6 +89,8 @@ export function FormSubmissionsDialog({
   const [linking, setLinking] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [syncingAll, setSyncingAll] = useState(false);
+  const [backingUpSingle, setBackingUpSingle] = useState(false);
   const [selectedQuestionIdx, setSelectedQuestionIdx] = useState<number>(0);
   const [individualIdx, setIndividualIdx] = useState<number>(0);
 
@@ -346,6 +367,75 @@ export function FormSubmissionsDialog({
     }
   };
 
+  const handleSyncAllBackups = async () => {
+    setSyncingAll(true);
+    try {
+      const res = await syncAllSubmissionsBackupsServerFn();
+      if (res.ok) {
+        toast.success(`Cópias em PDF geradas e enviadas com sucesso! (${res.backedUp} formulários protegidos)`);
+        onRefresh();
+      } else {
+        toast.error(res.error || "Erro ao sincronizar backups");
+      }
+    } catch (err: any) {
+      toast.error(`Falha na sincronização: ${err?.message || "erro inesperado"}`);
+    } finally {
+      setSyncingAll(false);
+    }
+  };
+
+  const handleBackupSingle = async (submissionId: string) => {
+    setBackingUpSingle(true);
+    try {
+      const res = await backupSingleSubmissionServerFn({ data: { submissionId } });
+      if (res.ok) {
+        toast.success("Cópia em PDF regerada e sincronizada nas 3 camadas!");
+        onRefresh();
+      }
+    } catch (err: any) {
+      toast.error(`Erro ao reenviar cópia: ${err?.message || "falha"}`);
+    } finally {
+      setBackingUpSingle(false);
+    }
+  };
+
+  const handleDeleteLayer = async (
+    submissionId: string,
+    layer: "db" | "secure_storage" | "gdrive" | "all"
+  ) => {
+    const layerNames = {
+      db: "o registro do Banco de Dados",
+      secure_storage: "o arquivo PDF da Pasta Virtual Segura",
+      gdrive: "o arquivo da pasta do Google Drive",
+      all: "TODAS as camadas (Banco, Pasta Segura e Google Drive)",
+    };
+
+    if (
+      !confirm(
+        `Tem certeza que deseja excluir ${layerNames[layer]} desta resposta? As outras camadas permanecerão protegidas.`
+      )
+    ) {
+      return;
+    }
+
+    setLinking(true);
+    try {
+      await deleteSubmissionLayerServerFn({
+        data: { submissionId, layer },
+      });
+      toast.success(`Exclusão concluída com sucesso em: ${layerNames[layer]}!`);
+      if (layer === "db" || layer === "all") {
+        setSelectedSubmission(null);
+        setIndividualIdx(0);
+      }
+      onRefresh();
+    } catch (err: any) {
+      toast.error(`Erro ao excluir camada: ${err?.message || "tente novamente"}`);
+    } finally {
+      setLinking(false);
+    }
+  };
+
   const handleLinkStudent = async (submissionId: string) => {
     if (!linkTargetStudentId) {
       toast.error("Selecione um aluno para vincular.");
@@ -441,6 +531,19 @@ export function FormSubmissionsDialog({
                 {importing ? "Importando..." : "Importar CSV"}
               </span>
             </label>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={syncingAll}
+              onClick={handleSyncAllBackups}
+              className="h-8 px-2.5 text-xs gap-1.5 font-bold border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shadow-xs"
+              title="Gera cópias em PDF e sincroniza na Pasta Segura e no Google Drive (H:\Meu Drive\Formulários do Studio)"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {syncingAll ? "Sincronizando..." : "Sincronizar GDrive & Nuvem"}
+            </Button>
           </div>
         </DialogHeader>
 
@@ -913,6 +1016,151 @@ export function FormSubmissionsDialog({
                           </Button>
                         </div>
                       )}
+                    </div>
+
+                    {/* 3 Camadas de Segurança e Backup Independente */}
+                    <div className="bg-card border border-border rounded-xl p-4 shadow-xs space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                          <div>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+                              3 Camadas de Segurança & Backup Independente
+                            </h4>
+                            <p className="text-[11px] text-muted-foreground">
+                              Gerencie cada camada de forma autônoma sem risco de perda involuntária
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs gap-1.5 font-bold shrink-0 self-start sm:self-auto"
+                          disabled={backingUpSingle}
+                          onClick={() => handleBackupSingle(activeSubmission.id)}
+                        >
+                          <RefreshCw className={`h-3 w-3 ${backingUpSingle ? "animate-spin" : ""}`} />
+                          {backingUpSingle ? "Sincronizando..." : "Reenviar Cópias"}
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                        {/* Camada 1: Banco de Dados */}
+                        <div className="p-3 rounded-lg border border-border/80 bg-muted/20 flex flex-col justify-between gap-2.5">
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold uppercase text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                                <Database className="h-3.5 w-3.5" /> Camada 1: Banco
+                              </span>
+                              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                Gravado
+                              </span>
+                            </div>
+                            <p className="text-xs font-bold mt-1 text-foreground">Registro no Sistema</p>
+                            <p className="text-[11px] text-muted-foreground">Visualização no app e filtros</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive gap-1 self-start px-2 -ml-2"
+                            onClick={() => handleDeleteLayer(activeSubmission.id, "db")}
+                            disabled={linking}
+                          >
+                            <Trash2 className="h-3 w-3" /> Excluir do Banco
+                          </Button>
+                        </div>
+
+                        {/* Camada 2: Pasta Virtual Segura */}
+                        <div className="p-3 rounded-lg border border-border/80 bg-muted/20 flex flex-col justify-between gap-2.5">
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                                <Cloud className="h-3.5 w-3.5" /> Camada 2: Nuvem
+                              </span>
+                              {activeSubmission.secureStorageUrl ? (
+                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                  Salvo
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                                  Pendente
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs font-bold mt-1 text-foreground">Pasta Virtual Segura</p>
+                            <p className="text-[11px] text-muted-foreground truncate" title={activeSubmission.pdfFilename || ""}>
+                              {activeSubmission.pdfFilename || "PDF Criptografado"}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between gap-1 pt-1 border-t border-border/40">
+                            {activeSubmission.secureStorageUrl ? (
+                              <a
+                                href={activeSubmission.secureStorageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                              >
+                                <Download className="h-3 w-3" /> Abrir PDF
+                              </a>
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground">Não gerado</span>
+                            )}
+                            {activeSubmission.secureStorageUrl && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-1.5 text-xs text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDeleteLayer(activeSubmission.id, "secure_storage")}
+                                disabled={linking}
+                                title="Excluir apenas o PDF da pasta segura"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Camada 3: Google Drive */}
+                        <div className="p-3 rounded-lg border border-border/80 bg-muted/20 flex flex-col justify-between gap-2.5">
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                <HardDrive className="h-3.5 w-3.5" /> Camada 3: GDrive
+                              </span>
+                              {activeSubmission.gdriveSynced ? (
+                                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                  Sincronizado
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                                  Pendente
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs font-bold mt-1 text-foreground">Formulários do Studio</p>
+                            <p className="text-[11px] text-muted-foreground truncate" title="H:\Meu Drive\Formulários do Studio">
+                              H:\Meu Drive\Formulários do Studio
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between gap-1 pt-1 border-t border-border/40">
+                            <span className="text-[11px] font-medium text-muted-foreground">
+                              {activeSubmission.gdriveSynced ? "Arquivo local ativo" : "Aguardando envio"}
+                            </span>
+                            {activeSubmission.gdriveSynced && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-6 px-1.5 text-xs text-muted-foreground hover:text-destructive"
+                                onClick={() => handleDeleteLayer(activeSubmission.id, "gdrive")}
+                                disabled={linking}
+                                title="Excluir apenas o arquivo da pasta do Google Drive"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Respostas Detalhadas com labels legíveis */}
