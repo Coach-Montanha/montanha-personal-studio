@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
@@ -12,6 +12,8 @@ import {
   CheckSquare,
   Square,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,6 +54,10 @@ const MUSCLE_FILTER_CHIPS = [
   "Cardio",
   "Mobilidade",
   "Funcional",
+  "Kettlebell",
+  "Barbell",
+  "Ginásticos",
+  "Corpo inteiro",
 ];
 
 export function AddExerciseDialog({
@@ -73,6 +79,14 @@ export function AddExerciseDialog({
   const [selectedExercises, setSelectedExercises] = useState<Map<string, LibraryExercise>>(new Map());
   const [customName, setCustomName] = useState("");
   const [adding, setAdding] = useState(false);
+  const chipsScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollChips = (direction: "left" | "right") => {
+    if (chipsScrollRef.current) {
+      const offset = direction === "left" ? -240 : 240;
+      chipsScrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
 
   const { data: library = [] } = useQuery({
     queryKey: ["exercise-library-full"],
@@ -204,56 +218,79 @@ export function AddExerciseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] max-w-2xl overflow-hidden p-0">
+      <DialogContent className="max-h-[92dvh] w-[95vw] sm:max-w-4xl lg:max-w-5xl overflow-hidden p-0 rounded-2xl shadow-2xl">
         <div className="flex max-h-[92dvh] flex-col">
           {/* Header */}
-          <DialogHeader className="border-b border-border/60 p-4 pb-3">
+          <DialogHeader className="border-b border-border/60 p-4 sm:p-5 pb-3 sm:pb-4">
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-lg font-semibold">Adicionar Exercícios</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl font-semibold">Adicionar Exercícios</DialogTitle>
               {selectedExercises.size > 0 && (
-                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-primary">
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold tabular-nums text-primary border border-primary/20">
                   {selectedExercises.size} selecionado{selectedExercises.size > 1 ? "s" : ""}
                 </span>
               )}
             </div>
-            <DialogDescription className="text-xs text-muted-foreground">
+            <DialogDescription className="text-xs text-muted-foreground pt-0.5">
               Selecione um ou mais movimentos do acervo oficial (1.135 exercícios) para prescrever em lote.
             </DialogDescription>
           </DialogHeader>
 
           {/* Search & Muscle Filters */}
-          <div className="space-y-2.5 border-b border-border/60 bg-muted/20 p-3.5">
+          <div className="space-y-3 border-b border-border/60 bg-muted/20 p-3.5 sm:p-4">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar por nome ou grupo muscular…"
                 autoFocus
-                className="h-10 pl-9 text-sm"
+                className="h-10 pl-9.5 pr-4 text-sm rounded-xl bg-background"
               />
             </div>
 
-            {/* Muscle Filter Chips */}
-            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {MUSCLE_FILTER_CHIPS.map((chip) => {
-                const active = selectedGroup === chip;
-                return (
-                  <button
-                    key={chip}
-                    type="button"
-                    onClick={() => setSelectedGroup(chip)}
-                    className={cn(
-                      "whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium transition-all duration-150",
-                      active
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
-                    )}
-                  >
-                    {chip}
-                  </button>
-                );
-              })}
+            {/* Muscle Filter Chips com navegação por setas e scroll suave */}
+            <div className="relative flex items-center">
+              <button
+                type="button"
+                onClick={() => scrollChips("left")}
+                aria-label="Rolar categorias para esquerda"
+                className="absolute -left-1 z-10 hidden sm:flex h-7 w-7 items-center justify-center rounded-full bg-background/95 border border-border shadow-sm text-muted-foreground hover:text-foreground hover:bg-accent transition"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              <div
+                ref={chipsScrollRef}
+                className="flex gap-1.5 overflow-x-auto px-1 sm:px-7 pb-1.5 scrollbar-thin scrollbar-thumb-border/70 hover:scrollbar-thumb-primary/40 [touch-action:pan-x]"
+              >
+                {MUSCLE_FILTER_CHIPS.map((chip) => {
+                  const active = selectedGroup === chip;
+                  return (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setSelectedGroup(chip)}
+                      className={cn(
+                        "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 select-none",
+                        active
+                          ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                          : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground border border-border/70 hover:border-border"
+                      )}
+                    >
+                      {chip}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => scrollChips("right")}
+                aria-label="Rolar categorias para direita"
+                className="absolute -right-1 z-10 hidden sm:flex h-7 w-7 items-center justify-center rounded-full bg-background/95 border border-border shadow-sm text-muted-foreground hover:text-foreground hover:bg-accent transition"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
 

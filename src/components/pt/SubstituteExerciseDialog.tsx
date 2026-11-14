@@ -1,6 +1,6 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Video, Dumbbell, Check, Loader2, ArrowLeftRight } from "lucide-react";
+import { Search, Video, Dumbbell, Check, Loader2, ArrowLeftRight, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,10 @@ const MUSCLE_FILTER_CHIPS = [
   "Cardio",
   "Mobilidade",
   "Funcional",
+  "Kettlebell",
+  "Barbell",
+  "Ginásticos",
+  "Corpo inteiro",
 ];
 
 interface SubstituteExerciseDialogProps {
@@ -47,6 +51,14 @@ export function SubstituteExerciseDialog({
   const [search, setSearch] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("Todos");
   const [substituting, setSubstituting] = useState(false);
+  const chipsScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollChips = (direction: "left" | "right") => {
+    if (chipsScrollRef.current) {
+      const offset = direction === "left" ? -240 : 240;
+      chipsScrollRef.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -110,88 +122,113 @@ export function SubstituteExerciseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] max-w-2xl overflow-hidden p-0">
+      <DialogContent className="max-h-[92dvh] w-[95vw] sm:max-w-4xl lg:max-w-5xl overflow-hidden p-0 rounded-2xl shadow-2xl">
         <div className="flex max-h-[92dvh] flex-col">
           {/* Header */}
-          <DialogHeader className="border-b border-border/60 p-4 pb-3">
+          <DialogHeader className="border-b border-border/60 p-4 sm:p-5 pb-3 sm:pb-4">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                <ArrowLeftRight className="h-4 w-4" />
+              <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                <ArrowLeftRight className="h-5 w-5" />
               </div>
-              <DialogTitle className="text-base font-semibold">Substituir Exercício</DialogTitle>
+              <div>
+                <DialogTitle className="text-base sm:text-lg font-semibold">Substituir Exercício</DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground pt-0.5">
+                  Substituindo <span className="font-semibold text-foreground">"{currentExerciseName}"</span> por outro movimento do acervo oficial. O nome e o vídeo serão atualizados mantendo os parâmetros configurados.
+                </DialogDescription>
+              </div>
             </div>
-            <DialogDescription className="text-xs text-muted-foreground pt-1">
-              Substituindo <span className="font-semibold text-foreground">"{currentExerciseName}"</span> por outro movimento do acervo oficial. O nome e o vídeo serão atualizados mantendo os parâmetros configurados.
-            </DialogDescription>
           </DialogHeader>
 
           {/* Search & Muscle Filters */}
-          <div className="space-y-2.5 border-b border-border/60 bg-muted/20 p-3.5">
+          <div className="space-y-3 border-b border-border/60 bg-muted/20 p-3.5 sm:p-4">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar exercício substituto por nome ou grupo muscular…"
                 autoFocus
-                className="h-10 pl-9 text-sm"
+                className="h-10 pl-9.5 pr-4 text-sm rounded-xl bg-background"
               />
             </div>
 
-            {/* Muscle Filter Chips */}
-            <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {MUSCLE_FILTER_CHIPS.map((chip) => {
-                const active = selectedGroup === chip;
-                return (
-                  <button
-                    key={chip}
-                    type="button"
-                    onClick={() => setSelectedGroup(chip)}
-                    className={cn(
-                      "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                      active
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground border border-border/60"
-                    )}
-                  >
-                    {chip}
-                  </button>
-                );
-              })}
+            {/* Muscle Filter Chips com navegação por setas e scroll suave */}
+            <div className="relative flex items-center">
+              <button
+                type="button"
+                onClick={() => scrollChips("left")}
+                aria-label="Rolar categorias para esquerda"
+                className="absolute -left-1 z-10 hidden sm:flex h-7 w-7 items-center justify-center rounded-full bg-background/95 border border-border shadow-sm text-muted-foreground hover:text-foreground hover:bg-accent transition"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+
+              <div
+                ref={chipsScrollRef}
+                className="flex gap-1.5 overflow-x-auto px-1 sm:px-7 pb-1.5 scrollbar-thin scrollbar-thumb-border/70 hover:scrollbar-thumb-primary/40 [touch-action:pan-x]"
+              >
+                {MUSCLE_FILTER_CHIPS.map((chip) => {
+                  const active = selectedGroup === chip;
+                  return (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setSelectedGroup(chip)}
+                      className={cn(
+                        "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-150 select-none",
+                        active
+                          ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                          : "bg-background text-muted-foreground hover:bg-muted hover:text-foreground border border-border/70 hover:border-border"
+                      )}
+                    >
+                      {chip}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => scrollChips("right")}
+                aria-label="Rolar categorias para direita"
+                className="absolute -right-1 z-10 hidden sm:flex h-7 w-7 items-center justify-center rounded-full bg-background/95 border border-border shadow-sm text-muted-foreground hover:text-foreground hover:bg-accent transition"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
-          {/* List of Library Exercises */}
-          <div className="flex-1 overflow-y-auto p-3.5 divide-y divide-border/50">
+          {/* List of Library Exercises em Grid Responsivo de 2 Colunas no Desktop */}
+          <div className="flex-1 overflow-y-auto p-3.5 sm:p-5">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <p className="mt-2 text-xs text-muted-foreground">Carregando acervo de exercícios…</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                <p className="mt-2 text-xs font-medium text-muted-foreground">Carregando acervo oficial de exercícios…</p>
               </div>
             ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Dumbbell className="h-8 w-8 text-muted-foreground/50" />
-                <p className="mt-2 text-sm font-medium">Nenhum exercício encontrado</p>
-                <p className="text-xs text-muted-foreground">Tente buscar por outro termo ou grupo muscular.</p>
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Dumbbell className="h-10 w-10 text-muted-foreground/40" />
+                <p className="mt-3 text-sm font-semibold">Nenhum exercício encontrado</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-sm">Tente buscar por outro termo ou selecione outra categoria nas abas acima.</p>
               </div>
             ) : (
-              <div className="space-y-1">
-                {filtered.slice(0, 50).map((item) => {
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                {filtered.slice(0, 60).map((item) => {
                   const isCurrent = item.name.toLowerCase().trim() === currentExerciseName.toLowerCase().trim();
                   return (
                     <div
                       key={item.id}
                       onClick={() => !substituting && !isCurrent && handlePick(item)}
                       className={cn(
-                        "flex items-center justify-between gap-3 p-2.5 rounded-lg transition-colors cursor-pointer text-left",
+                        "flex items-center justify-between gap-3 p-3 rounded-xl transition-all cursor-pointer text-left border",
                         isCurrent
-                          ? "bg-muted/60 opacity-60 cursor-not-allowed"
-                          : "hover:bg-primary/5 hover:border-primary/30 border border-transparent"
+                          ? "bg-muted/60 opacity-60 cursor-not-allowed border-border/40"
+                          : "bg-card hover:bg-primary/5 hover:border-primary/40 border-border/60 hover:shadow-sm active:scale-[0.99]"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         {/* Miniatura ou Ícone */}
-                        <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md bg-muted flex items-center justify-center border border-border/60">
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted flex items-center justify-center border border-border/60">
                           {(() => {
                             const thumb = resolveExerciseThumbnail(item.media_url, item.thumbnail_url);
                             const isDirectVideo = !!item.media_url && (item.media_type === "video" || item.media_type === "upload" || /\.(mp4|webm|mov)(\?|$)/i.test(item.media_url));
@@ -217,17 +254,17 @@ export function SubstituteExerciseDialog({
                               );
                             }
                             if (item.media_url) {
-                              return <Video className="h-4 w-4 text-primary" />;
+                              return <Video className="h-5 w-5 text-primary" />;
                             }
-                            return <Dumbbell className="h-4 w-4 text-muted-foreground/60" />;
+                            return <Dumbbell className="h-5 w-5 text-muted-foreground/60" />;
                           })()}
                         </div>
 
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-foreground truncate">{item.name}</p>
-                          <div className="flex items-center gap-2 pt-0.5">
+                          <div className="flex items-center gap-2 pt-1 flex-wrap">
                             {item.muscle_group && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal">
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal border-border/70">
                                 {item.muscle_group}
                               </Badge>
                             )}
@@ -240,7 +277,7 @@ export function SubstituteExerciseDialog({
                         </div>
                       </div>
 
-                      <div>
+                      <div className="shrink-0">
                         {isCurrent ? (
                           <Badge variant="secondary" className="text-[10px]">Atual</Badge>
                         ) : (
@@ -249,7 +286,7 @@ export function SubstituteExerciseDialog({
                             size="sm"
                             variant="outline"
                             disabled={substituting}
-                            className="h-8 text-xs font-semibold gap-1 hover:bg-primary hover:text-primary-foreground"
+                            className="h-8 px-2.5 text-xs font-semibold gap-1 hover:bg-primary hover:text-primary-foreground border-border/80"
                           >
                             {substituting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                             <span>Escolher</span>
