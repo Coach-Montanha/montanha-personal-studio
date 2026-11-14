@@ -11,6 +11,7 @@ import {
   Layers,
   UserCheck,
   FolderOpen,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,6 +27,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+
+const CATEGORIA_LABELS: Record<string, string> = {
+  hypertrophy: "Hipertrofia",
+  conditioning: "Condicionamento",
+  strength: "Força",
+  cardio: "Cardio",
+  general: "Geral",
+  musculacao: "Musculação",
+  hibrido: "Híbrido",
+  kettlebell_sport: "Kettlebell Sport",
+  levantamento_peso: "LPO",
+  treinamento_funcional: "Funcional",
+  corrida: "Corrida",
+};
 
 interface DuplicateProgramDialogProps {
   open: boolean;
@@ -117,6 +132,10 @@ export function DuplicateProgramDialog({
     program?.pt_students?.name?.trim() || program?.students?.name?.trim() || null;
 
   const totalDays = program?.pt_training_days?.length ?? 0;
+
+  const categoryLabel = program?.category
+    ? (CATEGORIA_LABELS[program.category] || program.category)
+    : "Musculação";
 
   const duplicateMutation = useMutation({
     mutationFn: async () => {
@@ -293,14 +312,15 @@ export function DuplicateProgramDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl border-border shadow-2xl">
-        <DialogHeader className="p-5 pb-4 bg-muted/20 border-b border-border/70 space-y-1.5">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-              <Copy className="h-4 w-4" />
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-2xl border-border shadow-2xl">
+        {/* Cabeçalho Fixo */}
+        <DialogHeader className="p-5 sm:p-6 pb-4 bg-muted/20 border-b border-border/70 shrink-0 space-y-1.5">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-xs">
+              <Copy className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="text-base font-bold text-foreground">
+              <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
                 Duplicar Programa de Treino
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
@@ -310,184 +330,222 @@ export function DuplicateProgramDialog({
           </div>
         </DialogHeader>
 
-        <div className="p-5 space-y-4">
+        {/* Corpo com Rolagem Segura Sem Cortes */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
           {/* Card Resumo do Treino Original */}
           {program && (
-            <div className="p-3 rounded-xl bg-card border border-border flex items-center justify-between gap-3 text-xs">
-              <div className="space-y-0.5 min-w-0">
+            <div className="p-4 rounded-xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+              <div className="space-y-1 min-w-0 flex-1">
                 <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
                   Treino Original
                 </span>
-                <p className="font-extrabold text-foreground truncate">{program.name}</p>
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-                  <span className="flex items-center gap-1">
-                    <Layers className="h-3 w-3 text-primary" />
-                    {totalDays} {totalDays === 1 ? "sessão" : "sessões"}
+                <p className="font-extrabold text-sm text-foreground break-words">{program.name}</p>
+                <div className="flex flex-wrap items-center gap-2.5 text-xs text-muted-foreground mt-1">
+                  <span className="flex items-center gap-1 font-medium text-foreground bg-muted/40 px-2 py-0.5 rounded-md">
+                    <Layers className="h-3.5 w-3.5 text-primary" />
+                    {totalDays} {totalDays === 1 ? "sessão programada" : "sessões programadas"}
                   </span>
-                  {originalStudentName && (
+                  {originalStudentName ? (
                     <span>• Vinculado a: <strong className="text-foreground">{originalStudentName}</strong></span>
+                  ) : (
+                    <span>• <strong className="text-foreground">Modelo no Acervo Geral</strong></span>
                   )}
                 </div>
               </div>
-              <Badge variant="secondary" className="text-[10px] uppercase font-bold shrink-0">
-                {program.category || "Musculação"}
+              <Badge variant="secondary" className="text-xs px-2.5 py-1 uppercase font-bold shrink-0 self-start sm:self-center">
+                {categoryLabel}
               </Badge>
             </div>
           )}
 
-          {/* Nome do Novo Treino */}
-          <div className="space-y-1.5">
-            <Label htmlFor="new-name" className="text-xs font-bold text-foreground">
-              Nome do Novo Treino
-            </Label>
-            <Input
-              id="new-name"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="Ex: Treino Hipertrofia - Fase 2"
-              className="text-xs h-9"
-              autoFocus
-            />
+          {/* Grid: Nome do Novo Treino + Data de Início */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2 space-y-1.5">
+              <Label htmlFor="new-name" className="text-xs font-bold text-foreground">
+                Nome do Novo Treino
+              </Label>
+              <Input
+                id="new-name"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="Ex: Treino Hipertrofia - Fase 2"
+                className="text-xs h-10 font-medium"
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="start-date" className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-primary" />
+                Data de Início
+              </Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="text-xs h-10 font-medium"
+              />
+            </div>
           </div>
 
-          {/* Data de Início */}
-          <div className="space-y-1.5">
-            <Label htmlFor="start-date" className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5 text-primary" />
-              Data de Início do Novo Treino
-            </Label>
-            <Input
-              id="start-date"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="text-xs h-9"
-            />
-          </div>
-
-          {/* Destino da Cópia */}
+          {/* Destino da Cópia em Grid de 3 Colunas */}
           <div className="space-y-2">
             <Label className="text-xs font-bold text-foreground">Destino da Duplicação</Label>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {/* Opção 1: Modelo Acervo Geral */}
               <label
-                className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
+                className={`flex flex-col justify-between gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                   destinationType === "template"
-                    ? "border-primary bg-primary/5 shadow-xs"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
                     : "border-border bg-card/40 hover:bg-muted/40"
                 }`}
               >
-                <input
-                  type="radio"
-                  name="destType"
-                  checked={destinationType === "template"}
-                  onChange={() => setDestinationType("template")}
-                  className="mt-0.5 text-primary focus:ring-primary"
-                />
-                <div className="space-y-0.5">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <FolderOpen className="h-3.5 w-3.5 text-primary" />
-                    Salvar como Modelo no Acervo Geral
-                  </span>
-                  <p className="text-[11px] text-muted-foreground">
-                    Fica disponível como template na biblioteca para atribuir a qualquer aluno futuramente.
-                  </p>
-                </div>
-              </label>
-
-              {/* Opção 2: Mesmo Aluno (se o original tiver aluno) */}
-              {originalStudentName && (
-                <label
-                  className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
-                    destinationType === "same_student"
-                      ? "border-primary bg-primary/5 shadow-xs"
-                      : "border-border bg-card/40 hover:bg-muted/40"
-                  }`}
-                >
+                <div className="flex items-start gap-2.5">
                   <input
                     type="radio"
                     name="destType"
-                    checked={destinationType === "same_student"}
-                    onChange={() => setDestinationType("same_student")}
-                    className="mt-0.5 text-primary focus:ring-primary"
+                    checked={destinationType === "template"}
+                    onChange={() => setDestinationType("template")}
+                    className="mt-1 text-primary focus:ring-primary shrink-0"
                   />
-                  <div className="space-y-0.5">
+                  <div className="space-y-1">
                     <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                      <UserCheck className="h-3.5 w-3.5 text-emerald-500" />
-                      Manter vinculado a {originalStudentName}
+                      <FolderOpen className="h-4 w-4 text-primary shrink-0" />
+                      Acervo Geral (Modelo)
                     </span>
-                    <p className="text-[11px] text-muted-foreground">
-                      Ideal para criar uma Fase 2, mesociclo de progressão ou treino alternativo para este aluno.
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Template geral pronto na biblioteca para atribuir a qualquer aluno futuramente.
                     </p>
                   </div>
+                </div>
+                {destinationType === "template" && (
+                  <Badge variant="outline" className="text-[10px] w-fit border-primary/40 text-primary bg-primary/10 font-bold">
+                    Selecionado
+                  </Badge>
+                )}
+              </label>
+
+              {/* Opção 2: Mesmo Aluno (se o original tiver aluno) */}
+              {originalStudentName ? (
+                <label
+                  className={`flex flex-col justify-between gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
+                    destinationType === "same_student"
+                      ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
+                      : "border-border bg-card/40 hover:bg-muted/40"
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <input
+                      type="radio"
+                      name="destType"
+                      checked={destinationType === "same_student"}
+                      onChange={() => setDestinationType("same_student")}
+                      className="mt-1 text-primary focus:ring-primary shrink-0"
+                    />
+                    <div className="space-y-1">
+                      <span className="text-xs font-bold text-foreground flex items-center gap-1.5 truncate">
+                        <UserCheck className="h-4 w-4 text-emerald-500 shrink-0" />
+                        Mesmo Aluno
+                      </span>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Mantém para <strong className="text-foreground">{originalStudentName}</strong> (Fase 2 ou progressão).
+                      </p>
+                    </div>
+                  </div>
+                  {destinationType === "same_student" && (
+                    <Badge variant="outline" className="text-[10px] w-fit border-emerald-500/40 text-emerald-600 bg-emerald-500/10 font-bold">
+                      Selecionado
+                    </Badge>
+                  )}
                 </label>
+              ) : (
+                <div className="p-3.5 rounded-xl border border-dashed border-border/60 bg-muted/10 opacity-60 flex flex-col justify-center">
+                  <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+                    <UserCheck className="h-4 w-4 text-muted-foreground" />
+                    Mesmo Aluno
+                  </span>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    O treino original já é um modelo sem aluno vinculado.
+                  </p>
+                </div>
               )}
 
               {/* Opção 3: Outro Aluno */}
               <label
-                className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
+                className={`flex flex-col justify-between gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                   destinationType === "another_student"
-                    ? "border-primary bg-primary/5 shadow-xs"
+                    ? "border-primary bg-primary/5 ring-1 ring-primary shadow-xs"
                     : "border-border bg-card/40 hover:bg-muted/40"
                 }`}
               >
-                <input
-                  type="radio"
-                  name="destType"
-                  checked={destinationType === "another_student"}
-                  onChange={() => setDestinationType("another_student")}
-                  className="mt-0.5 text-primary focus:ring-primary"
-                />
-                <div className="space-y-0.5 flex-1">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-indigo-500" />
-                    Atribuir cópia a outro aluno cadastrado
-                  </span>
-                  <p className="text-[11px] text-muted-foreground">
-                    Aproveite a montagem completa deste treino para outro aluno do Studio ou Personal.
-                  </p>
+                <div className="flex items-start gap-2.5">
+                  <input
+                    type="radio"
+                    name="destType"
+                    checked={destinationType === "another_student"}
+                    onChange={() => setDestinationType("another_student")}
+                    className="mt-1 text-primary focus:ring-primary shrink-0"
+                  />
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <Users className="h-4 w-4 text-indigo-500 shrink-0" />
+                      Outro Aluno
+                    </span>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      Atribui a cópia a qualquer outro aluno ativo do Studio ou Personal.
+                    </p>
+                  </div>
                 </div>
+                {destinationType === "another_student" && (
+                  <Badge variant="outline" className="text-[10px] w-fit border-indigo-500/40 text-indigo-600 bg-indigo-500/10 font-bold">
+                    Selecionado
+                  </Badge>
+                )}
               </label>
             </div>
           </div>
 
           {/* Seletor de Aluno quando 'another_student' estiver ativo */}
           {destinationType === "another_student" && (
-            <div className="p-3.5 rounded-xl border border-indigo-500/20 bg-indigo-500/5 space-y-3">
-              <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={tipoAluno === "studio" ? "default" : "outline"}
-                  className="h-7 text-xs flex-1 font-bold"
-                  onClick={() => {
-                    setTipoAluno("studio");
-                    setSelectedStudentId("");
-                  }}
-                >
-                  Alunos Studio ({studioStudents.length})
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={tipoAluno === "pt" ? "default" : "outline"}
-                  className="h-7 text-xs flex-1 font-bold"
-                  onClick={() => {
-                    setTipoAluno("pt");
-                    setSelectedStudentId("");
-                  }}
-                >
-                  Personal Trainer ({ptStudents.length})
-                </Button>
+            <div className="p-4 rounded-xl border border-indigo-500/30 bg-indigo-500/5 space-y-3 animate-in fade-in-50 duration-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Users className="h-4 w-4 text-indigo-500" />
+                  Selecione o Aluno Destino:
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={tipoAluno === "studio" ? "default" : "outline"}
+                    className="h-7 text-xs font-bold"
+                    onClick={() => {
+                      setTipoAluno("studio");
+                      setSelectedStudentId("");
+                    }}
+                  >
+                    Alunos Studio ({studioStudents.length})
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={tipoAluno === "pt" ? "default" : "outline"}
+                    className="h-7 text-xs font-bold"
+                    onClick={() => {
+                      setTipoAluno("pt");
+                      setSelectedStudentId("");
+                    }}
+                  >
+                    Personal Trainer ({ptStudents.length})
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="select-student" className="text-xs font-semibold text-foreground">
-                  Selecione o Aluno
-                </Label>
                 <select
                   id="select-student"
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   value={selectedStudentId}
                   onChange={(e) => setSelectedStudentId(e.target.value)}
                 >
@@ -503,7 +561,8 @@ export function DuplicateProgramDialog({
           )}
         </div>
 
-        <DialogFooter className="p-4 bg-muted/20 border-t border-border flex items-center justify-between gap-2">
+        {/* Rodapé Fixo */}
+        <DialogFooter className="p-4 sm:p-5 bg-muted/20 border-t border-border flex items-center justify-between gap-3 shrink-0">
           <Button
             type="button"
             variant="ghost"
@@ -520,16 +579,16 @@ export function DuplicateProgramDialog({
             size="sm"
             onClick={() => duplicateMutation.mutate()}
             disabled={duplicateMutation.isPending || !newName.trim()}
-            className="text-xs font-bold gap-1.5 shadow-sm"
+            className="text-xs font-bold gap-2 px-5 h-9 shadow-sm"
           >
             {duplicateMutation.isPending ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Duplicando Treino...
               </>
             ) : (
               <>
-                <Copy className="h-3.5 w-3.5" />
+                <Copy className="h-4 w-4" />
                 Duplicar Treino Agora
               </>
             )}
