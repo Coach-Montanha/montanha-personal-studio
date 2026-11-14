@@ -32,6 +32,7 @@ import {
   Clock,
   AlertTriangle,
   MessageCircle,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -73,6 +74,7 @@ import { StudentViewDialog } from "@/components/pt/StudentViewDialog";
 import { LoadProgressionDialog } from "@/components/pt/LoadProgressionDialog";
 import { TrainingDayDetail } from "@/components/pt/TrainingDayDetail";
 import { ProgramImageDialog } from "@/components/program-image/ProgramImageDialog";
+import { DuplicateProgramDialog } from "@/components/pt/DuplicateProgramDialog";
 import { matchesSearchTerms } from "@/lib/search-utils";
 
 function limparTextoGoals(goals?: string | null): string | null {
@@ -168,6 +170,8 @@ export function TreinosPage() {
   const [initialDayIdForEdit, setInitialDayIdForEdit] = useState<string | null>(null);
   const [alunoPerfilOpen, setAlunoPerfilOpen] = useState(false);
   const [selectedAlunoPerfil, setSelectedAlunoPerfil] = useState<any | null>(null);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [selectedProgramForDuplicate, setSelectedProgramForDuplicate] = useState<ProgramRow | null>(null);
 
   // Consulta de todos os programas com joins de alunos Studio e PT
   const { data: programs = [], isLoading } = useQuery({
@@ -957,6 +961,17 @@ export function TreinosPage() {
                           <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuItem
                               onClick={() => {
+                                setSelectedProgramForDuplicate(prog);
+                                setDuplicateDialogOpen(true);
+                              }}
+                              className="gap-2 cursor-pointer text-xs font-semibold"
+                            >
+                              <Copy className="h-4 w-4 text-primary" />
+                              <span>Duplicar Treino</span>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() => {
                                 setImageExportProgramId(prog.id);
                                 setImageExportOpen(true);
                               }}
@@ -1432,6 +1447,16 @@ export function TreinosPage() {
         }}
         programId={atribuirProgram?.id || null}
         programName={atribuirProgram?.name}
+      />
+
+      {/* Dialog de Duplicação de Treino Completo */}
+      <DuplicateProgramDialog
+        open={duplicateDialogOpen}
+        onOpenChange={(v) => {
+          setDuplicateDialogOpen(v);
+          if (!v) setSelectedProgramForDuplicate(null);
+        }}
+        program={selectedProgramForDuplicate}
       />
 
       {/* Dialog de Exportação de Imagem A4/Instagram */}
