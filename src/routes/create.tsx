@@ -385,7 +385,7 @@ function CreateStudioPage() {
             </span>
             <Button
               onClick={handleGerarMinuta}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white font-bold"
+              className="bg-primary text-primary-foreground shadow-card hover:bg-primary/90 font-bold transition-all duration-200"
             >
               <Sparkles className="w-4 h-4 mr-1.5" /> Gerar Minuta de Contrato
             </Button>

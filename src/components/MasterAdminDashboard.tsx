@@ -19,7 +19,8 @@ import {
   Unlock,
   Check,
   X,
-  ShieldAlert
+  ShieldAlert,
+  Ticket
 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import {
@@ -268,7 +269,7 @@ export const MasterAdminDashboard: React.FC = () => {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2 cursor-pointer"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 py-2.5 rounded-xl shadow-card transition flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Nova Assinatura
           </button>
@@ -394,9 +395,9 @@ export const MasterAdminDashboard: React.FC = () => {
           <div className="sm:col-span-2 lg:col-span-2 flex items-end">
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 text-white font-bold h-10 rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-10 rounded-xl shadow-card transition flex items-center justify-center gap-2 cursor-pointer"
             >
-              🎟️ Gerar Convite &amp; Senha Temporária
+              <Ticket className="w-4 h-4" /> Gerar Convite &amp; Senha Temporária
             </button>
           </div>
         </form>
@@ -689,7 +690,7 @@ export const MasterAdminDashboard: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-cyan-500 hover:opacity-90 text-white font-bold py-3 rounded-xl shadow-lg transition cursor-pointer"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 rounded-xl shadow-card transition cursor-pointer"
                 >
                   Salvar Assinatura
                 </button>

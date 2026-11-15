@@ -148,7 +148,7 @@ export function SubstituteExerciseDialog({
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar exercício substituto por nome ou grupo muscular…"
                 autoFocus
-                className="h-10 pl-9.5 pr-4 text-sm rounded-xl bg-background"
+                className="h-11 sm:h-10 pl-9.5 pr-4 text-base md:text-sm rounded-xl bg-background"
               />
             </div>
 

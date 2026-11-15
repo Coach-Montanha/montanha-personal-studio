@@ -378,7 +378,7 @@ export function DuplicateProgramDialog({
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Ex: Treino Hipertrofia - Fase 2"
-                className="text-xs h-10 font-medium"
+                className="text-base sm:text-xs h-11 sm:h-10 font-medium"
                 autoFocus
               />
             </div>
@@ -393,7 +393,7 @@ export function DuplicateProgramDialog({
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="text-xs h-10 font-medium"
+                className="text-base sm:text-xs h-11 sm:h-10 font-medium"
               />
             </div>
           </div>
@@ -554,7 +554,7 @@ export function DuplicateProgramDialog({
               <div className="space-y-1">
                 <select
                   id="select-student"
-                  className="w-full h-10 rounded-md border border-input bg-background px-3 py-1 text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="w-full h-11 sm:h-10 rounded-md border border-input bg-background px-3 py-1 text-base sm:text-xs text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   value={selectedStudentId}
                   onChange={(e) => setSelectedStudentId(e.target.value)}
                 >

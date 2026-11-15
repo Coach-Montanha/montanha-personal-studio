@@ -10,7 +10,7 @@ export const ImpersonationBanner: React.FC = () => {
   return (
     <aside
       aria-label="Aviso de Modo Suporte Técnico"
-      className="sticky top-0 z-[9999] w-full bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-teal-500/20 border-b border-amber-500/40 backdrop-blur-xl px-4 py-2 text-xs text-amber-200 shadow-lg"
+      className="sticky top-0 z-[9999] w-full bg-amber-500/10 border-b border-amber-500/30 backdrop-blur-md px-4 py-2 text-xs text-amber-200 shadow-sm"
     >
       <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
