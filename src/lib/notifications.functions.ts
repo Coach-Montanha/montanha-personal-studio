@@ -53,3 +53,51 @@ export const clearAllNotificationsFn = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { success: true };
   });
+
+export const notifyCoachWorkoutCompleted = createServerFn({ method: "POST" })
+  .validator((input: {
+    coachUserId: string;
+    studentId: string;
+    studentName: string;
+    dayName: string;
+    durationSeconds: number;
+    durationFormatted: string;
+    loadsCount: number;
+    performedCount: number;
+    feedback?: string | null;
+    executionId?: string;
+  }) => input)
+  .handler(async ({ data }) => {
+    if (!data.coachUserId) return { success: false, reason: "No coachUserId provided" };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const title = `🏋️ ${data.studentName} finalizou o treino!`;
+    const feedbackText = data.feedback ? ` | Feedback: "${data.feedback}"` : "";
+    const message = `Treino "${data.dayName}" concluído em ${data.durationFormatted} (${data.performedCount} exerc., ${data.loadsCount} cargas)${feedbackText}`;
+
+    const { error } = await supabaseAdmin.from("pt_notifications").insert({
+      user_id: data.coachUserId,
+      title,
+      message,
+      type: "training_complete",
+      metadata: {
+        student_id: data.studentId,
+        student_name: data.studentName,
+        day_name: data.dayName,
+        execution_id: data.executionId,
+        duration_seconds: data.durationSeconds,
+        duration_formatted: data.durationFormatted,
+        loads_count: data.loadsCount,
+        feedback: data.feedback || null,
+        performed_count: data.performedCount,
+      },
+    });
+
+    if (error) {
+      console.error("[notifyCoachWorkoutCompleted] Erro ao gravar notificação:", error);
+      throw new Error(error.message);
+    }
+
+    return { success: true };
+  });

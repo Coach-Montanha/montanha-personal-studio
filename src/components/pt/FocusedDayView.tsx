@@ -32,6 +32,7 @@ import { PlateCalculatorDialog } from "@/components/pt/PlateCalculatorDialog";
 import { MuscleHeatmap } from "@/components/pt/MuscleHeatmap";
 import { resolveExerciseThumbnail } from "@/lib/thumbnail-utils";
 import { useWakeLock } from "@/hooks/use-wake-lock";
+import { notifyCoachWorkoutCompleted } from "@/lib/notifications.functions";
 
 export { resolveExerciseThumbnail };
 
@@ -420,12 +421,12 @@ export function FocusedDayView({
 
       // Notificação ao treinador/studio com padrão MFit (cargas, tempo e feedback)
       try {
-        let coachUserId: string | null = null;
+        let coachUserId: string | null = userId || null;
         let resolvedStudentName = studentName || "Aluno";
         let resolvedStudentId = studentId;
 
         // 1. Descobrir o id e treinador (aluno PT ou Studio)
-        if (studentId) {
+        if (!coachUserId && studentId) {
           const { data: ptData } = await supabase
             .from("pt_students")
             .select("user_id, name")
@@ -480,23 +481,41 @@ export function FocusedDayView({
         const notifMessage = `Treino "${day.name}" concluído em ${formattedDuration} (${performedExerciseIds.length} exerc., ${totalLoadsCount} cargas)${feedbackPreview}`;
 
         if (coachUserId) {
-          await supabase.from("pt_notifications" as any).insert({
-            user_id: coachUserId,
-            title: notifTitle,
-            message: notifMessage,
-            type: "training_complete",
-            metadata: {
-              student_id: resolvedStudentId,
-              student_name: resolvedStudentName,
-              execution_id: (newExec as any)?.id,
-              day_name: day.name,
-              timer_seconds: timerSeconds,
-              duration_formatted: formattedDuration,
-              loads_count: totalLoadsCount,
-              feedback: feedback.trim() || null,
-              performed_count: performedExerciseIds.length,
-            },
-          });
+          try {
+            await notifyCoachWorkoutCompleted({
+              data: {
+                coachUserId,
+                studentId: resolvedStudentId || "",
+                studentName: resolvedStudentName,
+                dayName: day.name,
+                durationSeconds: timerSeconds,
+                durationFormatted: formattedDuration,
+                loadsCount: totalLoadsCount,
+                performedCount: performedExerciseIds.length,
+                feedback: feedback.trim() || null,
+                executionId: (newExec as any)?.id,
+              },
+            });
+          } catch (serverNotifErr) {
+            console.warn("[FocusedDayView] Fallback para insert direto via client:", serverNotifErr);
+            await supabase.from("pt_notifications" as any).insert({
+              user_id: coachUserId,
+              title: notifTitle,
+              message: notifMessage,
+              type: "training_complete",
+              metadata: {
+                student_id: resolvedStudentId,
+                student_name: resolvedStudentName,
+                execution_id: (newExec as any)?.id,
+                day_name: day.name,
+                timer_seconds: timerSeconds,
+                duration_formatted: formattedDuration,
+                loads_count: totalLoadsCount,
+                feedback: feedback.trim() || null,
+                performed_count: performedExerciseIds.length,
+              },
+            });
+          }
         }
       } catch (notifErr) {
         console.warn("[FocusedDayView] Erro ao emitir notificação de conclusão para o treinador:", notifErr);
