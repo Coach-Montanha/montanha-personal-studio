@@ -220,26 +220,14 @@ function PTTreinoPage() {
         (stRows || []).forEach((r: any) => { if (r?.id && !ids.includes(r.id)) ids.push(r.id); });
       }
 
-      const [resPt, resStudio] = await Promise.all([
-        supabase
-          .from("pt_programs" as never)
-          .select("*")
-          .in("pt_student_id", ids)
-          .eq("is_deleted", false)
-          .order("start_date", { ascending: false }),
-        supabase
-          .from("pt_programs" as never)
-          .select("*")
-          .in("studio_student_id", ids)
-          .eq("is_deleted", false)
-          .order("start_date", { ascending: false }),
-      ]);
+      const { data: ptProgramsData } = await supabase
+        .from("pt_programs" as never)
+        .select("*")
+        .in("pt_student_id", ids)
+        .eq("is_deleted", false)
+        .order("start_date", { ascending: false });
 
-      const map = new Map<string, any>();
-      (resPt.data || []).forEach((p: any) => { if (p?.id) map.set(p.id, p); });
-      (resStudio.data || []).forEach((p: any) => { if (p?.id) map.set(p.id, p); });
-
-      return Array.from(map.values()).sort(
+      return ((ptProgramsData || []) as any[]).sort(
         (a, b) => new Date(b.start_date || 0).getTime() - new Date(a.start_date || 0).getTime()
       );
     },
@@ -304,7 +292,7 @@ function PTTreinoPage() {
       const { data } = await supabase
         .from("pt_training_executions" as never)
         .select("id,training_day_id,executed_at,notes")
-        .or(`pt_student_id.in.(${ids.join(",")}),studio_student_id.in.(${ids.join(",")})`)
+        .in("pt_student_id", ids)
         .order("executed_at", { ascending: false })
         .limit(200);
       return (data ?? []) as Array<{

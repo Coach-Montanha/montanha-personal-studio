@@ -515,27 +515,20 @@ export const getMyTrainingPortalDataServerFn = createServerFn({ method: "GET" })
       };
     }
 
-    // 7. Busca programas não-deletados onde pt_student_id IN (ids) OU studio_student_id IN (ids)
-    const [ptProgRes, studioProgRes] = await Promise.all([
-      supabaseAdmin
-        .from("pt_programs" as any)
-        .select("*")
-        .in("pt_student_id", allStudentIds)
-        .eq("is_deleted", false)
-        .order("start_date", { ascending: false }),
-      supabaseAdmin
-        .from("pt_programs" as any)
-        .select("*")
-        .in("studio_student_id", allStudentIds)
-        .eq("is_deleted", false)
-        .order("start_date", { ascending: false }),
-    ]);
+    // 7. Busca programas não-deletados do aluno
+    const { data: ptProgData, error: progErr } = await supabaseAdmin
+      .from("pt_programs" as any)
+      .select("*")
+      .in("pt_student_id", allStudentIds)
+      .eq("is_deleted", false)
+      .order("start_date", { ascending: false });
+
+    if (progErr) {
+      console.warn("[getMyTrainingPortalDataServerFn] Erro ao buscar pt_programs:", progErr);
+    }
 
     const programMap = new Map<string, any>();
-    (ptProgRes.data || []).forEach((p: any) => {
-      if (p?.id) programMap.set(p.id, p);
-    });
-    (studioProgRes.data || []).forEach((p: any) => {
+    (ptProgData || []).forEach((p: any) => {
       if (p?.id) programMap.set(p.id, p);
     });
 
