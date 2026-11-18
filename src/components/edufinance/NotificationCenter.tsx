@@ -600,18 +600,21 @@ export function NotificationCenter() {
           )}
         </div>
 
-        <div className="bg-muted/30 px-3 py-2 text-center border-t flex items-center justify-between gap-1.5">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-primary" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Alertas em Tempo Real
-            </span>
-          </div>
+        <div className="bg-muted/30 px-3 py-2 border-t flex items-center justify-between gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate({ to: "/notificacoes" as any })}
+            className="h-6 text-[10px] font-bold text-foreground/80 hover:text-primary px-1.5"
+            title="Abrir Central Completa de Notificações"
+          >
+            📋 Central Completa
+          </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate({ to: "/personal-trainer/feedbacks" as any })}
-            className="h-6 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 px-2"
+            className="h-6 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 px-1.5"
           >
             Ver Feedbacks →
           </Button>

@@ -426,6 +426,7 @@ export function FocusedDayView({
         let coachUserId: string | null = userId || null;
         let resolvedStudentName = studentName || "Aluno";
         let resolvedStudentId = studentId;
+        let resolvedStudentType: "studio" | "pt" = "pt";
 
         // 1. Descobrir o id e treinador (aluno PT ou Studio)
         if (!coachUserId && studentId) {
@@ -437,6 +438,7 @@ export function FocusedDayView({
           if (ptData) {
             coachUserId = ptData.user_id;
             if (ptData.name) resolvedStudentName = ptData.name;
+            resolvedStudentType = "pt";
           } else {
             const { data: stData } = await supabase
               .from("students")
@@ -446,6 +448,7 @@ export function FocusedDayView({
             if (stData) {
               coachUserId = stData.user_id;
               if (stData.name) resolvedStudentName = stData.name;
+              resolvedStudentType = "studio";
             }
           }
         }
@@ -461,6 +464,7 @@ export function FocusedDayView({
             coachUserId = ptByAccount.user_id;
             resolvedStudentName = ptByAccount.name || resolvedStudentName;
             if (!resolvedStudentId) resolvedStudentId = ptByAccount.id;
+            resolvedStudentType = "pt";
           } else {
             const { data: stByAccount } = await supabase
               .from("students")
@@ -471,6 +475,7 @@ export function FocusedDayView({
               coachUserId = stByAccount.user_id;
               resolvedStudentName = stByAccount.name || resolvedStudentName;
               if (!resolvedStudentId) resolvedStudentId = stByAccount.id;
+              resolvedStudentType = "studio";
             }
           }
         }
@@ -479,8 +484,10 @@ export function FocusedDayView({
         const totalLoadsCount = Object.keys(notes.loads || {}).length;
         const formattedDuration = timerSeconds > 0 ? formatSeconds(timerSeconds) : "Sem cronômetro";
         const feedbackPreview = feedback.trim() ? ` | Feedback: "${feedback.trim()}"` : "";
-        const notifTitle = `🏋️ ${resolvedStudentName} finalizou o treino!`;
-        const notifMessage = `Treino "${day.name}" concluído em ${formattedDuration} (${performedExerciseIds.length} exerc., ${totalLoadsCount} cargas)${feedbackPreview}`;
+        const notifTitle = resolvedStudentType === "studio"
+          ? `🏋️ ${resolvedStudentName} (Studio - Planilha) finalizou o treino!`
+          : `🏋️ ${resolvedStudentName} finalizou o treino!`;
+        const notifMessage = `Treino "${day.name}" concluído em ${formattedDuration} (${performedExerciseIds.length} exerc., ${totalLoadsCount} cargas)${resolvedStudentType === "studio" ? " [Aluno Studio]" : ""}${feedbackPreview}`;
 
         if (coachUserId) {
           try {
@@ -496,6 +503,7 @@ export function FocusedDayView({
                 performedCount: performedExerciseIds.length,
                 feedback: feedback.trim() || null,
                 executionId: (newExec as any)?.id,
+                studentType: resolvedStudentType,
               },
             });
           } catch (serverNotifErr) {
@@ -508,6 +516,7 @@ export function FocusedDayView({
               metadata: {
                 student_id: resolvedStudentId,
                 student_name: resolvedStudentName,
+                student_type: resolvedStudentType,
                 execution_id: (newExec as any)?.id,
                 day_name: day.name,
                 timer_seconds: timerSeconds,

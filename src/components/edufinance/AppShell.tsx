@@ -30,6 +30,7 @@ import {
   FileText,
   Newspaper,
   MessageSquareQuote,
+  Bell,
 } from "lucide-react";
 
 import { useTheme } from "@/hooks/use-theme";
@@ -112,6 +113,7 @@ const nav: NavItem[] = [
   { to: "/financeiro", label: "Financeiro", icon: Wallet, section: "Gestão", module: "financeiro" },
   { to: "/crm", label: "CRM", icon: Megaphone, section: "Gestão", module: "crm" },
   { to: "/formularios", label: "Formulários", icon: FileText, section: "Gestão" },
+  { to: "/notificacoes", label: "Notificações", icon: Bell, section: "Gestão" },
   { to: "/desafios", label: "Desafios", icon: Trophy, section: "Gestão" },
   { to: "/promocoes", label: "Promoções & Pontos", icon: Gift, section: "Gestão" },
   { to: "/blog-editor", label: "Blog & Artigos", icon: Newspaper, section: "Gestão" },

@@ -19,6 +19,7 @@ import {
   ArrowRight,
   RefreshCw,
   ExternalLink,
+  Building2,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -58,6 +59,7 @@ export function FeedbacksPage() {
 
   const [search, setSearch] = useState("");
   const [filterPeriod, setFilterPeriod] = useState<"all" | "today" | "week" | "month">("all");
+  const [filterOrigin, setFilterOrigin] = useState<"all" | "studio" | "pt">("all");
   const [filterOnlyWithFeedback, setFilterOnlyWithFeedback] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -109,12 +111,15 @@ export function FeedbacksPage() {
           : Promise.resolve({ data: [] }),
       ]);
 
-      const studentMap = new Map<string, { name: string; phone?: string | null; email?: string | null }>();
+      const studentMap = new Map<
+        string,
+        { name: string; phone?: string | null; email?: string | null; origin: "studio" | "pt" }
+      >();
       (studioStudentsRes.data || []).forEach((s: any) => {
-        if (s?.id) studentMap.set(s.id, { name: s.name, phone: s.phone, email: s.email });
+        if (s?.id) studentMap.set(s.id, { name: s.name, phone: s.phone, email: s.email, origin: "studio" });
       });
       (ptStudentsRes.data || []).forEach((s: any) => {
-        if (s?.id) studentMap.set(s.id, { name: s.name, phone: s.phone, email: s.email });
+        if (s?.id) studentMap.set(s.id, { name: s.name, phone: s.phone, email: s.email, origin: "pt" });
       });
 
       const dayMap = new Map<string, { name: string; program_id?: string }>();
@@ -135,7 +140,7 @@ export function FeedbacksPage() {
           parsedNotes = row.notes;
         }
 
-        const student = studentMap.get(row.pt_student_id) || { name: "Aluno sem nome", phone: null };
+        const student = studentMap.get(row.pt_student_id) || { name: "Aluno sem nome", phone: null, origin: "pt" as const };
         const day = dayMap.get(row.training_day_id) || { name: "Treino do dia" };
 
         const directFeedback = row.feedback?.trim() || parsedNotes.feedback?.trim() || null;
@@ -149,6 +154,7 @@ export function FeedbacksPage() {
           studentId: row.pt_student_id,
           studentName: student.name,
           studentPhone: student.phone,
+          studentOrigin: student.origin || "pt",
           dayId: row.training_day_id,
           dayName: day.name,
           executedAt: row.executed_at,
@@ -200,12 +206,16 @@ export function FeedbacksPage() {
       if (filterPeriod === "month") {
         const itemMonth = (item.executedAt || "").slice(0, 7);
         const currentMonth = todayStr.slice(0, 7);
-        return itemMonth === currentMonth;
+        if (itemMonth !== currentMonth) return false;
+      }
+
+      if (filterOrigin !== "all" && item.studentOrigin !== filterOrigin) {
+        return false;
       }
 
       return true;
     });
-  }, [executions, search, filterPeriod, filterOnlyWithFeedback]);
+  }, [executions, search, filterPeriod, filterOrigin, filterOnlyWithFeedback]);
 
   // Estatísticas rápidas
   const stats = useMemo(() => {
@@ -324,6 +334,20 @@ export function FeedbacksPage() {
 
         <div className="flex flex-wrap items-center gap-2">
           <Select
+            value={filterOrigin}
+            onValueChange={(v: "all" | "studio" | "pt") => setFilterOrigin(v)}
+          >
+            <SelectTrigger className="w-[170px] h-9 text-xs font-semibold">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Alunos</SelectItem>
+              <SelectItem value="studio">🏛️ Alunos Studio (Planilha)</SelectItem>
+              <SelectItem value="pt">🏋️ Personal Trainer</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
             value={filterPeriod}
             onValueChange={(v: "all" | "today" | "week" | "month") => setFilterPeriod(v)}
           >
@@ -388,6 +412,25 @@ export function FeedbacksPage() {
                           <h3 className="font-bold text-base text-foreground leading-tight truncate">
                             {item.studentName}
                           </h3>
+                          {item.studentOrigin === "studio" ? (
+                            <Badge
+                              variant="outline"
+                              className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[10px] font-semibold gap-1 py-0 px-1.5 h-5"
+                              title="Aluno Studio (treina com planilha / aulas)"
+                            >
+                              <Building2 className="h-2.5 w-2.5" />
+                              Studio (Planilha)
+                            </Badge>
+                          ) : (
+                            <Badge
+                              variant="outline"
+                              className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-semibold gap-1 py-0 px-1.5 h-5"
+                              title="Aluno Personal Trainer (consultoria individual)"
+                            >
+                              <Dumbbell className="h-2.5 w-2.5" />
+                              Personal
+                            </Badge>
+                          )}
                           {item.rating && (
                             <div className="flex items-center gap-0.5 text-amber-500">
                               {Array.from({ length: item.rating }).map((_, i) => (

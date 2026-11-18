@@ -66,15 +66,20 @@ export const notifyCoachWorkoutCompleted = createServerFn({ method: "POST" })
     performedCount: number;
     feedback?: string | null;
     executionId?: string;
+    studentType?: "studio" | "pt";
   }) => input)
   .handler(async ({ data }) => {
     if (!data.coachUserId) return { success: false, reason: "No coachUserId provided" };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const title = `🏋️ ${data.studentName} finalizou o treino!`;
+    const isStudio = data.studentType === "studio";
+    const title = isStudio
+      ? `🏋️ ${data.studentName} (Studio - Planilha) finalizou o treino!`
+      : `🏋️ ${data.studentName} finalizou o treino!`;
     const feedbackText = data.feedback ? ` | Feedback: "${data.feedback}"` : "";
-    const message = `Treino "${data.dayName}" concluído em ${data.durationFormatted} (${data.performedCount} exerc., ${data.loadsCount} cargas)${feedbackText}`;
+    const originText = isStudio ? " [Aluno Studio]" : "";
+    const message = `Treino "${data.dayName}" concluído em ${data.durationFormatted} (${data.performedCount} exerc., ${data.loadsCount} cargas)${originText}${feedbackText}`;
 
     const { error } = await supabaseAdmin.from("pt_notifications").insert({
       user_id: data.coachUserId,
@@ -84,6 +89,7 @@ export const notifyCoachWorkoutCompleted = createServerFn({ method: "POST" })
       metadata: {
         student_id: data.studentId,
         student_name: data.studentName,
+        student_type: data.studentType || "pt",
         day_name: data.dayName,
         execution_id: data.executionId,
         duration_seconds: data.durationSeconds,
