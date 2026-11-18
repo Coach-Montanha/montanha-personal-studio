@@ -33,10 +33,11 @@ import { LoadProgressionDialog } from "./LoadProgressionDialog";
 import { AiPrescribeDialog } from "./AiPrescribeDialog";
 import { AiPromptPopover } from "./AiPromptPopover";
 import { MigrateProgramDialog } from "./MigrateProgramDialog";
+import { DuplicateProgramDialog } from "./DuplicateProgramDialog";
 import { ProgramLayoutEditor } from "./ProgramLayoutEditor";
 import { DragHandle, SortableList } from "@/components/ui-kit/SortableList";
 import { downloadProgramPdf } from "@/lib/pt-program-pdf";
-import { Download, TrendingUp, Sparkles, LayoutGrid, Copy } from "lucide-react";
+import { Download, TrendingUp, Sparkles, LayoutGrid, Copy, Users } from "lucide-react";
 import { PrescreverIaDialog } from "@/components/programa-ia/PrescreverIaDialog";
 import { ReprogramDayAiDialog } from "./ReprogramDayAiDialog";
 import { AddWeekDialog } from "./AddWeekDialog";
@@ -118,6 +119,8 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
   const [duplicatingDayId, setDuplicatingDayId] = useState<string | null>(null);
   const [migrateOpen, setMigrateOpen] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [duplicateInitialDest, setDuplicateInitialDest] = useState<"same_student" | "another_student" | "template">("same_student");
   const [guidanceOpen, setGuidanceOpen] = useState(false);
   const [addWeekOpen, setAddWeekOpen] = useState(false);
 
@@ -594,15 +597,41 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem
                   onClick={() => { setEditingProgram(activeProgram); setProgramOpen(true); }}
+                  className="gap-2 cursor-pointer font-medium"
                 >
                   <Pencil className="h-4 w-4" /> Editar rotina
                 </DropdownMenuItem>
                 {!activeProgram.is_deleted && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setDuplicateInitialDest("same_student");
+                        setDuplicateDialogOpen(true);
+                      }}
+                      className="gap-2 cursor-pointer font-medium"
+                    >
+                      <Copy className="h-4 w-4 text-primary" />
+                      <span>Duplicar rotina (este aluno)</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setDuplicateInitialDest("another_student");
+                        setDuplicateDialogOpen(true);
+                      }}
+                      className="gap-2 cursor-pointer font-medium"
+                    >
+                      <Users className="h-4 w-4 text-primary" />
+                      <span>Copiar para outro aluno</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {!activeProgram.is_deleted && (
                   <DropdownMenuItem
                     onClick={() => archiveProgram(activeProgram.id, !activeProgram.is_archived)}
+                    className="gap-2 cursor-pointer font-medium"
                   >
                     {activeProgram.is_archived ? (
                       <><ArchiveRestore className="h-4 w-4" /> Desarquivar</>
@@ -613,11 +642,11 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
                 )}
                 {activeProgram.is_deleted ? (
                   <>
-                    <DropdownMenuItem onClick={() => restoreProgram(activeProgram.id)}>
+                    <DropdownMenuItem onClick={() => restoreProgram(activeProgram.id)} className="gap-2 cursor-pointer font-medium">
                       <RotateCcw className="h-4 w-4" /> Restaurar
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      className="text-destructive"
+                      className="gap-2 cursor-pointer font-medium text-destructive focus:text-destructive"
                       onClick={() => hardDeleteProgram(activeProgram.id)}
                     >
                       <Trash2 className="h-4 w-4" /> Excluir permanentemente
@@ -625,7 +654,7 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
                   </>
                 ) : (
                   <DropdownMenuItem
-                    className="text-destructive"
+                    className="gap-2 cursor-pointer font-medium text-destructive focus:text-destructive"
                     onClick={() => softDeleteProgram(activeProgram.id)}
                   >
                     <Trash2 className="h-4 w-4" /> Mover para lixeira
@@ -677,6 +706,18 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
                 generatedAt={activeProgram.ai_generated_at}
               />
             )}
+            <button
+              type="button"
+              onClick={() => {
+                setDuplicateInitialDest("same_student");
+                setDuplicateDialogOpen(true);
+              }}
+              className="flex items-center gap-1.5 rounded-lg border bg-background px-3 py-1.5 text-xs font-medium transition-colors duration-200 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]"
+              title="Duplicar esta rotina para este aluno ou copiar para outro aluno"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              <span>Copiar / Duplicar</span>
+            </button>
             <button
               type="button"
               onClick={() => setMigrateOpen(true)}
@@ -949,6 +990,32 @@ export function ProgramsTab({ studentId, studioStudentId }: { studentId: string;
           }
         }}
       />
+
+      {activeProgram && (
+        <DuplicateProgramDialog
+          open={duplicateDialogOpen}
+          onOpenChange={setDuplicateDialogOpen}
+          initialDestination={duplicateInitialDest}
+          program={{
+            id: activeProgram.id,
+            name: activeProgram.name,
+            category: activeProgram.category,
+            level: activeProgram.level,
+            training_type: activeProgram.training_type,
+            goals: activeProgram.goals,
+            start_date: activeProgram.start_date,
+            pt_student_id: (activeProgram as any).pt_student_id || studentId || filterVal,
+            pt_students: studentInfo?.name ? { id: studentId, name: studentInfo.name } : null,
+            students: studentInfo?.name ? { id: filterVal, name: studentInfo.name } : null,
+            pt_training_days: trainingDays.map((d) => ({ id: d.id, name: d.name })),
+          }}
+          onSuccess={(newId) => {
+            setActiveProgramId(newId);
+            qc.invalidateQueries({ queryKey: ["pt-programs"] });
+            qc.invalidateQueries({ queryKey: ["pt-program-counts"] });
+          }}
+        />
+      )}
 
       <ProgramLayoutEditor
         open={layoutOpen}

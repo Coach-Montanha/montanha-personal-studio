@@ -60,6 +60,7 @@ interface DuplicateProgramDialogProps {
     pt_students?: { id: string; name: string } | null;
     pt_training_days?: Array<{ id: string; name: string }> | null;
   } | null;
+  initialDestination?: "template" | "same_student" | "another_student";
   onSuccess?: (newProgramId: string) => void;
 }
 
@@ -67,6 +68,7 @@ export function DuplicateProgramDialog({
   open,
   onOpenChange,
   program,
+  initialDestination,
   onSuccess,
 }: DuplicateProgramDialogProps) {
   const qc = useQueryClient();
@@ -82,7 +84,9 @@ export function DuplicateProgramDialog({
     if (program) {
       const baseName = program.name.replace(/\s*\(Cópia(\s*\d+)?\)$/i, "").trim();
       setNewName(`${baseName} (Cópia)`);
-      if (program.pt_student_id && program.pt_student_id !== TEMPLATE_STUDENT_ID) {
+      if (initialDestination) {
+        setDestinationType(initialDestination);
+      } else if (program.pt_student_id && program.pt_student_id !== TEMPLATE_STUDENT_ID) {
         setDestinationType("same_student");
       } else {
         setDestinationType("template");
@@ -90,7 +94,7 @@ export function DuplicateProgramDialog({
       setSelectedStudentId("");
       setStartDate(new Date().toISOString().slice(0, 10));
     }
-  }, [program, open]);
+  }, [program, open, initialDestination]);
 
   // Alunos ATIVOS do Studio
   const { data: studioStudents = [], isLoading: loadingStudio } = useQuery({
@@ -135,7 +139,7 @@ export function DuplicateProgramDialog({
 
   const originalStudentName = isOriginalTemplate
     ? null
-    : (program?.pt_students?.name?.trim() || program?.students?.name?.trim() || null);
+    : (program?.pt_students?.name?.trim() || program?.students?.name?.trim() || "Aluno vinculado");
 
   const totalDays = program?.pt_training_days?.length ?? 0;
 
@@ -305,6 +309,7 @@ export function DuplicateProgramDialog({
     },
     onSuccess: ({ newProgramId, daysCount, exercisesCount }) => {
       qc.invalidateQueries({ queryKey: ["pt-programs"] });
+      qc.invalidateQueries({ queryKey: ["pt-program-counts"] });
       toast.success(
         `Treino duplicado com sucesso! (${daysCount} sessões e ${exercisesCount} exercícios clonados)`,
         {
