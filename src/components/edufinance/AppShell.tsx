@@ -31,6 +31,8 @@ import {
   Newspaper,
   MessageSquareQuote,
   Bell,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 
 import { useTheme } from "@/hooks/use-theme";
@@ -54,6 +56,15 @@ import { NotificationCenter } from "@/components/edufinance/NotificationCenter";
 import { AccountSwitcherDialog } from "@/components/auth/AccountSwitcherDialog";
 import { openTrainingTimer } from "@/hooks/use-training-timer";
 
+type SubNavItem = {
+  to: string;
+  label: string;
+  icon?: typeof LayoutDashboard;
+  exact?: boolean;
+  module?: AppModule;
+  section?: string;
+};
+
 type NavItem = {
   to: string;
   label: string;
@@ -61,39 +72,28 @@ type NavItem = {
   exact?: boolean;
   section?: string;
   module?: AppModule;
+  children?: SubNavItem[];
 };
+
 const nav: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
 
-  { to: "/students", label: "Alunos", icon: Users, section: "Studio", module: "studio" },
-  { to: "/payments", label: "Pagamentos", icon: CreditCard, section: "Studio", module: "studio" },
-  { to: "/plans", label: "Planos", icon: ClipboardList, section: "Studio", module: "studio" },
-
+  // Studio
   {
-    to: "/treinos",
-    label: "Central de Treinos",
-    icon: Dumbbell,
-    section: "Central de Treinos",
+    to: "/students",
+    label: "Alunos",
+    icon: Users,
+    section: "Studio",
     module: "studio",
+    children: [
+      { to: "/programs", label: "Programas", icon: ClipboardList, module: "studio" },
+      { to: "/plans", label: "Planos", icon: ClipboardList, module: "studio" },
+      { to: "/payments", label: "Pagamentos", icon: CreditCard, module: "studio" },
+    ],
   },
-  {
-    to: "/personal-trainer/biblioteca",
-    label: "Biblioteca",
-    icon: Library,
-    section: "Central de Treinos",
-    module: "studio",
-  },
-  {
-    to: "/personal-trainer/feedbacks",
-    label: "Feedbacks & Resultados",
-    icon: MessageSquareQuote,
-    section: "Central de Treinos",
-    module: "studio",
-  },
+  { to: "/agenda", label: "Aulas", icon: Calendar, section: "Studio", module: "studio" },
 
-  { to: "/agenda", label: "Turmas & Agenda", icon: Calendar, section: "Aulas", module: "studio" },
-  { to: "/programs", label: "Programas", icon: ClipboardList, section: "Aulas", module: "studio" },
-
+  // Personal Trainer
   {
     to: "/personal-trainer",
     label: "Alunos",
@@ -110,13 +110,39 @@ const nav: NavItem[] = [
     module: "pt",
   },
 
+  // Central de Treinos
+  {
+    to: "/treinos",
+    label: "Treinos",
+    icon: Dumbbell,
+    section: "Central de Treinos",
+    module: "studio",
+    children: [
+      {
+        to: "/personal-trainer/biblioteca",
+        label: "Biblioteca",
+        icon: Library,
+        module: "studio",
+      },
+      {
+        to: "/personal-trainer/feedbacks",
+        label: "Feedbacks & Resultados",
+        icon: MessageSquareQuote,
+        module: "studio",
+      },
+    ],
+  },
+
+  // Gestão
   { to: "/financeiro", label: "Financeiro", icon: Wallet, section: "Gestão", module: "financeiro" },
-  { to: "/crm", label: "CRM", icon: Megaphone, section: "Gestão", module: "crm" },
-  { to: "/formularios", label: "Formulários", icon: FileText, section: "Gestão" },
-  { to: "/notificacoes", label: "Notificações", icon: Bell, section: "Gestão" },
-  { to: "/desafios", label: "Desafios", icon: Trophy, section: "Gestão" },
-  { to: "/promocoes", label: "Promoções & Pontos", icon: Gift, section: "Gestão" },
-  { to: "/blog-editor", label: "Blog & Artigos", icon: Newspaper, section: "Gestão" },
+
+  // Comunicações
+  { to: "/notificacoes", label: "Notificações", icon: Bell, section: "Comunicações" },
+  { to: "/crm", label: "CRM", icon: Megaphone, section: "Comunicações", module: "crm" },
+  { to: "/formularios", label: "Formulários", icon: FileText, section: "Comunicações" },
+  { to: "/desafios", label: "Desafios", icon: Trophy, section: "Comunicações" },
+  { to: "/promocoes", label: "Promoções & Pontos", icon: Gift, section: "Comunicações" },
+  { to: "/blog-editor", label: "Blog & Artigos", icon: Newspaper, section: "Comunicações" },
 ];
 
 const LS_COLLAPSED = "edufinance:sidebar-collapsed";
@@ -202,14 +228,53 @@ export function AppShell({ children }: { children: ReactNode }) {
     return t?.email ?? "Treinador";
   })();
 
-  const visibleNav = nav.filter((it) => !it.module || hasModule(it.module));
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+    "/students": true,
+    "/treinos": true,
+  });
+
+  const toggleSubmenu = (key: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setExpandedMenus((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
 
   const isActive = (to: string, exact?: boolean) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
+  // Auto-expand menu pai quando o usuário estiver em rota filha
+  useEffect(() => {
+    nav.forEach((item) => {
+      if (item.children?.some((c) => isActive(c.to, c.exact))) {
+        setExpandedMenus((prev) => (prev[item.to] ? prev : { ...prev, [item.to]: true }));
+      }
+    });
+  }, [pathname]);
+
+  const visibleNav = nav
+    .filter((it) => !it.module || hasModule(it.module))
+    .map((it) => ({
+      ...it,
+      children: it.children?.filter((child) => !child.module || hasModule(child.module)),
+    }));
+
+  const allNavItems = visibleNav.flatMap((n) => [
+    { to: n.to, label: n.label, section: n.section, exact: n.exact },
+    ...(n.children || []).map((c) => ({
+      to: c.to,
+      label: c.label,
+      section: c.section || n.section,
+      exact: c.exact,
+    })),
+  ]);
+
   useEffect(() => {
     if (modulesLoading) return;
-    const match = nav.find((n) => n.module && isActive(n.to, n.exact));
+    const allNav = nav.flatMap((n) => [n, ...(n.children || [])]);
+    const match = allNav.find((n) => n.module && isActive(n.to, n.exact));
     if (match && match.module && !hasModule(match.module)) {
       navigate({ to: "/", replace: true });
     }
@@ -320,36 +385,108 @@ export function AppShell({ children }: { children: ReactNode }) {
             let lastSection: string | undefined;
             return visibleNav.map((item) => {
               const Icon = item.icon;
+              const hasChildren = Boolean(item.children && item.children.length > 0);
+              const isChildActive = Boolean(
+                hasChildren && item.children!.some((c) => isActive(c.to, c.exact)),
+              );
               const active = isActive(item.to, item.exact);
+              const parentActive = iconOnly ? active || isChildActive : active;
+              const isExpanded = expandedMenus[item.to] ?? true;
               const showHeader = item.section && item.section !== lastSection;
               lastSection = item.section;
+
               return (
-                <div key={item.to}>
+                <div key={item.to} className="space-y-0.5">
                   {showHeader && !iconOnly && (
-                    <div className="mt-2 mb-0.5 px-2.5 text-[9px] uppercase tracking-wider text-sidebar-foreground/50 font-semibold">
+                    <div className="mt-3 mb-1 px-2.5 text-[9px] uppercase tracking-wider text-sidebar-foreground/50 font-semibold">
                       {item.section}
                     </div>
                   )}
                   {showHeader && iconOnly && (
                     <div className="mx-1.5 my-1.5 border-t border-sidebar-border/60" />
                   )}
-                  <Link
-                    to={item.to}
-                    data-sidebar-active={active}
-                    data-testid={`sidebar-nav-${item.to.replace(/^\//, "").replace(/\//g, "-") || "dashboard"}`}
-                    onClick={() => setOpen(false)}
-                    title={iconOnly ? item.label : undefined}
-                    className={cn(
-                      "flex items-center rounded-lg text-xs font-medium transition-colors",
-                      iconOnly ? "justify-center px-1.5 py-1.5" : "gap-2 px-2.5 py-1.5",
-                      active
-                        ? "bg-primary text-primary-foreground font-semibold"
-                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+
+                  <div className="group relative flex items-center">
+                    <Link
+                      to={item.to}
+                      data-sidebar-active={parentActive}
+                      data-testid={`sidebar-nav-${item.to.replace(/^\//, "").replace(/\//g, "-") || "dashboard"}`}
+                      onClick={() => {
+                        if (!iconOnly && hasChildren && !isExpanded) {
+                          setExpandedMenus((prev) => ({ ...prev, [item.to]: true }));
+                        }
+                        setOpen(false);
+                      }}
+                      title={iconOnly ? item.label : undefined}
+                      className={cn(
+                        "flex flex-1 items-center rounded-lg text-xs font-medium transition-colors",
+                        iconOnly ? "justify-center px-1.5 py-1.5" : "gap-2 px-2.5 py-1.5",
+                        parentActive
+                          ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                          : isChildActive && !iconOnly
+                            ? "text-sidebar-foreground font-semibold bg-sidebar-accent/50"
+                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5 shrink-0" />
+                      {!iconOnly && <span className="truncate flex-1 text-left">{item.label}</span>}
+                    </Link>
+
+                    {hasChildren && !iconOnly && (
+                      <button
+                        type="button"
+                        onClick={(e) => toggleSubmenu(item.to, e)}
+                        aria-label={
+                          isExpanded
+                            ? `Recolher submenu ${item.label}`
+                            : `Expandir submenu ${item.label}`
+                        }
+                        className={cn(
+                          "ml-1 grid h-6 w-6 shrink-0 place-items-center rounded-md text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                          parentActive &&
+                            "text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground",
+                        )}
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        ) : (
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        )}
+                      </button>
                     )}
-                  >
-                    <Icon className="h-3.5 w-3.5 shrink-0" />
-                    {!iconOnly && <span className="truncate">{item.label}</span>}
-                  </Link>
+                  </div>
+
+                  {/* Sub-botões filhos */}
+                  {hasChildren && !iconOnly && isExpanded && (
+                    <div className="ml-3.5 pl-2.5 my-0.5 space-y-0.5 border-l border-sidebar-border/70">
+                      {item.children!.map((child) => {
+                        const ChildIcon = child.icon;
+                        const childActive = isActive(child.to, child.exact);
+                        return (
+                          <Link
+                            key={child.to}
+                            to={child.to}
+                            data-sidebar-active={childActive}
+                            data-testid={`sidebar-nav-${child.to.replace(/^\//, "").replace(/\//g, "-")}`}
+                            onClick={() => setOpen(false)}
+                            className={cn(
+                              "flex items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                              childActive
+                                ? "bg-primary text-primary-foreground font-semibold shadow-sm"
+                                : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                            )}
+                          >
+                            {ChildIcon ? (
+                              <ChildIcon className="h-3 w-3 shrink-0 opacity-80" />
+                            ) : (
+                              <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                            )}
+                            <span className="truncate">{child.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             });
@@ -510,12 +647,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             )}
           </Button>
           <h1 className="truncate text-sm font-semibold text-foreground">
-            {nav.find((n) => isActive(n.to, n.exact))?.label ??
+            {allNavItems.find((n) => isActive(n.to, n.exact))?.label ??
               (pathname === "/settings" ? "Configurações" : "Montanha Personal Studio")}
           </h1>
           <div className="ml-auto flex items-center gap-1.5">
             <GlobalSearch
-              items={visibleNav.map((n) => ({ to: n.to, label: n.label, section: n.section }))}
+              items={allNavItems.map((n) => ({ to: n.to, label: n.label, section: n.section }))}
             />
             <AccountSwitcherDialog />
             <NotificationCenter />

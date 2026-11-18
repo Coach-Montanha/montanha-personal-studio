@@ -30,10 +30,10 @@ import { Route as AuthenticatedDiagnosticsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedFinanceiroRouteImport } from './routes/_authenticated/financeiro'
 import { Route as AuthenticatedFormulariosRouteImport } from './routes/_authenticated/formularios'
 import { Route as AuthenticatedImportExportRouteImport } from './routes/_authenticated/import-export'
+import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedPlansRouteImport } from './routes/_authenticated/plans'
 import { Route as AuthenticatedProgramsRouteImport } from './routes/_authenticated/programs'
-import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPromocoesRouteImport } from './routes/_authenticated/promocoes'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
@@ -49,8 +49,8 @@ import { Route as AuthenticatedPersonalTrainerIndexRouteImport } from './routes/
 import { Route as AuthenticatedPersonalTrainerAnalyticsRouteImport } from './routes/_authenticated/personal-trainer/analytics'
 import { Route as AuthenticatedPersonalTrainerBibliotecaRouteImport } from './routes/_authenticated/personal-trainer/biblioteca'
 import { Route as AuthenticatedPersonalTrainerCheckinRouteImport } from './routes/_authenticated/personal-trainer/checkin'
-import { Route as AuthenticatedPersonalTrainerImportarTreinoRouteImport } from './routes/_authenticated/personal-trainer/importar-treino'
 import { Route as AuthenticatedPersonalTrainerFeedbacksRouteImport } from './routes/_authenticated/personal-trainer/feedbacks'
+import { Route as AuthenticatedPersonalTrainerImportarTreinoRouteImport } from './routes/_authenticated/personal-trainer/importar-treino'
 import { Route as AuthenticatedPersonalTrainerPlansRouteImport } from './routes/_authenticated/personal-trainer/plans'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal/index'
 import { Route as AuthenticatedPortalFormulariosRouteImport } from './routes/_authenticated/portal/formularios'
@@ -175,6 +175,12 @@ const AuthenticatedImportExportRoute =
     path: '/import-export',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedNotificacoesRoute =
+  AuthenticatedNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
@@ -190,12 +196,6 @@ const AuthenticatedProgramsRoute = AuthenticatedProgramsRouteImport.update({
   path: '/programs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedNotificacoesRoute =
-  AuthenticatedNotificacoesRouteImport.update({
-    id: '/notificacoes',
-    path: '/notificacoes',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedPromocoesRoute = AuthenticatedPromocoesRouteImport.update({
   id: '/promocoes',
   path: '/promocoes',
@@ -278,16 +278,16 @@ const AuthenticatedPersonalTrainerCheckinRoute =
     path: '/personal-trainer/checkin',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPersonalTrainerImportarTreinoRoute =
-  AuthenticatedPersonalTrainerImportarTreinoRouteImport.update({
-    id: '/personal-trainer/importar-treino',
-    path: '/personal-trainer/importar-treino',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedPersonalTrainerFeedbacksRoute =
   AuthenticatedPersonalTrainerFeedbacksRouteImport.update({
     id: '/personal-trainer/feedbacks',
     path: '/personal-trainer/feedbacks',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPersonalTrainerImportarTreinoRoute =
+  AuthenticatedPersonalTrainerImportarTreinoRouteImport.update({
+    id: '/personal-trainer/importar-treino',
+    path: '/personal-trainer/importar-treino',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedPersonalTrainerPlansRoute =
@@ -392,10 +392,10 @@ export interface FileRoutesByFullPath {
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/import-export': typeof AuthenticatedImportExportRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/programs': typeof AuthenticatedProgramsRoute
-  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
@@ -448,10 +448,10 @@ export interface FileRoutesByTo {
   '/financeiro': typeof AuthenticatedFinanceiroRoute
   '/formularios': typeof AuthenticatedFormulariosRoute
   '/import-export': typeof AuthenticatedImportExportRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/plans': typeof AuthenticatedPlansRoute
   '/programs': typeof AuthenticatedProgramsRoute
-  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/promocoes': typeof AuthenticatedPromocoesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
@@ -507,10 +507,10 @@ export interface FileRoutesById {
   '/_authenticated/financeiro': typeof AuthenticatedFinanceiroRoute
   '/_authenticated/formularios': typeof AuthenticatedFormulariosRoute
   '/_authenticated/import-export': typeof AuthenticatedImportExportRoute
+  '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/plans': typeof AuthenticatedPlansRoute
   '/_authenticated/programs': typeof AuthenticatedProgramsRoute
-  '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/promocoes': typeof AuthenticatedPromocoesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
@@ -567,10 +567,10 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/formularios'
     | '/import-export'
+    | '/notificacoes'
     | '/payments'
     | '/plans'
     | '/programs'
-    | '/notificacoes'
     | '/promocoes'
     | '/settings'
     | '/storage'
@@ -623,10 +623,10 @@ export interface FileRouteTypes {
     | '/financeiro'
     | '/formularios'
     | '/import-export'
+    | '/notificacoes'
     | '/payments'
     | '/plans'
     | '/programs'
-    | '/notificacoes'
     | '/promocoes'
     | '/settings'
     | '/storage'
@@ -681,10 +681,10 @@ export interface FileRouteTypes {
     | '/_authenticated/financeiro'
     | '/_authenticated/formularios'
     | '/_authenticated/import-export'
+    | '/_authenticated/notificacoes'
     | '/_authenticated/payments'
     | '/_authenticated/plans'
     | '/_authenticated/programs'
-    | '/_authenticated/notificacoes'
     | '/_authenticated/promocoes'
     | '/_authenticated/settings'
     | '/_authenticated/storage'
@@ -889,6 +889,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedImportExportRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notificacoes': {
+      id: '/_authenticated/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof AuthenticatedNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payments': {
       id: '/_authenticated/payments'
       path: '/payments'
@@ -908,13 +915,6 @@ declare module '@tanstack/react-router' {
       path: '/programs'
       fullPath: '/programs'
       preLoaderRoute: typeof AuthenticatedProgramsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/notificacoes': {
-      id: '/_authenticated/notificacoes'
-      path: '/notificacoes'
-      fullPath: '/notificacoes'
-      preLoaderRoute: typeof AuthenticatedNotificacoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/promocoes': {
@@ -1147,10 +1147,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinanceiroRoute: typeof AuthenticatedFinanceiroRoute
   AuthenticatedFormulariosRoute: typeof AuthenticatedFormulariosRoute
   AuthenticatedImportExportRoute: typeof AuthenticatedImportExportRoute
+  AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedPlansRoute: typeof AuthenticatedPlansRoute
   AuthenticatedProgramsRoute: typeof AuthenticatedProgramsRoute
-  AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPromocoesRoute: typeof AuthenticatedPromocoesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
@@ -1188,10 +1188,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinanceiroRoute: AuthenticatedFinanceiroRoute,
   AuthenticatedFormulariosRoute: AuthenticatedFormulariosRoute,
   AuthenticatedImportExportRoute: AuthenticatedImportExportRoute,
+  AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedPlansRoute: AuthenticatedPlansRoute,
   AuthenticatedProgramsRoute: AuthenticatedProgramsRoute,
-  AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPromocoesRoute: AuthenticatedPromocoesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
