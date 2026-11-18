@@ -467,25 +467,17 @@ function StudentDetail() {
               >
                 <Ticket className="h-4 w-4" /> Check-ins
               </TabsTrigger>
-              <TabsTrigger
-                value="attendance"
-                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
-              >
-                <CalendarDays className="h-4 w-4" /> Frequência
-              </TabsTrigger>
-              <TabsTrigger
-                value="bonus"
-                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
-              >
-                <Gift className="h-4 w-4" /> Bônus
-              </TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="overview">
             <StudentOverviewTab
               studentId={id}
+              studentName={student.name}
+              studentCreatedAt={student.created_at}
               studentNotes={student.notes}
+              bonusBalance={student.bonus_checkins_balance ?? 0}
+              payments={payments}
               kpis={kpis}
               currentPlan={currentPlan}
               attendanceCount={attendanceCount}
@@ -585,18 +577,34 @@ function StudentDetail() {
           </TabsContent>
 
           <TabsContent value="attendance">
-            <StudentAttendanceTab
-              payments={payments}
-              studentCreatedAt={student.created_at}
-            />
+            <div className="space-y-4">
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-xs text-primary flex items-center justify-between">
+                <span>💡 A Frequência agora está integrada diretamente no card expansível da <strong>Visão Geral</strong> para acesso imediato.</span>
+                <Button size="sm" variant="outline" onClick={() => navigate({ search: { tab: "overview" }, replace: true })}>
+                  Ir para Visão Geral
+                </Button>
+              </div>
+              <StudentAttendanceTab
+                payments={payments}
+                studentCreatedAt={student.created_at}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="bonus">
-            <BonusBalancePanel
-              studentId={student.id}
-              studentName={student.name}
-              bonusBalance={student.bonus_checkins_balance ?? 0}
-            />
+            <div className="space-y-4">
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-xs text-primary flex items-center justify-between">
+                <span>💡 O Saldo de Bônus agora está integrado diretamente no card expansível da <strong>Visão Geral</strong> para acesso imediato.</span>
+                <Button size="sm" variant="outline" onClick={() => navigate({ search: { tab: "overview" }, replace: true })}>
+                  Ir para Visão Geral
+                </Button>
+              </div>
+              <BonusBalancePanel
+                studentId={student.id}
+                studentName={student.name}
+                bonusBalance={student.bonus_checkins_balance ?? 0}
+              />
+            </div>
           </TabsContent>
         </Tabs>
 
