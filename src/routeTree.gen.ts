@@ -49,6 +49,7 @@ import { Route as AuthenticatedPersonalTrainerAnalyticsRouteImport } from './rou
 import { Route as AuthenticatedPersonalTrainerBibliotecaRouteImport } from './routes/_authenticated/personal-trainer/biblioteca'
 import { Route as AuthenticatedPersonalTrainerCheckinRouteImport } from './routes/_authenticated/personal-trainer/checkin'
 import { Route as AuthenticatedPersonalTrainerImportarTreinoRouteImport } from './routes/_authenticated/personal-trainer/importar-treino'
+import { Route as AuthenticatedPersonalTrainerFeedbacksRouteImport } from './routes/_authenticated/personal-trainer/feedbacks'
 import { Route as AuthenticatedPersonalTrainerPlansRouteImport } from './routes/_authenticated/personal-trainer/plans'
 import { Route as AuthenticatedPortalIndexRouteImport } from './routes/_authenticated/portal/index'
 import { Route as AuthenticatedPortalFormulariosRouteImport } from './routes/_authenticated/portal/formularios'
@@ -276,6 +277,12 @@ const AuthenticatedPersonalTrainerImportarTreinoRoute =
     path: '/personal-trainer/importar-treino',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPersonalTrainerFeedbacksRoute =
+  AuthenticatedPersonalTrainerFeedbacksRouteImport.update({
+    id: '/personal-trainer/feedbacks',
+    path: '/personal-trainer/feedbacks',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPersonalTrainerPlansRoute =
   AuthenticatedPersonalTrainerPlansRouteImport.update({
     id: '/personal-trainer/plans',
@@ -394,6 +401,7 @@ export interface FileRoutesByFullPath {
   '/personal-trainer/analytics': typeof AuthenticatedPersonalTrainerAnalyticsRoute
   '/personal-trainer/biblioteca': typeof AuthenticatedPersonalTrainerBibliotecaRoute
   '/personal-trainer/checkin': typeof AuthenticatedPersonalTrainerCheckinRoute
+  '/personal-trainer/feedbacks': typeof AuthenticatedPersonalTrainerFeedbacksRoute
   '/personal-trainer/importar-treino': typeof AuthenticatedPersonalTrainerImportarTreinoRoute
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
@@ -449,6 +457,7 @@ export interface FileRoutesByTo {
   '/personal-trainer/analytics': typeof AuthenticatedPersonalTrainerAnalyticsRoute
   '/personal-trainer/biblioteca': typeof AuthenticatedPersonalTrainerBibliotecaRoute
   '/personal-trainer/checkin': typeof AuthenticatedPersonalTrainerCheckinRoute
+  '/personal-trainer/feedbacks': typeof AuthenticatedPersonalTrainerFeedbacksRoute
   '/personal-trainer/importar-treino': typeof AuthenticatedPersonalTrainerImportarTreinoRoute
   '/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
@@ -506,6 +515,7 @@ export interface FileRoutesById {
   '/_authenticated/personal-trainer/analytics': typeof AuthenticatedPersonalTrainerAnalyticsRoute
   '/_authenticated/personal-trainer/biblioteca': typeof AuthenticatedPersonalTrainerBibliotecaRoute
   '/_authenticated/personal-trainer/checkin': typeof AuthenticatedPersonalTrainerCheckinRoute
+  '/_authenticated/personal-trainer/feedbacks': typeof AuthenticatedPersonalTrainerFeedbacksRoute
   '/_authenticated/personal-trainer/importar-treino': typeof AuthenticatedPersonalTrainerImportarTreinoRoute
   '/_authenticated/personal-trainer/plans': typeof AuthenticatedPersonalTrainerPlansRoute
   '/_authenticated/portal/formularios': typeof AuthenticatedPortalFormulariosRoute
@@ -563,6 +573,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/analytics'
     | '/personal-trainer/biblioteca'
     | '/personal-trainer/checkin'
+    | '/personal-trainer/feedbacks'
     | '/personal-trainer/importar-treino'
     | '/personal-trainer/plans'
     | '/portal/formularios'
@@ -618,6 +629,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/analytics'
     | '/personal-trainer/biblioteca'
     | '/personal-trainer/checkin'
+    | '/personal-trainer/feedbacks'
     | '/personal-trainer/importar-treino'
     | '/personal-trainer/plans'
     | '/portal/formularios'
@@ -674,6 +686,7 @@ export interface FileRouteTypes {
     | '/_authenticated/personal-trainer/analytics'
     | '/_authenticated/personal-trainer/biblioteca'
     | '/_authenticated/personal-trainer/checkin'
+    | '/_authenticated/personal-trainer/feedbacks'
     | '/_authenticated/personal-trainer/importar-treino'
     | '/_authenticated/personal-trainer/plans'
     | '/_authenticated/portal/formularios'
@@ -989,6 +1002,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPersonalTrainerCheckinRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/personal-trainer/feedbacks': {
+      id: '/_authenticated/personal-trainer/feedbacks'
+      path: '/personal-trainer/feedbacks'
+      fullPath: '/personal-trainer/feedbacks'
+      preLoaderRoute: typeof AuthenticatedPersonalTrainerFeedbacksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/personal-trainer/importar-treino': {
       id: '/_authenticated/personal-trainer/importar-treino'
       path: '/personal-trainer/importar-treino'
@@ -1121,6 +1141,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonalTrainerAnalyticsRoute: typeof AuthenticatedPersonalTrainerAnalyticsRoute
   AuthenticatedPersonalTrainerBibliotecaRoute: typeof AuthenticatedPersonalTrainerBibliotecaRoute
   AuthenticatedPersonalTrainerCheckinRoute: typeof AuthenticatedPersonalTrainerCheckinRoute
+  AuthenticatedPersonalTrainerFeedbacksRoute: typeof AuthenticatedPersonalTrainerFeedbacksRoute
   AuthenticatedPersonalTrainerImportarTreinoRoute: typeof AuthenticatedPersonalTrainerImportarTreinoRoute
   AuthenticatedPersonalTrainerPlansRoute: typeof AuthenticatedPersonalTrainerPlansRoute
   AuthenticatedPortalFormulariosRoute: typeof AuthenticatedPortalFormulariosRoute
@@ -1163,6 +1184,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPersonalTrainerBibliotecaRoute,
   AuthenticatedPersonalTrainerCheckinRoute:
     AuthenticatedPersonalTrainerCheckinRoute,
+  AuthenticatedPersonalTrainerFeedbacksRoute:
+    AuthenticatedPersonalTrainerFeedbacksRoute,
   AuthenticatedPersonalTrainerImportarTreinoRoute:
     AuthenticatedPersonalTrainerImportarTreinoRoute,
   AuthenticatedPersonalTrainerPlansRoute:

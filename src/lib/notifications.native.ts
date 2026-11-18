@@ -193,11 +193,16 @@ export async function triggerDeviceNotification({
           } as any);
         });
       } else {
-        new Notification(title, {
+        const notifInstance = new Notification(title, {
           body,
           icon: "/icon-192.png",
           tag,
+          data: { url },
         } as any);
+        notifInstance.onclick = () => {
+          window.focus();
+          if (url) window.location.href = url;
+        };
       }
     } catch (err) {
       console.warn("[WebNotification] Erro ao disparar notificação web:", err);

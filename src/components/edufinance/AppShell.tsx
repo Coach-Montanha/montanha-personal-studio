@@ -29,6 +29,7 @@ import {
   Gift,
   FileText,
   Newspaper,
+  MessageSquareQuote,
 } from "lucide-react";
 
 import { useTheme } from "@/hooks/use-theme";
@@ -90,6 +91,13 @@ const nav: NavItem[] = [
     label: "Alunos",
     icon: Users,
     exact: true,
+    section: "Personal Trainer",
+    module: "pt",
+  },
+  {
+    to: "/personal-trainer/feedbacks",
+    label: "Feedbacks & Resultados",
+    icon: MessageSquareQuote,
     section: "Personal Trainer",
     module: "pt",
   },

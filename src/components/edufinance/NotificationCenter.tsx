@@ -290,8 +290,10 @@ export function NotificationCenter() {
           const message = notif.message || "";
 
           // Disparo de notificação nativa no sistema operacional (Android APK e Web)
-          const targetUrl = notif.type === "training_complete" && notif.metadata?.student_id
-            ? `/personal-trainer/students/${notif.metadata.student_id}`
+          const targetUrl = notif.type === "training_complete"
+            ? "/personal-trainer/feedbacks"
+            : notif.type === "form_submission"
+            ? "/formularios"
             : "/agenda";
 
           await triggerDeviceNotification({
@@ -305,16 +307,13 @@ export function NotificationCenter() {
             toast.success(notif.title || "🏋️ Treino Concluído!", {
               description: notif.message,
               duration: 12000,
-              action: notif.metadata?.student_id
-                ? {
-                    label: "Analisar Treino",
-                    onClick: () =>
-                      navigate({
-                        to: "/personal-trainer/students/$id",
-                        params: { id: notif.metadata.student_id },
-                      }),
-                  }
-                : undefined,
+              action: {
+                label: "Ver Feedbacks",
+                onClick: () =>
+                  navigate({
+                    to: "/personal-trainer/feedbacks" as any,
+                  }),
+              },
             });
           } else if (notif.type === "checkin") {
             toast.success("🔔 Novo Check-in!", {
@@ -444,11 +443,8 @@ export function NotificationCenter() {
     markAsRead(notification.id);
     if (notification.type === "form_submission") {
       navigate({ to: "/formularios" });
-    } else if (notification.type === "training_complete" && notification.metadata?.student_id) {
-      navigate({
-        to: "/personal-trainer/students/$id",
-        params: { id: notification.metadata.student_id },
-      });
+    } else if (notification.type === "training_complete") {
+      navigate({ to: "/personal-trainer/feedbacks" as any });
     } else if (notification.type === "checkin" || notification.type === "class_reminder_20m" || notification.type === "class_reminder_19m30s") {
       navigate({ to: "/agenda" });
     }
@@ -604,14 +600,22 @@ export function NotificationCenter() {
           )}
         </div>
 
-        {notifications.length > 0 && (
-          <div className="bg-muted/30 px-4 py-2 text-center border-t flex items-center justify-center gap-1.5">
+        <div className="bg-muted/30 px-3 py-2 text-center border-t flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5">
             <Sparkles className="h-3 w-3 text-primary" />
             <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               Alertas em Tempo Real
             </span>
           </div>
-        )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate({ to: "/personal-trainer/feedbacks" as any })}
+            className="h-6 text-[10px] font-bold text-primary hover:text-primary hover:bg-primary/10 px-2"
+          >
+            Ver Feedbacks →
+          </Button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
