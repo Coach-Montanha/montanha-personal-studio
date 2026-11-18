@@ -6,24 +6,20 @@ import {
   BellRing,
   CheckCheck,
   Trash2,
-  Filter,
   Search,
   Dumbbell,
   CheckCircle2,
   Calendar,
   FileText,
-  Sparkles,
   Clock,
   ArrowRight,
-  ExternalLink,
   Smartphone,
-  Volume2,
   RefreshCw,
   Building2,
-  Users,
-  MessageSquareQuote,
   Check,
-  Zap,
+  Sparkles,
+  Inbox,
+  Filter,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -32,14 +28,13 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/ui-kit/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
-  isNativeApp,
   triggerDeviceNotification,
   requestNotificationPermissions,
   checkNotificationPermissionStatus,
@@ -115,7 +110,6 @@ export function NotificacoesPage() {
         return [];
       }
 
-      // Filtra notificações marcadas como limpas da central
       const activeRows = (rawRows ?? []).filter((n: any) => {
         if (n.metadata?.notification_cleared === true || n.metadata?.notification_cleared === "true") {
           return false;
@@ -123,7 +117,6 @@ export function NotificacoesPage() {
         return true;
       });
 
-      // Mapeamento auxiliar de origens de alunos (Studio vs PT)
       const studentIds = Array.from(
         new Set(
           activeRows
@@ -148,10 +141,6 @@ export function NotificacoesPage() {
         const meta = notif.metadata || {};
         const studentId = meta.student_id;
 
-        // Determinação da origem do aluno:
-        // 1. Pelo metadata explícito
-        // 2. Pela presença na tabela students (Studio) vs pt_students (PT)
-        // 3. Pelo tipo da notificação (check-in é Studio)
         let resolvedOrigin: "studio" | "pt" = "pt";
         if (meta.student_type === "studio" || notif.type === "checkin" || notif.type?.startsWith("class_")) {
           resolvedOrigin = "studio";
@@ -176,7 +165,7 @@ export function NotificacoesPage() {
     refetchInterval: 30000,
   });
 
-  // 2. Realtime listener: sincroniza imediatamente novos treinos concluídos e check-ins
+  // 2. Realtime listener
   useEffect(() => {
     if (!user?.id) return;
 
@@ -208,19 +197,14 @@ export function NotificacoesPage() {
   // 3. Filtragem dinâmica
   const filteredNotifications = useMemo(() => {
     return notifications.filter((item) => {
-      // Filtro de aba/categoria
       if (categoryTab === "training" && item.type !== "training_complete") return false;
       if (categoryTab === "checkin" && item.type !== "checkin") return false;
       if (categoryTab === "classes" && !item.type.startsWith("class_")) return false;
       if (categoryTab === "forms" && item.type !== "form_submission") return false;
 
-      // Filtro de origem do aluno (Studio vs PT)
       if (originFilter !== "all" && item.origin !== originFilter) return false;
-
-      // Filtro de lidas
       if (statusFilter === "unread" && item.read) return false;
 
-      // Busca textual
       if (search.trim()) {
         const q = search.toLowerCase();
         const titleMatch = item.title.toLowerCase().includes(q);
@@ -248,21 +232,11 @@ export function NotificacoesPage() {
       (n) => n.type === "checkin" && (n.createdAt || "").slice(0, 10) === todayStr
     ).length;
 
-    const treinosStudio = notifications.filter(
-      (n) => n.type === "training_complete" && n.origin === "studio"
-    ).length;
-
-    const treinosPT = notifications.filter(
-      (n) => n.type === "training_complete" && n.origin === "pt"
-    ).length;
-
     return {
       total,
       unread,
       treinosHoje,
       checkinsHoje,
-      treinosStudio,
-      treinosPT,
     };
   }, [notifications]);
 
@@ -349,8 +323,8 @@ export function NotificacoesPage() {
       body: "Alerta de teste verificado com sucesso no seu dispositivo!",
       url: "/notificacoes",
     });
-    toast.success("Alerta enviado!", {
-      description: "Verifique a barra de status do seu celular ou notificações do sistema.",
+    toast.success("Alerta enviado com sucesso!", {
+      description: "Verifique a barra de notificações do seu aparelho.",
     });
   };
 
@@ -358,7 +332,7 @@ export function NotificacoesPage() {
     const granted = await requestNotificationPermissions();
     setDevicePermitted(granted);
     if (granted) {
-      toast.success("Avisos no celular ativados com sucesso!");
+      toast.success("Avisos no celular ativados!");
       await handleTestDeviceAlert();
     } else {
       toast.error("Permissão de notificação negada no aparelho.", {
@@ -396,20 +370,21 @@ export function NotificacoesPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Cabeçalho da Página */}
+      {/* Cabeçalho da Página com Actions devidamente mapeadas */}
       <PageHeader
         title="Central de Notificações"
-        description="Área dedicada para receber e auditar todas as notificações de treinos finalizados (Studio e Personal), check-ins presenciais e lembretes de turmas em tempo real."
-        action={
+        description="Painel unificado para monitorar check-ins de alunos, treinos finalizados por planilha ou consultoria, e avisos em tempo real."
+        icon={Bell}
+        actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={handleTestDeviceAlert}
-              className="h-9 gap-1.5 text-xs font-semibold"
+              className="h-9 px-3 gap-1.5 text-xs font-semibold rounded-xl border-border/70 hover:bg-muted/60 active:scale-[0.98] transition-all"
             >
               <Smartphone className="h-3.5 w-3.5 text-primary" />
-              Testar Alerta no Celular
+              <span>Testar no Celular</span>
             </Button>
 
             {stats.unread > 0 && (
@@ -417,10 +392,10 @@ export function NotificacoesPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleMarkAllAsRead}
-                className="h-9 gap-1.5 text-xs font-semibold"
+                className="h-9 px-3 gap-1.5 text-xs font-semibold rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 active:scale-[0.98] transition-all"
               >
                 <CheckCheck className="h-3.5 w-3.5 text-emerald-500" />
-                Marcar Todas como Lidas
+                <span>Marcar Todas Lidas</span>
               </Button>
             )}
 
@@ -430,10 +405,10 @@ export function NotificacoesPage() {
                 size="sm"
                 onClick={handleClearAll}
                 disabled={isClearing}
-                className="h-9 gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive"
+                className="h-9 px-3 gap-1.5 text-xs font-semibold rounded-xl border-border/70 text-muted-foreground hover:text-destructive hover:border-destructive/30 active:scale-[0.98] transition-all"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-                Limpar Notificações
+                <span>Limpar</span>
               </Button>
             )}
 
@@ -441,8 +416,8 @@ export function NotificacoesPage() {
               variant="outline"
               size="icon"
               onClick={() => refetch()}
-              className="h-9 w-9 shrink-0"
-              title="Recarregar"
+              className="h-9 w-9 shrink-0 rounded-xl border-border/70 active:scale-[0.98] transition-all"
+              title="Recarregar notificações"
             >
               <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin text-primary")} />
             </Button>
@@ -452,10 +427,10 @@ export function NotificacoesPage() {
 
       {/* Banner de Status Push no Celular */}
       {!devicePermitted && (
-        <Card className="border-amber-500/30 bg-amber-500/5 backdrop-blur-sm">
+        <Card className="rounded-2xl border-amber-500/30 bg-amber-500/5 backdrop-blur-sm shadow-xs">
           <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
                 <Smartphone className="h-5 w-5" />
               </div>
               <div>
@@ -470,7 +445,7 @@ export function NotificacoesPage() {
             <Button
               size="sm"
               onClick={handleEnablePush}
-              className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs h-8 shrink-0"
+              className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs h-9 px-4 rounded-xl shrink-0 shadow-xs active:scale-[0.98] transition-all"
             >
               Ativar Alertas no Celular 📲
             </Button>
@@ -478,56 +453,56 @@ export function NotificacoesPage() {
         </Card>
       )}
 
-      {/* Cards de Métricas em Tempo Real */}
+      {/* Cards de Métricas em Tempo Real (Apple Bento Grid) */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <Card className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md shadow-xs hover:border-primary/40 transition-all">
+          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
               <Bell className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Total de Avisos</p>
-              <p className="text-2xl font-bold tracking-tight text-foreground">{stats.total}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">Total de Avisos</p>
+              <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">{stats.total}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+        <Card className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md shadow-xs hover:border-amber-500/40 transition-all">
+          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/20">
               <BellRing className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Não Lidas</p>
-              <p className="text-2xl font-bold tracking-tight text-amber-600 dark:text-amber-400">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">Não Lidas</p>
+              <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400 font-mono">
                 {stats.unread}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+        <Card className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md shadow-xs hover:border-emerald-500/40 transition-all">
+          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20">
               <Dumbbell className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Treinos Hoje</p>
-              <p className="text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">Treinos Hoje</p>
+              <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">
                 {stats.treinosHoje}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
+        <Card className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md shadow-xs hover:border-blue-500/40 transition-all">
+          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 ring-1 ring-blue-500/20">
               <CheckCircle2 className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Check-ins Hoje</p>
-              <p className="text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">Check-ins Hoje</p>
+              <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-blue-600 dark:text-blue-400 font-mono">
                 {stats.checkinsHoje}
               </p>
             </div>
@@ -535,30 +510,30 @@ export function NotificacoesPage() {
         </Card>
       </div>
 
-      {/* Barra de Filtros, Categorias e Busca */}
-      <div className="flex flex-col gap-3 bg-card p-3 rounded-2xl border border-border/60 shadow-xs">
+      {/* Painel Unificado de Filtros, Categorias e Busca */}
+      <div className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md p-3.5 sm:p-4 shadow-xs space-y-3.5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Busca Textual */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar por nome do aluno, treino, turma ou mensagem..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-9 text-base md:text-sm bg-background/60"
+              className="pl-10 h-10 text-base md:text-sm rounded-xl bg-background/80 border-border/60 focus-visible:ring-primary/20"
             />
           </div>
 
-          {/* Filtro de Origem do Aluno (Studio vs Personal) */}
+          {/* Seletores de Filtros */}
           <div className="flex flex-wrap items-center gap-2">
             <Select
               value={originFilter}
               onValueChange={(v: "all" | "studio" | "pt") => setOriginFilter(v)}
             >
-              <SelectTrigger className="w-[170px] h-9 text-xs font-semibold">
+              <SelectTrigger className="w-[180px] h-10 text-xs font-semibold rounded-xl bg-background/80 border-border/60">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="all">Todos os Alunos</SelectItem>
                 <SelectItem value="studio">🏛️ Alunos Studio (Planilha)</SelectItem>
                 <SelectItem value="pt">🏋️ Personal Trainer</SelectItem>
@@ -569,10 +544,10 @@ export function NotificacoesPage() {
               value={statusFilter}
               onValueChange={(v: "all" | "unread") => setStatusFilter(v)}
             >
-              <SelectTrigger className="w-[130px] h-9 text-xs font-semibold">
+              <SelectTrigger className="w-[145px] h-10 text-xs font-semibold rounded-xl bg-background/80 border-border/60">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="unread">Apenas Não Lidas</SelectItem>
               </SelectContent>
@@ -580,74 +555,119 @@ export function NotificacoesPage() {
           </div>
         </div>
 
-        {/* Abas de Categorias */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-border/40">
+        {/* Abas Segmentadas Apple-Style */}
+        <div className="bg-muted/40 p-1 rounded-xl flex flex-wrap gap-1 border border-border/40">
           <Button
             size="sm"
-            variant={categoryTab === "all" ? "default" : "ghost"}
+            variant="ghost"
             onClick={() => setCategoryTab("all")}
-            className="h-8 text-xs font-semibold gap-1.5"
+            className={cn(
+              "h-8 px-3 text-xs font-semibold rounded-lg transition-all active:scale-[0.98]",
+              categoryTab === "all"
+                ? "bg-background text-foreground shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+            )}
           >
-            <Bell className="h-3.5 w-3.5" />
-            Todas ({notifications.length})
+            <Bell className="h-3.5 w-3.5 mr-1.5" />
+            Todas
+            <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-muted-foreground/15 text-foreground">
+              {notifications.length}
+            </span>
           </Button>
 
           <Button
             size="sm"
-            variant={categoryTab === "training" ? "default" : "ghost"}
+            variant="ghost"
             onClick={() => setCategoryTab("training")}
-            className="h-8 text-xs font-semibold gap-1.5 text-amber-600 dark:text-amber-400"
+            className={cn(
+              "h-8 px-3 text-xs font-semibold rounded-lg transition-all active:scale-[0.98]",
+              categoryTab === "training"
+                ? "bg-background text-amber-600 dark:text-amber-400 shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+            )}
           >
-            <Dumbbell className="h-3.5 w-3.5" />
-            Treinos Finalizados ({notifications.filter((n) => n.type === "training_complete").length})
+            <Dumbbell className="h-3.5 w-3.5 mr-1.5 text-amber-500" />
+            Treinos Finalizados
+            <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              {notifications.filter((n) => n.type === "training_complete").length}
+            </span>
           </Button>
 
           <Button
             size="sm"
-            variant={categoryTab === "checkin" ? "default" : "ghost"}
+            variant="ghost"
             onClick={() => setCategoryTab("checkin")}
-            className="h-8 text-xs font-semibold gap-1.5 text-emerald-600 dark:text-emerald-400"
+            className={cn(
+              "h-8 px-3 text-xs font-semibold rounded-lg transition-all active:scale-[0.98]",
+              categoryTab === "checkin"
+                ? "bg-background text-emerald-600 dark:text-emerald-400 shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+            )}
           >
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Check-ins Studio ({notifications.filter((n) => n.type === "checkin").length})
+            <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
+            Check-ins Studio
+            <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              {notifications.filter((n) => n.type === "checkin").length}
+            </span>
           </Button>
 
           <Button
             size="sm"
-            variant={categoryTab === "classes" ? "default" : "ghost"}
+            variant="ghost"
             onClick={() => setCategoryTab("classes")}
-            className="h-8 text-xs font-semibold gap-1.5 text-blue-600 dark:text-blue-400"
+            className={cn(
+              "h-8 px-3 text-xs font-semibold rounded-lg transition-all active:scale-[0.98]",
+              categoryTab === "classes"
+                ? "bg-background text-blue-600 dark:text-blue-400 shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+            )}
           >
-            <Calendar className="h-3.5 w-3.5" />
-            Lembretes de Turmas ({notifications.filter((n) => n.type.startsWith("class_")).length})
+            <Calendar className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
+            Lembretes de Turmas
+            <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-blue-500/15 text-blue-600 dark:text-blue-400">
+              {notifications.filter((n) => n.type.startsWith("class_")).length}
+            </span>
           </Button>
 
           <Button
             size="sm"
-            variant={categoryTab === "forms" ? "default" : "ghost"}
+            variant="ghost"
             onClick={() => setCategoryTab("forms")}
-            className="h-8 text-xs font-semibold gap-1.5 text-purple-600 dark:text-purple-400"
+            className={cn(
+              "h-8 px-3 text-xs font-semibold rounded-lg transition-all active:scale-[0.98]",
+              categoryTab === "forms"
+                ? "bg-background text-purple-600 dark:text-purple-400 shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-background/40"
+            )}
           >
-            <FileText className="h-3.5 w-3.5" />
-            Formulários ({notifications.filter((n) => n.type === "form_submission").length})
+            <FileText className="h-3.5 w-3.5 mr-1.5 text-purple-500" />
+            Formulários
+            <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-purple-500/15 text-purple-600 dark:text-purple-400">
+              {notifications.filter((n) => n.type === "form_submission").length}
+            </span>
           </Button>
         </div>
       </div>
 
       {/* Lista de Notificações */}
       {isLoading ? (
-        <Card className="p-12 text-center text-sm text-muted-foreground">
-          Carregando histórico de notificações...
+        <Card className="rounded-2xl border border-border/60 p-12 text-center text-sm text-muted-foreground">
+          <div className="flex flex-col items-center justify-center gap-3">
+            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+            <p className="font-semibold text-foreground">Carregando histórico de notificações...</p>
+          </div>
         </Card>
       ) : filteredNotifications.length === 0 ? (
-        <Card className="p-12 text-center text-sm text-muted-foreground flex flex-col items-center justify-center gap-2">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-1">
-            <Bell className="h-6 w-6 text-muted-foreground/40" />
+        <Card className="rounded-2xl border border-border/60 bg-card/60 p-12 text-center flex flex-col items-center justify-center gap-3">
+          <div className="h-14 w-14 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground/60 ring-1 ring-border/50">
+            <Inbox className="h-7 w-7" />
           </div>
-          <p className="font-semibold text-foreground">Nenhuma notificação encontrada</p>
-          <p className="text-xs text-muted-foreground max-w-sm">
-            Não há notificações correspondentes aos filtros selecionados.
-          </p>
+          <div className="space-y-1">
+            <p className="text-base font-bold text-foreground">Nenhuma notificação encontrada</p>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Não há avisos correspondentes aos filtros selecionados no momento.
+            </p>
+          </div>
           {(search || categoryTab !== "all" || originFilter !== "all" || statusFilter !== "all") && (
             <Button
               variant="outline"
@@ -658,7 +678,7 @@ export function NotificacoesPage() {
                 setOriginFilter("all");
                 setStatusFilter("all");
               }}
-              className="mt-2 text-xs"
+              className="mt-1 h-9 px-4 rounded-xl text-xs font-semibold active:scale-[0.98] transition-all"
             >
               Limpar Filtros
             </Button>
@@ -678,26 +698,27 @@ export function NotificacoesPage() {
                 key={item.id}
                 onClick={() => handleNotificationClick(item)}
                 className={cn(
-                  "overflow-hidden border transition-all cursor-pointer hover:border-primary/50 shadow-xs",
+                  "rounded-2xl overflow-hidden border transition-all cursor-pointer shadow-xs",
                   isUnread
-                    ? "border-primary/40 bg-card/90 border-l-4 border-l-primary"
-                    : "border-border/60 bg-card/40 opacity-90"
+                    ? "border-primary/50 bg-card border-l-[5px] border-l-primary hover:border-primary/70"
+                    : "border-border/60 bg-card/60 hover:bg-card hover:border-border/80 opacity-95"
                 )}
               >
-                <CardContent className="p-4 sm:p-5 space-y-3">
+                <CardContent className="p-4 sm:p-5 space-y-3.5">
+                  {/* Topo do Card: Ícone, Título, Badges e Timestamp */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                    {/* Ícone e Corpo Principal */}
-                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                      {/* Squircle Icon Container */}
                       <div
                         className={cn(
-                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                          "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-inset",
                           item.type === "training_complete"
-                            ? "bg-amber-500/10"
+                            ? "bg-amber-500/10 text-amber-500 ring-amber-500/20"
                             : item.type === "checkin"
-                            ? "bg-emerald-500/10"
+                            ? "bg-emerald-500/10 text-emerald-500 ring-emerald-500/20"
                             : item.type.startsWith("class_")
-                            ? "bg-blue-500/10"
-                            : "bg-purple-500/10"
+                            ? "bg-blue-500/10 text-blue-500 ring-blue-500/20"
+                            : "bg-purple-500/10 text-purple-500 ring-purple-500/20"
                         )}
                       >
                         {getNotificationIcon(item.type)}
@@ -707,7 +728,7 @@ export function NotificacoesPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <h3
                             className={cn(
-                              "text-sm font-bold leading-tight",
+                              "text-sm sm:text-base font-bold leading-tight",
                               isUnread ? "text-foreground" : "text-foreground/80"
                             )}
                           >
@@ -718,7 +739,7 @@ export function NotificacoesPage() {
                           {item.origin === "studio" ? (
                             <Badge
                               variant="outline"
-                              className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[10px] font-semibold gap-1 py-0 px-1.5 h-5"
+                              className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[10px] font-semibold gap-1 py-0 px-2 h-5 rounded-full"
                               title="Aluno Studio (treina com planilha / aulas presenciais)"
                             >
                               <Building2 className="h-2.5 w-2.5" />
@@ -727,7 +748,7 @@ export function NotificacoesPage() {
                           ) : (
                             <Badge
                               variant="outline"
-                              className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-semibold gap-1 py-0 px-1.5 h-5"
+                              className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-semibold gap-1 py-0 px-2 h-5 rounded-full"
                               title="Aluno Personal Trainer (consultoria individual)"
                             >
                               <Dumbbell className="h-2.5 w-2.5" />
@@ -736,30 +757,35 @@ export function NotificacoesPage() {
                           )}
 
                           {isUnread && (
-                            <span className="flex h-2 w-2 rounded-full bg-primary" title="Não lida" />
+                            <span className="flex h-2 w-2 rounded-full bg-primary ring-2 ring-primary/20 animate-pulse" title="Não lida" />
                           )}
                         </div>
 
-                        <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                           {item.message}
                         </p>
 
-                        {/* Detalhes específicos de Treino Concluído */}
+                        {/* Metadados detalhados de Treino Concluído */}
                         {item.type === "training_complete" && item.metadata && (
                           <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                             {item.metadata.duration_formatted && (
-                              <Badge variant="outline" className="gap-1 text-[11px] font-mono">
+                              <Badge variant="outline" className="gap-1 text-[11px] font-mono rounded-lg border-border/70">
                                 <Clock className="h-3 w-3 text-muted-foreground" />
                                 {item.metadata.duration_formatted}
                               </Badge>
                             )}
                             {item.metadata.loads_count !== undefined && (
-                              <Badge variant="outline" className="gap-1 text-[11px] text-amber-600 dark:text-amber-400 border-amber-500/30">
-                                ⚖️ {item.metadata.loads_count} cargas registradas
+                              <Badge variant="outline" className="gap-1 text-[11px] text-amber-600 dark:text-amber-400 border-amber-500/30 bg-amber-500/5 rounded-lg">
+                                ⚖️ {item.metadata.loads_count} cargas anotadas
+                              </Badge>
+                            )}
+                            {item.metadata.performed_count !== undefined && (
+                              <Badge variant="secondary" className="gap-1 text-[11px] rounded-lg">
+                                💪 {item.metadata.performed_count} exercícios
                               </Badge>
                             )}
                             {item.metadata.feedback && (
-                              <div className="w-full rounded-lg bg-purple-500/10 border border-purple-500/20 p-2.5 text-xs text-purple-700 dark:text-purple-300 mt-1 italic">
+                              <div className="w-full rounded-xl bg-purple-500/10 border border-purple-500/25 p-3 text-xs text-foreground italic mt-1.5">
                                 "{item.metadata.feedback}"
                               </div>
                             )}
@@ -768,73 +794,78 @@ export function NotificacoesPage() {
                       </div>
                     </div>
 
-                    {/* Lado Direito: Horário & Ações */}
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-border/40">
-                      <div className="text-right">
-                        <span className="text-[11px] font-semibold text-muted-foreground block">
-                          {relativeTime}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground/60 hidden sm:block">
-                          {exactTime}
-                        </span>
-                      </div>
+                    {/* Lado Direito: Horário */}
+                    <div className="text-left sm:text-right shrink-0 pt-0.5 sm:pt-0">
+                      <span className="text-[11px] font-semibold text-muted-foreground block">
+                        {relativeTime}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/60 hidden sm:block">
+                        {exactTime}
+                      </span>
+                    </div>
+                  </div>
 
-                      <div className="flex items-center gap-1.5">
-                        {isUnread ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => handleMarkAsRead(item.id, e)}
-                            className="h-7 text-[11px] text-primary hover:text-primary hover:bg-primary/10 px-2"
-                            title="Marcar como lida"
-                          >
-                            <Check className="h-3.5 w-3.5 mr-1" />
-                            Lida
-                          </Button>
-                        ) : null}
+                  {/* Rodapé de Ações Estruturadas (Hit Target Seguro >= 44px) */}
+                  <div className="pt-2.5 border-t border-border/40 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                    <span className="text-[11px] text-muted-foreground/80 sm:hidden">
+                      {exactTime}
+                    </span>
 
-                        {item.type === "training_complete" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkAsRead(item.id);
-                              navigate({ to: "/personal-trainer/feedbacks" as any });
-                            }}
-                            className="h-7 text-[11px] font-bold text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 px-2 gap-1"
-                          >
-                            Ver Feedbacks
-                            <ArrowRight className="h-3 w-3" />
-                          </Button>
-                        )}
-
-                        {item.type === "checkin" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkAsRead(item.id);
-                              navigate({ to: "/agenda" });
-                            }}
-                            className="h-7 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 px-2 gap-1"
-                          >
-                            Ver Agenda
-                            <ArrowRight className="h-3 w-3" />
-                          </Button>
-                        )}
-
+                    <div className="flex items-center gap-2 ml-auto">
+                      {isUnread && (
                         <Button
                           variant="ghost"
-                          size="icon"
-                          onClick={(e) => handleDeleteNotification(item.id, e)}
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                          title="Excluir notificação"
+                          size="sm"
+                          onClick={(e) => handleMarkAsRead(item.id, e)}
+                          className="h-8 px-2.5 rounded-lg text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 active:scale-[0.98] transition-all"
+                          title="Marcar notificação como lida"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Check className="h-3.5 w-3.5 mr-1" />
+                          Marcar Lida
                         </Button>
-                      </div>
+                      )}
+
+                      {item.type === "training_complete" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(item.id);
+                            navigate({ to: "/personal-trainer/feedbacks" as any });
+                          }}
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 active:scale-[0.98] transition-all gap-1.5 shadow-2xs"
+                        >
+                          <span>Ver Feedbacks</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Button>
+                      )}
+
+                      {item.type === "checkin" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(item.id);
+                            navigate({ to: "/agenda" });
+                          }}
+                          className="h-8 px-3 rounded-lg text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 active:scale-[0.98] transition-all gap-1.5 shadow-2xs"
+                        >
+                          <span>Ver Agenda</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Button>
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleDeleteNotification(item.id, e)}
+                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 active:scale-[0.98] transition-all"
+                        title="Excluir notificação"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

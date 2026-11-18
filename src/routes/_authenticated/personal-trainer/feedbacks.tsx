@@ -20,6 +20,7 @@ import {
   RefreshCw,
   ExternalLink,
   Building2,
+  Inbox,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -27,15 +28,14 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useScopeFilter } from "@/hooks/use-scope-filter";
-import { matchesSearchTerms } from "@/lib/search-utils";
 import { PageHeader } from "@/components/ui-kit/PageHeader";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { initials, formatDateBR } from "@/lib/format";
+import { initials } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/personal-trainer/feedbacks")({
   head: () => ({
@@ -68,7 +68,6 @@ export function FeedbacksPage() {
     queryKey: ["pt-feedbacks-executions", scopeKey],
     enabled: ready,
     queryFn: async () => {
-      // 1. Busca execuções com dados do aluno e dia
       let q = supabase
         .from("pt_training_executions" as any)
         .select(`
@@ -83,7 +82,7 @@ export function FeedbacksPage() {
           user_id
         `)
         .order("created_at", { ascending: false })
-        .limit(100);
+        .limit(120);
 
       if (scopeId) {
         q = q.eq("user_id", scopeId);
@@ -98,7 +97,6 @@ export function FeedbacksPage() {
       const studentIds = Array.from(new Set((execRows || []).map((r: any) => r.pt_student_id).filter(Boolean)));
       const dayIds = Array.from(new Set((execRows || []).map((r: any) => r.training_day_id).filter(Boolean)));
 
-      // 2. Busca dados complementares de alunos (PT e Studio)
       const [ptStudentsRes, studioStudentsRes, daysRes] = await Promise.all([
         studentIds.length > 0
           ? supabase.from("pt_students").select("id, name, email, phone").in("id", studentIds)
@@ -127,7 +125,6 @@ export function FeedbacksPage() {
         if (d?.id) dayMap.set(d.id, { name: d.name, program_id: d.program_id });
       });
 
-      // 3. Monta o payload enriquecido
       return (execRows || []).map((row: any) => {
         let parsedNotes: ParsedExecutionNotes = {};
         if (typeof row.notes === "string" && row.notes.trim()) {
@@ -164,35 +161,37 @@ export function FeedbacksPage() {
           timerSeconds,
           loads,
           exerciseNames,
-          doneCount: doneExercises.length || Object.keys(loads).length,
           loadsCount: Object.keys(loads).length,
+          doneCount: doneExercises.length || Object.keys(loads).length || 0,
         };
       });
     },
-    refetchInterval: 20000, // Atualização automática em tempo real a cada 20s
+    refetchInterval: 30000,
   });
 
-  // Filtros em memória
+  // 2. Filtragem
   const filteredExecutions = useMemo(() => {
     const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 
     return executions.filter((item) => {
-      // Filtro de busca
       if (search.trim()) {
-        const matches =
-          matchesSearchTerms(item.studentName, search) ||
-          matchesSearchTerms(item.dayName, search) ||
-          (item.feedback && matchesSearchTerms(item.feedback, search));
-        if (!matches) return false;
+        const q = search.toLowerCase();
+        const studentMatch = item.studentName.toLowerCase().includes(q);
+        const dayMatch = item.dayName.toLowerCase().includes(q);
+        const feedbackMatch = (item.feedback || "").toLowerCase().includes(q);
+        if (!studentMatch && !dayMatch && !feedbackMatch) return false;
       }
 
-      // Filtro por feedback escrito
       if (filterOnlyWithFeedback && !item.feedback) {
         return false;
       }
 
-      // Filtro por período
+      if (filterOrigin !== "all" && item.studentOrigin !== filterOrigin) {
+        return false;
+      }
+
       if (filterPeriod === "today") {
         return (item.executedAt || "").slice(0, 10) === todayStr;
       }
@@ -207,10 +206,6 @@ export function FeedbacksPage() {
         const itemMonth = (item.executedAt || "").slice(0, 7);
         const currentMonth = todayStr.slice(0, 7);
         if (itemMonth !== currentMonth) return false;
-      }
-
-      if (filterOrigin !== "all" && item.studentOrigin !== filterOrigin) {
-        return false;
       }
 
       return true;
@@ -230,7 +225,6 @@ export function FeedbacksPage() {
     };
   }, [executions]);
 
-  // Função para abrir conversa com o aluno no WhatsApp
   const handleOpenWhatsApp = (item: (typeof executions)[0]) => {
     const cleanPhone = (item.studentPhone || "").replace(/\D/g, "");
     if (!cleanPhone) {
@@ -243,76 +237,79 @@ export function FeedbacksPage() {
         ? ` em ${Math.floor(item.timerSeconds / 60)} min`
         : "";
 
-    let texto = `Fala ${item.studentName}, tudo bem? 💪🔥%0A%0A`;
-    texto += `Vi aqui que você concluiu o treino "${item.dayName}"${duracaoTexto} com ${item.loadsCount} cargas registradas! `;
+    const msg = encodeURIComponent(
+      `Olá, ${item.studentName}! Vi aqui que você concluiu o treino "${item.dayName}"${duracaoTexto}. Parabéns pela dedicação! Como você se sentiu?`
+    );
 
-    if (item.feedback) {
-      texto += `%0A%0ASobre o seu feedback: "${item.feedback}"... `;
-    }
-
-    texto += `%0A%0AParabéns pela constância e dedicação!`;
-
-    window.open(`https://wa.me/55${cleanPhone}?text=${texto}`, "_blank");
+    const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
+    window.open(`https://wa.me/${fullPhone}?text=${msg}`, "_blank");
   };
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header com Ações */}
+      {/* Cabeçalho da Página com actions corretas */}
       <PageHeader
         title="Feedbacks & Resultados de Treino"
-        subtitle="Monitore cada treino concluído, tempo de sessão, cargas anotadas e comentários dos seus alunos em tempo real."
-        icon={Dumbbell}
-      >
-        <div className="flex items-center gap-2">
+        description="Acompanhe em tempo real a conclusão dos treinos dos seus alunos (Studio com planilhas e Personal Trainer), notas e evolução de cargas."
+        icon={MessageSquareQuote}
+        actions={
           <Button
             variant="outline"
             size="sm"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="gap-1.5 text-xs"
+            className="h-9 px-3 gap-1.5 text-xs font-semibold rounded-xl border-border/70 active:scale-[0.98] transition-all"
           >
-            <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} />
-            Atualizar Feed
+            <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin text-primary")} />
+            <span>Atualizar Feed</span>
           </Button>
-        </div>
-      </PageHeader>
+        }
+      />
 
-      {/* Cards de Métricas */}
+      {/* Cards de Métricas (Apple Bento Grid) */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <Card className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md shadow-xs hover:border-primary/40 transition-all">
+          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
               <CheckCircle2 className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Treinos Registrados</p>
-              <p className="text-2xl font-bold tracking-tight text-foreground">{stats.totalTreinos}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                Treinos Registrados
+              </p>
+              <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">
+                {stats.totalTreinos}
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500">
+        <Card className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md shadow-xs hover:border-purple-500/40 transition-all">
+          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500 ring-1 ring-purple-500/20">
               <MessageSquare className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Com Comentário / Feedback</p>
-              <p className="text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                Com Comentário / Feedback
+              </p>
+              <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-purple-600 dark:text-purple-400 font-mono">
                 {stats.comFeedback}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/60 bg-card/60 backdrop-blur-sm">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+        <Card className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md shadow-xs hover:border-amber-500/40 transition-all">
+          <CardContent className="flex items-center gap-3.5 p-4 sm:p-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/20">
               <TrendingUp className="h-5 w-5" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Cargas Anotadas</p>
-              <p className="text-2xl font-bold tracking-tight text-amber-500">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                Cargas Anotadas
+              </p>
+              <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-500 font-mono">
                 {stats.totalCargasAnotadas}
               </p>
             </div>
@@ -320,68 +317,103 @@ export function FeedbacksPage() {
         </Card>
       </div>
 
-      {/* Barra de Filtros e Busca */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-card p-3 rounded-2xl border border-border/60 shadow-xs">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por aluno, nome do treino ou palavras no feedback..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9 text-base md:text-sm bg-background/60"
-          />
-        </div>
+      {/* Painel Unificado de Filtros e Busca */}
+      <div className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md p-3.5 sm:p-4 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Busca Textual */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por aluno, nome do treino ou palavras no feedback..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 h-10 text-base md:text-sm rounded-xl bg-background/80 border-border/60 focus-visible:ring-primary/20"
+            />
+          </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Select
-            value={filterOrigin}
-            onValueChange={(v: "all" | "studio" | "pt") => setFilterOrigin(v)}
-          >
-            <SelectTrigger className="w-[170px] h-9 text-xs font-semibold">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Alunos</SelectItem>
-              <SelectItem value="studio">🏛️ Alunos Studio (Planilha)</SelectItem>
-              <SelectItem value="pt">🏋️ Personal Trainer</SelectItem>
-            </SelectContent>
-          </Select>
+          {/* Seletores & Toggle */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={filterOrigin}
+              onValueChange={(v: "all" | "studio" | "pt") => setFilterOrigin(v)}
+            >
+              <SelectTrigger className="w-[180px] h-10 text-xs font-semibold rounded-xl bg-background/80 border-border/60">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">Todos os Alunos</SelectItem>
+                <SelectItem value="studio">🏛️ Alunos Studio (Planilha)</SelectItem>
+                <SelectItem value="pt">🏋️ Personal Trainer</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Select
-            value={filterPeriod}
-            onValueChange={(v: "all" | "today" | "week" | "month") => setFilterPeriod(v)}
-          >
-            <SelectTrigger className="w-[140px] h-9 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todo Período</SelectItem>
-              <SelectItem value="today">Hoje</SelectItem>
-              <SelectItem value="week">Últimos 7 dias</SelectItem>
-              <SelectItem value="month">Este Mês</SelectItem>
-            </SelectContent>
-          </Select>
+            <Select
+              value={filterPeriod}
+              onValueChange={(v: "all" | "today" | "week" | "month") => setFilterPeriod(v)}
+            >
+              <SelectTrigger className="w-[145px] h-10 text-xs font-semibold rounded-xl bg-background/80 border-border/60">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">Todo Período</SelectItem>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="week">Últimos 7 dias</SelectItem>
+                <SelectItem value="month">Este Mês</SelectItem>
+              </SelectContent>
+            </Select>
 
-          <Button
-            variant={filterOnlyWithFeedback ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilterOnlyWithFeedback(!filterOnlyWithFeedback)}
-            className="h-9 gap-1.5 text-xs font-semibold"
-          >
-            <MessageSquare className="h-3.5 w-3.5" />
-            <span>Com Feedback</span>
-          </Button>
+            <Button
+              variant={filterOnlyWithFeedback ? "default" : "outline"}
+              size="sm"
+              onClick={() => setFilterOnlyWithFeedback(!filterOnlyWithFeedback)}
+              className={cn(
+                "h-10 px-3.5 gap-1.5 text-xs font-semibold rounded-xl active:scale-[0.98] transition-all",
+                filterOnlyWithFeedback
+                  ? "bg-purple-600 hover:bg-purple-700 text-white shadow-xs"
+                  : "border-border/60 hover:bg-muted/60"
+              )}
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              <span>Com Feedback</span>
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Lista de Feedbacks e Resultados de Treino */}
       {isLoading ? (
-        <Card className="p-12 text-center text-sm text-muted-foreground">
-          Carregando resultados dos treinos...
+        <Card className="rounded-2xl border border-border/60 p-12 text-center text-sm text-muted-foreground">
+          <div className="flex flex-col items-center justify-center gap-3">
+            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+            <p className="font-semibold text-foreground">Carregando resultados dos treinos...</p>
+          </div>
         </Card>
       ) : filteredExecutions.length === 0 ? (
-        <Card className="p-12 text-center text-sm text-muted-foreground">
-          Nenhum resultado de treino encontrado para os filtros selecionados.
+        <Card className="rounded-2xl border border-border/60 bg-card/60 p-12 text-center flex flex-col items-center justify-center gap-3">
+          <div className="h-14 w-14 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground/60 ring-1 ring-border/50">
+            <Inbox className="h-7 w-7" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-base font-bold text-foreground">Nenhum resultado de treino encontrado</p>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Não foram encontradas execuções de treino para os filtros selecionados.
+            </p>
+          </div>
+          {(search || filterPeriod !== "all" || filterOrigin !== "all" || filterOnlyWithFeedback) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearch("");
+                setFilterPeriod("all");
+                setFilterOrigin("all");
+                setFilterOnlyWithFeedback(false);
+              }}
+              className="mt-1 h-9 px-4 rounded-xl text-xs font-semibold active:scale-[0.98] transition-all"
+            >
+              Limpar Filtros
+            </Button>
+          )}
         </Card>
       ) : (
         <div className="space-y-3.5">
@@ -391,31 +423,36 @@ export function FeedbacksPage() {
             const relativeTime = item.createdAt
               ? formatDistanceToNow(new Date(item.createdAt), { addSuffix: true, locale: ptBR })
               : "";
+            const exactTime = item.createdAt ? format(new Date(item.createdAt), "dd/MM/yyyy 'às' HH:mm") : "";
 
             return (
               <Card
                 key={item.id}
                 className={cn(
-                  "overflow-hidden border border-border/70 bg-card transition-all hover:border-primary/50 shadow-xs",
-                  item.feedback && "border-l-4 border-l-purple-500",
+                  "rounded-2xl overflow-hidden border border-border/60 bg-card/70 backdrop-blur-md transition-all hover:border-primary/40 shadow-xs",
+                  item.feedback && "border-l-[5px] border-l-purple-500"
                 )}
               >
-                <CardContent className="p-4 sm:p-5 space-y-3">
-                  {/* Topo: Aluno, Treino e Tempo */}
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary font-bold text-sm">
+                <CardContent className="p-4 sm:p-5 space-y-3.5">
+                  {/* Topo do Card: Aluno, Origem, Estrelas e Badges de Desempenho */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      {/* Avatar Squircle */}
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary font-bold text-sm ring-1 ring-primary/20">
                         {initials(item.studentName)}
                       </div>
+
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-bold text-base text-foreground leading-tight truncate">
                             {item.studentName}
                           </h3>
+
+                          {/* Badge de Origem */}
                           {item.studentOrigin === "studio" ? (
                             <Badge
                               variant="outline"
-                              className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[10px] font-semibold gap-1 py-0 px-1.5 h-5"
+                              className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 text-[10px] font-semibold gap-1 py-0 px-2 h-5 rounded-full"
                               title="Aluno Studio (treina com planilha / aulas)"
                             >
                               <Building2 className="h-2.5 w-2.5" />
@@ -424,25 +461,29 @@ export function FeedbacksPage() {
                           ) : (
                             <Badge
                               variant="outline"
-                              className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-semibold gap-1 py-0 px-1.5 h-5"
+                              className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 text-[10px] font-semibold gap-1 py-0 px-2 h-5 rounded-full"
                               title="Aluno Personal Trainer (consultoria individual)"
                             >
                               <Dumbbell className="h-2.5 w-2.5" />
                               Personal
                             </Badge>
                           )}
+
+                          {/* Avaliação em Estrelas */}
                           {item.rating && (
-                            <div className="flex items-center gap-0.5 text-amber-500">
+                            <div className="flex items-center gap-0.5 text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-full ring-1 ring-amber-500/20">
                               {Array.from({ length: item.rating }).map((_, i) => (
-                                <Star key={i} className="h-3.5 w-3.5 fill-amber-500" />
+                                <Star key={i} className="h-3 w-3 fill-amber-500" />
                               ))}
                             </div>
                           )}
                         </div>
-                        <p className="text-xs font-medium text-muted-foreground flex flex-wrap items-center gap-1.5 mt-0.5">
+
+                        <p className="text-xs font-medium text-muted-foreground flex flex-wrap items-center gap-1.5 mt-1">
                           <span className="text-foreground/90 font-semibold">{item.dayName}</span>
                           <span>•</span>
                           <span>{relativeTime}</span>
+                          <span className="text-muted-foreground/60 hidden sm:inline">({exactTime})</span>
                         </p>
                       </div>
                     </div>
@@ -450,28 +491,28 @@ export function FeedbacksPage() {
                     {/* Duração & Métricas Rápidas */}
                     <div className="flex flex-wrap items-center gap-1.5 sm:self-center">
                       {item.timerSeconds > 0 && (
-                        <Badge variant="outline" className="gap-1 text-xs font-mono font-bold">
+                        <Badge variant="outline" className="gap-1 text-xs font-mono font-bold rounded-lg h-7 px-2.5 border-border/70">
                           <Clock className="h-3 w-3 text-muted-foreground" />
                           {Math.floor(item.timerSeconds / 60)}m {item.timerSeconds % 60}s
                         </Badge>
                       )}
 
-                      <Badge variant="secondary" className="gap-1 text-xs">
+                      <Badge variant="secondary" className="gap-1 text-xs font-semibold rounded-lg h-7 px-2.5">
                         <Dumbbell className="h-3 w-3 text-primary" />
                         {item.doneCount} exerc.
                       </Badge>
 
                       {hasLoads && (
-                        <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 text-xs">
-                          {item.loadsCount} cargas
+                        <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 text-xs font-bold rounded-lg h-7 px-2.5">
+                          ⚖️ {item.loadsCount} cargas
                         </Badge>
                       )}
                     </div>
                   </div>
 
-                  {/* Feedback Descritivo em Destaque */}
+                  {/* Feedback do Aluno em Destaque */}
                   {item.feedback && (
-                    <div className="rounded-xl bg-purple-500/10 border border-purple-500/25 p-3.5 text-sm space-y-1">
+                    <div className="rounded-xl bg-purple-500/10 border-l-4 border-l-purple-500 p-3.5 text-sm space-y-1">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
                         <MessageSquare className="h-3.5 w-3.5" />
                         Feedback do Aluno
@@ -482,24 +523,29 @@ export function FeedbacksPage() {
                     </div>
                   )}
 
-                  {/* Detalhes de Cargas (Expansível) */}
+                  {/* Detalhes de Cargas (Painel Expansível) */}
                   {isExpanded && hasLoads && (
-                    <div className="rounded-xl bg-muted/40 p-3.5 border border-border/50 space-y-2 mt-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Cargas Registradas na Sessão
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <div className="rounded-xl bg-muted/40 p-4 border border-border/50 space-y-2.5 mt-2 animate-in fade-in-50 duration-200">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Cargas Registradas na Sessão
+                        </h4>
+                        <span className="text-[11px] text-muted-foreground font-mono">
+                          {item.loadsCount} exercícios com peso
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                         {Object.entries(item.loads).map(([exId, loadVal]) => {
                           const exName = item.exerciseNames[exId] || "Exercício";
                           return (
                             <div
                               key={exId}
-                              className="flex items-center justify-between rounded-lg bg-background p-2 border border-border/40 text-xs"
+                              className="flex items-center justify-between rounded-xl bg-background p-2.5 border border-border/50 text-xs shadow-2xs"
                             >
                               <span className="font-medium text-foreground truncate max-w-[170px]" title={exName}>
                                 {exName}
                               </span>
-                              <span className="font-bold font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                              <span className="font-bold font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-md text-xs">
                                 {String(loadVal)} kg
                               </span>
                             </div>
@@ -509,43 +555,45 @@ export function FeedbacksPage() {
                     </div>
                   )}
 
-                  {/* Rodapé de Ações */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/40 text-xs">
+                  {/* Rodapé de Ações Estruturado (Sem sobreposição ou corte de botões) */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/40 text-xs">
                     <div>
                       {hasLoads ? (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                          className="h-8 gap-1 text-xs text-muted-foreground hover:text-foreground p-0"
+                          className="h-9 px-2 gap-1.5 text-xs text-muted-foreground hover:text-foreground font-medium rounded-xl active:scale-[0.98] transition-all"
                         >
                           {isExpanded ? (
                             <>
-                              <ChevronUp className="h-3.5 w-3.5" /> Ocultar cargas
+                              <ChevronUp className="h-3.5 w-3.5" />
+                              <span>Ocultar detalhes de cargas</span>
                             </>
                           ) : (
                             <>
-                              <ChevronDown className="h-3.5 w-3.5" /> Ver {item.loadsCount} cargas anotadas
+                              <ChevronDown className="h-3.5 w-3.5" />
+                              <span>Ver {item.loadsCount} cargas anotadas</span>
                             </>
                           )}
                         </Button>
                       ) : (
-                        <span className="text-[11px] text-muted-foreground/70">
+                        <span className="text-xs text-muted-foreground/70">
                           Sem cargas individuais anotadas nesta sessão.
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1.5 ml-auto">
+                    <div className="flex flex-wrap items-center gap-2">
                       {item.studentPhone && (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleOpenWhatsApp(item)}
-                          className="h-8 gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 font-semibold"
+                          className="h-9 px-3.5 gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 rounded-xl shadow-2xs active:scale-[0.98] transition-all"
                         >
                           <MessageCircle className="h-3.5 w-3.5" />
-                          Responder no WhatsApp
+                          <span>Responder no WhatsApp</span>
                         </Button>
                       )}
 
@@ -554,11 +602,11 @@ export function FeedbacksPage() {
                           size="sm"
                           variant="ghost"
                           asChild
-                          className="h-8 gap-1 text-xs text-primary"
+                          className="h-9 px-3 gap-1.5 text-xs font-bold text-primary hover:bg-primary/10 rounded-xl active:scale-[0.98] transition-all"
                         >
                           <a href={`/personal-trainer/students/${item.studentId}`} title="Ver ficha completa do aluno">
-                            <span>Ficha</span>
-                            <ArrowRight className="h-3 w-3" />
+                            <span>Ficha Completa</span>
+                            <ArrowRight className="h-3.5 w-3.5" />
                           </a>
                         </Button>
                       )}
