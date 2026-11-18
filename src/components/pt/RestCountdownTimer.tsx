@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause, X, Plus, Minus, Dumbbell } from "lucide-react";
+import { Play, Pause, X, Plus, Minus, Dumbbell, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { playHighImpactRestAlarm, unlockAudioContext } from "@/lib/workout-audio";
 
 export interface RestCountdownTimerProps {
   active: boolean;
@@ -13,48 +14,6 @@ export interface RestCountdownTimerProps {
   onComplete?: () => void;
   onDismiss?: () => void;
   className?: string;
-}
-
-function playCompletionChime() {
-  try {
-    const AudioCtx =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const playTone = (freq: number, start: number, dur: number) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      gain.gain.setValueAtTime(0, ctx.currentTime + start);
-      gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + start + 0.02);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
-      osc.start(ctx.currentTime + start);
-      osc.stop(ctx.currentTime + start + dur);
-    };
-
-    // Acorde agradável de finalização de descanso
-    playTone(523.25, 0.0, 0.25); // C5
-    playTone(659.25, 0.15, 0.25); // E5
-    playTone(783.99, 0.3, 0.4); // G5
-    playTone(1046.5, 0.45, 0.5); // C6
-
-    setTimeout(() => ctx.close(), 1800);
-  } catch {
-    // Ignora restrições de áudio
-  }
-
-  // Vibração tátil no celular se suportado
-  if (typeof window !== "undefined" && "navigator" in window && "vibrate" in navigator) {
-    try {
-      navigator.vibrate([200, 100, 200, 100, 300]);
-    } catch {
-      // ignore
-    }
-  }
 }
 
 export function parseSafeSeconds(val: unknown, fallback = 60): number {
@@ -96,6 +55,7 @@ export function RestCountdownTimer({
   // Reinicia SOMENTE quando um novo descanso é iniciado (evita reiniciar a cada render pai)
   useEffect(() => {
     if (active) {
+      unlockAudioContext();
       if (lastTriggerKeyRef.current !== triggerKey) {
         lastTriggerKeyRef.current = triggerKey;
         const sec = parseSafeSeconds(initialSeconds, 60);
@@ -134,7 +94,7 @@ export function RestCountdownTimer({
         targetEndTimeRef.current = null;
         if (!hasFinishedRef.current) {
           hasFinishedRef.current = true;
-          playCompletionChime();
+          playHighImpactRestAlarm();
           toast.success("Descanso concluído! Bora para a próxima série 💪", {
             icon: "⏰",
           });
@@ -157,6 +117,7 @@ export function RestCountdownTimer({
   const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
   const adjustTime = (delta: number) => {
+    unlockAudioContext();
     const deltaNum = Number(delta) || 0;
     setRemaining((prev) => {
       const curr = typeof prev === "number" && !isNaN(prev) ? prev : safeInit;
@@ -173,6 +134,7 @@ export function RestCountdownTimer({
   };
 
   const toggleRunning = () => {
+    unlockAudioContext();
     if (isRunning) {
       setIsRunning(false);
       targetEndTimeRef.current = null;
@@ -183,6 +145,7 @@ export function RestCountdownTimer({
   };
 
   const setPreset = (sec: number) => {
+    unlockAudioContext();
     const cleanSec = parseSafeSeconds(sec, 60);
     setTotalTime(cleanSec);
     setRemaining(cleanSec);
@@ -239,15 +202,32 @@ export function RestCountdownTimer({
             </div>
           </div>
 
-          {/* Botão de Fechar */}
-          <button
-            type="button"
-            onClick={() => onDismissRef.current?.()}
-            aria-label="Fechar cronômetro de descanso"
-            className="rounded-full p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors shrink-0"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          {/* Botão de Testar Som Alto & Fechar */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                unlockAudioContext();
+                playHighImpactRestAlarm();
+                toast.info("🔊 Teste de som esportivo disparado!");
+              }}
+              title="Testar som alto do cronômetro"
+              aria-label="Testar som do cronômetro"
+              className="flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-zinc-300 hover:text-white bg-white/10 hover:bg-white/15 transition-all active:scale-95 touch-manipulation"
+            >
+              <Volume2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <span className="hidden xs:inline text-[10px]">Testar Som</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onDismissRef.current?.()}
+              aria-label="Fechar cronômetro de descanso"
+              className="rounded-full p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors shrink-0 touch-manipulation"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Display Central do Tempo & Controles Compactos */}

@@ -33,6 +33,7 @@ import { MuscleHeatmap } from "@/components/pt/MuscleHeatmap";
 import { resolveExerciseThumbnail } from "@/lib/thumbnail-utils";
 import { useWakeLock } from "@/hooks/use-wake-lock";
 import { notifyCoachWorkoutCompleted } from "@/lib/notifications.functions";
+import { unlockAudioContext } from "@/lib/workout-audio";
 
 export { resolveExerciseThumbnail };
 
@@ -283,6 +284,7 @@ export function FocusedDayView({
     setCompletedSets((prev) => ({ ...prev, [ex.id]: updated }));
 
     if (!isAlreadyDone) {
+      unlockAudioContext();
       setRestTimer({
         active: true,
         seconds: parseSafeSeconds(ex.rest_seconds, 60),
@@ -938,14 +940,15 @@ export function FocusedDayView({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
+                        onClick={() => {
+                          unlockAudioContext();
                           setRestTimer({
                             active: true,
                             seconds: parseSafeSeconds(ex.rest_seconds, 60),
                             exerciseName: ex.name,
                             totalSets: totalSetsCount,
-                          })
-                        }
+                          });
+                        }}
                         className="h-7 text-[11px] font-semibold gap-1 px-2 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 rounded-lg"
                       >
                         <Timer className="h-3.5 w-3.5" />
