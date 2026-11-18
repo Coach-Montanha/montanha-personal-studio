@@ -472,46 +472,46 @@ function PTStudentDetail() {
       <StudentGamificationWidget sessions={sessions} executions={executions} />
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="flex flex-wrap items-center gap-1.5 w-full bg-transparent p-0 border-0 h-auto justify-start">
+        <TabsList className="w-full flex flex-wrap items-center justify-start gap-1.5 p-1.5 rounded-2xl bg-muted/60 border border-border/60 min-h-[48px] h-auto box-border">
           <TabsTrigger
             value="overview"
-            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+            className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
           >
             Resumo
           </TabsTrigger>
           <TabsTrigger
             value="sessions"
-            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+            className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
           >
             Aulas
           </TabsTrigger>
           <TabsTrigger
             value="payments"
-            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+            className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
           >
             Pagamentos
           </TabsTrigger>
           <TabsTrigger
             value="programs"
-            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+            className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
           >
             Treinos
           </TabsTrigger>
           <TabsTrigger
             value="assessments"
-            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+            className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
           >
             Avaliações
           </TabsTrigger>
           <TabsTrigger
             value="anamnesis"
-            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+            className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
           >
             Anamnese
           </TabsTrigger>
           <TabsTrigger
             value="contracts"
-            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+            className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
           >
             Contratos
           </TabsTrigger>

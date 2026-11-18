@@ -100,28 +100,28 @@ function CRMPage() {
 
       <Tabs defaultValue="pipeline" className="space-y-4 min-w-0 max-w-full">
         <div className="w-full">
-          <TabsList className="flex flex-wrap items-center gap-1.5 w-full bg-transparent p-0 border-0 h-auto justify-start">
+          <TabsList className="w-full flex flex-wrap items-center justify-start gap-1.5 p-1.5 rounded-2xl bg-muted/60 border border-border/60 min-h-[48px] h-auto box-border">
             <TabsTrigger
               value="pipeline"
-              className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 gap-2 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
             >
-              <Kanban className="h-4 w-4" /> Funil de Alunos
+              <Kanban className="h-4 w-4 shrink-0" /> Funil de Alunos
             </TabsTrigger>
             <TabsTrigger
               value="individual"
-              className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 gap-2 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
             >
               Mensagem Individual
             </TabsTrigger>
             <TabsTrigger
               value="bulk"
-              className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 gap-2 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
             >
               Disparo em Massa
             </TabsTrigger>
             <TabsTrigger
               value="announcements"
-              className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              className="h-9 min-h-[36px] max-h-[36px] px-3.5 text-xs sm:text-sm font-semibold rounded-xl border border-border/60 bg-card text-muted-foreground hover:text-foreground hover:bg-card/90 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-colors duration-150 gap-2 shrink-0 inline-flex items-center justify-center self-center cursor-pointer box-border leading-none select-none"
             >
               Avisos Internos
             </TabsTrigger>
