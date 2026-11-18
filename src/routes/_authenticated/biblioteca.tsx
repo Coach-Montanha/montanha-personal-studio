@@ -7,8 +7,8 @@ export const Route = createFileRoute("/_authenticated/biblioteca")({
 
 function BibliotecaView() {
   useEffect(() => {
-    // Redireciona diretamente para o cofre com credencial VIP de aluno ativada
-    window.location.replace("/materiais?student=1");
+    // Redireciona diretamente para o cofre com tracking de origem do app e credencial VIP ativada
+    window.location.replace("/materiais?from=app&student=1");
   }, []);
 
   return (
@@ -16,7 +16,7 @@ function BibliotecaView() {
       <div className="h-9 w-9 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       <p className="text-base font-semibold text-foreground">Abrindo o Cofre de Artigos & E-books...</p>
       <a
-        href="/materiais?student=1"
+        href="/materiais?from=app&student=1"
         className="mt-2 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90"
       >
         Acessar Diretamente ➔

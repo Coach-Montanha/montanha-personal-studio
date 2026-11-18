@@ -58,6 +58,7 @@ import { Route as AuthenticatedPortalPerfilRouteImport } from './routes/_authent
 import { Route as AuthenticatedPortalPlanosRouteImport } from './routes/_authenticated/portal/planos'
 import { Route as AuthenticatedStudentsIndexRouteImport } from './routes/_authenticated/students.index'
 import { Route as AuthenticatedStudentsIdRouteImport } from './routes/_authenticated/students.$id'
+import { Route as ApiBlogStatsRouteImport } from './routes/api.blog.stats'
 import { Route as ApiCronPreClassRouteImport } from './routes/api.cron.pre-class'
 import { Route as ApiFormsGoogleWebhookRouteImport } from './routes/api.forms.google-webhook'
 import { Route as ApiNotificationsClearRouteImport } from './routes/api.notifications.clear'
@@ -331,6 +332,11 @@ const AuthenticatedStudentsIdRoute = AuthenticatedStudentsIdRouteImport.update({
   path: '/students/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiBlogStatsRoute = ApiBlogStatsRouteImport.update({
+  id: '/api/blog/stats',
+  path: '/api/blog/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronPreClassRoute = ApiCronPreClassRouteImport.update({
   id: '/api/cron/pre-class',
   path: '/api/cron/pre-class',
@@ -416,6 +422,7 @@ export interface FileRoutesByFullPath {
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/api/blog/stats': typeof ApiBlogStatsRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/api/forms/google-webhook': typeof ApiFormsGoogleWebhookRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
@@ -473,6 +480,7 @@ export interface FileRoutesByTo {
   '/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/api/blog/stats': typeof ApiBlogStatsRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/api/forms/google-webhook': typeof ApiFormsGoogleWebhookRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
@@ -532,6 +540,7 @@ export interface FileRoutesById {
   '/_authenticated/portal/perfil': typeof AuthenticatedPortalPerfilRoute
   '/_authenticated/portal/planos': typeof AuthenticatedPortalPlanosRoute
   '/_authenticated/students/$id': typeof AuthenticatedStudentsIdRoute
+  '/api/blog/stats': typeof ApiBlogStatsRoute
   '/api/cron/pre-class': typeof ApiCronPreClassRoute
   '/api/forms/google-webhook': typeof ApiFormsGoogleWebhookRoute
   '/api/notifications/clear': typeof ApiNotificationsClearRoute
@@ -591,6 +600,7 @@ export interface FileRouteTypes {
     | '/portal/perfil'
     | '/portal/planos'
     | '/students/$id'
+    | '/api/blog/stats'
     | '/api/cron/pre-class'
     | '/api/forms/google-webhook'
     | '/api/notifications/clear'
@@ -648,6 +658,7 @@ export interface FileRouteTypes {
     | '/portal/perfil'
     | '/portal/planos'
     | '/students/$id'
+    | '/api/blog/stats'
     | '/api/cron/pre-class'
     | '/api/forms/google-webhook'
     | '/api/notifications/clear'
@@ -706,6 +717,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portal/perfil'
     | '/_authenticated/portal/planos'
     | '/_authenticated/students/$id'
+    | '/api/blog/stats'
     | '/api/cron/pre-class'
     | '/api/forms/google-webhook'
     | '/api/notifications/clear'
@@ -734,6 +746,7 @@ export interface RootRouteChildren {
   FSlugRoute: typeof FSlugRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiBlogStatsRoute: typeof ApiBlogStatsRoute
   ApiCronPreClassRoute: typeof ApiCronPreClassRoute
   ApiFormsGoogleWebhookRoute: typeof ApiFormsGoogleWebhookRoute
   ApiNotificationsClearRoute: typeof ApiNotificationsClearRoute
@@ -1085,6 +1098,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/blog/stats': {
+      id: '/api/blog/stats'
+      path: '/api/blog/stats'
+      fullPath: '/api/blog/stats'
+      preLoaderRoute: typeof ApiBlogStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/pre-class': {
       id: '/api/cron/pre-class'
       path: '/api/cron/pre-class'
@@ -1246,6 +1266,7 @@ const rootRouteChildren: RootRouteChildren = {
   FSlugRoute: FSlugRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiBlogStatsRoute: ApiBlogStatsRoute,
   ApiCronPreClassRoute: ApiCronPreClassRoute,
   ApiFormsGoogleWebhookRoute: ApiFormsGoogleWebhookRoute,
   ApiNotificationsClearRoute: ApiNotificationsClearRoute,

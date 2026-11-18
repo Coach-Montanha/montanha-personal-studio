@@ -616,16 +616,25 @@ export function TreinosPage() {
 
       {/* Navegação por Abas Principais */}
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="space-y-5">
-        <TabsList className="bg-muted/40 p-1 border border-border/60">
-          <TabsTrigger value="programas" className="gap-2 text-xs font-medium">
+        <TabsList className="flex flex-wrap items-center gap-1.5 w-full bg-transparent p-0 border-0 h-auto justify-start">
+          <TabsTrigger
+            value="programas"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+          >
             <Layers className="h-4 w-4" />
             Programas & Rotinas
           </TabsTrigger>
-          <TabsTrigger value="calendario" className="gap-2 text-xs font-medium">
+          <TabsTrigger
+            value="calendario"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+          >
             <Calendar className="h-4 w-4" />
             Calendário
           </TabsTrigger>
-          <TabsTrigger value="nova-sessao" className="gap-2 text-xs font-medium">
+          <TabsTrigger
+            value="nova-sessao"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+          >
             <Plus className="h-4 w-4" />
             Montar Sessão
           </TabsTrigger>
@@ -635,7 +644,7 @@ export function TreinosPage() {
               setSelectedProgramForIa(null);
               setPrescreverIaOpen(true);
             }}
-            className="gap-2 text-xs font-medium text-primary font-semibold"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer font-semibold"
           >
             <Sparkles className="h-4 w-4" />
             Gerador IA / Planilha

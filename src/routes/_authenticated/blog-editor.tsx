@@ -884,7 +884,7 @@ export function BlogEditorPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open(`/materiais/artigos/${currentArticle.slug}`, "_blank")}
+              onClick={() => window.open(`/materiais/artigos/${currentArticle.slug}?from=app`, "_blank")}
               className="gap-1.5"
             >
               <ExternalLink className="h-3.5 w-3.5" />
@@ -2086,7 +2086,7 @@ export function BlogEditorPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open("/materiais", "_blank")}
+              onClick={() => window.open("/materiais?from=app", "_blank")}
               className="gap-1.5"
             >
               <ExternalLink className="h-4 w-4 text-primary" />
@@ -2210,7 +2210,7 @@ export function BlogEditorPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(`/materiais/artigos/${article.slug}`, "_blank")}
+                      onClick={() => window.open(`/materiais/artigos/${article.slug}?from=app`, "_blank")}
                       className="gap-1 h-8 text-xs flex-1"
                     >
                       <ExternalLink className="h-3 w-3" />
@@ -2300,7 +2300,7 @@ export function BlogEditorPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => window.open(`/materiais/artigos/${article.slug}`, "_blank")}
+                            onClick={() => window.open(`/materiais/artigos/${article.slug}?from=app`, "_blank")}
                             title="Visualizar no Blog"
                             className="h-8 w-8 text-muted-foreground hover:text-foreground"
                           >

@@ -778,8 +778,8 @@ function FinanceiroPage() {
       </DndContext>
 
       <Tabs value={tab} onValueChange={setTab} className="min-w-0 max-w-full">
-        <div className="w-full max-w-full overflow-x-auto pb-1 [touch-action:pan-x] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <TabsList className="h-auto w-max gap-1 rounded-xl border border-border/60 bg-muted/40 p-1">
+        <div className="w-full">
+          <TabsList className="flex flex-wrap items-center gap-1.5 w-full bg-transparent p-0 border-0 h-auto justify-start">
             {[
               { v: "overview", label: "Visão Geral", short: "Visão", icon: Wallet },
               { v: "expenses", label: "Despesas", short: "Despesas", icon: Receipt },
@@ -795,11 +795,10 @@ function FinanceiroPage() {
               <TabsTrigger
                 key={t.v}
                 value={t.v}
-                className="gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
               >
                 <t.icon className="h-4 w-4 shrink-0" />
-                <span className="hidden sm:inline">{t.label}</span>
-                <span className="sm:hidden">{t.short}</span>
+                <span>{t.label}</span>
               </TabsTrigger>
             ))}
           </TabsList>

@@ -423,34 +423,61 @@ function StudentDetail() {
           }
           className="space-y-4"
         >
-          <div className="-mx-1 overflow-x-auto px-1 pb-1.5 touch-pan-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <TabsList className="inline-flex w-max max-w-full justify-start gap-1 p-1 bg-muted/60 backdrop-blur rounded-xl border border-border/50">
-              <TabsTrigger value="overview" className="gap-1.5 transition-all duration-200">
-                <TrendingUp className="h-3.5 w-3.5" /> Visão Geral
+          <div className="w-full">
+            <TabsList className="flex flex-wrap items-center gap-1.5 w-full bg-transparent p-0 border-0 h-auto justify-start">
+              <TabsTrigger
+                value="overview"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <TrendingUp className="h-4 w-4" /> Visão Geral
               </TabsTrigger>
-              <TabsTrigger value="personal" className="gap-1.5 transition-all duration-200">
-                <UserRound className="h-3.5 w-3.5" /> Dados pessoais
+              <TabsTrigger
+                value="personal"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <UserRound className="h-4 w-4" /> Dados pessoais
               </TabsTrigger>
-              <TabsTrigger value="formularios" className="gap-1.5 transition-all duration-200">
-                <FileText className="h-3.5 w-3.5" /> Formulários & Anamnese
+              <TabsTrigger
+                value="formularios"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <FileText className="h-4 w-4" /> Formulários & Anamnese
               </TabsTrigger>
-              <TabsTrigger value="plan" className="gap-1.5 transition-all duration-200">
-                <Layers className="h-3.5 w-3.5" /> Plano
+              <TabsTrigger
+                value="plan"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <Layers className="h-4 w-4" /> Plano
               </TabsTrigger>
-              <TabsTrigger value="payments" className="gap-1.5 transition-all duration-200">
-                <Receipt className="h-3.5 w-3.5" /> Pagamentos
+              <TabsTrigger
+                value="payments"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <Receipt className="h-4 w-4" /> Pagamentos
               </TabsTrigger>
-              <TabsTrigger value="programs" className="gap-1.5 transition-all duration-200">
-                <Dumbbell className="h-3.5 w-3.5" /> Planilhas
+              <TabsTrigger
+                value="programs"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <Dumbbell className="h-4 w-4" /> Planilhas
               </TabsTrigger>
-              <TabsTrigger value="checkins" className="gap-1.5 transition-all duration-200">
-                <Ticket className="h-3.5 w-3.5" /> Check-ins
+              <TabsTrigger
+                value="checkins"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <Ticket className="h-4 w-4" /> Check-ins
               </TabsTrigger>
-              <TabsTrigger value="attendance" className="gap-1.5 transition-all duration-200">
-                <CalendarDays className="h-3.5 w-3.5" /> Frequência
+              <TabsTrigger
+                value="attendance"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <CalendarDays className="h-4 w-4" /> Frequência
               </TabsTrigger>
-              <TabsTrigger value="bonus" className="gap-1.5 transition-all duration-200">
-                <Gift className="h-3.5 w-3.5" /> Bônus
+              <TabsTrigger
+                value="bonus"
+                className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+              >
+                <Gift className="h-4 w-4" /> Bônus
               </TabsTrigger>
             </TabsList>
           </div>

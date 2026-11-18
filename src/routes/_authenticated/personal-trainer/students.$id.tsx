@@ -472,14 +472,49 @@ function PTStudentDetail() {
       <StudentGamificationWidget sessions={sessions} executions={executions} />
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Resumo</TabsTrigger>
-          <TabsTrigger value="sessions">Aulas</TabsTrigger>
-          <TabsTrigger value="payments">Pagamentos</TabsTrigger>
-          <TabsTrigger value="programs">Treinos</TabsTrigger>
-          <TabsTrigger value="assessments">Avaliações</TabsTrigger>
-          <TabsTrigger value="anamnesis">Anamnese</TabsTrigger>
-          <TabsTrigger value="contracts">Contratos</TabsTrigger>
+        <TabsList className="flex flex-wrap items-center gap-1.5 w-full bg-transparent p-0 border-0 h-auto justify-start">
+          <TabsTrigger
+            value="overview"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+          >
+            Resumo
+          </TabsTrigger>
+          <TabsTrigger
+            value="sessions"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+          >
+            Aulas
+          </TabsTrigger>
+          <TabsTrigger
+            value="payments"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+          >
+            Pagamentos
+          </TabsTrigger>
+          <TabsTrigger
+            value="programs"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+          >
+            Treinos
+          </TabsTrigger>
+          <TabsTrigger
+            value="assessments"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+          >
+            Avaliações
+          </TabsTrigger>
+          <TabsTrigger
+            value="anamnesis"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+          >
+            Anamnese
+          </TabsTrigger>
+          <TabsTrigger
+            value="contracts"
+            className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 shrink-0 cursor-pointer"
+          >
+            Contratos
+          </TabsTrigger>
         </TabsList>
 
 

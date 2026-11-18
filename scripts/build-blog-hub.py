@@ -314,8 +314,35 @@ COMMON_HEAD = """
       color: var(--primary);
     }
     .nav-cta {
-      display: flex;
+      display: none;
       align-items: center;
+    }
+    .nav-back-slot {
+      display: none;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .btn-back-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f4f4f5;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .btn-back-pill:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+      transform: translateX(-2px);
     }
     .btn-student-pill {
       font-size: 12.5px;
@@ -505,51 +532,14 @@ COMMON_HEAD = """
 """
 
 STUDENT_DETECTION_SCRIPT = """
-<script>
-  (function() {
-    // Incremento do contador de visitas local
-    let visits = parseInt(localStorage.getItem('montanha_blog_visits') || '4575');
-    visits += 1;
-    localStorage.setItem('montanha_blog_visits', visits.toString());
-
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('student') === '1') {
-      localStorage.setItem('montanha_is_student', '1');
-    }
-    const isStudent = localStorage.getItem('montanha_is_student') === '1';
-    window.IS_STUDENT = isStudent;
-    
-    document.addEventListener('DOMContentLoaded', function() {
-      // Atualizar dígitos do odometer
-      const digitsBox = document.querySelector('.odometer-box');
-      if (digitsBox) {
-        const strVisits = visits.toString().padStart(4, '0');
-        digitsBox.innerHTML = strVisits.split('').map(d => `<span class="digit">${d}</span>`).join('');
-      }
-
-      if (isStudent) {
-        const vipBanner = document.getElementById('vipBanner');
-        const visitorBanner = document.getElementById('visitorBanner');
-        if (vipBanner) vipBanner.style.display = 'block';
-        if (visitorBanner) visitorBanner.style.display = 'none';
-
-        document.querySelectorAll('.btn-student-pill').forEach(btn => {
-          btn.innerHTML = '👤 Painel do Aluno';
-          btn.href = '/portal';
-          btn.classList.remove('btn-outline');
-          btn.classList.add('btn-vip');
-        });
-      }
-    });
-  })();
-</script>
+<script src="/materiais/blog-runtime.js"></script>
 """
 
 def generate_topbar_html():
     return """
   <!-- Topbar Oficial em 2 Níveis -->
   <header class="topbar-blog">
-    <!-- Nível 1: Redes Sociais, Logo Blog do Montanha e Contador -->
+    <!-- Nível 1: Redes Sociais, Logo Blog do Montanha e Contador Real -->
     <div class="topbar-utility">
       <div class="container utility-flex">
         <div class="top-socials">
@@ -575,19 +565,27 @@ def generate_topbar_html():
 
         <div class="top-counter">
           <span class="counter-tag">VISITAS</span>
-          <div class="odometer-box" title="Contador de Acessos">
+          <div class="odometer-box" title="Contador Real de Acessos" id="odometerVisits">
             <span class="digit">4</span>
             <span class="digit">5</span>
             <span class="digit">7</span>
-            <span class="digit">5</span>
+            <span class="digit">6</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Nível 2: Menu Principal Centralizado -->
+    <!-- Nível 2: Menu Principal com Slot de Voltar à Esquerda -->
     <div class="topbar-nav">
       <div class="container nav-flex">
+        <!-- Slot de Voltar ao App: exibido exclusivamente para quem veio de dentro do sistema/app -->
+        <div class="nav-back-slot" id="blogNavBackSlot" style="display: none;">
+          <a href="javascript:void(0)" onclick="handleBlogVoltar()" class="btn-back-pill" title="Voltar ao aplicativo">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Voltar
+          </a>
+        </div>
+
         <nav class="nav-links">
           <a href="/materiais" class="nav-item">Início</a>
           <a href="/materiais#artigosSection" class="nav-item">Meus Artigos</a>
@@ -596,12 +594,13 @@ def generate_topbar_html():
           <a href="/materiais#amazonSection" class="nav-item">Links Amazon</a>
           <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank" class="nav-item">Contato</a>
         </nav>
-        <div class="nav-cta">
-          <a href="/portal" class="btn btn-outline btn-student-pill">Portal do Aluno ➔</a>
-        </div>
+
+        <!-- Para visitantes externos, nada aparece no slot lateral direito -->
+        <div class="nav-cta" id="blogNavCta" style="display: none;"></div>
       </div>
     </div>
   </header>
+  <script src="/materiais/blog-runtime.js"></script>
 """
 
 def generate_footer_html():

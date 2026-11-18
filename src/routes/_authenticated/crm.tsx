@@ -99,14 +99,32 @@ function CRMPage() {
       />
 
       <Tabs defaultValue="pipeline" className="space-y-4 min-w-0 max-w-full">
-        <div className="w-full max-w-full overflow-x-auto pb-1 [touch-action:pan-x] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <TabsList className="h-auto w-max gap-1">
-            <TabsTrigger value="pipeline" className="flex items-center gap-1.5">
+        <div className="w-full">
+          <TabsList className="flex flex-wrap items-center gap-1.5 w-full bg-transparent p-0 border-0 h-auto justify-start">
+            <TabsTrigger
+              value="pipeline"
+              className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+            >
               <Kanban className="h-4 w-4" /> Funil de Alunos
             </TabsTrigger>
-            <TabsTrigger value="individual">Mensagem Individual</TabsTrigger>
-            <TabsTrigger value="bulk">Disparo em Massa</TabsTrigger>
-            <TabsTrigger value="announcements">Avisos Internos</TabsTrigger>
+            <TabsTrigger
+              value="individual"
+              className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+            >
+              Mensagem Individual
+            </TabsTrigger>
+            <TabsTrigger
+              value="bulk"
+              className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+            >
+              Disparo em Massa
+            </TabsTrigger>
+            <TabsTrigger
+              value="announcements"
+              className="h-10 min-h-[40px] px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg border border-border/70 bg-card hover:bg-muted/70 text-foreground/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-xs transition-all duration-150 gap-2 shrink-0 flex items-center cursor-pointer"
+            >
+              Avisos Internos
+            </TabsTrigger>
           </TabsList>
         </div>
 

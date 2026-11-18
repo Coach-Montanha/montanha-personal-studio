@@ -186,8 +186,35 @@
       color: var(--primary);
     }
     .nav-cta {
-      display: flex;
+      display: none;
       align-items: center;
+    }
+    .nav-back-slot {
+      display: none;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .btn-back-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f4f4f5;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .btn-back-pill:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.4);
+      color: #ffffff;
+      transform: translateX(-2px);
     }
     .btn-student-pill {
       font-size: 12.5px;
@@ -376,44 +403,7 @@
   </style>
 
   
-<script>
-  (function() {
-    // Incremento do contador de visitas local
-    let visits = parseInt(localStorage.getItem('montanha_blog_visits') || '4575');
-    visits += 1;
-    localStorage.setItem('montanha_blog_visits', visits.toString());
-
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('student') === '1') {
-      localStorage.setItem('montanha_is_student', '1');
-    }
-    const isStudent = localStorage.getItem('montanha_is_student') === '1';
-    window.IS_STUDENT = isStudent;
-    
-    document.addEventListener('DOMContentLoaded', function() {
-      // Atualizar dígitos do odometer
-      const digitsBox = document.querySelector('.odometer-box');
-      if (digitsBox) {
-        const strVisits = visits.toString().padStart(4, '0');
-        digitsBox.innerHTML = strVisits.split('').map(d => `<span class="digit">${d}</span>`).join('');
-      }
-
-      if (isStudent) {
-        const vipBanner = document.getElementById('vipBanner');
-        const visitorBanner = document.getElementById('visitorBanner');
-        if (vipBanner) vipBanner.style.display = 'block';
-        if (visitorBanner) visitorBanner.style.display = 'none';
-
-        document.querySelectorAll('.btn-student-pill').forEach(btn => {
-          btn.innerHTML = '👤 Painel do Aluno';
-          btn.href = '/portal';
-          btn.classList.remove('btn-outline');
-          btn.classList.add('btn-vip');
-        });
-      }
-    });
-  })();
-</script>
+<script src="/materiais/blog-runtime.js"></script>
 
 
   <style>
@@ -726,7 +716,7 @@
   
   <!-- Topbar Oficial em 2 Níveis -->
   <header class="topbar-blog">
-    <!-- Nível 1: Redes Sociais, Logo Blog do Montanha e Contador -->
+    <!-- Nível 1: Redes Sociais, Logo Blog do Montanha e Contador Real -->
     <div class="topbar-utility">
       <div class="container utility-flex">
         <div class="top-socials">
@@ -752,19 +742,27 @@
 
         <div class="top-counter">
           <span class="counter-tag">VISITAS</span>
-          <div class="odometer-box" title="Contador de Acessos">
+          <div class="odometer-box" title="Contador Real de Acessos" id="odometerVisits">
             <span class="digit">4</span>
             <span class="digit">5</span>
             <span class="digit">7</span>
-            <span class="digit">5</span>
+            <span class="digit">6</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Nível 2: Menu Principal Centralizado -->
+    <!-- Nível 2: Menu Principal com Slot de Voltar à Esquerda -->
     <div class="topbar-nav">
       <div class="container nav-flex">
+        <!-- Slot de Voltar ao App: exibido exclusivamente para quem veio de dentro do sistema/app -->
+        <div class="nav-back-slot" id="blogNavBackSlot" style="display: none;">
+          <a href="javascript:void(0)" onclick="handleBlogVoltar()" class="btn-back-pill" title="Voltar ao aplicativo">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Voltar
+          </a>
+        </div>
+
         <nav class="nav-links">
           <a href="/materiais" class="nav-item">Início</a>
           <a href="/materiais#artigosSection" class="nav-item">Meus Artigos</a>
@@ -773,12 +771,13 @@
           <a href="/materiais#amazonSection" class="nav-item">Links Amazon</a>
           <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank" class="nav-item">Contato</a>
         </nav>
-        <div class="nav-cta">
-          <a href="/portal" class="btn btn-outline btn-student-pill">Portal do Aluno ➔</a>
-        </div>
+
+        <!-- Para visitantes externos, nada aparece no slot lateral direito -->
+        <div class="nav-cta" id="blogNavCta" style="display: none;"></div>
       </div>
     </div>
   </header>
+  <script src="/materiais/blog-runtime.js"></script>
 
 
   <article class="article-wrap">
@@ -915,30 +914,30 @@ A filosofia Kaizen se concentra em buscar melhorias constantes e contínuas em t
       </div>
       <div class="recommended-grid">
         
-        <a href="/materiais/artigos/treino-nordico-remo" class="rec-card">
+        <a href="/materiais/artigos/o-treino-nordico-de-remo" class="rec-card">
           <div class="rec-card-badge">Desenvolvimento Pessoal • Mindset</div>
           <h4 class="rec-card-title">O treino nórdico de remo</h4>
-          <p class="rec-card-excerpt">ARTIGO 170 - O treino nórdico de remo ARTIGO 170 - O treino nórdico de remo O treino de remo costuma ser subestimado quando o...</p>
+          <p class="rec-card-excerpt">ARTIGO 170 - O treino nórdico de remo Artigo 1 do acervo original do Blog do Montanha. Painel Systeme.io: 36360925(https://sy...</p>
           <div class="rec-card-footer">
-            <span>⏱️ 4 min de leitura</span>
+            <span>⏱️ 3 min de leitura</span>
             <span class="rec-card-cta">Ler artigo ➔</span>
           </div>
         </a>
-        <a href="/materiais/artigos/treino-progresso-falha" class="rec-card">
-          <div class="rec-card-badge">Desenvolvimento Pessoal • Mindset</div>
-          <h4 class="rec-card-title">O método de treino que gera progresso sem falha</h4>
-          <p class="rec-card-excerpt">ARTIGO 169 - O método de treino que gera progresso sem falha ARTIGO 169 - O método de treino que gera progresso sem falha No ...</p>
-          <div class="rec-card-footer">
-            <span>⏱️ 7 min de leitura</span>
-            <span class="rec-card-cta">Ler artigo ➔</span>
-          </div>
-        </a>
-        <a href="/materiais/artigos/fundamentos-treino-forca1" class="rec-card">
-          <div class="rec-card-badge">Fitness • Hipertrofia & Força</div>
+        <a href="/materiais/artigos/os-fundamentos-que-guiam-o-treinamento-de-forca-pt-1" class="rec-card">
+          <div class="rec-card-badge">Desenvolvimento Pessoal • Autodisciplina</div>
           <h4 class="rec-card-title">Os fundamentos que guiam o treinamento de força pt. 1</h4>
-          <p class="rec-card-excerpt">ARTIGO 167 - Os fundamentos que guiam o treinamento de força pt. 1 No mundo do treinamento físico, é comum ouvir um grande “d...</p>
+          <p class="rec-card-excerpt">ARTIGO 167 - Os fundamentos que guiam o treinamento de força pt. 1 Artigo 4 do acervo original do Blog do Montanha. Painel Sy...</p>
           <div class="rec-card-footer">
-            <span>⏱️ 8 min de leitura</span>
+            <span>⏱️ 2 min de leitura</span>
+            <span class="rec-card-cta">Ler artigo ➔</span>
+          </div>
+        </a>
+        <a href="/materiais/artigos/o-metodo-de-treino-que-gera-progresso-sem-falha" class="rec-card">
+          <div class="rec-card-badge">Fitness • Corrida & Endurance</div>
+          <h4 class="rec-card-title">O método de treino que gera progresso sem falha</h4>
+          <p class="rec-card-excerpt">ARTIGO 169 - O método de treino que gera progresso sem falha Artigo 2 do acervo original do Blog do Montanha. Painel Systeme....</p>
+          <div class="rec-card-footer">
+            <span>⏱️ 2 min de leitura</span>
             <span class="rec-card-cta">Ler artigo ➔</span>
           </div>
         </a>
@@ -948,8 +947,8 @@ A filosofia Kaizen se concentra em buscar melhorias constantes e contínuas em t
 
     <!-- Navegação Sequencial -->
     <div class="nav-carousel">
-      <a href="/materiais/artigos/principais-tipos-de-whey" class="nav-prev">← Quais os principais tipos de Whey?...</a>
-      <a href="/materiais/artigos/prompts-oficiais-gemini-30-dias-de-conteudo" class="nav-next">Prompts Oficiais Gemini // 30 Dias de Co... →</a>
+      <a href="/materiais/artigos/principio-contraste-progressividade-treinamento-hibrido" class="nav-prev">← Os Princípios do Contraste e da Progress...</a>
+      <a href="/materiais/artigos/problemas-coluna-treinamento-hibrido" class="nav-next">Problemas na coluna e o Treinamento Híbr... →</a>
     </div>
   </article>
 
