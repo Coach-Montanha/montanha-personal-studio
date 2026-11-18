@@ -4,7 +4,21 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { confirmDialog } from "@/lib/confirm-dialog";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Plus, Search, Trash2, Timer, Gift } from "lucide-react";
+import {
+  ChevronRight,
+  Plus,
+  Search,
+  Trash2,
+  Timer,
+  Gift,
+  Clock,
+  ArrowRight,
+  Filter,
+  MessageCircle,
+  Wallet,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 
 import { toast } from "sonner";
 import { TrainingTimerDialog } from "@/components/pt/TrainingTimerDialog";
@@ -13,6 +27,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -69,16 +91,78 @@ type Row = {
     id: string;
     amount: number;
     payment_date: string;
+    due_date?: string | null;
+    reference_month?: string | null;
     status: string;
     checkin_quota_override: number | null;
     plans: {
+      name?: string | null;
+      billing_cycle?: string | null;
+      price?: number | null;
       checkin_quota_type: string | null;
       checkin_quota_amount: number | null;
       package_valid_days: number | null;
     } | null;
   }[];
-  student_plan_history: { is_current: boolean; plans: { name: string } | null }[];
+  student_plan_history: {
+    id?: string;
+    is_current: boolean;
+    start_date?: string | null;
+    end_date?: string | null;
+    plans: { name: string; price?: number | null; billing_cycle?: string | null } | null;
+  }[];
 };
+
+function getDiasParaVencer(endDateStr?: string | null): number | null {
+  if (!endDateStr) return null;
+  try {
+    const end = new Date(endDateStr + "T23:59:59");
+    const now = new Date();
+    const diffMs = end.getTime() - now.getTime();
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  } catch {
+    return null;
+  }
+}
+
+function getStudentPlanExpiration(s: Row): {
+  expirationDate: string | null;
+  diasParaVencer: number | null;
+  planName: string;
+} {
+  const currentPlan = s.student_plan_history?.find((h) => h.is_current);
+  const planName = currentPlan?.plans?.name ?? "Sem plano";
+
+  // 1. Data de término explícita no histórico do plano atual
+  if (currentPlan?.end_date) {
+    const dias = getDiasParaVencer(currentPlan.end_date);
+    return { expirationDate: currentPlan.end_date, diasParaVencer: dias, planName };
+  }
+
+  // 2. Data de vencimento da última mensalidade paga
+  const paidPayments = (s.payments || [])
+    .filter((p) => p && p.status === "paid")
+    .sort((a, b) => (b.payment_date || "").localeCompare(a.payment_date || ""));
+
+  const lastPayment = paidPayments[0];
+  if (lastPayment?.due_date) {
+    const dias = getDiasParaVencer(lastPayment.due_date);
+    return { expirationDate: lastPayment.due_date, diasParaVencer: dias, planName };
+  }
+
+  // 3. Fallback: payment_date + 30 dias se houver pagamento
+  if (lastPayment?.payment_date) {
+    const d = new Date(lastPayment.payment_date + "T00:00:00");
+    if (!isNaN(d.getTime())) {
+      d.setMonth(d.getMonth() + 1);
+      const estDate = d.toISOString().slice(0, 10);
+      const dias = getDiasParaVencer(estDate);
+      return { expirationDate: estDate, diasParaVencer: dias, planName };
+    }
+  }
+
+  return { expirationDate: null, diasParaVencer: null, planName };
+}
 
 function StudentsPage() {
   const qc = useQueryClient();
@@ -97,6 +181,35 @@ function StudentsPage() {
   const [bulkBonusOpen, setBulkBonusOpen] = useState(false);
   const [migrateOpen, setMigrateOpen] = useState(false);
   const [timerOpen, setTimerOpen] = useState(false);
+  const [alertasPlanosOpen, setAlertasPlanosOpen] = useState(false);
+
+  const currentMonth = useMemo(() => new Date().toISOString().slice(0, 7), []);
+
+  const { data: monthPayments = [] } = useQuery({
+    queryKey: ["studio-month-payments", scopeKey, currentMonth],
+    enabled: ready,
+    queryFn: async () => {
+      let q = supabase
+        .from("payments")
+        .select("id,amount,payment_date,due_date,reference_month,status,student_id")
+        .is("deleted_at", null)
+        .eq("status", "paid")
+        .or(`reference_month.eq.${currentMonth},payment_date.gte.${currentMonth}-01`);
+      if (scopeId) q = q.eq("user_id", scopeId);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        id: string;
+        amount: number;
+        payment_date: string;
+        due_date: string | null;
+        reference_month: string;
+        status: string;
+        student_id: string;
+      }>;
+    },
+    staleTime: 60_000,
+  });
 
   const { data: students = [], isLoading } = useQuery({
     queryKey: ["students-list", scopeKey],
@@ -104,7 +217,7 @@ function StudentsPage() {
     queryFn: async () => {
       let q = supabase
         .from("students")
-        .select("id,name,email,phone,notes,status,created_at,birth_date,account_user_id,attendance_offset,bonus_checkins_balance,payments(id,amount,payment_date,status,checkin_quota_override,plans(checkin_quota_type,checkin_quota_amount,package_valid_days)),student_plan_history(is_current,plans(name))")
+        .select("id,name,email,phone,notes,status,created_at,birth_date,account_user_id,attendance_offset,bonus_checkins_balance,payments(id,amount,payment_date,due_date,reference_month,status,checkin_quota_override,plans(name,billing_cycle,price,checkin_quota_type,checkin_quota_amount,package_valid_days)),student_plan_history(id,is_current,start_date,end_date,plans(name,price,billing_cycle))")
         .is("deleted_at", null)
         .order("name");
       if (scopeId) q = q.eq("user_id", scopeId);
@@ -115,6 +228,42 @@ function StudentsPage() {
     staleTime: 30_000,
     refetchInterval: 5 * 60 * 1000,
   });
+
+  const activeStudents = useMemo(() => {
+    return (students || []).filter((s) => {
+      const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : (s.status ?? "inactive");
+      return effectiveStatus === "active";
+    });
+  }, [students]);
+
+  const receitaMesAtual = useMemo(() => {
+    return monthPayments.reduce((acc, p) => acc + Number(p.amount || 0), 0);
+  }, [monthPayments]);
+
+  const ticketMedio = useMemo(() => {
+    if (monthPayments.length > 0) {
+      return receitaMesAtual / monthPayments.length;
+    }
+    if (activeStudents.length > 0 && receitaMesAtual > 0) {
+      return receitaMesAtual / activeStudents.length;
+    }
+    return 0;
+  }, [receitaMesAtual, monthPayments, activeStudents]);
+
+  const alunosVencendo = useMemo(() => {
+    return (students || [])
+      .filter((s) => {
+        const effectiveStatus = (s.bonus_checkins_balance ?? 0) > 0 ? "active" : (s.status ?? "inactive");
+        if (effectiveStatus !== "active") return false;
+        const info = getStudentPlanExpiration(s);
+        return info.diasParaVencer !== null && info.diasParaVencer <= 8 && info.diasParaVencer >= -5;
+      })
+      .map((s) => ({
+        student: s,
+        ...getStudentPlanExpiration(s),
+      }))
+      .sort((a, b) => (a.diasParaVencer ?? 999) - (b.diasParaVencer ?? 999));
+  }, [students]);
 
   // Alunos com plano por pacote — só para eles buscamos os check-ins.
   const packageStudentIds = useMemo(
@@ -317,6 +466,108 @@ function StudentsPage() {
           </Button>
         }
       />
+
+      {/* KPI Cards Rápidos dos Alunos do Studio */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Card 1: Total de Alunos Ativos */}
+        <Card className="p-4 bg-card/70 border-border/70 space-y-1">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Total de Alunos Ativos
+          </p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-bold tracking-tight text-foreground">
+              {activeStudents.length}
+            </p>
+            <Badge variant="secondary" className="text-xs font-bold bg-primary/10 text-primary border-0">
+              {students.length} CADASTRADOS
+            </Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Alunos matriculados no Studio
+          </p>
+        </Card>
+
+        {/* Card 2: Receita do Mês Atual */}
+        <Card className="p-4 bg-card/70 border-border/70 space-y-1">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Receita do Mês Atual
+          </p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-bold tracking-tight text-foreground">
+              {formatBRL(receitaMesAtual)}
+            </p>
+            <Badge variant="outline" className="text-xs font-bold text-foreground bg-muted/40">
+              {monthPayments.length} PAGOS
+            </Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Mês vigente ({new Date().toLocaleDateString("pt-BR", { month: "short", year: "numeric" })})
+          </p>
+        </Card>
+
+        {/* Card 3: Ticket Médio */}
+        <Card className="p-4 bg-card/70 border-border/70 space-y-1">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Ticket Médio
+          </p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-bold tracking-tight text-foreground">
+              {formatBRL(ticketMedio)}
+            </p>
+            <Badge variant="secondary" className="text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-0">
+              MÉDIA
+            </Badge>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Média por mensalidade no mês
+          </p>
+        </Card>
+
+        {/* Card 4: Planos à Vencer */}
+        <Card
+          onClick={() => setAlertasPlanosOpen(true)}
+          className={cn(
+            "p-4 transition-all cursor-pointer relative overflow-hidden group space-y-1 select-none",
+            alunosVencendo.length > 0
+              ? "bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/40 hover:border-amber-500 hover:shadow-md"
+              : "bg-card/70 border-border/70 hover:border-primary/40 hover:bg-card/90"
+          )}
+          title="Clique para ver detalhes dos planos que vencem em menos de 8 dias"
+        >
+          <div className="flex items-center justify-between">
+            <p
+              className={cn(
+                "text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5",
+                alunosVencendo.length > 0
+                  ? "text-amber-700 dark:text-amber-400 font-bold"
+                  : "text-muted-foreground"
+              )}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              <span>A Vencer (&lt; 8 dias)</span>
+            </p>
+            {alunosVencendo.length > 0 && (
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+            )}
+          </div>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-bold tracking-tight text-foreground">
+              {alunosVencendo.length}
+            </p>
+            {alunosVencendo.length > 0 && (
+              <Badge variant="outline" className="text-[10px] uppercase font-bold border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/15">
+                Ver alertas
+              </Badge>
+            )}
+          </div>
+          <p className="text-[11px] text-muted-foreground flex items-center justify-between pt-0.5">
+            <span>Clique para abrir lista</span>
+            <span className="text-primary font-medium group-hover:translate-x-0.5 transition-transform text-[10px]">
+              Abrir →
+            </span>
+          </p>
+        </Card>
+      </div>
 
       {birthdayStudents.length > 0 && (
         <Card className="relative overflow-hidden border-accent/30 bg-gradient-to-br from-accent/10 via-card to-primary/10 p-4 sm:p-5">
@@ -731,6 +982,146 @@ function StudentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dialog de Alertas de Planos a Vencer (< 8 dias) */}
+      <Dialog open={alertasPlanosOpen} onOpenChange={setAlertasPlanosOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden rounded-2xl">
+          <DialogHeader className="p-5 pb-3 border-b border-border/70 bg-card">
+            <div className="flex items-center justify-between pr-6">
+              <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+                <Clock className="h-5 w-5 text-amber-500" />
+                <span>Alertas de Planos a Vencer (&lt; 8 dias)</span>
+              </DialogTitle>
+              <Badge variant="outline" className="text-xs font-bold border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/15">
+                {alunosVencendo.length} {alunosVencendo.length === 1 ? "aluno" : "alunos"}
+              </Badge>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              Alunos do Studio com mensalidades ou vigência de planos com vencimento próximo ou recém-vencido.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
+            {alunosVencendo.length === 0 ? (
+              <div className="py-12 text-center space-y-2">
+                <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto text-xl">
+                  🎉
+                </div>
+                <p className="text-sm font-semibold text-foreground">Nenhum plano a vencer nos próximos 8 dias</p>
+                <p className="text-xs text-muted-foreground">Todos os alunos ativos do Studio estão com seus planos em dia.</p>
+              </div>
+            ) : (
+              alunosVencendo.map(({ student, expirationDate, diasParaVencer, planName }) => {
+                const isOverdue = diasParaVencer !== null && diasParaVencer < 0;
+                const isToday = diasParaVencer === 0;
+                const msg = encodeURIComponent(
+                  `Olá ${student.name}, tudo bem? Passando para lembrar que a vigência do seu plano "${planName}" vence ${
+                    isToday ? "hoje" : expirationDate ? `em ${formatDateBR(expirationDate)}` : "em breve"
+                  }. Podemos já agendar sua renovação? 💪`
+                );
+
+                return (
+                  <div
+                    key={student.id}
+                    className="p-3.5 rounded-xl border border-border/70 bg-card/60 hover:bg-card hover:border-primary/30 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-9 w-9 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                        {initials(student.name)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm text-foreground truncate">
+                          {student.name}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                          <span className="font-medium text-foreground/80">{planName}</span>
+                          {expirationDate && (
+                            <>
+                              <span>•</span>
+                              <span>Vencimento: <strong className="text-foreground">{formatDateBR(expirationDate)}</strong></span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                      {isOverdue ? (
+                        <Badge variant="destructive" className="text-[11px] font-bold">
+                          Venceu há {Math.abs(diasParaVencer)} d
+                        </Badge>
+                      ) : isToday ? (
+                        <Badge className="bg-amber-600 text-white text-[11px] font-bold">
+                          Vence hoje
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[11px] font-bold border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10">
+                          Vence em {diasParaVencer} dias
+                        </Badge>
+                      )}
+
+                      {student.phone && (
+                        <a
+                          href={`https://wa.me/55${student.phone.replace(/\D/g, "")}?text=${msg}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-success/30 bg-success/10 text-success text-xs font-semibold hover:bg-success/20 transition-all active:scale-95"
+                          title={`Enviar lembrete para ${student.name} no WhatsApp`}
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">WhatsApp</span>
+                        </a>
+                      )}
+
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs px-2.5 gap-1 font-semibold hover:bg-primary/10 hover:text-primary active:scale-95"
+                        onClick={() => setAlertasPlanosOpen(false)}
+                      >
+                        <Link to="/students/$id" params={{ id: student.id }} search={{ tab: "overview" }}>
+                          <span>Ficha</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <div className="p-3.5 bg-muted/30 border-t border-border/70 flex items-center justify-between gap-2">
+            {alunosVencendo.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+                onClick={() => {
+                  if (alunosVencendo[0]) {
+                    setSearch(alunosVencendo[0].student.name);
+                  }
+                  setAlertasPlanosOpen(false);
+                }}
+              >
+                <Filter className="h-3.5 w-3.5 text-primary" />
+                <span>Buscar na lista</span>
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="ml-auto text-xs"
+              onClick={() => setAlertasPlanosOpen(false)}
+            >
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <TrainingTimerDialog open={timerOpen} onOpenChange={setTimerOpen} />
     </div>
   );
