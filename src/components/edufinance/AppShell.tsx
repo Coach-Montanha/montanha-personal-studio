@@ -83,6 +83,13 @@ const nav: NavItem[] = [
     section: "Central de Treinos",
     module: "studio",
   },
+  {
+    to: "/personal-trainer/feedbacks",
+    label: "Feedbacks & Resultados",
+    icon: MessageSquareQuote,
+    section: "Central de Treinos",
+    module: "studio",
+  },
 
   { to: "/agenda", label: "Turmas & Agenda", icon: Calendar, section: "Aulas", module: "studio" },
   { to: "/programs", label: "Programas", icon: ClipboardList, section: "Aulas", module: "studio" },
@@ -92,13 +99,6 @@ const nav: NavItem[] = [
     label: "Alunos",
     icon: Users,
     exact: true,
-    section: "Personal Trainer",
-    module: "pt",
-  },
-  {
-    to: "/personal-trainer/feedbacks",
-    label: "Feedbacks & Resultados",
-    icon: MessageSquareQuote,
     section: "Personal Trainer",
     module: "pt",
   },
