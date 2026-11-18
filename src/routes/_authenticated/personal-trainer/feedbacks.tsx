@@ -6,6 +6,7 @@ import {
   Search,
   MessageCircle,
   MessageSquare,
+  MessageSquareQuote,
   Clock,
   Calendar,
   ChevronDown,
