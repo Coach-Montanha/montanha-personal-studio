@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { parseDayMeta, groupDaysByWeek } from "@/lib/training-weeks";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -67,6 +67,7 @@ export function StudentViewDialog({
   studentId?: string;
   studentName?: string;
 }) {
+  const qc = useQueryClient();
   const [selectedDayId, setSelectedDayId] = useState<string | null>(initialDayId);
 
   useEffect(() => {
@@ -187,6 +188,24 @@ export function StudentViewDialog({
               allExecutions={executions}
               studentName={studentName}
               onBack={() => setSelectedDayId(null)}
+              onSaved={(newExec) => {
+                if (newExec) {
+                  qc.setQueryData(
+                    ["pt-program-preview-execs", dayIds.join(","), studentId],
+                    (old: any[] | undefined) => {
+                      const list = old ? [...old] : [];
+                      const exists = list.some((x) => x.id === newExec.id);
+                      if (!exists) {
+                        return [newExec, ...list];
+                      }
+                      return list;
+                    }
+                  );
+                }
+                qc.invalidateQueries({ queryKey: ["pt-program-preview-execs"] });
+                qc.invalidateQueries({ queryKey: ["pt-portal-executions"] });
+                setSelectedDayId(null);
+              }}
               studentId={studentId}
             />
           </div>

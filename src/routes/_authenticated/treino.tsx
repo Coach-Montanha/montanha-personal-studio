@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { parseDayMeta, groupDaysByWeek } from "@/lib/training-weeks";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   CalendarDays,
@@ -76,6 +76,7 @@ function parseNotes(raw: unknown): { timerSeconds?: number } {
 
 function TreinoAlunoStandalonePage() {
   const search = Route.useSearch();
+  const qc = useQueryClient();
   const [selectedDayId, setSelectedDayId] = useState<string | null>(search.dayId || null);
 
   useEffect(() => {
@@ -244,6 +245,24 @@ function TreinoAlunoStandalonePage() {
               allExecutions={executions}
               studentName={studentDisplayName}
               onBack={() => setSelectedDayId(null)}
+              onSaved={(newExec) => {
+                if (newExec) {
+                  qc.setQueryData(
+                    ["pt-standalone-execs", dayIds.join(","), search.studentId],
+                    (old: any[] | undefined) => {
+                      const list = old ? [...old] : [];
+                      const exists = list.some((x) => x.id === newExec.id);
+                      if (!exists) {
+                        return [newExec, ...list];
+                      }
+                      return list;
+                    }
+                  );
+                }
+                qc.invalidateQueries({ queryKey: ["pt-standalone-execs"] });
+                qc.invalidateQueries({ queryKey: ["pt-portal-executions"] });
+                setSelectedDayId(null);
+              }}
               studentId={search.studentId}
             />
           </div>

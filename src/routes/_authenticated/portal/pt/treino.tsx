@@ -382,14 +382,38 @@ function PTTreinoPage() {
           executions={executions.filter((x) => x.training_day_id === selectedDay.id)}
           allExecutions={executions}
           studentName={student?.name}
-          onBack={() => setSelectedDayId(null)}
+          onBack={() => {
+            const programId = selectedDay.program_id;
+            setSelectedDayId(null);
+            if (programId) {
+              setSelectedProgramId(programId);
+            }
+          }}
           onOpenProgression={(exName) => {
             setSelectedProgressEx(exName);
             setProgressionOpen(true);
           }}
-          onSaved={() => {
-            qc.invalidateQueries({ queryKey: ["pt-portal-executions", student?.id] });
+          onSaved={(newExec) => {
+            const programId = selectedDay.program_id;
+            if (newExec) {
+              qc.setQueryData(
+                ["pt-portal-executions", student?.id],
+                (old: any[] | undefined) => {
+                  const list = old ? [...old] : [];
+                  const exists = list.some((x) => x.id === newExec.id);
+                  if (!exists) {
+                    return [newExec, ...list];
+                  }
+                  return list;
+                }
+              );
+            }
+            qc.invalidateQueries({ queryKey: ["pt-portal-executions"] });
+            qc.invalidateQueries({ queryKey: ["pt-portal-server-data"] });
             setSelectedDayId(null);
+            if (programId) {
+              setSelectedProgramId(programId);
+            }
           }}
           studentId={student!.id}
           userId={student!.user_id}

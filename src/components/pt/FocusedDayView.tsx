@@ -144,7 +144,7 @@ export function FocusedDayView({
   allExecutions?: Array<{ id: string; training_day_id?: string; executed_at: string; notes: string | null }>;
   studentName?: string;
   onBack?: () => void;
-  onSaved?: () => void;
+  onSaved?: (execution?: any) => void;
   onOpenProgression?: (exName: string) => void;
   studentId?: string;
   userId?: string;
@@ -162,6 +162,7 @@ export function FocusedDayView({
   const [excludedExerciseIds, setExcludedExerciseIds] = useState<string[]>([]);
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [lastExecutionId, setLastExecutionId] = useState<string | undefined>(undefined);
+  const [lastExecutionData, setLastExecutionData] = useState<any>(null);
   const [completedSets, setCompletedSets] = useState<Record<string, number[]>>({});
   const [heatmapOpen, setHeatmapOpen] = useState(false);
   const [quickMode, setQuickMode] = useState(false);
@@ -533,6 +534,12 @@ export function FocusedDayView({
       }
 
       setLastExecutionId((newExec as any)?.id);
+      setLastExecutionData({
+        id: (newExec as any)?.id,
+        training_day_id: day.id,
+        executed_at: new Date().toISOString(),
+        notes: JSON.stringify(notes),
+      });
       try {
         localStorage.removeItem(timerStorageKey);
         localStorage.removeItem(sessionStateKey);
@@ -1128,8 +1135,13 @@ export function FocusedDayView({
         onOpenChange={(open) => {
           setSummaryOpen(open);
           if (!open) {
-            onSaved?.();
+            const currentExec =
+              lastExecutionData ||
+              (lastExecutionId ? { id: lastExecutionId, training_day_id: day.id } : undefined);
+            onSaved?.(currentExec);
+            onBack?.();
             setLastExecutionId(undefined);
+            setLastExecutionData(null);
           }
         }}
         dayName={day.name}

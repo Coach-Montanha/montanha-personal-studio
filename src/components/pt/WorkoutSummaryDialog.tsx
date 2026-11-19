@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { 
   Camera,
@@ -399,16 +399,22 @@ export function WorkoutSummaryDialog({
             {/* Header com Treino concluído + X */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                <DialogTitle className="text-xl font-bold tracking-tight text-white">
-                  Treino concluído
-                </DialogTitle>
+                <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                <div>
+                  <DialogTitle className="text-xl font-bold tracking-tight text-white leading-tight">
+                    Treino concluído!
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-zinc-400 mt-0.5">
+                    Seu treino foi registrado instantaneamente com sucesso.
+                  </DialogDescription>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
-                aria-label="Fechar"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors cursor-pointer shrink-0"
+                aria-label="Fechar e voltar aos treinos"
+                title="Fechar e voltar à seleção de treino"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -518,45 +524,47 @@ export function WorkoutSummaryDialog({
               </div>
             )}
 
-            {/* Chamada para Compartilhar e Botões */}
-            <div className="space-y-3 pt-2 text-center">
-              <p className="text-xs sm:text-sm font-semibold text-zinc-300">
-                Que tal compartilhar esse resultado?
-              </p>
-              <div className="space-y-2">
-                <Button
-                  type="button"
-                  onClick={() => document.getElementById("camera-input")?.click()}
-                  className="w-full h-12 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold gap-2 text-sm shadow-lg shadow-orange-500/25 active:scale-[0.98] transition-all"
-                >
-                  <Camera className="h-5 w-5" /> Tirar uma foto
-                </Button>
+            {/* Ações: Botão Principal de Continuar + Opções de Compartilhar */}
+            <div className="space-y-3 pt-2">
+              <Button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-2 text-sm sm:text-base shadow-lg shadow-emerald-600/30 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                <CheckCircle2 className="h-5 w-5" />
+                Continuar
+              </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById("gallery-input")?.click()}
-                  className="w-full h-12 rounded-2xl border-orange-500/40 text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 font-bold gap-2 text-sm active:scale-[0.98] transition-all"
-                >
-                  <ImageIcon className="h-5 w-5" /> Escolher da galeria
-                </Button>
-
-                <div className="flex items-center justify-center gap-4 pt-1">
+              <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-3 space-y-2.5 text-center">
+                <div className="flex items-center justify-between text-xs text-zinc-400 font-medium px-1">
+                  <span>Compartilhar nas redes</span>
                   <button
                     type="button"
                     onClick={() => setViewMode("share")}
-                    className="text-xs font-semibold text-primary hover:underline transition-colors py-1 cursor-pointer"
+                    className="text-orange-400 hover:text-orange-300 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
                   >
-                    Ver card para Story sem foto
+                    <Sparkles className="h-3.5 w-3.5" /> Story sem foto
                   </button>
-                  <span className="text-zinc-600">•</span>
-                  <button
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
                     type="button"
-                    onClick={() => onOpenChange(false)}
-                    className="text-xs font-semibold text-zinc-500 hover:text-zinc-300 transition-colors py-1 cursor-pointer"
+                    variant="outline"
+                    onClick={() => document.getElementById("camera-input")?.click()}
+                    className="h-11 rounded-xl border-zinc-800 hover:border-orange-500/50 hover:bg-zinc-900 text-zinc-200 font-semibold gap-2 text-xs transition-all cursor-pointer"
                   >
-                    Pular
-                  </button>
+                    <Camera className="h-4 w-4 text-orange-400" /> Tirar foto
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("gallery-input")?.click()}
+                    className="h-11 rounded-xl border-zinc-800 hover:border-orange-500/50 hover:bg-zinc-900 text-zinc-200 font-semibold gap-2 text-xs transition-all cursor-pointer"
+                  >
+                    <ImageIcon className="h-4 w-4 text-orange-400" /> Galeria
+                  </Button>
                 </div>
               </div>
             </div>
@@ -754,6 +762,14 @@ export function WorkoutSummaryDialog({
                   <Download className="h-4 w-4" /> Baixar PNG
                 </Button>
               </div>
+
+              <Button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm gap-2 shadow-md active:scale-[0.98] transition-all cursor-pointer mt-1"
+              >
+                <CheckCircle2 className="h-4 w-4" /> Continuar para seleção de treino
+              </Button>
             </div>
           </div>
         )}
