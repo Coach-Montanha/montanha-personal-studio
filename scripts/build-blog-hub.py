@@ -84,6 +84,31 @@ def get_article_date(idx, total):
     mes = MESES[d.month - 1]
     return f"{dia_sem}, {d.day} de {mes} de {d.year}", d.strftime("%d/%m/%Y")
 
+
+def extract_or_generate_cover(body, category, theme, title):
+    # Procura primeira imagem no markdown
+    m = re.search(r'!\[.*?\]\((https?://[^\s\)]+)\)', body)
+    if m:
+        return m.group(1)
+    
+    t = f"{title} {theme} {category}".lower()
+    if any(k in t for k in ['corrida', 'correr', 'maratona', '5k', '15k', 'esteira']):
+        return 'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=700&q=80'
+    elif any(k in t for k in ['remo', 'ergômetro', 'concept2', 'ergometro']):
+        return 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=700&q=80'
+    elif any(k in t for k in ['kettlebell', 'lpo', 'arremesso', 'arranco', 'snatch']):
+        return 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=700&q=80'
+    elif any(k in t for k in ['jejum', 'nutri', 'dieta', 'açúcar', 'gordura', 'caloria', 'proteína', 'comida', 'whey']):
+        return 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=700&q=80'
+    elif any(k in t for k in ['sono', 'estresse', 'cortisol', 'fadiga', 'recuperação', 'descanso']):
+        return 'https://images.unsplash.com/photo-1511295742362-92c96b124e52?auto=format&fit=crop&w=700&q=80'
+    elif any(k in t for k in ['coluna', 'lombar', 'dor', 'joelho', 'ombro', 'manguito', 'postura', 'alongamento', 'mobilidade']):
+        return 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=700&q=80'
+    elif 'desenvolvimento pessoal' in category.lower() or any(k in t for k in ['mente', 'hábito', 'disciplina', 'autocontrole', 'foco', 'tempo']):
+        return 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=700&q=80'
+    else:
+        return 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=700&q=80'
+
 def parse_frontmatter_and_body(filepath, idx, total_files):
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
         text = f.read()
@@ -140,6 +165,7 @@ def parse_frontmatter_and_body(filepath, idx, total_files):
     plain = re.sub(r'\s+', ' ', plain).strip()
     plain = re.sub(r'^(Artigo #\d+.*?Systeme\.io:\s*|\s*)+', '', plain)
     meta['excerpt'] = plain[:150] + ("..." if len(plain) > 150 else "")
+    meta['cover_image'] = extract_or_generate_cover(body, meta['category'], meta['theme'], meta['full_title'])
 
     return meta, body
 
@@ -1184,24 +1210,37 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
         </div>
         """
 
-    # Article cards
+    # Article cards estilo Revista com Capa e Clique Aqui para Ler
     article_cards_html = ""
     for a in articles:
+        cover_url = a.get('cover_image') or 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=700&q=80'
         article_cards_html += f"""
-        <a href="/materiais/artigos/{a['slug']}" class="article-card" data-category="{a['category']}" data-theme="{a['theme']}" data-title="{a['clean_title'].lower()} {a['full_title'].lower()}" data-excerpt="{a['excerpt'].lower()}">
-          <div class="card-top">
-            <span class="badge badge-artigo">{a['category']}</span>
-            <span class="meta-tag">{a['date_short']}</span>
+        <article class="article-card magazine-card" data-category="{a['category']}" data-theme="{a['theme']}" data-title="{a['clean_title'].lower()} {a['full_title'].lower()}" data-excerpt="{a['excerpt'].lower()}">
+          <a href="/materiais/artigos/{a['slug']}" class="magazine-cover-link">
+            <div class="magazine-cover-wrap">
+              <img src="{cover_url}" alt="{a['clean_title']}" class="magazine-cover-img" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=700&q=80'">
+              <span class="magazine-badge">{a['category']}</span>
+              <span class="magazine-read-tag">⏱️ {a['read_time']} min</span>
+            </div>
+          </a>
+          <div class="magazine-body">
+            <div class="card-top" style="margin-bottom:8px;">
+              <span class="meta-tag">{a['theme']}</span>
+              <span class="meta-tag">{a['date_short']}</span>
+            </div>
+            <h3 class="card-title">
+              <a href="/materiais/artigos/{a['slug']}">{a['full_title']}</a>
+            </h3>
+            <p class="card-desc">{a['excerpt']}</p>
+            <div class="card-footer" style="margin-top:auto; padding-top:14px; border-top:1px solid var(--card-border);">
+              <a href="/materiais/artigos/{a['slug']}" class="read-link-cta">
+                <span>Clique aqui para ler</span>
+                <span class="arrow-icon">➔</span>
+              </a>
+            </div>
           </div>
-          <h3 class="card-title">{a['full_title']}</h3>
-          <p class="card-desc">{a['excerpt']}</p>
-          <div class="card-footer">
-            <span class="read-link">Ler artigo completo ➔</span>
-            <span class="meta-tag">⏱️ {a['read_time']} min</span>
-          </div>
-        </a>
+        </article>
         """
-
     html = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1340,6 +1379,149 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 22px;
     }}
+    /* Estilo Revista para os Artigos */
+    .magazine-card {{
+      display: flex;
+      flex-direction: column;
+      border-radius: 14px;
+      overflow: hidden;
+      padding: 0 !important;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }}
+    .magazine-card:hover {{
+      transform: translateY(-4px);
+      border-color: rgba(245, 158, 11, 0.45);
+      box-shadow: 0 16px 32px -10px rgba(0, 0, 0, 0.7);
+    }}
+    .magazine-cover-link {{
+      display: block;
+      overflow: hidden;
+      position: relative;
+    }}
+    .magazine-cover-wrap {{
+      position: relative;
+      width: 100%;
+      height: 190px;
+      background: #18181b;
+      overflow: hidden;
+    }}
+    .magazine-cover-img {{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }}
+    .magazine-card:hover .magazine-cover-img {{
+      transform: scale(1.05);
+    }}
+    .magazine-badge {{
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      backdrop-filter: blur(4px);
+      letter-spacing: 0.04em;
+    }}
+    .magazine-read-tag {{
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #e4e4e7;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid #27272a;
+      backdrop-filter: blur(4px);
+    }}
+    .magazine-body {{
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }}
+    .read-link-cta {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      transition: all 0.2s ease;
+    }}
+    .read-link-cta:hover {{
+      color: #fde047;
+      transform: translateX(4px);
+    }}
+    .read-link-cta .arrow-icon {{
+      font-size: 14px;
+      transition: transform 0.2s ease;
+    }}
+    .read-link-cta:hover .arrow-icon {{
+      transform: translateX(3px);
+    }}
+
+    /* Barra de Paginação da Revista */
+    .pagination-bar {{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 36px;
+      padding: 20px 0;
+      border-top: 1px solid var(--card-border);
+      flex-wrap: wrap;
+    }}
+    .page-btn {{
+      min-width: 40px;
+      height: 40px;
+      padding: 0 14px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }}
+    .page-btn:hover:not(:disabled) {{
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }}
+    .page-btn.active {{
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+      font-weight: 800;
+    }}
+    .page-btn:disabled {{
+      opacity: 0.35;
+      cursor: not-allowed;
+    }}
+    .page-info-tag {{
+      font-size: 13px;
+      color: var(--text-dim);
+      margin: 0 10px;
+    }}
+
     .article-card, .ebook-card, .course-card {{
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -1516,6 +1698,9 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
       <div class="cards-grid" id="articlesGrid">
         {article_cards_html}
       </div>
+
+      <!-- Barra de Paginação dos Artigos (10 por página) -->
+      <div id="articlesPagination" class="pagination-bar"></div>
     </section>
 
     <!-- Seção de E-books & Protocolos -->
@@ -1581,31 +1766,156 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
   {generate_footer_html()}
 
   <script>
-    // Filtro e Busca em Tempo Real
+    // Sistema de Paginação da Revista (10 artigos por página) & Filtro em Tempo Real
     const searchInput = document.getElementById('searchInput');
     const catPills = document.querySelectorAll('.cat-pill');
+    const paginationContainer = document.getElementById('articlesPagination');
     let currentCategory = 'Todas';
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 10;
 
-    function filterContent() {{
+    function renderPagination(totalItems) {{
+      if (!paginationContainer) return;
+      paginationContainer.innerHTML = '';
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+      if (totalPages <= 1) {{
+        paginationContainer.style.display = 'none';
+        return;
+      }}
+      paginationContainer.style.display = 'flex';
+
+      // Botão Anterior
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'page-btn';
+      prevBtn.innerHTML = '← Anterior';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => {{
+        if (currentPage > 1) {{
+          currentPage--;
+          updatePageDisplay();
+          scrollToArticles();
+        }}
+      }};
+      paginationContainer.appendChild(prevBtn);
+
+      // Botões numéricos inteligentes (Primeira, Ellipsis, Janela atual, Ellipsis, Última)
+      const maxButtons = 5;
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+      if (endPage - startPage < maxButtons - 1) {{
+        startPage = Math.max(1, endPage - maxButtons + 1);
+      }}
+
+      if (startPage > 1) {{
+        const firstBtn = document.createElement('button');
+        firstBtn.className = 'page-btn';
+        firstBtn.textContent = '1';
+        firstBtn.onclick = () => {{ currentPage = 1; updatePageDisplay(); scrollToArticles(); }};
+        paginationContainer.appendChild(firstBtn);
+        if (startPage > 2) {{
+          const dots = document.createElement('span');
+          dots.className = 'page-info-tag';
+          dots.textContent = '...';
+          paginationContainer.appendChild(dots);
+        }}
+      }}
+
+      for (let p = startPage; p <= endPage; p++) {{
+        const btn = document.createElement('button');
+        btn.className = `page-btn ${{p === currentPage ? 'active' : ''}}`;
+        btn.textContent = p;
+        btn.onclick = () => {{
+          currentPage = p;
+          updatePageDisplay();
+          scrollToArticles();
+        }};
+        paginationContainer.appendChild(btn);
+      }}
+
+      if (endPage < totalPages) {{
+        if (endPage < totalPages - 1) {{
+          const dots = document.createElement('span');
+          dots.className = 'page-info-tag';
+          dots.textContent = '...';
+          paginationContainer.appendChild(dots);
+        }}
+        const lastBtn = document.createElement('button');
+        lastBtn.className = 'page-btn';
+        lastBtn.textContent = totalPages;
+        lastBtn.onclick = () => {{ currentPage = totalPages; updatePageDisplay(); scrollToArticles(); }};
+        paginationContainer.appendChild(lastBtn);
+      }}
+
+      // Botão Próximo
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'page-btn';
+      nextBtn.innerHTML = 'Próxima →';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => {{
+        if (currentPage < totalPages) {{
+          currentPage++;
+          updatePageDisplay();
+          scrollToArticles();
+        }}
+      }};
+      paginationContainer.appendChild(nextBtn);
+
+      // Indicador de Página
+      const info = document.createElement('span');
+      info.className = 'page-info-tag';
+      info.textContent = `Página ${{currentPage}} de ${{totalPages}} (${{totalItems}} artigos)`;
+      paginationContainer.appendChild(info);
+    }}
+
+    function scrollToArticles() {{
+      const sec = document.getElementById('artigosSection');
+      if (sec) {{
+        const top = sec.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({{ top, behavior: 'smooth' }});
+      }}
+    }}
+
+    function getMatchingArticles() {{
       const query = searchInput.value.toLowerCase().trim();
-      const articleCards = document.querySelectorAll('.article-card');
-      const ebookCards = document.querySelectorAll('.ebook-card');
-
-      articleCards.forEach(card => {{
+      const articleCards = Array.from(document.querySelectorAll('.article-card'));
+      return articleCards.filter(card => {{
         const title = card.getAttribute('data-title') || '';
         const excerpt = card.getAttribute('data-excerpt') || '';
         const cat = card.getAttribute('data-category') || '';
         const matchesQuery = !query || title.includes(query) || excerpt.includes(query);
         const matchesCat = (currentCategory === 'Todas') || (cat === currentCategory);
+        return matchesQuery && matchesCat;
+      }});
+    }}
 
-        if (currentCategory === 'Ebooks' || currentCategory === 'Cursos' || currentCategory === 'Amazon') {{
-          card.style.display = 'none';
-        }} else {{
-          card.style.display = (matchesQuery && matchesCat) ? 'flex' : 'none';
-        }}
+    function updatePageDisplay() {{
+      const articleCards = Array.from(document.querySelectorAll('.article-card'));
+      if (currentCategory === 'Ebooks' || currentCategory === 'Cursos' || currentCategory === 'Amazon') {{
+        articleCards.forEach(c => c.style.display = 'none');
+        if (paginationContainer) paginationContainer.style.display = 'none';
+        return;
+      }}
+
+      const matching = getMatchingArticles();
+      const totalMatching = matching.length;
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+
+      articleCards.forEach(card => card.style.display = 'none');
+
+      matching.slice(startIndex, endIndex).forEach(card => {{
+        card.style.display = 'flex';
       }});
 
-      // Se categoria for Ebooks, rolar até ebooksSection
+      renderPagination(totalMatching);
+    }}
+
+    function filterContent() {{
+      currentPage = 1;
+      updatePageDisplay();
+
+      // Scroll para seções extras caso clicado
       if (currentCategory === 'Ebooks') {{
         document.getElementById('ebooksSection').scrollIntoView({{ behavior: 'smooth' }});
       }} else if (currentCategory === 'Cursos') {{
@@ -1615,16 +1925,10 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
       }}
     }}
 
-    searchInput.addEventListener('input', filterContent);
-
-    catPills.forEach(pill => {{
-      pill.addEventListener('click', function() {{
-        catPills.forEach(p => p.classList.remove('active'));
-        this.classList.add('active');
-        currentCategory = this.getAttribute('data-category');
-        filterContent();
-      }});
-    }});
+    // Inicializar na carga da página
+    setTimeout(() => {{
+      updatePageDisplay();
+    }}, 50);
 
     // Gerenciador de Download
     let pendingDownloadUrl = '';
@@ -1702,7 +2006,8 @@ def main():
             'date_full': meta['date_full'],
             'date_short': meta['date_short'],
             'read_time': meta['read_time'],
-            'excerpt': meta['excerpt']
+            'excerpt': meta['excerpt'],
+            'cover_image': meta.get('cover_image', '')
         })
 
     print(f"Artigos únicos após deduplicação: {len(articles)}")
