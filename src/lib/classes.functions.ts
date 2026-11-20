@@ -437,22 +437,6 @@ export async function broadcastCheckinNotification({
       }));
       await supabaseAdmin.from("pt_notifications" as any).insert(rows);
     }
-
-    // Disparo Serverless WhatsApp para o Celular do Treinador em tempo real
-    try {
-      const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
-      await sendTrainerWhatsAppAlert({
-        type: "checkin",
-        studentName: resolvedName,
-        className,
-        timeFormatted,
-        programName: progName,
-        date: session.session_date,
-        isBonus,
-      });
-    } catch (waErr) {
-      console.warn("[broadcastCheckinNotification:wa] Falha ao enviar WhatsApp:", waErr);
-    }
   } catch (err) {
     console.warn("[broadcastCheckinNotification] Falha ao processar notificação de check-in:", err);
   }

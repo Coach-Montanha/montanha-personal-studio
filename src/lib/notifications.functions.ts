@@ -115,25 +115,5 @@ export const notifyCoachWorkoutCompleted = createServerFn({ method: "POST" })
       }
     }
 
-    // 3. Disparo Serverless no Celular do Treinador via WhatsApp
-    try {
-      const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
-      await sendTrainerWhatsAppAlert({
-        type: "workout_completed",
-        studentName: data.studentName,
-        dayName: data.dayName,
-        className: data.dayName,
-        durationFormatted: data.durationFormatted,
-        loadsCount: data.loadsCount,
-        performedCount: data.performedCount,
-        feedback: data.feedback,
-        studentType: data.studentType,
-        timeFormatted: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-        date: new Date().toLocaleDateString("pt-BR"),
-      });
-    } catch (waErr) {
-      console.warn("[notifyCoachWorkoutCompleted] Falha ao enviar aviso WhatsApp para o celular:", waErr);
-    }
-
     return { success: true, notifiedCount: targetUserIds.length };
   });
