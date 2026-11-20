@@ -931,7 +931,15 @@ async function assertSessionOwner(supabase: any, userId: string, sessionId: stri
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!s) throw new Error("Sessão não encontrada");
-  if (s.user_id !== userId) throw new Error("Sem permissão");
+  if (s.user_id !== userId) {
+    const { data: role } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .in("role", ["super_admin", "admin"])
+      .maybeSingle();
+    if (!role) throw new Error("Sem permissão");
+  }
   return s as {
     id: string;
     user_id: string;
@@ -950,12 +958,9 @@ export const deleteClassSession = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertSessionOwner(supabase, userId, data.sessionId);
-    const { error } = await supabase
-      .from("class_sessions")
-      .delete()
-      .eq("id", data.sessionId)
-      .eq("user_id", userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const s = await assertSessionOwner(supabaseAdmin, userId, data.sessionId);
+    const { error } = await supabaseAdmin.from("class_sessions").delete().eq("id", data.sessionId);
     if (error) throw new Error(error.message);
     return { ok: true, deleted: 1 };
   });
@@ -969,22 +974,21 @@ export const deleteClassSessionsFrom = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const s = await assertSessionOwner(supabase, userId, data.sessionId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const s = await assertSessionOwner(supabaseAdmin, userId, data.sessionId);
     if (!s.class_id) {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("class_sessions")
         .delete()
-        .eq("id", s.id)
-        .eq("user_id", userId);
+        .eq("id", s.id);
       if (error) throw new Error(error.message);
       return { ok: true, deleted: 1 };
     }
     // Seleciona ids elegíveis: mesma turma, (data > esta) OR (data == esta AND hora >= esta)
-    const { data: futures, error: qErr } = await supabase
+    const { data: futures, error: qErr } = await supabaseAdmin
       .from("class_sessions")
       .select("id, session_date, start_time")
       .eq("class_id", s.class_id)
-      .eq("user_id", userId)
       .gte("session_date", s.session_date);
     if (qErr) throw new Error(qErr.message);
     const ids = (futures ?? [])
@@ -994,11 +998,10 @@ export const deleteClassSessionsFrom = createServerFn({ method: "POST" })
       )
       .map((r: any) => r.id as string);
     if (ids.length === 0) return { ok: true, deleted: 0 };
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("class_sessions")
       .delete()
-      .in("id", ids)
-      .eq("user_id", userId);
+      .in("id", ids);
     if (error) throw new Error(error.message);
     return { ok: true, deleted: ids.length };
   });
@@ -1012,16 +1015,32 @@ export const deleteClassAll = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: c, error: cErr } = await supabaseAdmin
+      .from("classes")
+      .select("id, user_id")
+      .eq("id", data.classId)
+      .maybeSingle();
+    if (cErr) throw new Error(cErr.message);
+    if (!c) throw new Error("Turma não encontrada");
+    if (c.user_id !== userId) {
+      const { data: role } = await supabaseAdmin
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .in("role", ["super_admin", "admin"])
+        .maybeSingle();
+      if (!role) throw new Error("Sem permissão");
+    }
+    const { error } = await supabaseAdmin
       .from("classes")
       .delete()
-      .eq("id", data.classId)
-      .eq("user_id", userId);
+      .eq("id", data.classId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
-/** Atualiza os campos editáveis de UMA sessão (override individual). */
+/** Atualiza os campos editáveis de UMA sessão (override individual e pontual de modalidade/nome/treinador). */
 export const updateClassSessionOverrides = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -1033,6 +1052,10 @@ export const updateClassSessionOverrides = createServerFn({ method: "POST" })
       capacity_override?: number | null;
       notes?: string | null;
       status?: string;
+      classId?: string | null;
+      programId?: string | null;
+      className?: string | null;
+      trainerName?: string | null;
     }) => {
       if (!input.sessionId) throw new Error("sessionId requerido");
       return input;
@@ -1040,7 +1063,10 @@ export const updateClassSessionOverrides = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertSessionOwner(supabase, userId, data.sessionId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const s = await assertSessionOwner(supabaseAdmin, userId, data.sessionId);
+    const studioUserId = s.user_id;
+
     const patch: any = {};
     if (data.session_date !== undefined) patch.session_date = data.session_date;
     if (data.start_time !== undefined) patch.start_time = data.start_time;
@@ -1048,14 +1074,81 @@ export const updateClassSessionOverrides = createServerFn({ method: "POST" })
     if (data.capacity_override !== undefined) patch.capacity_override = data.capacity_override;
     if (data.notes !== undefined) patch.notes = data.notes;
     if (data.status !== undefined) patch.status = data.status;
+
+    let targetClassId = data.classId;
+    if (!targetClassId && (data.programId !== undefined || data.className !== undefined || data.trainerName !== undefined)) {
+      const { data: currentClass } = await supabaseAdmin
+        .from("classes")
+        .select("id, name, trainer_name, program_id, capacity, duration_minutes, start_time")
+        .eq("id", s.class_id)
+        .maybeSingle();
+
+      const resolvedProgId = data.programId !== undefined ? data.programId : currentClass?.program_id;
+      const resolvedName = (data.className !== undefined && data.className?.trim()) ? data.className.trim() : (currentClass?.name || "Aula");
+      const resolvedTrainer = (data.trainerName !== undefined && data.trainerName?.trim()) ? data.trainerName.trim() : (currentClass?.trainer_name || null);
+
+      const isProgChanged = resolvedProgId !== currentClass?.program_id;
+      const isNameChanged = resolvedName !== currentClass?.name;
+      const isTrainerChanged = resolvedTrainer !== (currentClass?.trainer_name || null);
+
+      if (isProgChanged || isNameChanged || isTrainerChanged) {
+        let query = supabaseAdmin
+          .from("classes")
+          .select("id")
+          .eq("user_id", studioUserId)
+          .eq("name", resolvedName);
+
+        if (resolvedProgId) {
+          query = query.eq("program_id", resolvedProgId);
+        } else {
+          query = query.is("program_id", null);
+        }
+
+        if (resolvedTrainer) {
+          query = query.eq("trainer_name", resolvedTrainer);
+        }
+
+        const { data: matched } = await query.limit(1).maybeSingle();
+
+        if (matched) {
+          targetClassId = matched.id;
+        } else {
+          const { data: created, error: crErr } = await supabaseAdmin
+            .from("classes")
+            .insert({
+              user_id: studioUserId,
+              name: resolvedName,
+              program_id: resolvedProgId || null,
+              trainer_name: resolvedTrainer,
+              start_time: data.start_time || s.start_time || "07:00",
+              duration_minutes: data.duration_minutes || currentClass?.duration_minutes || 60,
+              capacity: data.capacity_override || currentClass?.capacity || 10,
+              is_active: true,
+              is_recurring: false,
+              days_of_week: [],
+            })
+            .select("id")
+            .single();
+
+          if (crErr) throw new Error(crErr.message);
+          targetClassId = created.id;
+        }
+      }
+    }
+
+    if (targetClassId) {
+      patch.class_id = targetClassId;
+    }
+
     if (Object.keys(patch).length === 0) return { ok: true };
-    const { error } = await supabase
+
+    const { error } = await supabaseAdmin
       .from("class_sessions")
       .update(patch)
-      .eq("id", data.sessionId)
-      .eq("user_id", userId);
+      .eq("id", data.sessionId);
+
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: true, classId: targetClassId };
   });
 
 /** Aplica overrides à sessão atual e a todas as futuras da mesma turma. */
@@ -1068,6 +1161,10 @@ export const updateClassSessionsFromOverrides = createServerFn({ method: "POST" 
       duration_minutes?: number;
       capacity_override?: number | null;
       notes?: string | null;
+      classId?: string | null;
+      programId?: string | null;
+      className?: string | null;
+      trainerName?: string | null;
     }) => {
       if (!input.sessionId) throw new Error("sessionId requerido");
       return input;
@@ -1075,29 +1172,98 @@ export const updateClassSessionsFromOverrides = createServerFn({ method: "POST" 
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const s = await assertSessionOwner(supabase, userId, data.sessionId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const s = await assertSessionOwner(supabaseAdmin, userId, data.sessionId);
+    const studioUserId = s.user_id;
+
     const patch: any = {};
     if (data.start_time !== undefined) patch.start_time = data.start_time;
     if (data.duration_minutes !== undefined) patch.duration_minutes = data.duration_minutes;
     if (data.capacity_override !== undefined) patch.capacity_override = data.capacity_override;
     if (data.notes !== undefined) patch.notes = data.notes;
+
+    let targetClassId = data.classId;
+    if (!targetClassId && (data.programId !== undefined || data.className !== undefined || data.trainerName !== undefined)) {
+      const { data: currentClass } = await supabaseAdmin
+        .from("classes")
+        .select("id, name, trainer_name, program_id, capacity, duration_minutes, start_time")
+        .eq("id", s.class_id)
+        .maybeSingle();
+
+      const resolvedProgId = data.programId !== undefined ? data.programId : currentClass?.program_id;
+      const resolvedName = (data.className !== undefined && data.className?.trim()) ? data.className.trim() : (currentClass?.name || "Aula");
+      const resolvedTrainer = (data.trainerName !== undefined && data.trainerName?.trim()) ? data.trainerName.trim() : (currentClass?.trainer_name || null);
+
+      const isProgChanged = resolvedProgId !== currentClass?.program_id;
+      const isNameChanged = resolvedName !== currentClass?.name;
+      const isTrainerChanged = resolvedTrainer !== (currentClass?.trainer_name || null);
+
+      if (isProgChanged || isNameChanged || isTrainerChanged) {
+        let query = supabaseAdmin
+          .from("classes")
+          .select("id")
+          .eq("user_id", studioUserId)
+          .eq("name", resolvedName);
+
+        if (resolvedProgId) {
+          query = query.eq("program_id", resolvedProgId);
+        } else {
+          query = query.is("program_id", null);
+        }
+
+        if (resolvedTrainer) {
+          query = query.eq("trainer_name", resolvedTrainer);
+        }
+
+        const { data: matched } = await query.limit(1).maybeSingle();
+
+        if (matched) {
+          targetClassId = matched.id;
+        } else {
+          const { data: created, error: crErr } = await supabaseAdmin
+            .from("classes")
+            .insert({
+              user_id: studioUserId,
+              name: resolvedName,
+              program_id: resolvedProgId || null,
+              trainer_name: resolvedTrainer,
+              start_time: data.start_time || s.start_time || "07:00",
+              duration_minutes: data.duration_minutes || currentClass?.duration_minutes || 60,
+              capacity: data.capacity_override || currentClass?.capacity || 10,
+              is_active: true,
+              is_recurring: false,
+              days_of_week: [],
+            })
+            .select("id")
+            .single();
+
+          if (crErr) throw new Error(crErr.message);
+          targetClassId = created.id;
+        }
+      }
+    }
+
+    if (targetClassId) {
+      patch.class_id = targetClassId;
+    }
+
     if (Object.keys(patch).length === 0) return { ok: true, updated: 0 };
 
     if (!s.class_id) {
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from("class_sessions")
         .update(patch)
-        .eq("id", s.id)
-        .eq("user_id", userId);
+        .eq("id", s.id);
       if (error) throw new Error(error.message);
       return { ok: true, updated: 1 };
     }
-    const { data: futures, error: qErr } = await supabase
+
+    const { data: futures, error: qErr } = await supabaseAdmin
       .from("class_sessions")
       .select("id, session_date, start_time")
       .eq("class_id", s.class_id)
-      .eq("user_id", userId)
       .gte("session_date", s.session_date);
+
     if (qErr) throw new Error(qErr.message);
     const ids = (futures ?? [])
       .filter((r: any) =>
@@ -1105,12 +1271,14 @@ export const updateClassSessionsFromOverrides = createServerFn({ method: "POST" 
         (r.session_date === s.session_date && String(r.start_time) >= String(s.start_time)),
       )
       .map((r: any) => r.id as string);
+
     if (ids.length === 0) return { ok: true, updated: 0 };
-    const { error } = await supabase
+
+    const { error } = await supabaseAdmin
       .from("class_sessions")
       .update(patch)
-      .in("id", ids)
-      .eq("user_id", userId);
+      .in("id", ids);
+
     if (error) throw new Error(error.message);
-    return { ok: true, updated: ids.length };
+    return { ok: true, updated: ids.length, classId: targetClassId };
   });

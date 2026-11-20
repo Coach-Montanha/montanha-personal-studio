@@ -709,6 +709,18 @@ function SessionOverrideDialog({
 }) {
   const updOne = useServerFn(updateClassSessionOverrides);
   const updFrom = useServerFn(updateClassSessionsFromOverrides);
+
+  const { data: programs = [] } = useQuery({
+    queryKey: ["programs-lookup"],
+    queryFn: async () => {
+      const { data } = await supabase.from("programs").select("id,name,color").order("name");
+      return (data ?? []) as { id: string; name: string; color: string | null }[];
+    },
+  });
+
+  const [programId, setProgramId] = useState<string>(session.program_id ?? "none");
+  const [className, setClassName] = useState<string>(session.class_name ?? "");
+  const [trainerName, setTrainerName] = useState<string>(session.trainer_name ?? "Coach Montanha");
   const [date, setDate] = useState(session.session_date);
   const [time, setTime] = useState(String(session.start_time).slice(0, 5));
   const [duration, setDuration] = useState(session.duration_minutes);
@@ -717,8 +729,18 @@ function SessionOverrideDialog({
   const [scope, setScope] = useState<"one" | "from">("one");
   const [saving, setSaving] = useState(false);
 
-  // SessionDetails desmonta ao fechar o sheet, então o estado local
-  // já reinicializa para a próxima sessão selecionada.
+  function onProgramChange(val: string) {
+    setProgramId(val);
+    if (val !== "none") {
+      const prog = programs.find((p) => p.id === val);
+      if (prog) {
+        const oldProg = programs.find((p) => p.id === programId);
+        if (!className || className === oldProg?.name || className.startsWith(oldProg?.name || "___")) {
+          setClassName(prog.name);
+        }
+      }
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -727,30 +749,31 @@ function SessionOverrideDialog({
         cap === "" ? null : Number(cap) === session.capacity && session.capacity_override === null
           ? null
           : Number(cap);
+
+      const payload = {
+        sessionId: session.id,
+        start_time: `${time}:00`,
+        duration_minutes: Number(duration),
+        capacity_override: capOverride,
+        notes: notes.trim() ? notes.trim() : null,
+        programId: programId !== "none" ? programId : null,
+        className: className.trim() || null,
+        trainerName: trainerName.trim() || null,
+      };
+
       if (scope === "one") {
         await updOne({
           data: {
-            sessionId: session.id,
+            ...payload,
             session_date: date,
-            start_time: `${time}:00`,
-            duration_minutes: Number(duration),
-            capacity_override: capOverride,
-            notes: notes.trim() ? notes.trim() : null,
           },
         });
       } else {
-        // "from" não muda a data (evita colisão em série); só horário/duração/capacidade/notas
         await updFrom({
-          data: {
-            sessionId: session.id,
-            start_time: `${time}:00`,
-            duration_minutes: Number(duration),
-            capacity_override: capOverride,
-            notes: notes.trim() ? notes.trim() : null,
-          },
+          data: payload,
         });
       }
-      toast.success("Alterações salvas");
+      toast.success("Alterações salvas com sucesso!");
       onSaved();
       onOpenChange(false);
     } catch (e: any) {
@@ -762,14 +785,61 @@ function SessionOverrideDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[92vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar sessão</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="space-y-3.5 text-sm">
+          {/* Modalidade (Programa) */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Modalidade (Programa)</Label>
+            <Select value={programId} onValueChange={onProgramChange}>
+              <SelectTrigger className="h-11 sm:h-10 w-full">
+                <SelectValue placeholder="Selecione a modalidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhuma modalidade específica</SelectItem>
+                {programs.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: p.color || "#888" }}
+                      />
+                      <span>{p.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Nome da Aula & Treinador */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Nome da Aula / Turma</Label>
+              <Input
+                value={className}
+                onChange={(e) => setClassName(e.target.value)}
+                placeholder="Ex: Kettlebell Fitness"
+                className="h-11 sm:h-10"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Treinador</Label>
+              <Input
+                value={trainerName}
+                onChange={(e) => setTrainerName(e.target.value)}
+                placeholder="Ex: Coach Montanha"
+                className="h-11 sm:h-10"
+              />
+            </div>
+          </div>
+
+          {/* Data & Horário */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Data</Label>
+              <Label className="text-xs font-semibold">Data</Label>
               <Input
                 type="date"
                 value={date}
@@ -779,7 +849,7 @@ function SessionOverrideDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Horário</Label>
+              <Label className="text-xs font-semibold">Horário</Label>
               <Input
                 type="time"
                 value={time}
@@ -788,7 +858,7 @@ function SessionOverrideDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Duração (min)</Label>
+              <Label className="text-xs font-semibold">Duração (min)</Label>
               <Input
                 type="number"
                 value={duration}
@@ -797,7 +867,7 @@ function SessionOverrideDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Capacidade</Label>
+              <Label className="text-xs font-semibold">Capacidade (vagas)</Label>
               <Input
                 type="number"
                 value={cap}
@@ -806,32 +876,45 @@ function SessionOverrideDialog({
               />
             </div>
           </div>
+
+          {/* Notas da Sessão */}
           <div className="space-y-1.5">
-            <Label>Notas desta sessão</Label>
-            <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Label className="text-xs font-semibold">Notas desta sessão</Label>
+            <Textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Ex: Trazer toalha extra, treino focado em agachamento e swing..."
+            />
           </div>
-          <div className="space-y-2 rounded-md border p-3">
-            <div className="text-overline text-muted-foreground">Aplicar em</div>
-            <RadioGroup value={scope} onValueChange={(v) => setScope(v as any)} className="space-y-1.5">
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+
+          {/* Escopo de Aplicação */}
+          <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Aplicar Alterações em
+            </div>
+            <RadioGroup value={scope} onValueChange={(v) => setScope(v as any)} className="space-y-2">
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm font-medium">
                 <RadioGroupItem value="one" id="edit-one" />
-                Somente esta sessão
+                <span>Somente esta sessão ({date.split("-").reverse().join("/")} às {time})</span>
               </label>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm font-medium">
                 <RadioGroupItem value="from" id="edit-from" />
-                Esta e as seguintes (mantém a data de cada uma)
+                <span>Esta e as seguintes (mantém a data de cada uma)</span>
               </label>
             </RadioGroup>
-            <p className="text-xs text-muted-foreground">
-              Para alterar nome, treinador, programa ou dias da semana da turma,
-              use “Editar turma (modelo)”. As sessões já geradas permanecem
-              independentes.
+            <p className="text-[11px] leading-relaxed text-muted-foreground pt-1">
+              💡 <strong>Ajuste pontual:</strong> Você pode alterar a modalidade, nome ou treinador para apenas um dia específico sem mexer na grade semanal recorrente das outras semanas.
             </p>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancelar</Button>
-          <Button onClick={save} disabled={saving}>Salvar</Button>
+        <DialogFooter className="gap-2 sm:gap-0 pt-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
+            Cancelar
+          </Button>
+          <Button onClick={save} disabled={saving} className="bg-primary text-primary-foreground">
+            {saving ? "Salvando..." : "Salvar Alterações"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
