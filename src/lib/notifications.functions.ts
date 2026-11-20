@@ -56,7 +56,7 @@ export const clearAllNotificationsFn = createServerFn({ method: "POST" })
 
 export const notifyCoachWorkoutCompleted = createServerFn({ method: "POST" })
   .validator((input: {
-    coachUserId: string;
+    coachUserId?: string | null;
     studentId: string;
     studentName: string;
     dayName: string;
@@ -69,9 +69,16 @@ export const notifyCoachWorkoutCompleted = createServerFn({ method: "POST" })
     studentType?: "studio" | "pt";
   }) => input)
   .handler(async ({ data }) => {
-    if (!data.coachUserId) return { success: false, reason: "No coachUserId provided" };
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Coleta destinatários da gestão (coachUserId + todos os super_admins e admins)
+    const { data: adminRoles } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .in("role", ["super_admin", "admin"]);
+
+    const adminIds = (adminRoles ?? []).map((r: any) => r.user_id as string);
+    const targetUserIds = Array.from(new Set([data.coachUserId, ...adminIds])).filter(Boolean) as string[];
 
     const isStudio = data.studentType === "studio";
     const title = isStudio
@@ -81,29 +88,52 @@ export const notifyCoachWorkoutCompleted = createServerFn({ method: "POST" })
     const originText = isStudio ? " [Aluno Studio]" : "";
     const message = `Treino "${data.dayName}" concluído em ${data.durationFormatted} (${data.performedCount} exerc., ${data.loadsCount} cargas)${originText}${feedbackText}`;
 
-    const { error } = await supabaseAdmin.from("pt_notifications").insert({
-      user_id: data.coachUserId,
-      title,
-      message,
-      type: "training_complete",
-      metadata: {
-        student_id: data.studentId,
-        student_name: data.studentName,
-        student_type: data.studentType || "pt",
-        day_name: data.dayName,
-        execution_id: data.executionId,
-        duration_seconds: data.durationSeconds,
-        duration_formatted: data.durationFormatted,
-        loads_count: data.loadsCount,
-        feedback: data.feedback || null,
-        performed_count: data.performedCount,
-      },
-    });
+    // 2. Grava em pt_notifications para TODOS os administradores e treinadores
+    if (targetUserIds.length > 0) {
+      const rows = targetUserIds.map((userId) => ({
+        user_id: userId,
+        title,
+        message,
+        type: "training_complete",
+        metadata: {
+          student_id: data.studentId,
+          student_name: data.studentName,
+          student_type: data.studentType || "pt",
+          day_name: data.dayName,
+          execution_id: data.executionId,
+          duration_seconds: data.durationSeconds,
+          duration_formatted: data.durationFormatted,
+          loads_count: data.loadsCount,
+          feedback: data.feedback || null,
+          performed_count: data.performedCount,
+        },
+      }));
 
-    if (error) {
-      console.error("[notifyCoachWorkoutCompleted] Erro ao gravar notificação:", error);
-      throw new Error(error.message);
+      const { error } = await supabaseAdmin.from("pt_notifications").insert(rows);
+      if (error) {
+        console.error("[notifyCoachWorkoutCompleted] Erro ao gravar notificação no sininho:", error);
+      }
     }
 
-    return { success: true };
+    // 3. Disparo Serverless no Celular do Treinador via WhatsApp
+    try {
+      const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
+      await sendTrainerWhatsAppAlert({
+        type: "workout_completed",
+        studentName: data.studentName,
+        dayName: data.dayName,
+        className: data.dayName,
+        durationFormatted: data.durationFormatted,
+        loadsCount: data.loadsCount,
+        performedCount: data.performedCount,
+        feedback: data.feedback,
+        studentType: data.studentType,
+        timeFormatted: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        date: new Date().toLocaleDateString("pt-BR"),
+      });
+    } catch (waErr) {
+      console.warn("[notifyCoachWorkoutCompleted] Falha ao enviar aviso WhatsApp para o celular:", waErr);
+    }
+
+    return { success: true, notifiedCount: targetUserIds.length };
   });

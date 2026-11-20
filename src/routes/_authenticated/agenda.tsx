@@ -31,6 +31,7 @@ import {
   deleteClassAll,
   updateClassSessionOverrides,
   updateClassSessionsFromOverrides,
+  notifyManualCheckIn,
   type AgendaSession,
 } from "@/lib/classes.functions";
 import {
@@ -448,6 +449,19 @@ function SessionDetails({
     if (error) return toast.error(error.message);
     toast.success("Check-in adicionado");
     qc.invalidateQueries();
+
+    // Dispara notificação no sininho e WhatsApp para todos os administradores
+    try {
+      await notifyManualCheckIn({
+        data: {
+          sessionId: session.id,
+          studentId,
+          origin: "agenda",
+        },
+      });
+    } catch (notifErr) {
+      console.warn("[addCheckin] Aviso ao emitir notificação de check-in:", notifErr);
+    }
   }
 
   const when = new Date(`${session.session_date}T${session.start_time}`);

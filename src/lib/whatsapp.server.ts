@@ -15,15 +15,21 @@ export function sanitizeWhatsAppNumber(phone: string): string {
 }
 
 export type WhatsAppAlertPayload = {
-  type: "checkin" | "pre_class_20m" | "pre_class_19m30s";
+  type: "checkin" | "pre_class_20m" | "pre_class_19m30s" | "workout_completed";
   studentName?: string;
-  className: string;
-  timeFormatted: string;
+  className?: string;
+  timeFormatted?: string;
   programName?: string;
   date?: string;
   isBonus?: boolean;
   attendees?: string[];
   trainerPhone?: string;
+  dayName?: string;
+  durationFormatted?: string;
+  loadsCount?: number;
+  performedCount?: number;
+  feedback?: string | null;
+  studentType?: "studio" | "pt";
 };
 
 export async function sendTrainerWhatsAppAlert(payload: WhatsAppAlertPayload) {
@@ -65,6 +71,24 @@ export async function sendTrainerWhatsAppAlert(payload: WhatsAppAlertPayload) {
       "━━━━━━━━━━━━━━━━━━",
       "📋 _Prepare a sala e os equipamentos necessários._",
     ].join("\n");
+  } else if (payload.type === "workout_completed") {
+    const originLabel = payload.studentType === "studio" ? "Studio (Planilha)" : "Personal Trainer";
+    const routineName = payload.dayName || payload.className || "Treino Concluído";
+    messageText = [
+      "🏋️ *TREINO FINALIZADO NO APP!*",
+      "━━━━━━━━━━━━━━━━━━",
+      `👤 *Aluno:* ${payload.studentName || "Aluno"} (${originLabel})`,
+      `📋 *Rotina:* ${routineName}`,
+      `⏱️ *Duração:* ${payload.durationFormatted || "Concluído"}`,
+      payload.performedCount !== undefined ? `💪 *Exercícios feitos:* ${payload.performedCount}` : null,
+      payload.loadsCount !== undefined && payload.loadsCount > 0 ? `⚖️ *Cargas anotadas:* ${payload.loadsCount}` : null,
+      payload.feedback ? `💬 *Feedback do aluno:* "${payload.feedback}"` : null,
+      payload.date ? `📅 *Data:* ${payload.date}` : null,
+      "━━━━━━━━━━━━━━━━━━",
+      "⚡ _Aviso em tempo real do Montanha Personal Studio_",
+    ]
+      .filter(Boolean)
+      .join("\n");
   }
 
   // 1. Log interno no console do servidor

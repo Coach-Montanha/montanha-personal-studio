@@ -366,6 +366,99 @@ export const getSessionAttendees = createServerFn({ method: "POST" })
   });
 
 // ------------------------------------------------------------------
+// Broadcast Check-in Notification to all admins & trainers + WhatsApp
+// ------------------------------------------------------------------
+
+export async function broadcastCheckinNotification({
+  supabaseAdmin,
+  sessionId,
+  studentId,
+  studentName,
+  isBonus = false,
+  origin = "portal",
+}: {
+  supabaseAdmin: any;
+  sessionId: string;
+  studentId: string;
+  studentName?: string;
+  isBonus?: boolean;
+  origin?: "portal" | "agenda" | "quick";
+}) {
+  try {
+    const session = await loadSessionContext(supabaseAdmin, sessionId);
+    const className = session.classes?.name || "Aula";
+    const progName = session.classes?.programs?.name;
+    const timeFormatted = session.start_time ? String(session.start_time).slice(0, 5) : "";
+
+    let resolvedName = studentName;
+    let studentUserId: string | null = null;
+    if (!resolvedName) {
+      const { data: stu } = await supabaseAdmin
+        .from("students")
+        .select("name, user_id")
+        .eq("id", studentId)
+        .maybeSingle();
+      resolvedName = stu?.name || "Aluno";
+      studentUserId = stu?.user_id || null;
+    }
+
+    const title = isBonus ? "🔔 Novo check-in realizado (Bônus)!" : "🔔 Novo check-in realizado!";
+    const originSuffix = origin === "agenda" ? " [Adicionado na Agenda]" : origin === "quick" ? " [Check-in Rápido]" : "";
+    const bonusText = isBonus ? " usando bônus" : "";
+    const message = `${resolvedName} confirmou presença na turma "${className}" às ${timeFormatted}${progName ? ` (${progName})` : ""}${bonusText}.${originSuffix}`;
+
+    // Coleta TODOS os administradores e super_admins para tocar o sininho de aviso
+    const { data: adminRoles } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .in("role", ["super_admin", "admin"]);
+
+    const adminIds = (adminRoles ?? []).map((r: any) => r.user_id as string);
+    const targetUserIds = Array.from(
+      new Set([session.user_id, studentUserId, ...adminIds])
+    ).filter(Boolean) as string[];
+
+    if (targetUserIds.length > 0) {
+      const rows = targetUserIds.map((uid) => ({
+        user_id: uid,
+        title,
+        message,
+        type: "checkin",
+        metadata: {
+          session_id: session.id,
+          student_id: studentId,
+          student_name: resolvedName,
+          class_name: className,
+          start_time: session.start_time,
+          session_date: session.session_date,
+          is_bonus: Boolean(isBonus),
+          origin,
+        },
+      }));
+      await supabaseAdmin.from("pt_notifications" as any).insert(rows);
+    }
+
+    // Disparo Serverless WhatsApp para o Celular do Treinador em tempo real
+    try {
+      const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
+      await sendTrainerWhatsAppAlert({
+        type: "checkin",
+        studentName: resolvedName,
+        className,
+        timeFormatted,
+        programName: progName,
+        date: session.session_date,
+        isBonus,
+      });
+    } catch (waErr) {
+      console.warn("[broadcastCheckinNotification:wa] Falha ao enviar WhatsApp:", waErr);
+    }
+  } catch (err) {
+    console.warn("[broadcastCheckinNotification] Falha ao processar notificação de check-in:", err);
+  }
+}
+
+// ------------------------------------------------------------------
 // Student check-in / cancel
 // ------------------------------------------------------------------
 
@@ -380,11 +473,36 @@ export const studentCheckIn = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: stu } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1. Busca aluno com tolerância e auto-vínculo de account_user_id por email se necessário
+    let stu: any = null;
+    const { data: stuByAccount } = await supabaseAdmin
       .from("students")
-      .select("id, user_id, bonus_checkins_balance, name")
+      .select("id, user_id, bonus_checkins_balance, name, email, account_user_id")
       .eq("account_user_id", userId)
       .maybeSingle();
+
+    if (stuByAccount) {
+      stu = stuByAccount;
+    } else {
+      const { data: userAuth } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const email = userAuth?.user?.email;
+      if (email) {
+        const { data: stuByEmail } = await supabaseAdmin
+          .from("students")
+          .select("id, user_id, bonus_checkins_balance, name, email, account_user_id")
+          .ilike("email", email.trim())
+          .maybeSingle();
+        if (stuByEmail) {
+          stu = stuByEmail;
+          if (stuByEmail.account_user_id !== userId) {
+            await supabaseAdmin.from("students").update({ account_user_id: userId }).eq("id", stuByEmail.id);
+          }
+        }
+      }
+    }
+
     if (!stu) throw new Error("Perfil de aluno não encontrado");
 
     // Rota 1: Agendamento Atômico com Check-in Bônus (RPC book_class_with_bonus com fallback resiliente)
@@ -395,47 +513,14 @@ export const studentCheckIn = createServerFn({ method: "POST" })
       });
 
       if (!rpcErr) {
-        try {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const session = await loadSessionContext(supabaseAdmin, data.sessionId);
-          const className = session.classes?.name || "Aula";
-          const progName = session.classes?.programs?.name;
-          const timeFormatted = session.start_time ? String(session.start_time).slice(0, 5) : "";
-          const studentName = stu.name || "Aluno";
-          await supabaseAdmin.from("pt_notifications" as any).insert({
-            user_id: session.user_id,
-            title: "Novo check-in realizado (Bônus)!",
-            message: `${studentName} confirmou presença na turma "${className}" às ${timeFormatted}${progName ? ` (${progName})` : ""} usando bônus.`,
-            type: "checkin",
-            metadata: {
-              session_id: session.id,
-              student_id: stu.id,
-              student_name: studentName,
-              class_name: className,
-              start_time: session.start_time,
-              session_date: session.session_date,
-              is_bonus: true,
-            },
-          });
-
-          // Disparo Serverless WhatsApp para o Treinador
-          try {
-            const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
-            await sendTrainerWhatsAppAlert({
-              type: "checkin",
-              studentName,
-              className,
-              timeFormatted,
-              programName: progName,
-              date: session.session_date,
-              isBonus: true,
-            });
-          } catch (waErr) {
-            console.warn("[studentCheckIn:bonusRpc:wa] Falha ao enviar WhatsApp:", waErr);
-          }
-        } catch (notifErr) {
-          console.warn("[studentCheckIn:bonusRpc] Falha ao registrar notificação:", notifErr);
-        }
+        await broadcastCheckinNotification({
+          supabaseAdmin,
+          sessionId: data.sessionId,
+          studentId: stu.id,
+          studentName: stu.name,
+          isBonus: true,
+          origin: "portal",
+        });
 
         return {
           ok: true,
@@ -537,45 +622,14 @@ export const studentCheckIn = createServerFn({ method: "POST" })
         .select("id")
         .maybeSingle();
 
-      try {
-        const className = session.classes?.name || "Aula";
-        const progName = session.classes?.programs?.name;
-        const timeFormatted = session.start_time ? String(session.start_time).slice(0, 5) : "";
-        const studentName = freshStu.name || stu.name || "Aluno";
-        await supabaseAdmin.from("pt_notifications" as any).insert({
-          user_id: session.user_id,
-          title: "Novo check-in realizado (Bônus)!",
-          message: `${studentName} confirmou presença na turma "${className}" às ${timeFormatted}${progName ? ` (${progName})` : ""} usando bônus.`,
-          type: "checkin",
-          metadata: {
-            session_id: session.id,
-            student_id: freshStu.id,
-            student_name: studentName,
-            class_name: className,
-            start_time: session.start_time,
-            session_date: session.session_date,
-            is_bonus: true,
-          },
-        });
-
-        // Disparo Serverless WhatsApp para o Treinador
-        try {
-          const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
-          await sendTrainerWhatsAppAlert({
-            type: "checkin",
-            studentName,
-            className,
-            timeFormatted,
-            programName: progName,
-            date: session.session_date,
-            isBonus: true,
-          });
-        } catch (waErr) {
-          console.warn("[studentCheckIn:bonusFallback:wa] Falha ao enviar WhatsApp:", waErr);
-        }
-      } catch (notifErr) {
-        console.warn("[studentCheckIn:bonusFallback] Falha ao registrar notificação:", notifErr);
-      }
+      await broadcastCheckinNotification({
+        supabaseAdmin,
+        sessionId: session.id,
+        studentId: freshStu.id,
+        studentName: freshStu.name || stu.name,
+        isBonus: true,
+        origin: "portal",
+      });
 
       return {
         ok: true,
@@ -587,8 +641,18 @@ export const studentCheckIn = createServerFn({ method: "POST" })
     }
 
     // Rota 2: Agendamento Regular com Cota de Plano Ativo
-    const session = await loadSessionContext(supabase, data.sessionId);
-    if (session.user_id !== stu.user_id) throw new Error("Sessão não pertence ao seu studio");
+    const session = await loadSessionContext(supabaseAdmin, data.sessionId);
+    if (session.user_id !== stu.user_id) {
+      // Checa se ambos são administradores do sistema via user_roles
+      const { data: roles } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", [session.user_id, stu.user_id]);
+      const hasAdmin = (roles ?? []).some((r: any) => r.role === "admin" || r.role === "super_admin");
+      if (!hasAdmin) {
+        throw new Error("Sessão não pertence ao seu studio");
+      }
+    }
     if (!session.class_id) throw new Error("Sessão sem turma associada");
 
     // Access is derived from the student's current plan and its program restrictions
@@ -665,8 +729,8 @@ export const studentCheckIn = createServerFn({ method: "POST" })
       }
     }
 
-    const { error: insErr } = await supabase.from("class_attendance").insert({
-      user_id: stu.user_id,
+    const { error: insErr } = await supabaseAdmin.from("class_attendance").insert({
+      user_id: session.user_id,
       session_id: session.id,
       student_id: stu.id,
       status: "present",
@@ -674,48 +738,100 @@ export const studentCheckIn = createServerFn({ method: "POST" })
     });
     if (insErr) throw new Error(insErr.message);
 
-    try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const className = session.classes?.name || "Aula";
-      const progName = session.classes?.programs?.name;
-      const timeFormatted = session.start_time ? String(session.start_time).slice(0, 5) : "";
-      const studentName = stu.name || "Aluno";
-      await supabaseAdmin.from("pt_notifications" as any).insert({
-        user_id: session.user_id,
-        title: "Novo check-in realizado!",
-        message: `${studentName} confirmou presença na turma "${className}" às ${timeFormatted}${progName ? ` (${progName})` : ""}.`,
-        type: "checkin",
-        metadata: {
-          session_id: session.id,
-          student_id: stu.id,
-          student_name: studentName,
-          class_name: className,
-          start_time: session.start_time,
-          session_date: session.session_date,
-          is_bonus: false,
-        },
-      });
-
-      // Disparo Serverless WhatsApp para o Treinador
-      try {
-        const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
-        await sendTrainerWhatsAppAlert({
-          type: "checkin",
-          studentName,
-          className,
-          timeFormatted,
-          programName: progName,
-          date: session.session_date,
-          isBonus: false,
-        });
-      } catch (waErr) {
-        console.warn("[studentCheckIn:regular:wa] Falha ao enviar WhatsApp:", waErr);
-      }
-    } catch (notifErr) {
-      console.warn("[studentCheckIn:regular] Falha ao registrar notificação:", notifErr);
-    }
+    await broadcastCheckinNotification({
+      supabaseAdmin,
+      sessionId: session.id,
+      studentId: stu.id,
+      studentName: stu.name,
+      isBonus: false,
+      origin: "portal",
+    });
 
     return { ok: true, isBonus: false };
+  });
+
+export const notifyManualCheckIn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      sessionId: string;
+      studentId: string;
+      studentName?: string;
+      isBonus?: boolean;
+      origin?: "agenda" | "quick";
+    }) => input
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await broadcastCheckinNotification({
+      supabaseAdmin,
+      sessionId: data.sessionId,
+      studentId: data.studentId,
+      studentName: data.studentName,
+      isBonus: data.isBonus,
+      origin: data.origin || "agenda",
+    });
+    return { success: true };
+  });
+
+export const notifyPtCheckIn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      studentId: string;
+      studentName: string;
+      time: string;
+      duration: number;
+      date?: string;
+    }) => input
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: adminRoles } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .in("role", ["super_admin", "admin"]);
+
+    const adminIds = (adminRoles ?? []).map((r: any) => r.user_id as string);
+    const targetUserIds = Array.from(new Set([context.userId, ...adminIds])).filter(Boolean) as string[];
+
+    const title = "⚡ Check-in Rápido PT realizado!";
+    const message = `${data.studentName} realizou check-in de treino (${data.duration} min) às ${data.time}.`;
+
+    if (targetUserIds.length > 0) {
+      const rows = targetUserIds.map((uid) => ({
+        user_id: uid,
+        title,
+        message,
+        type: "checkin",
+        metadata: {
+          student_id: data.studentId,
+          student_name: data.studentName,
+          duration: data.duration,
+          time: data.time,
+          date: data.date || new Date().toISOString().slice(0, 10),
+          is_pt: true,
+        },
+      }));
+      await supabaseAdmin.from("pt_notifications" as any).insert(rows);
+    }
+
+    // Disparo WhatsApp
+    try {
+      const { sendTrainerWhatsAppAlert } = await import("@/lib/whatsapp.server");
+      await sendTrainerWhatsAppAlert({
+        type: "checkin",
+        studentName: data.studentName,
+        className: "Personal Trainer",
+        timeFormatted: data.time,
+        date: data.date,
+        isBonus: false,
+      });
+    } catch (waErr) {
+      console.warn("[notifyPtCheckIn:wa] Falha ao enviar WhatsApp:", waErr);
+    }
+
+    return { success: true };
   });
 
 export const studentCancelCheckIn = createServerFn({ method: "POST" })

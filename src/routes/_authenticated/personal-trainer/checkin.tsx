@@ -28,6 +28,7 @@ import { useScopeFilter } from "@/hooks/use-scope-filter";
 import { parseStudentPartner } from "@/lib/pt-duo";
 import { matchesSearchTerms } from "@/lib/search-utils";
 import { buildCheckinWhatsAppMessage } from "@/lib/pt-messages";
+import { notifyPtCheckIn } from "@/lib/classes.functions";
 
 
 export const Route = createFileRoute("/_authenticated/personal-trainer/checkin")({
@@ -436,6 +437,21 @@ function CheckinPage() {
       }
 
       promptGoogleCalendar(student.name);
+
+      // Dispara notificação no sininho e WhatsApp para todos os administradores
+      try {
+        await notifyPtCheckIn({
+          data: {
+            studentId: student.id,
+            studentName: student.name,
+            time: sessionTime,
+            duration: Number(duration),
+            date: today,
+          },
+        });
+      } catch (notifErr) {
+        console.warn("[executeSingleCheckin] Aviso ao emitir notificação PT:", notifErr);
+      }
     } catch (err: any) {
       toast.error(`Erro: ${err.message}`);
     } finally {
@@ -542,6 +558,21 @@ function CheckinPage() {
       }
 
       promptGoogleCalendar(`${student.name} e ${partner.name}`);
+
+      // Dispara notificação no sininho e WhatsApp para todos os administradores
+      try {
+        await notifyPtCheckIn({
+          data: {
+            studentId: payingStudent.id,
+            studentName: `${student.name} & ${partner.name} (Dupla)`,
+            time: sessionTime,
+            duration: Number(duration),
+            date: today,
+          },
+        });
+      } catch (notifErr) {
+        console.warn("[executeDuoJointCheckin] Aviso ao emitir notificação PT:", notifErr);
+      }
     } catch (err: any) {
       toast.error(`Erro no check-in em dupla: ${err.message}`);
     } finally {

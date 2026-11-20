@@ -490,25 +490,26 @@ export function FocusedDayView({
           : `🏋️ ${resolvedStudentName} finalizou o treino!`;
         const notifMessage = `Treino "${day.name}" concluído em ${formattedDuration} (${performedExerciseIds.length} exerc., ${totalLoadsCount} cargas)${resolvedStudentType === "studio" ? " [Aluno Studio]" : ""}${feedbackPreview}`;
 
-        if (coachUserId) {
-          try {
-            await notifyCoachWorkoutCompleted({
-              data: {
-                coachUserId,
-                studentId: resolvedStudentId || "",
-                studentName: resolvedStudentName,
-                dayName: day.name,
-                durationSeconds: timerSeconds,
-                durationFormatted: formattedDuration,
-                loadsCount: totalLoadsCount,
-                performedCount: performedExerciseIds.length,
-                feedback: feedback.trim() || null,
-                executionId: (newExec as any)?.id,
-                studentType: resolvedStudentType,
-              },
-            });
-          } catch (serverNotifErr) {
-            console.warn("[FocusedDayView] Fallback para insert direto via client:", serverNotifErr);
+        // Sempre dispara notificação para a gestão e celular do treinador
+        try {
+          await notifyCoachWorkoutCompleted({
+            data: {
+              coachUserId: coachUserId || null,
+              studentId: resolvedStudentId || "",
+              studentName: resolvedStudentName,
+              dayName: day.name,
+              durationSeconds: timerSeconds,
+              durationFormatted: formattedDuration,
+              loadsCount: totalLoadsCount,
+              performedCount: performedExerciseIds.length,
+              feedback: feedback.trim() || null,
+              executionId: (newExec as any)?.id,
+              studentType: resolvedStudentType,
+            },
+          });
+        } catch (serverNotifErr) {
+          console.warn("[FocusedDayView] Fallback para insert direto via client:", serverNotifErr);
+          if (coachUserId) {
             await supabase.from("pt_notifications" as any).insert({
               user_id: coachUserId,
               title: notifTitle,
