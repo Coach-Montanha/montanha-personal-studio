@@ -21,6 +21,8 @@ import {
   Eye,
   Type,
   AlignLeft,
+  AlignCenter,
+  AlignRight,
   List,
   Quote,
   Minus,
@@ -114,6 +116,7 @@ export function BlogEditorPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [selectedTheme, setSelectedTheme] = useState("Todos");
+  const [sortBy, setSortBy] = useState<"number_asc" | "number_desc" | "date_desc" | "date_asc" | "title_asc">("number_asc");
 
   // Estado de criação
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -348,9 +351,9 @@ export function BlogEditorPage() {
     return Array.from(localMap.values());
   }, [blogData?.articles, localArticles]);
 
-  // Filtragem de Posts
+  // Filtragem e Ordenação Inteligente de Posts
   const filteredArticles = useMemo(() => {
-    return allArticles.filter((a: any) => {
+    const list = allArticles.filter((a: any) => {
       const q = searchQuery.toLowerCase();
       const matchesSearch =
         !searchQuery ||
@@ -361,7 +364,52 @@ export function BlogEditorPage() {
       const matchesTheme = selectedTheme === "Todos" || a.theme === selectedTheme;
       return matchesSearch && matchesCat && matchesTheme;
     });
-  }, [allArticles, searchQuery, selectedCategory, selectedTheme]);
+
+    const getArticleNumber = (item: any): number => {
+      if (typeof item.number === "number") return item.number;
+      const raw = (item.title || "") + " " + (item.clean_title || "");
+      const match = raw.match(/artigo\s*(\d+)/i);
+      return match ? parseInt(match[1], 10) : 99999;
+    };
+
+    const parseShortDate = (str: string): number => {
+      if (!str) return 0;
+      const parts = str.split("/");
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime();
+      }
+      return 0;
+    };
+
+    return [...list].sort((a: any, b: any) => {
+      if (sortBy === "number_asc") {
+        const nA = getArticleNumber(a);
+        const nB = getArticleNumber(b);
+        if (nA !== nB) return nA - nB;
+        return (a.title || "").localeCompare(b.title || "");
+      }
+      if (sortBy === "number_desc") {
+        const nA = getArticleNumber(a);
+        const nB = getArticleNumber(b);
+        if (nA !== nB) return nB - nA;
+        return (b.title || "").localeCompare(a.title || "");
+      }
+      if (sortBy === "date_desc") {
+        const tA = parseShortDate(a.date_short);
+        const tB = parseShortDate(b.date_short);
+        return tB - tA;
+      }
+      if (sortBy === "date_asc") {
+        const tA = parseShortDate(a.date_short);
+        const tB = parseShortDate(b.date_short);
+        return tA - tB;
+      }
+      if (sortBy === "title_asc") {
+        return (a.clean_title || a.title || "").localeCompare(b.clean_title || b.title || "");
+      }
+      return 0;
+    });
+  }, [allArticles, searchQuery, selectedCategory, selectedTheme, sortBy]);
 
   // Salvar no LocalStorage
   const persistLocally = (updated: any[]) => {
@@ -2164,6 +2212,19 @@ export function BlogEditorPage() {
                   <SelectItem value="Mobilidade Articular">Mobilidade Articular</SelectItem>
                   <SelectItem value="Nutrição & Jejum">Nutrição & Jejum</SelectItem>
                   <SelectItem value="Mindset">Mindset</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+                <SelectTrigger className="h-11 w-full sm:h-10 sm:w-[220px]">
+                  <SelectValue placeholder="Ordenar Por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="number_asc">🔢 Ordem Numérica (1 ➔ 170+)</SelectItem>
+                  <SelectItem value="number_desc">🔢 Ordem Decrescente (170+ ➔ 1)</SelectItem>
+                  <SelectItem value="date_desc">📅 Mais Recentes Primeiro</SelectItem>
+                  <SelectItem value="date_asc">📅 Mais Antigos Primeiro</SelectItem>
+                  <SelectItem value="title_asc">🔤 Ordem Alfabética (A-Z)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
