@@ -850,7 +850,7 @@
           <a href="/materiais#ebooksSection" class="nav-item">Livros/Ebooks</a>
           <a href="/materiais#cursosSection" class="nav-item">Cursos Online</a>
           <a href="/materiais#amazonSection" class="nav-item">Links Amazon</a>
-          <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank" class="nav-item">Contato</a>
+          <a href="https://wa.me/5583999259385?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank" class="nav-item">Contato</a>
         </nav>
 
         <!-- Para visitantes externos, nada aparece no slot lateral direito -->
@@ -10310,7 +10310,7 @@
       
       <form id="leadForm" onsubmit="submitLeadForm(event)">
         <input type="text" id="leadName" class="modal-input" placeholder="Seu nome completo" required>
-        <input type="tel" id="leadPhone" class="modal-input" placeholder="Seu WhatsApp com DDD (ex: 11999999999)" required>
+        <input type="tel" id="leadPhone" class="modal-input" placeholder="Seu WhatsApp com DDD (ex: 83999259385)" required>
         <button type="submit" class="btn btn-primary" style="width:100%; padding:12px;">Liberar Download do PDF ➔</button>
       </form>
     </div>
@@ -10329,7 +10329,7 @@
             <li><a href="/materiais#ebooksSection">Livros/Ebooks</a></li>
             <li><a href="/materiais#cursosSection">Cursos Online</a></li>
             <li><a href="/materiais#amazonSection">Links Amazon</a></li>
-            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank">Contato</a></li>
+            <li><a href="https://wa.me/5583999259385?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank">Contato</a></li>
             <li><a href="/portal">Portal do Aluno</a></li>
           </ul>
         </div>
@@ -10381,7 +10381,7 @@
     const paginationContainer = document.getElementById('articlesPagination');
     let currentCategory = 'Todas';
     let currentPage = 1;
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 15;
 
     function renderPagination(totalItems) {
       if (!paginationContainer) return;
@@ -10557,13 +10557,34 @@
 
     function submitLeadForm(e) {
       e.preventDefault();
-      const name = document.getElementById('leadName').value;
-      const phone = document.getElementById('leadPhone').value;
+      const name = document.getElementById('leadName').value.trim();
+      const phone = document.getElementById('leadPhone').value.trim();
       const title = document.getElementById('modalEbookTitle').innerText;
 
+      // Persistir lead localmente no navegador (backup de leads do Coach)
+      try {
+        const leads = JSON.parse(localStorage.getItem('montanha_blog_leads') || '[]');
+        leads.push({ name, phone, title, date: new Date().toISOString() });
+        localStorage.setItem('montanha_blog_leads', JSON.stringify(leads));
+      } catch (err) {
+        console.error('Erro ao salvar lead local:', err);
+      }
+
       closeLeadModal();
-      window.open(pendingDownloadUrl, '_blank');
-      alert('Download liberado! Em caso de dúvidas, nos contate pelo WhatsApp.');
+
+      // Liberar o download do arquivo PDF
+      if (pendingDownloadUrl) {
+        window.open(pendingDownloadUrl, '_blank');
+      }
+
+      // Notificar o WhatsApp do Coach Montanha com os dados do lead
+      const msg = encodeURIComponent("Olá Coach Montanha! Meu nome é " + name + " (" + phone + ") e acabei de solicitar o download do material: *" + title + "*.");
+      const coachWaUrl = "https://wa.me/5583999259385?text=" + msg;
+      
+      // Abrir notificação direta para o WhatsApp oficial do Coach
+      setTimeout(() => {
+        window.open(coachWaUrl, '_blank');
+      }, 500);
     }
   </script>
 

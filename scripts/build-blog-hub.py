@@ -618,7 +618,7 @@ def generate_topbar_html():
           <a href="/materiais#ebooksSection" class="nav-item">Livros/Ebooks</a>
           <a href="/materiais#cursosSection" class="nav-item">Cursos Online</a>
           <a href="/materiais#amazonSection" class="nav-item">Links Amazon</a>
-          <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank" class="nav-item">Contato</a>
+          <a href="https://wa.me/5583999259385?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank" class="nav-item">Contato</a>
         </nav>
 
         <!-- Para visitantes externos, nada aparece no slot lateral direito -->
@@ -643,7 +643,7 @@ def generate_footer_html():
             <li><a href="/materiais#ebooksSection">Livros/Ebooks</a></li>
             <li><a href="/materiais#cursosSection">Cursos Online</a></li>
             <li><a href="/materiais#amazonSection">Links Amazon</a></li>
-            <li><a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank">Contato</a></li>
+            <li><a href="https://wa.me/5583999259385?text=Ol%C3%A1%20Coach%20Montanha,%20vim%20pelo%20Blog" target="_blank">Contato</a></li>
             <li><a href="/portal">Portal do Aluno</a></li>
           </ul>
         </div>
@@ -688,16 +688,19 @@ def generate_footer_html():
   </footer>
 """
 
-def generate_article_html(meta, body_html, prev_art, next_art, recommended_arts=None):
-    # Seção dos 6 artigos populares clássicos do Systeme.io
-    populares = [
-        ("O segredo do meu emagrecimento é o NEAT!", "/materiais/artigos/o-segredo-do-meu-emagrecimento-e-o-neat"),
-        ("O que fazer para ter um envelhecimento saudável", "/materiais/artigos/o-que-fazer-para-ter-um-envelhecimento-saudavel"),
-        ("Balança: A Máquina Maligna da Indústria Fitness", "/materiais/artigos/a-balanca-a-maquina-maligna-da-industria-fitness"),
-        ("Será que a fadiga mental influencia a performance?", "/materiais/artigos/sera-que-a-fadiga-mental-influencia-a-performance"),
-        ("Alguns benefícios do Jejum Intermitente", "/materiais/artigos/alguns-beneficios-do-jejum-intermitente"),
-        ("Quer emagrecer muito rápido? Invista no EPOC!", "/materiais/artigos/quer-emagrecer-muito-rapido-invista-no-epoc")
-    ]
+def generate_article_html(meta, body_html, prev_art, next_art, recommended_arts=None, popular_arts=None):
+    # Artigos populares dinâmicos e aleatórios
+    if popular_arts:
+        populares = [(p['clean_title'], f"/materiais/artigos/{p['slug']}") for p in popular_arts]
+    else:
+        populares = [
+            ("O segredo do meu emagrecimento é o NEAT!", "/materiais/artigos/o-segredo-do-meu-emagrecimento-e-o-neat"),
+            ("O que fazer para ter um envelhecimento saudável", "/materiais/artigos/o-que-fazer-para-ter-um-envelhecimento-saudavel"),
+            ("Balança: A Máquina Maligna da Indústria Fitness", "/materiais/artigos/a-balanca-a-maquina-maligna-da-industria-fitness"),
+            ("Será que a fadiga mental influencia a performance?", "/materiais/artigos/sera-que-a-fadiga-mental-influencia-a-performance"),
+            ("Alguns benefícios do Jejum Intermitente", "/materiais/artigos/alguns-beneficios-do-jejum-intermitente"),
+            ("Quer emagrecer muito rápido? Invista no EPOC!", "/materiais/artigos/quer-emagrecer-muito-rapido-invista-no-epoc")
+        ]
     
     pop_html = "".join([f"""
         <a href="{p[1]}" class="pop-item">
@@ -1122,7 +1125,7 @@ def generate_article_html(meta, body_html, prev_art, next_art, recommended_arts=
       <p style="font-size:14px; color:var(--text-muted); max-width:540px; margin:0 auto 18px auto;">
         Quer feedback sobre sua rotina ou sugestão para o próximo artigo? Fale direto com o Coach Montanha.
       </p>
-      <a href="https://wa.me/5511999999999?text=Ol%C3%A1%20Coach%20Montanha,%20li%20o%20artigo%20'{meta['clean_title']}'%20e%20gostaria%20de%20comentar" class="btn btn-primary" target="_blank" style="background:#25d366; color:#000; padding:12px 24px; font-size:15px;">
+      <a href="https://wa.me/5583999259385?text=Ol%C3%A1%20Coach%20Montanha,%20li%20o%20artigo%20'{meta['clean_title']}'%20e%20gostaria%20de%20comentar" class="btn btn-primary" target="_blank" style="background:#25d366; color:#000; padding:12px 24px; font-size:15px;">
         Enviar Mensagem no WhatsApp ➔
       </a>
     </div>
@@ -1757,7 +1760,7 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
       
       <form id="leadForm" onsubmit="submitLeadForm(event)">
         <input type="text" id="leadName" class="modal-input" placeholder="Seu nome completo" required>
-        <input type="tel" id="leadPhone" class="modal-input" placeholder="Seu WhatsApp com DDD (ex: 11999999999)" required>
+        <input type="tel" id="leadPhone" class="modal-input" placeholder="Seu WhatsApp com DDD (ex: 83999259385)" required>
         <button type="submit" class="btn btn-primary" style="width:100%; padding:12px;">Liberar Download do PDF ➔</button>
       </form>
     </div>
@@ -1772,7 +1775,7 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
     const paginationContainer = document.getElementById('articlesPagination');
     let currentCategory = 'Todas';
     let currentPage = 1;
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 15;
 
     function renderPagination(totalItems) {{
       if (!paginationContainer) return;
@@ -1948,13 +1951,34 @@ def generate_hub_html(articles, ebooks, courses, amazon_books):
 
     function submitLeadForm(e) {{
       e.preventDefault();
-      const name = document.getElementById('leadName').value;
-      const phone = document.getElementById('leadPhone').value;
+      const name = document.getElementById('leadName').value.trim();
+      const phone = document.getElementById('leadPhone').value.trim();
       const title = document.getElementById('modalEbookTitle').innerText;
 
+      // Persistir lead localmente no navegador (backup de leads do Coach)
+      try {{
+        const leads = JSON.parse(localStorage.getItem('montanha_blog_leads') || '[]');
+        leads.push({{ name, phone, title, date: new Date().toISOString() }});
+        localStorage.setItem('montanha_blog_leads', JSON.stringify(leads));
+      }} catch (err) {{
+        console.error('Erro ao salvar lead local:', err);
+      }}
+
       closeLeadModal();
-      window.open(pendingDownloadUrl, '_blank');
-      alert('Download liberado! Em caso de dúvidas, nos contate pelo WhatsApp.');
+
+      // Liberar o download do arquivo PDF
+      if (pendingDownloadUrl) {{
+        window.open(pendingDownloadUrl, '_blank');
+      }}
+
+      // Notificar o WhatsApp do Coach Montanha com os dados do lead
+      const msg = encodeURIComponent("Olá Coach Montanha! Meu nome é " + name + " (" + phone + ") e acabei de solicitar o download do material: *" + title + "*.");
+      const coachWaUrl = "https://wa.me/5583999259385?text=" + msg;
+      
+      // Abrir notificação direta para o WhatsApp oficial do Coach
+      setTimeout(() => {{
+        window.open(coachWaUrl, '_blank');
+      }}, 500);
     }}
   </script>
 
@@ -2171,16 +2195,17 @@ def main():
         prev_a = articles[i - 1] if i > 0 else None
         next_a = articles[i + 1] if i < len(articles) - 1 else None
         
-        # Selecionar 3 artigos recomendados (mesma categoria ou aleatorios)
-        candidates = [x for x in articles if x['slug'] != a['slug']]
-        same_cat = [x for x in candidates if x['category'] == a['category']]
-        other_cat = [x for x in candidates if x['category'] != a['category']]
+        # Selecionar 3 artigos recomendados aleatórios e 6 populares aleatórios
         import random
-        random.seed(i * 37 + 11)
-        rec_selection = (same_cat[:2] + other_cat[:2]) if len(same_cat) >= 2 else candidates[:3]
-        rec_selection = rec_selection[:3]
+        candidates = [x for x in articles if x['slug'] != a['slug']]
+        rnd_candidates = list(candidates)
+        random.shuffle(rnd_candidates)
         
-        art_html = generate_article_html(a['meta'], a['body_html'], prev_a, next_a, rec_selection)
+        rec_selection = rnd_candidates[:3]
+        pop_candidates = [x for x in rnd_candidates if x not in rec_selection]
+        pop_selection = pop_candidates[:6]
+        
+        art_html = generate_article_html(a['meta'], a['body_html'], prev_a, next_a, rec_selection, pop_selection)
         
         slugs_to_create = set()
         if a.get('slug'):
