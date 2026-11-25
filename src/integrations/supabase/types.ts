@@ -1501,6 +1501,7 @@ export type Database = {
           start_date: string | null
           state: string | null
           status: string
+          tags: string[]
           temp_password: string | null
           updated_at: string
           user_id: string
@@ -1527,6 +1528,7 @@ export type Database = {
           start_date?: string | null
           state?: string | null
           status?: string
+          tags?: string[]
           temp_password?: string | null
           updated_at?: string
           user_id: string
@@ -1553,6 +1555,7 @@ export type Database = {
           start_date?: string | null
           state?: string | null
           status?: string
+          tags?: string[]
           temp_password?: string | null
           updated_at?: string
           user_id?: string

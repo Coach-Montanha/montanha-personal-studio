@@ -12,6 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createStudentAccount } from "@/lib/student-access.functions";
+import { ensureStudentTrainingLink, resolveStudentTags, type StudentTag } from "@/lib/student-registry";
 import { KeyRound, Info, Eye, EyeOff, Copy, Check, RefreshCw, ArrowRightLeft, Receipt, ChevronDown, Loader2 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -40,6 +41,7 @@ type Student = {
   city?: string | null;
   state?: string | null;
   country?: string | null;
+  tags?: string[] | null;
 };
 
 const OPTIONAL_KEYS: (keyof Student)[] = [
@@ -72,7 +74,9 @@ export function StudentDialog({
   }).length;
   useEffect(() => {
     if (open) {
-      const next = student ?? { status: "active" };
+      const next = student
+        ? { ...student, tags: resolveStudentTags(student) }
+        : { status: "active", tags: ["studio"] as StudentTag[] };
       setForm(next);
       setShowMore(
         OPTIONAL_KEYS.some((k) => {
@@ -83,6 +87,19 @@ export function StudentDialog({
     }
   }, [open, student]);
 
+  function toggleTag(tag: StudentTag) {
+    setForm((f) => {
+      const current = resolveStudentTags(f);
+      const exists = current.includes(tag);
+      if (exists && current.length <= 1) {
+        toast.info("O aluno deve pertencer a pelo menos um grupo (Studio ou Personal).");
+        return f;
+      }
+      const nextTags = exists ? current.filter((t) => t !== tag) : [...current, tag];
+      return { ...f, tags: nextTags };
+    });
+  }
+
 
   async function save() {
     if (!form.name?.trim()) return toast.error("Nome obrigatório");
@@ -92,6 +109,7 @@ export function StudentDialog({
 
     setSaving(true);
     try {
+      const activeTags = resolveStudentTags(form);
       const payload = {
         user_id: userId,
         name: form.name.trim(),
@@ -110,19 +128,35 @@ export function StudentDialog({
         city: form.city?.trim() || null,
         state: form.state?.trim() || null,
         country: form.country?.trim() || null,
+        tags: activeTags,
       };
       let studentId = form.id;
-      if (form.id) {
-        const { error } = await supabase.from("students").update(payload).eq("id", form.id);
-        if (error) throw error;
-      } else {
+      const saveRecord = async (recordPayload: typeof payload | Omit<typeof payload, "tags">) => {
+        if (form.id) {
+          const { error } = await supabase.from("students").update(recordPayload).eq("id", form.id);
+          return { id: form.id, error };
+        }
         const { data, error } = await supabase
           .from("students")
-          .insert(payload)
+          .insert(recordPayload)
           .select("id")
           .single();
-        if (error) throw error;
-        studentId = data.id;
+        return { id: data?.id, error };
+      };
+
+      let result = await saveRecord(payload);
+      if (result.error && result.error.message?.includes("tags")) {
+        const { tags: _omit, ...fallbackPayload } = payload;
+        result = await saveRecord(fallbackPayload);
+      }
+      if (result.error) throw result.error;
+      studentId = result.id;
+
+      // Garante espelho sincronizado para treinos e grupo Personal quando aplicável
+      if (studentId && activeTags.includes("personal")) {
+        await ensureStudentTrainingLink(studentId, userId).catch((e) =>
+          console.warn("[StudentDialog] Aviso ao sincronizar vínculo de treino:", e)
+        );
       }
 
       toast.success(form.id ? "Aluno atualizado" : "Aluno criado");
@@ -155,6 +189,33 @@ export function StudentDialog({
                 value={form.name ?? ""}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
+            </Field>
+            <Field label="Direcionamento / Tags do Aluno" full>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {(
+                  [
+                    { id: "studio", label: "Studio" },
+                    { id: "personal", label: "Personal Trainer" },
+                  ] as const
+                ).map((opt) => {
+                  const selected = resolveStudentTags(form).includes(opt.id);
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => toggleTag(opt.id)}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground shadow-2xs"
+                          : "border-border bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      {selected && <Check className="h-3.5 w-3.5" />}
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
             </Field>
             <Field label="Email">
               <Input

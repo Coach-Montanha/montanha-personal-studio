@@ -490,6 +490,32 @@ export const getMyTrainingPortalDataServerFn = createServerFn({ method: "GET" })
       if (s?.id && !allStudentIds.includes(s.id)) allStudentIds.push(s.id);
     });
 
+    // Fallback seguro: se aluno Studio ainda não encontrou registro PT por account_user_id/email,
+    // tenta localizar registro PT órfão com nome exato (sem account_user_id vinculado)
+    if (studioMatches.length > 0 && ptMatches.length === 0 && studioMatches[0]?.name) {
+      const cleanName = String(studioMatches[0].name).trim();
+      if (cleanName) {
+        const { data: ptByName } = await supabaseAdmin
+          .from("pt_students")
+          .select("id, account_user_id")
+          .ilike("name", cleanName)
+          .is("account_user_id", null);
+        if (ptByName && ptByName.length === 1 && ptByName[0]?.id) {
+          if (!allStudentIds.includes(ptByName[0].id)) {
+            allStudentIds.push(ptByName[0].id);
+          }
+          try {
+            await supabaseAdmin
+              .from("pt_students")
+              .update({ account_user_id: userId, email: studioMatches[0].email ?? userEmail })
+              .eq("id", ptByName[0].id);
+          } catch (e) {
+            console.warn("[getMyTrainingPortalDataServerFn] Falha ao vincular pt_student por nome:", e);
+          }
+        }
+      }
+    }
+
     // 6. Define perfil representativo do aluno
     let student: any = null;
     if (ptMatches.length > 0) {

@@ -9,6 +9,7 @@ import {
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { ensureStudentTrainingLink } from "@/lib/student-registry";
 import { confirmDialog } from "@/lib/confirm-dialog";
 import { formatDateBR } from "@/lib/format";
 import { Card } from "@/components/ui/card";
@@ -1100,6 +1101,15 @@ function ProgramDialog({
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
     if (!userId) return;
+
+    try {
+      if (!form.id) {
+        await ensureStudentTrainingLink(filterVal, userId);
+      }
+    } catch (syncErr: any) {
+      return toast.error(syncErr?.message ?? "Falha ao vincular aluno à rotina de treino.");
+    }
+
     const payload = {
       user_id: userId,
       pt_student_id: filterVal,
@@ -1119,7 +1129,8 @@ function ProgramDialog({
     const { error } = await op;
     if (error) return toast.error(error.message);
     toast.success(form.id ? "Rotina atualizada" : "Rotina criada com sucesso!");
-    qc.invalidateQueries({ queryKey: ["pt-programs", filterVal] });
+    qc.invalidateQueries({ queryKey: ["pt-programs"] });
+    qc.invalidateQueries({ queryKey: ["pt-program-counts"] });
     onOpenChange(false);
   }
 

@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureStudentTrainingLink } from "@/lib/student-registry";
 
 interface AtribuirTreinoDialogProps {
   open: boolean;
@@ -73,12 +74,19 @@ export function AtribuirTreinoDialog({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students" as never)
-        .select("id, name, email, phone, status, deleted_at" as never)
+        .select("id, name, email, phone, status, deleted_at, account_user_id, temp_password" as never)
         .eq("status" as never, "active")
         .is("deleted_at" as never, null)
         .order("name" as never);
       if (error) throw error;
-      return (data || []) as Array<{ id: string; name: string; email: string | null; phone?: string | null }>;
+      return (data || []) as Array<{
+        id: string;
+        name: string;
+        email: string | null;
+        phone?: string | null;
+        account_user_id?: string | null;
+        temp_password?: string | null;
+      }>;
     },
   });
 
@@ -242,25 +250,9 @@ export function AtribuirTreinoDialog({
       const userId = userData.user?.id;
       if (!userId) throw new Error("Usuário não autenticado.");
 
-      // 1. Garante que se for aluno do Studio, ele existe em pt_students com account_user_id sincronizado
+      // 1. Garante que se for aluno do Studio, o espelho em pt_students existe com account_user_id preservado
       if (tipoAluno === "studio") {
-        const targetStudent = studioStudents.find((s) => s.id === selectedStudentId);
-        if (targetStudent) {
-          await supabase.from("pt_students" as never).upsert(
-            {
-              id: targetStudent.id,
-              user_id: userId,
-              name: targetStudent.name,
-              email: targetStudent.email,
-              phone: (targetStudent as any).phone ?? null,
-              account_user_id: (targetStudent as any).account_user_id ?? null,
-              temp_password: (targetStudent as any).temp_password ?? null,
-              status: "active",
-              notes: "[Aluno Studio]",
-            } as never,
-            { onConflict: "id" } as never
-          );
-        }
+        await ensureStudentTrainingLink(selectedStudentId, userId);
       }
 
       // 2. Proteção contra sobrescrita acidental: Arquivar programas anteriores se solicitado
