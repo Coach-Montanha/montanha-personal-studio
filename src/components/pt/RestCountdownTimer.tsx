@@ -3,7 +3,12 @@ import { Play, Pause, X, Plus, Minus, Dumbbell, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { playHighImpactRestAlarm, unlockAudioContext } from "@/lib/workout-audio";
+import {
+  playHighImpactRestAlarm,
+  unlockAudioContext,
+  startRestCountdownAudioSession,
+  stopRestCountdownAudioSession,
+} from "@/lib/workout-audio";
 
 export interface RestCountdownTimerProps {
   active: boolean;
@@ -55,7 +60,7 @@ export function RestCountdownTimer({
   // Reinicia SOMENTE quando um novo descanso é iniciado (evita reiniciar a cada render pai)
   useEffect(() => {
     if (active) {
-      unlockAudioContext();
+      startRestCountdownAudioSession();
       if (lastTriggerKeyRef.current !== triggerKey) {
         lastTriggerKeyRef.current = triggerKey;
         const sec = parseSafeSeconds(initialSeconds, 60);
@@ -66,9 +71,13 @@ export function RestCountdownTimer({
         targetEndTimeRef.current = Date.now() + sec * 1000;
       }
     } else {
+      stopRestCountdownAudioSession();
       lastTriggerKeyRef.current = "";
       targetEndTimeRef.current = null;
     }
+    return () => {
+      stopRestCountdownAudioSession();
+    };
   }, [active, triggerKey, initialSeconds]);
 
   // Contagem regressiva imune a re-renders e baseada em timestamp real

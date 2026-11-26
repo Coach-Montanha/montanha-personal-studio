@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWakeLock } from "@/hooks/use-wake-lock";
+import { playSimpleBeep, unlockAudioContext } from "@/lib/workout-audio";
 
 export type TimerMode = "EMOM" | "AMRAP" | "Tabata" | "Livre";
 
@@ -24,31 +25,7 @@ interface TrainingTimerDialogProps {
 }
 
 function playSound(freq: number, duration: number = 0.15, type: OscillatorType = "sine") {
-  try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + 0.01);
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
-
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + duration);
-
-    setTimeout(() => {
-      try { ctx.close(); } catch { /* ignore */ }
-    }, (duration + 0.5) * 1000);
-  } catch {
-    // Audio context might be restricted before user interaction
-  }
+  playSimpleBeep(freq, duration, type);
 }
 
 export function TrainingTimerDialog({
@@ -573,6 +550,7 @@ export function TrainingTimerDialog({
           <Button
             type="button"
             onClick={() => {
+              unlockAudioContext();
               if (!running) {
                 triggerBeep(900, 0.2);
               }

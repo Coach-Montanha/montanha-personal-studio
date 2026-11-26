@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Pause, Play, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { playSimpleBeep, unlockAudioContext } from "@/lib/workout-audio";
 
 interface IntervalTimerProps {
   sets: number;
@@ -56,31 +57,10 @@ export function IntervalTimer({
           onComplete?.();
         }
       }
-      playBeep(phase === "work" ? 880 : 440);
+      playSimpleBeep(phase === "work" ? 880 : 440, 0.25);
     }
     return () => clearInterval(timer);
   }, [running, timeLeft, phase, currentSet, sets, workSeconds, restSeconds, onComplete]);
-
-  function playBeep(freq: number) {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.02);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-      setTimeout(() => ctx.close(), 500);
-    } catch (e) {
-      console.error("Audio error", e);
-    }
-  }
 
   const formatTime = (s: number) => {
     const mins = Math.floor(s / 60);
