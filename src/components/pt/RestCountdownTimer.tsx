@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   playHighImpactRestAlarm,
-  unlockAudioContext,
   startRestCountdownAudioSession,
   stopRestCountdownAudioSession,
 } from "@/lib/workout-audio";
@@ -126,7 +125,6 @@ export function RestCountdownTimer({
   const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
   const adjustTime = (delta: number) => {
-    unlockAudioContext();
     const deltaNum = Number(delta) || 0;
     setRemaining((prev) => {
       const curr = typeof prev === "number" && !isNaN(prev) ? prev : safeInit;
@@ -143,7 +141,6 @@ export function RestCountdownTimer({
   };
 
   const toggleRunning = () => {
-    unlockAudioContext();
     if (isRunning) {
       setIsRunning(false);
       targetEndTimeRef.current = null;
@@ -154,7 +151,6 @@ export function RestCountdownTimer({
   };
 
   const setPreset = (sec: number) => {
-    unlockAudioContext();
     const cleanSec = parseSafeSeconds(sec, 60);
     setTotalTime(cleanSec);
     setRemaining(cleanSec);
@@ -216,7 +212,6 @@ export function RestCountdownTimer({
             <button
               type="button"
               onClick={() => {
-                unlockAudioContext();
                 playHighImpactRestAlarm();
                 toast.info("🔊 Teste de som esportivo disparado!");
               }}

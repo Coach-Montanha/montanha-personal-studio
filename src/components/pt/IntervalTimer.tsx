@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Pause, Play, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { playSimpleBeep, unlockAudioContext } from "@/lib/workout-audio";
+import { playSimpleBeep } from "@/lib/workout-audio";
 
 interface IntervalTimerProps {
   sets: number;

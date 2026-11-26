@@ -16,6 +16,7 @@ let keepAliveGain: GainNode | null = null;
 let keepAliveOsc: OscillatorNode | null = null;
 let primedHtmlAudio: HTMLAudioElement | null = null;
 let isAudioUnlocked = false;
+let isHtmlAudioUnlocked = false;
 
 /**
  * Obtém ou inicializa o AudioContext global com suporte cross-browser (WebKit / W3C).
@@ -62,16 +63,18 @@ function getHtmlAudioElement(): HTMLAudioElement | null {
 }
 
 /**
- * Destrava o motor de áudio (AudioContext + HTML5 Audio) na primeira interação do usuário.
- * No iOS, tocar e pausar um elemento de áudio durante um clique/toque concede permissão
- * permanente de reprodução assíncrona mesmo após o timer terminar.
+ * Destrava o motor de áudio (AudioContext + HTML5 Audio) de forma 100% SILENCIOSA
+ * na primeira interação do usuário, garantindo ZERO bipe ou som tátil ao tocar na tela.
  */
 export function unlockAudioContext(): void {
   if (typeof window === "undefined") return;
 
-  // 1. Destrava Web Audio API
+  // Se já foi destravado, sai imediatamente para evitar reprocessamento
+  if (isAudioUnlocked && isHtmlAudioUnlocked) return;
+
+  // 1. Destrava Web Audio API de forma inaudível
   const ctx = getAudioContext();
-  if (ctx) {
+  if (ctx && !isAudioUnlocked) {
     if (ctx.state === "suspended") {
       ctx.resume().then(() => {
         isAudioUnlocked = true;
@@ -81,7 +84,7 @@ export function unlockAudioContext(): void {
     }
 
     try {
-      // Pulso silencioso de 1 amostra para autorizar hardware de áudio no iOS
+      // Buffer de 1 amostra zerada (silêncio total) para autorizar hardware de áudio no iOS
       const buffer = ctx.createBuffer(1, 1, 22050);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
@@ -92,22 +95,30 @@ export function unlockAudioContext(): void {
     }
   }
 
-  // 2. Destrava HTML5 Audio para furar a chave de silencioso do iPhone
-  const htmlAudio = getHtmlAudioElement();
-  if (htmlAudio) {
-    try {
-      htmlAudio.volume = 1.0;
-      const playPromise = htmlAudio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            htmlAudio.pause();
-            htmlAudio.currentTime = 0;
-          })
-          .catch(() => {});
+  // 2. Destrava HTML5 Audio para furar a chave de silencioso do iPhone,
+  // mantendo volume ZERO e MUTED para NUNCA vazar bipe ao tocar na tela.
+  if (!isHtmlAudioUnlocked) {
+    const htmlAudio = getHtmlAudioElement();
+    if (htmlAudio) {
+      try {
+        htmlAudio.muted = true;
+        htmlAudio.volume = 0;
+        const playPromise = htmlAudio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              htmlAudio.pause();
+              htmlAudio.currentTime = 0;
+              // Prepara para tocar no volume normal apenas quando o alarme de fim de descanso for disparado
+              htmlAudio.muted = false;
+              htmlAudio.volume = 1.0;
+              isHtmlAudioUnlocked = true;
+            })
+            .catch(() => {});
+        }
+      } catch {
+        // Ignora restrições do navegador
       }
-    } catch {
-      // Ignora restrições do navegador
     }
   }
 }
@@ -291,6 +302,7 @@ export async function playHighImpactRestAlarm(): Promise<void> {
   try {
     const htmlAudio = getHtmlAudioElement();
     if (htmlAudio) {
+      htmlAudio.muted = false;
       htmlAudio.currentTime = 0;
       htmlAudio.volume = 1.0;
       await htmlAudio.play();

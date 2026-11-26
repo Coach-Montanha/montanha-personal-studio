@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWakeLock } from "@/hooks/use-wake-lock";
-import { playSimpleBeep, unlockAudioContext } from "@/lib/workout-audio";
+import { playSimpleBeep } from "@/lib/workout-audio";
 
 export type TimerMode = "EMOM" | "AMRAP" | "Tabata" | "Livre";
 
@@ -402,7 +402,6 @@ export function TrainingTimerDialog({
                 type="button"
                 onClick={() => {
                   setAmrapRounds((r) => r + 1);
-                  triggerBeep(880, 0.1);
                 }}
                 className="flex h-7 w-7 items-center justify-center rounded-lg border border-orange-500/40 bg-orange-500/20 text-orange-400 hover:bg-orange-500/30"
               >
@@ -550,10 +549,6 @@ export function TrainingTimerDialog({
           <Button
             type="button"
             onClick={() => {
-              unlockAudioContext();
-              if (!running) {
-                triggerBeep(900, 0.2);
-              }
               setRunning(!running);
             }}
             className={cn(
