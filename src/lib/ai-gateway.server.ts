@@ -163,8 +163,10 @@ export type CallAiJsonResult<T = any> = {
 
 /** Chamada direta à API oficial do Google Gemini com responseMimeType: "application/json" */
 async function callGeminiDirect<T = any>(apiKey: string, args: CallAiJsonArgs): Promise<CallAiJsonResult<T>> {
-  const primaryModel = (process.env.GEMINI_MODEL || "gemini-3.5-flash-lite").replace(/^google\//, "");
-  const candidateModels = Array.from(new Set([primaryModel, "gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]));
+  const primaryModel = (process.env.GEMINI_MODEL || "gemini-2.5-flash").replace(/^google\//, "");
+  const candidateModels = Array.from(
+    new Set([primaryModel, "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-flash-latest"])
+  );
 
   let lastError: any = null;
 
@@ -389,12 +391,6 @@ async function fetchDbAiKey(): Promise<string | undefined> {
 
 export async function callLovableAiJson<T = any>(args: CallAiJsonArgs): Promise<CallAiJsonResult<T>> {
   const { geminiKey, lovableKey } = getAiKey();
-  let effectiveGeminiKey = args.apiKey?.trim() || geminiKey;
-
-  if (!effectiveGeminiKey) {
-    const dbKey = await fetchDbAiKey();
-    if (dbKey) effectiveGeminiKey = dbKey;
-  }
 
   const promptChars = args.prompt.length + (args.system?.length ?? 0);
   if (promptChars > MAX_PROMPT_CHARS) {
@@ -406,12 +402,17 @@ export async function callLovableAiJson<T = any>(args: CallAiJsonArgs): Promise<
 
   let lastError: any = null;
 
-  // 1. Prioriza Gemini direto quando GEMINI_API_KEY ou chave personalizada está configurada
-  if (effectiveGeminiKey && effectiveGeminiKey.length > 0) {
+  // 1. Prioriza Gemini direto: tenta BYOK (se informada) e faz fallback automático para a chave do servidor/banco
+  const byokKey = args.apiKey?.trim() || undefined;
+  const serverKey = geminiKey || (await fetchDbAiKey());
+  const geminiKeysToTry = Array.from(new Set([byokKey, serverKey].filter((k): k is string => Boolean(k && k.length > 0))));
+  const effectiveGeminiKey = geminiKeysToTry[0];
+
+  for (const keyCandidate of geminiKeysToTry) {
     try {
-      return await callGeminiDirect<T>(effectiveGeminiKey, args);
+      return await callGeminiDirect<T>(keyCandidate, args);
     } catch (err) {
-      console.warn("[ai-gateway] Gemini direto falhou, tentando fallback:", err);
+      console.warn("[ai-gateway] Gemini direto falhou com uma chave, tentando fallback:", err);
       lastError = err;
     }
   }
