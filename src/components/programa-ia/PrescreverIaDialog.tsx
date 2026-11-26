@@ -581,13 +581,16 @@ export function PrescreverIaDialog({
     setGeminiApiKey(limpa);
     if (typeof window !== "undefined") {
       if (limpa) {
+        if (!limpa.startsWith("AIzaSy")) {
+          toast.warning("Aviso: Chaves oficiais do Google Gemini começam com 'AIzaSy'. Verifique se copiou a chave correta.", { duration: 6000 });
+        }
         localStorage.setItem("montanha_gemini_api_key", limpa);
         localStorage.setItem("edufinance.aiApiKey", limpa);
         localStorage.setItem("gemini_api_key", limpa);
         persistAiKey({ data: { apiKey: limpa } }).catch((err) => {
           console.warn("Erro ao salvar chave no Supabase:", err);
         });
-        toast.success("Chave Gemini salva e consolidada permanentemente!");
+        toast.success("Chave Gemini salva!");
       } else {
         localStorage.removeItem("montanha_gemini_api_key");
         localStorage.removeItem("edufinance.aiApiKey");
@@ -1862,14 +1865,22 @@ export function PrescreverIaDialog({
                       Sua chave fica salva no seu navegador e permite prescrever treinos sem limites diretamente pelo Gemini 2.5 Flash oficial.
                     </p>
                   </div>
-                  <a
-                    href="https://aistudio.google.com/app/apikey"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-primary hover:underline font-medium shrink-0"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = "https://aistudio.google.com/app/apikey";
+                      try {
+                        navigator.clipboard?.writeText(url);
+                      } catch {}
+                      try {
+                        window.open(url, "_blank");
+                      } catch {}
+                      toast.info("Link copiado! Cole no seu navegador (Edge/Chrome) para gerar a chave grátis.");
+                    }}
+                    className="text-[11px] text-primary hover:underline font-medium shrink-0 cursor-pointer bg-transparent border-0 p-0 inline-flex items-center gap-1"
                   >
                     Obter Chave Grátis ↗
-                  </a>
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-2">
