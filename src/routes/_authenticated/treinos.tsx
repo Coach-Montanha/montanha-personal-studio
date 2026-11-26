@@ -755,7 +755,7 @@ export function TreinosPage() {
               )}
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(100%,295px),1fr))]">
               {programasFiltrados.map((prog) => {
                 const isTemplate =
                   prog.pt_student_id === "00000000-0000-0000-0000-000000000001" ||
@@ -770,7 +770,7 @@ export function TreinosPage() {
                 return (
                   <Card
                     key={prog.id}
-                    className="p-4 bg-card/90 border-border/70 hover:border-primary/40 transition-all flex flex-col justify-between space-y-3 shadow-sm"
+                    className="p-4 bg-card/90 border-border/70 hover:border-primary/40 transition-all flex flex-col justify-between space-y-3 shadow-sm min-w-0 overflow-hidden"
                   >
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-2">
@@ -884,8 +884,8 @@ export function TreinosPage() {
                       )}
                     </div>
 
-                    {/* Ações da Rotina — Design sem estouro com dropdown de mais ações */}
-                    <div className="border-t border-border/60 pt-3 flex items-center justify-between gap-1 flex-wrap sm:flex-nowrap">
+                    {/* Ações da Rotina — Design responsivo sem estouro */}
+                    <div className="border-t border-border/60 pt-3 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 shrink-0">
                         <Button
                           type="button"
