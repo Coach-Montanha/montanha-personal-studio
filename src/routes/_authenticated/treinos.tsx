@@ -238,6 +238,58 @@ export function TreinosPage() {
     return new Set(studioStudentsList.map((s) => s.id));
   }, [studioStudentsList]);
 
+  // Agrupa alunos vinculados por nome base do programa para exibir todos os perfis compartilhando a mesma rotina
+  const programStudentsMap = useMemo(() => {
+    const map = new Map<
+      string,
+      Array<{
+        id: string;
+        name: string;
+        email?: string | null;
+        phone?: string | null;
+        notes?: string | null;
+        programId: string;
+        programName: string;
+        startDate?: string | null;
+        endDate?: string | null;
+        tipo: "Studio" | "Personal Trainer";
+        url: string;
+      }>
+    >();
+
+    for (const p of programs) {
+      const isTemplate = p.pt_student_id === "00000000-0000-0000-0000-000000000001" || !p.pt_student_id;
+      const aluno = isTemplate ? null : (p.students || p.pt_students);
+      if (!aluno) continue;
+
+      const isStudio =
+        Boolean((p.pt_students as any)?.notes?.includes("[Studio]") ||
+          (p.pt_students as any)?.notes?.includes("[Aluno Studio]")) ||
+        studioIdsSet.has(aluno.id);
+
+      const baseName = p.name.replace(/^Modelo:\s*/i, "").trim().toLowerCase();
+      if (!baseName) continue;
+
+      const list = map.get(baseName) || [];
+      list.push({
+        id: aluno.id,
+        name: aluno.name,
+        email: aluno.email,
+        phone: aluno.phone,
+        notes: (aluno as any).notes ?? null,
+        programId: p.id,
+        programName: p.name,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        tipo: isStudio ? "Studio" : "Personal Trainer",
+        url: isStudio ? `/students/${aluno.id}` : `/personal-trainer/students/${aluno.id}`,
+      });
+      map.set(baseName, list);
+    }
+
+    return map;
+  }, [programs, studioIdsSet]);
+
   // Filtros em memória
   const programasFiltrados = useMemo(() => {
     return programs.filter((p) => {
@@ -766,6 +818,9 @@ export function TreinosPage() {
                 const aluno = isTemplate ? null : (prog.students || prog.pt_students);
                 const isExpanded = expandedProgramId === prog.id;
                 const goalsLimpo = limparTextoGoals(prog.goals);
+                const baseProgName = prog.name.replace(/^Modelo:\s*/i, "").trim().toLowerCase();
+                const linkedPeers = programStudentsMap.get(baseProgName) || [];
+                const otherPeersCount = linkedPeers.filter((x) => x.programId !== prog.id).length;
 
                 return (
                   <Card
@@ -787,14 +842,27 @@ export function TreinosPage() {
                                     programName: prog.name,
                                     tipo: isStudio ? "Studio" : "Personal Trainer",
                                     url: isStudio ? `/students/${aluno.id}` : `/personal-trainer/students/${aluno.id}`,
+                                    peers: linkedPeers,
                                   });
                                   setAlunoPerfilOpen(true);
                                 }}
                                 className="text-xs text-primary hover:underline font-semibold flex items-center gap-1.5 group text-left cursor-pointer transition-colors truncate min-w-0 flex-1"
-                                title="Clique para ver o perfil do aluno vinculado"
+                                title={
+                                  otherPeersCount > 0
+                                    ? `Clique para ver ${aluno.name} e mais ${otherPeersCount} aluno(s) com este programa`
+                                    : "Clique para ver o perfil do aluno vinculado"
+                                }
                               >
                                 <Link2 className="h-3 w-3 text-primary shrink-0" />
                                 <span className="truncate">Vinculado: {aluno.name}</span>
+                                {otherPeersCount > 0 && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] font-bold px-1.5 py-0 h-4 bg-primary/15 text-primary border-primary/30 shrink-0"
+                                  >
+                                    +{otherPeersCount}
+                                  </Badge>
+                                )}
                               </button>
                               <Button
                                 type="button"
@@ -1496,23 +1564,27 @@ export function TreinosPage() {
 
       {/* Dialog de Visualização Rápida do Aluno Vinculado */}
       <Dialog open={alunoPerfilOpen} onOpenChange={setAlunoPerfilOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
               <User className="h-4 w-4 text-primary" />
-              Perfil do Aluno Vinculado
+              {selectedAlunoPerfil?.peers && selectedAlunoPerfil.peers.length > 1
+                ? `Perfis Vinculados (${selectedAlunoPerfil.peers.length})`
+                : "Perfil do Aluno Vinculado"}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Informações do aluno atribuído a esta rotina de treino.
+              {selectedAlunoPerfil?.peers && selectedAlunoPerfil.peers.length > 1
+                ? `Alunos atribuídos ao programa "${selectedAlunoPerfil.programName}".`
+                : "Informações do aluno atribuído a esta rotina de treino."}
             </DialogDescription>
           </DialogHeader>
 
           {selectedAlunoPerfil && (
             <div className="space-y-4 py-2">
               <div className="rounded-xl border border-border/70 bg-card p-3.5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-foreground">{selectedAlunoPerfil.name}</h4>
-                  <Badge variant="secondary" className="text-[10px] font-semibold">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-sm font-bold text-foreground truncate">{selectedAlunoPerfil.name}</h4>
+                  <Badge variant="secondary" className="text-[10px] font-semibold shrink-0">
                     {selectedAlunoPerfil.tipo}
                   </Badge>
                 </div>
@@ -1534,6 +1606,60 @@ export function TreinosPage() {
                   </div>
                 )}
               </div>
+
+              {selectedAlunoPerfil.peers && selectedAlunoPerfil.peers.length > 1 && (
+                <div className="space-y-2">
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    Outros alunos com o mesmo programa ({selectedAlunoPerfil.peers.length - 1})
+                  </p>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {selectedAlunoPerfil.peers
+                      .filter((peer: any) => peer.programId !== selectedAlunoPerfil.programId)
+                      .map((peer: any) => (
+                        <div
+                          key={peer.programId}
+                          className="flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 p-2.5"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-semibold text-foreground truncate">
+                                {peer.name}
+                              </span>
+                              <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 shrink-0">
+                                {peer.tipo}
+                              </Badge>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Início: {peer.startDate ? formatDateBR(peer.startDate) : "Sem data"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-[11px]"
+                              onClick={() =>
+                                setSelectedAlunoPerfil({
+                                  ...peer,
+                                  peers: selectedAlunoPerfil.peers,
+                                })
+                              }
+                            >
+                              Detalhes
+                            </Button>
+                            <Button asChild variant="outline" size="sm" className="h-7 px-2 text-[11px] gap-1">
+                              <Link to={peer.url} onClick={() => setAlunoPerfilOpen(false)}>
+                                <span>Ficha</span>
+                                <ExternalLink className="h-3 w-3" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50">
                 {selectedAlunoPerfil.programId && (
