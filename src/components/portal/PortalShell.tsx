@@ -418,11 +418,103 @@ export function PortalShell({ children }: { children: ReactNode }) {
           className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[var(--safe-area-inset-top,0px)] bg-background border-b border-border/40 md:hidden"
         />
 
-        {/* Faixa ultra-fina em Liquid Glass cobrindo exatamente a área dos botões de navegação Android + 2px */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-50 h-[calc(var(--safe-area-inset-bottom,40px)+2px)] max-h-[50px] bg-background/85 backdrop-blur-md border-t border-border/40 md:hidden"
-        />
+        {/* Barra de Navegação Inferior Nativa (Thumb Zone Law & Regra 60-30-10) */}
+        <nav
+          aria-label="Navegação móvel do aluno"
+          className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-border/80 bg-background/90 px-1 pt-1.5 pb-[max(env(safe-area-inset-bottom,0px),8px)] backdrop-blur-xl md:hidden shadow-lg shadow-black/20"
+        >
+          <Link
+            to="/portal/pt/treino"
+            className={cn(
+              "flex flex-1 flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl text-[10px] font-semibold transition-all active:scale-95 touch-manipulation min-h-[48px]",
+              isActive("/portal/pt/treino")
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+                isActive("/portal/pt/treino") ? "bg-primary/15 text-primary" : ""
+              )}
+            >
+              <ClipboardList className="h-5 w-5" />
+            </div>
+            <span>Treino</span>
+          </Link>
+
+          <Link
+            to="/portal"
+            className={cn(
+              "flex flex-1 flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl text-[10px] font-semibold transition-all active:scale-95 touch-manipulation min-h-[48px]",
+              isActive("/portal", true)
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+                isActive("/portal", true) ? "bg-primary/15 text-primary" : ""
+              )}
+            >
+              <Calendar className="h-5 w-5" />
+            </div>
+            <span>Studio</span>
+          </Link>
+
+          <Link
+            to="/portal/planos"
+            className={cn(
+              "flex flex-1 flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl text-[10px] font-semibold transition-all active:scale-95 touch-manipulation min-h-[48px]",
+              isActive("/portal/planos")
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+                isActive("/portal/planos") ? "bg-primary/15 text-primary" : ""
+              )}
+            >
+              <CreditCard className="h-5 w-5" />
+            </div>
+            <span>Planos</span>
+          </Link>
+
+          <Link
+            to="/portal/perfil"
+            className={cn(
+              "flex flex-1 flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl text-[10px] font-semibold transition-all active:scale-95 touch-manipulation min-h-[48px]",
+              isActive("/portal/perfil")
+                ? "text-primary font-bold"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <div
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-lg transition-colors",
+                isActive("/portal/perfil") ? "bg-primary/15 text-primary" : ""
+              )}
+            >
+              <User className="h-5 w-5" />
+            </div>
+            <span>Perfil</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Abrir menu completo"
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl text-[10px] font-semibold text-muted-foreground hover:text-foreground transition-all active:scale-95 touch-manipulation min-h-[48px]"
+          >
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg">
+              <Menu className="h-5 w-5" />
+            </div>
+            <span>Mais</span>
+          </button>
+        </nav>
       </div>
 
       <PortalAnnouncementPopup />
