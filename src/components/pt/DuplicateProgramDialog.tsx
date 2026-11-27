@@ -195,6 +195,20 @@ export function DuplicateProgramDialog({
         targetStudentId = TEMPLATE_STUDENT_ID;
       }
 
+      // Garante que o sentinel TEMPLATE_STUDENT_ID exista em pt_students para nunca violar FK/not-null
+      if (targetStudentId === TEMPLATE_STUDENT_ID) {
+        await supabase.from("pt_students" as never).upsert(
+          {
+            id: TEMPLATE_STUDENT_ID,
+            user_id: userId,
+            name: "Modelos & Acervo Geral",
+            status: "active",
+            notes: "[Template Sentinel]",
+          } as never,
+          { onConflict: "id" } as never
+        );
+      }
+
       // 2. Busca os dados completos da rotina original
       const { data: originalProg, error: progErr } = await supabase
         .from("pt_programs" as never)
@@ -326,7 +340,7 @@ export function DuplicateProgramDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-2xl border-border shadow-2xl">
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[85vh] sm:max-h-[88vh] flex flex-col p-0 overflow-hidden rounded-2xl border-border shadow-2xl">
         {/* Cabeçalho Fixo */}
         <DialogHeader className="p-5 sm:p-6 pb-4 bg-muted/20 border-b border-border/70 shrink-0 space-y-1.5">
           <div className="flex items-center gap-3">
@@ -575,15 +589,15 @@ export function DuplicateProgramDialog({
           )}
         </div>
 
-        {/* Rodapé Fixo */}
-        <DialogFooter className="p-4 sm:p-5 bg-muted/20 border-t border-border flex items-center justify-between gap-3 shrink-0">
+        {/* Rodapé Fixo Seguro Sem Margens Negativas */}
+        <div className="p-4 sm:p-5 m-0 bg-muted/20 border-t border-border flex items-center justify-between gap-3 shrink-0">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => onOpenChange(false)}
             disabled={duplicateMutation.isPending}
-            className="text-xs"
+            className="text-xs h-9 px-4"
           >
             Cancelar
           </Button>
@@ -607,7 +621,7 @@ export function DuplicateProgramDialog({
               </>
             )}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

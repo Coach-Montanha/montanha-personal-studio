@@ -14,6 +14,7 @@ import {
   RotateCcw,
   Activity,
   Zap,
+  Trophy,
 } from "lucide-react";
 import { toast } from "sonner";
 
