@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { WorkoutSummaryDialog } from "@/components/pt/WorkoutSummaryDialog";
 import { RestCountdownTimer, parseSafeSeconds } from "@/components/pt/RestCountdownTimer";
 import { PlateCalculatorDialog } from "@/components/pt/PlateCalculatorDialog";
+import { HevyExerciseHubDialog } from "@/components/pt/HevyExerciseHubDialog";
 import { MuscleHeatmap } from "@/components/pt/MuscleHeatmap";
 import { resolveExerciseThumbnail } from "@/lib/thumbnail-utils";
 import { useWakeLock } from "@/hooks/use-wake-lock";
@@ -168,6 +169,13 @@ export function FocusedDayView({
   const [plateCalcOpen, setPlateCalcOpen] = useState(false);
   const [plateCalcWeight, setPlateCalcWeight] = useState<number | string>(60);
   const [plateCalcExName, setPlateCalcExName] = useState<string>("");
+  const [exerciseHubOpen, setExerciseHubOpen] = useState(false);
+  const [selectedHubExercise, setSelectedHubExercise] = useState<any>(null);
+
+  const openExerciseHub = (ex: any) => {
+    setSelectedHubExercise(ex);
+    setExerciseHubOpen(true);
+  };
   const [restTimer, setRestTimer] = useState<{
     active: boolean;
     seconds: number;
@@ -877,6 +885,18 @@ export function FocusedDayView({
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openExerciseHub(ex)}
+                        title="Abrir Central do Exercício (Resumo, Histórico, Instruções e Ranking estilo Hevy)"
+                        className="h-8 shrink-0 gap-1.5 px-2.5 text-xs font-bold rounded-lg border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 transition-all active:scale-95"
+                      >
+                        <Trophy className="h-3.5 w-3.5 text-primary" />
+                        <span className="hidden sm:inline">Hub Hevy</span>
+                      </Button>
+
                       {substitute && (
                         <Button
                           type="button"
@@ -1171,6 +1191,14 @@ export function FocusedDayView({
         onOpenChange={setPlateCalcOpen}
         initialWeight={plateCalcWeight}
         exerciseName={plateCalcExName}
+      />
+
+      <HevyExerciseHubDialog
+        open={exerciseHubOpen}
+        onOpenChange={setExerciseHubOpen}
+        exercise={selectedHubExercise}
+        studentName={studentName}
+        executions={allExecutions || executions}
       />
     </div>
   );
