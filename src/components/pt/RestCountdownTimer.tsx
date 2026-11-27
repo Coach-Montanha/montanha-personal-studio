@@ -227,7 +227,7 @@ export function RestCountdownTimer({
               type="button"
               onClick={() => onDismissRef.current?.()}
               aria-label="Fechar cronômetro de descanso"
-              className="rounded-full p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition-colors shrink-0 touch-manipulation"
+              className="h-9 w-9 sm:h-8 sm:w-8 flex items-center justify-center rounded-full text-zinc-400 hover:bg-white/10 hover:text-white transition-colors shrink-0 touch-manipulation"
             >
               <X className="h-4 w-4" />
             </button>
@@ -257,35 +257,35 @@ export function RestCountdownTimer({
             </span>
           </div>
 
-          {/* Controles de Reprodução com flex shrink seguro */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {/* Controles de Reprodução com flex shrink seguro e alvos ergonômicos */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <Button
               type="button"
               size="sm"
               variant="outline"
               onClick={() => adjustTime(-15)}
               disabled={validRemaining <= 15}
-              className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl border-white/10 bg-white/5 hover:bg-white/15 text-white shrink-0"
+              className="h-10 w-10 sm:h-9 sm:w-9 p-0 rounded-xl border-white/10 bg-white/5 hover:bg-white/15 text-white shrink-0 active:scale-95"
               title="-15 segundos"
             >
-              <Minus className="h-3.5 w-3.5" />
+              <Minus className="h-4 w-4" />
             </Button>
             <Button
               type="button"
               size="sm"
               variant="outline"
               onClick={() => adjustTime(15)}
-              className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-xl border-white/10 bg-white/5 hover:bg-white/15 text-white shrink-0"
+              className="h-10 w-10 sm:h-9 sm:w-9 p-0 rounded-xl border-white/10 bg-white/5 hover:bg-white/15 text-white shrink-0 active:scale-95"
               title="+15 segundos"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
             </Button>
             <Button
               type="button"
               size="sm"
               onClick={toggleRunning}
               className={cn(
-                "h-8 px-2.5 sm:h-9 sm:px-3.5 rounded-xl font-bold text-xs gap-1 transition-all shadow-md active:scale-95 shrink-0 whitespace-nowrap",
+                "h-10 px-3.5 sm:h-9 sm:px-4 rounded-xl font-bold text-xs gap-1.5 transition-all shadow-md active:scale-95 shrink-0 whitespace-nowrap",
                 isRunning
                   ? "bg-amber-500 hover:bg-amber-600 text-black"
                   : "bg-emerald-600 hover:bg-emerald-700 text-white",
@@ -293,11 +293,11 @@ export function RestCountdownTimer({
             >
               {isRunning ? (
                 <>
-                  <Pause className="h-3.5 w-3.5" /> Pausa
+                  <Pause className="h-4 w-4" /> Pausa
                 </>
               ) : (
                 <>
-                  <Play className="h-3.5 w-3.5" /> Continuar
+                  <Play className="h-4 w-4" /> Continuar
                 </>
               )}
             </Button>
