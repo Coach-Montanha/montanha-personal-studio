@@ -66,6 +66,8 @@ import {
   type ExerciseHistoricalBaseline,
 } from "@/lib/workout-records";
 import { HevyWorkoutSummaryDialog } from "@/components/pt/HevyWorkoutSummaryDialog";
+import { SessionTimer } from "@/components/pt/SessionTimer";
+import { RestCountdownTimer } from "@/components/pt/RestCountdownTimer";
 
 interface HevyWorkoutSessionViewProps {
   session: WorkoutSessionRow;
@@ -110,12 +112,23 @@ export function HevyWorkoutSessionView({
 
   // Cronômetro baseado em started_at (nunca em contador em memória)
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const [timerPaused, setTimerPaused] = useState(false);
+  const [pausedSeconds, setPausedSeconds] = useState(0);
 
-  // Descanso automático baseado em restEndsAt
-  const [restState, setRestState] = useState<RestState | null>(() =>
-    loadLocalRestState(initialSession.id)
-  );
-  const [restRemaining, setRestRemaining] = useState(0);
+  // Timer de descanso completo (RestCountdownTimer) ao clicar em concluir série
+  const [restTimer, setRestTimer] = useState<{
+    active: boolean;
+    seconds: number;
+    exerciseName: string;
+    currentSet: number;
+    totalSets: number;
+  }>({
+    active: false,
+    seconds: 60,
+    exerciseName: "",
+    currentSet: 1,
+    totalSets: 1,
+  });
 
   // Modais leves de UX (Tipo de série, Nota, Substituir)
   const [setTypePickerTarget, setSetTypePickerTarget] = useState<SetLogRow | null>(null);
@@ -262,34 +275,25 @@ export function HevyWorkoutSessionView({
 
   // Tick de 1s para duração baseada em started_at
   useEffect(() => {
-    if (!session.started_at) return;
+    if (!session.started_at || timerPaused) return;
     const id = setInterval(() => setNowMs(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [session.started_at]);
+  }, [session.started_at, timerPaused]);
 
-  // Tick de descanso automático ancorado em restState.endsAt
+  // Restaura descanso salvo em localStorage se ainda não expirou
   useEffect(() => {
-    if (!restState?.active) {
-      setRestRemaining(0);
-      return;
+    const saved = loadLocalRestState(initialSession.id);
+    if (saved && saved.active && saved.endsAt > Date.now()) {
+      const rem = Math.max(1, Math.ceil((saved.endsAt - Date.now()) / 1000));
+      setRestTimer({
+        active: true,
+        seconds: rem,
+        exerciseName: saved.exerciseName,
+        currentSet: 1,
+        totalSets: 1,
+      });
     }
-
-    const updateRest = () => {
-      const diff = Math.max(0, Math.ceil((restState.endsAt - Date.now()) / 1000));
-      setRestRemaining(diff);
-      if (diff <= 0) {
-        if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-          navigator.vibrate([220, 100, 220]);
-        }
-        setRestState(null);
-        saveLocalRestState(session.id, null);
-      }
-    };
-
-    updateRest();
-    const id = setInterval(updateRest, 250);
-    return () => clearInterval(id);
-  }, [restState, session.id]);
+  }, [initialSession.id]);
 
   // Persistência contínua do snapshot local sempre que houver mudança
   useEffect(() => {
@@ -309,10 +313,11 @@ export function HevyWorkoutSessionView({
   const metrics = useMemo(() => computeSessionMetrics(sets), [sets]);
 
   const durationSeconds = useMemo(() => {
+    if (timerPaused) return pausedSeconds;
     if (!session.started_at) return 0;
     const startMs = new Date(session.started_at).getTime();
     return Math.max(0, Math.floor((nowMs - startMs) / 1000));
-  }, [session.started_at, nowMs]);
+  }, [session.started_at, nowMs, timerPaused, pausedSeconds]);
 
   const progressPct =
     metrics.totalNonWarmup > 0
@@ -433,17 +438,23 @@ export function HevyWorkoutSessionView({
         : 0,
     });
 
-    // Inicia descanso automático ao marcar ✓
+    // Inicia descanso automático ao marcar ✓ (trazendo o RestCountdownTimer na tela)
     if (nextCompleted) {
       const restSec = Number(ex.rest_seconds) > 0 ? Number(ex.rest_seconds) : 60;
-      const nextRest: RestState = {
+      const exSetsCount = nextSets.filter((s) => s.exercise_id === ex.id).length;
+      setRestTimer({
+        active: true,
+        seconds: restSec,
+        exerciseName: ex.name,
+        currentSet: setRow.set_order,
+        totalSets: exSetsCount,
+      });
+      saveLocalRestState(session.id, {
         active: true,
         endsAt: Date.now() + restSec * 1000,
         totalSeconds: restSec,
         exerciseName: ex.name,
-      };
-      setRestState(nextRest);
-      saveLocalRestState(session.id, nextRest);
+      });
     }
   };
 
@@ -492,24 +503,6 @@ export function HevyWorkoutSessionView({
     setSets(remaining);
     deleteSetLog(userId, setRow.id, session.id);
     toast.success("Série removida");
-  };
-
-  const handleAdjustRest = (deltaSeconds: number) => {
-    if (!restState) return;
-    const nextEndsAt = Math.max(Date.now() + 1000, restState.endsAt + deltaSeconds * 1000);
-    const nextTotal = Math.max(restState.totalSeconds, Math.ceil((nextEndsAt - Date.now()) / 1000));
-    const nextRest: RestState = {
-      ...restState,
-      endsAt: nextEndsAt,
-      totalSeconds: nextTotal,
-    };
-    setRestState(nextRest);
-    saveLocalRestState(session.id, nextRest);
-  };
-
-  const handleSkipRest = () => {
-    setRestState(null);
-    saveLocalRestState(session.id, null);
   };
 
   const handleMoveExercise = (exId: string, direction: -1 | 1) => {
@@ -637,11 +630,6 @@ export function HevyWorkoutSessionView({
     return { text: String(nonWarmupIndex), cls: "text-foreground font-bold" };
   };
 
-  const restPct =
-    restState && restState.totalSeconds > 0
-      ? Math.min(100, Math.max(0, (restRemaining / restState.totalSeconds) * 100))
-      : 0;
-
   return (
     <div className="min-h-screen bg-muted/20 pb-28">
       {/* 1.2 Cabeçalho Fixo e Compacto */}
@@ -746,6 +734,35 @@ export function HevyWorkoutSessionView({
 
       {/* 1.3 Lista de Cards de Exercício */}
       <main className="mx-auto max-w-2xl space-y-3.5 px-3 py-4">
+        {/* Timer marcador do tempo do treino no topo da tela */}
+        <SessionTimer
+          seconds={durationSeconds}
+          setSeconds={(sec) => {
+            if (timerPaused) setPausedSeconds(sec);
+          }}
+          running={Boolean(session.started_at) && !timerPaused}
+          setRunning={(nextRun) => {
+            if (nextRun) {
+              const baseSec = timerPaused ? pausedSeconds : durationSeconds;
+              const newStartIso = new Date(Date.now() - baseSec * 1000).toISOString();
+              const updated = { ...session, started_at: newStartIso };
+              setSession(updated);
+              setNowMs(Date.now());
+              setTimerPaused(false);
+              persistSessionProgress(userId, updated);
+            } else {
+              setPausedSeconds(durationSeconds);
+              setTimerPaused(true);
+            }
+          }}
+          onReset={() => {
+            const updated = { ...session, started_at: null, duration_seconds: 0 };
+            setSession(updated);
+            setPausedSeconds(0);
+            setTimerPaused(false);
+            persistSessionProgress(userId, updated);
+          }}
+        />
         {orderedExercises.map((ex, exIndex) => {
           const exSets = sets
             .filter((s) => s.exercise_id === ex.id)
@@ -943,67 +960,29 @@ export function HevyWorkoutSessionView({
                 })}
               </div>
 
-              {/* Botão + Adicionar série */}
-              <button
-                type="button"
-                onClick={() => handleAddSet(ex)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-muted/50 py-2.5 text-xs font-bold text-foreground hover:bg-muted transition-colors"
-              >
-                <Plus className="h-3.5 w-3.5" /> Adicionar série
-              </button>
+              {/* Botão + Adicionar série oculto temporariamente */}
             </section>
           );
         })}
       </main>
 
-      {/* 1.4 Barra Escura Flutuante de Descanso */}
-      {restState?.active && (
-        <div className="fixed bottom-4 left-1/2 z-40 w-[calc(100vw-1.5rem)] max-w-lg -translate-x-1/2">
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 text-white shadow-2xl">
-            <div className="flex items-center justify-between gap-2 px-4 py-3">
-              <div className="min-w-0">
-                <span className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-                  Descanso
-                </span>
-                <span className="text-xl font-extrabold tabular-nums text-white">
-                  {Math.floor(restRemaining / 60)}:{String(restRemaining % 60).padStart(2, "0")}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handleAdjustRest(-15)}
-                  className="h-9 rounded-xl bg-zinc-800 px-3 text-xs font-bold text-zinc-100 hover:bg-zinc-700 active:scale-95"
-                >
-                  −15
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAdjustRest(15)}
-                  className="h-9 rounded-xl bg-zinc-800 px-3 text-xs font-bold text-zinc-100 hover:bg-zinc-700 active:scale-95"
-                >
-                  +15
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSkipRest}
-                  className="h-9 rounded-xl bg-amber-500 px-3.5 text-xs font-extrabold text-zinc-950 hover:bg-amber-400 active:scale-95"
-                >
-                  Pular
-                </button>
-              </div>
-            </div>
-
-            <div className="h-1.5 w-full bg-zinc-800">
-              <div
-                className="h-full bg-amber-500 transition-all duration-200"
-                style={{ width: `${restPct}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Timer de Descanso completo ao clicar em concluído (RestCountdownTimer) */}
+      <RestCountdownTimer
+        active={restTimer.active}
+        initialSeconds={restTimer.seconds}
+        exerciseName={restTimer.exerciseName}
+        currentSet={restTimer.currentSet}
+        totalSets={restTimer.totalSets}
+        onComplete={() => {
+          if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+            navigator.vibrate([220, 100, 220]);
+          }
+        }}
+        onDismiss={() => {
+          setRestTimer((prev) => ({ ...prev, active: false }));
+          saveLocalRestState(session.id, null);
+        }}
+      />
 
       {/* Picker do Tipo de Série (Aquecimento, Normal, Drop, Falha) */}
       <Dialog
