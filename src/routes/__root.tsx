@@ -555,7 +555,34 @@ function RootComponent() {
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       }
     });
-    return () => sub.subscription.unsubscribe();
+
+    // Ao voltar do segundo plano (celular bloqueado ou aba suspensa), renova a sessão silenciosamente
+    // sem deslogar em caso de erro temporário de rede.
+    const handleVisibilityRefresh = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error || !data.session) {
+          await supabase.auth.refreshSession().catch(() => null);
+          return;
+        }
+        const expiresAt = data.session.expires_at ?? 0;
+        const nowSec = Math.floor(Date.now() / 1000);
+        if (expiresAt > 0 && expiresAt - nowSec < 120) {
+          await supabase.auth.refreshSession().catch(() => null);
+        }
+      } catch {
+        // Erro de rede temporário nunca deve deslogar o usuário
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityRefresh);
+    window.addEventListener("online", handleVisibilityRefresh);
+    return () => {
+      sub.subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityRefresh);
+      window.removeEventListener("online", handleVisibilityRefresh);
+    };
   }, [router, queryClient]);
 
   // Registra o Service Worker em produção de forma 100% silenciosa e automática

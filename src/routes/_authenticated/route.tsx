@@ -19,8 +19,31 @@ export const Route = createFileRoute("/_authenticated")({
       }
 
       const { data, error } = await supabase.auth.getSession();
-      if (error || !data.session?.user) throw redirect({ to: "/auth" });
-      return { user: data.session.user };
+      if (data.session?.user) {
+        return { user: data.session.user };
+      }
+
+      // Se houve falha temporária (ex.: aba suspensa no celular), tenta renovar antes de redirecionar
+      if (error || !data.session) {
+        try {
+          const refreshed = await supabase.auth.refreshSession();
+          if (refreshed.data.session?.user) {
+            return { user: refreshed.data.session.user };
+          }
+        } catch {
+          // Se estiver offline no momento do reload, preserva acesso se houver token em localStorage
+          const hasStoredToken =
+            typeof window !== "undefined" &&
+            Object.keys(localStorage).some((k) => k.startsWith("sb-") && k.endsWith("-auth-token"));
+          if (hasStoredToken && typeof navigator !== "undefined" && !navigator.onLine) {
+            const rawKey = Object.keys(localStorage).find((k) => k.startsWith("sb-") && k.endsWith("-auth-token"));
+            const parsed = rawKey ? JSON.parse(localStorage.getItem(rawKey) || "{}") : null;
+            if (parsed?.user) return { user: parsed.user };
+          }
+        }
+      }
+
+      throw redirect({ to: "/auth" });
     } catch (err) {
       if (isRedirect(err)) throw err;
       // Storage corrompido / JSON inválido → volta ao login em vez de travar o match.
@@ -43,7 +66,10 @@ function AuthenticatedLayout() {
     pathname === "/biblioteca" ||
     pathname.startsWith("/biblioteca");
   const isPTPortalPath = pathname === "/portal/pt" || pathname.startsWith("/portal/pt/");
-  const isWorkoutPath = pathname === "/portal/pt/treino" || pathname.startsWith("/portal/pt/treino");
+  const isWorkoutPath =
+    pathname === "/portal/pt/treino" ||
+    pathname.startsWith("/portal/pt/treino") ||
+    pathname.startsWith("/portal/pt/sessao/");
   const { isOpen: timerOpen, defaultMode: timerMode, setOpen: setTimerOpen } = useTrainingTimer();
 
   useEffect(() => {

@@ -1,7 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { parseDayMeta, groupDaysByWeek } from "@/lib/training-weeks";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  getActiveLocalSessionId,
+  startOrResumeWorkoutSession,
+} from "@/lib/workout-session-store";
 import {
   ArrowLeft,
   CalendarDays,
@@ -108,10 +112,48 @@ function isSameDay(iso: string, ref: Date) {
 function PTTreinoPage() {
   const { user, loading: loadingAuth } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
+  const [startingSessionDayId, setStartingSessionDayId] = useState<string | null>(null);
 
   // Mantém a tela ligada enquanto o aluno estiver visualizando um treino específico
   useWakeLock(!!selectedDayId);
+
+  // Ao abrir o app, se existir sessão 'em_andamento' do usuário, vai direto para ela
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    async function resumeActiveSession() {
+      const localId = getActiveLocalSessionId(user!.id);
+      if (localId) {
+        navigate({ to: "/portal/pt/sessao/$sessionId", params: { sessionId: localId }, replace: true });
+        return;
+      }
+
+      const { data } = await supabase
+        .from("workout_sessions" as never)
+        .select("id")
+        .eq("user_id", user!.id)
+        .eq("status", "em_andamento")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!cancelled && (data as any)?.id) {
+        navigate({
+          to: "/portal/pt/sessao/$sessionId",
+          params: { sessionId: (data as any).id },
+          replace: true,
+        });
+      }
+    }
+
+    resumeActiveSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, navigate]);
 
   // 1. Busca resiliente via Server Function com service role (bypassa RLS, auto-vincula e traz PT + Studio)
   const { data: serverPortalData, isLoading: loadingServerData } = useQuery({
@@ -604,9 +646,32 @@ function PTTreinoPage() {
                               <button
                                 key={d.id}
                                 type="button"
-                                onClick={() => {
-                                  setSelectedProgramId(null);
-                                  setSelectedDayId(d.id);
+                                disabled={startingSessionDayId === d.id}
+                                onClick={async () => {
+                                  if (!user?.id) {
+                                    setSelectedProgramId(null);
+                                    setSelectedDayId(d.id);
+                                    return;
+                                  }
+                                  try {
+                                    setStartingSessionDayId(d.id);
+                                    const dayExercises = exercises.filter((e) => e.training_day_id === d.id);
+                                    const session = await startOrResumeWorkoutSession({
+                                      userId: user.id,
+                                      routineDayId: d.id,
+                                      exercises: dayExercises,
+                                    });
+                                    setSelectedProgramId(null);
+                                    navigate({
+                                      to: "/portal/pt/sessao/$sessionId",
+                                      params: { sessionId: session.id },
+                                    });
+                                  } catch {
+                                    setSelectedProgramId(null);
+                                    setSelectedDayId(d.id);
+                                  } finally {
+                                    setStartingSessionDayId(null);
+                                  }
                                 }}
                                 className={cn(
                                   "group relative flex flex-col gap-2 rounded-xl border p-3.5 sm:p-4 text-left shadow-xs transition-all duration-200",

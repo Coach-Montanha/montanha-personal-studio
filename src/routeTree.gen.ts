@@ -66,6 +66,7 @@ import { Route as ApiPaymentsInfinitepayWebhookRouteImport } from './routes/api.
 import { Route as AuthenticatedPersonalTrainerStudentsIdRouteImport } from './routes/_authenticated/personal-trainer/students.$id'
 import { Route as AuthenticatedPortalPtIndexRouteImport } from './routes/_authenticated/portal/pt/index'
 import { Route as AuthenticatedPortalPtTreinoRouteImport } from './routes/_authenticated/portal/pt/treino'
+import { Route as AuthenticatedPortalPtSessaoSessionIdRouteImport } from './routes/_authenticated/portal/pt/sessao.$sessionId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -376,6 +377,12 @@ const AuthenticatedPortalPtTreinoRoute =
     path: '/portal/pt/treino',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPortalPtSessaoSessionIdRoute =
+  AuthenticatedPortalPtSessaoSessionIdRouteImport.update({
+    id: '/portal/pt/sessao/$sessionId',
+    path: '/portal/pt/sessao/$sessionId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -434,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/personal-trainer/students/$id': typeof AuthenticatedPersonalTrainerStudentsIdRoute
   '/portal/pt/treino': typeof AuthenticatedPortalPtTreinoRoute
   '/portal/pt/': typeof AuthenticatedPortalPtIndexRoute
+  '/portal/pt/sessao/$sessionId': typeof AuthenticatedPortalPtSessaoSessionIdRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -492,6 +500,7 @@ export interface FileRoutesByTo {
   '/personal-trainer/students/$id': typeof AuthenticatedPersonalTrainerStudentsIdRoute
   '/portal/pt/treino': typeof AuthenticatedPortalPtTreinoRoute
   '/portal/pt': typeof AuthenticatedPortalPtIndexRoute
+  '/portal/pt/sessao/$sessionId': typeof AuthenticatedPortalPtSessaoSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -552,6 +561,7 @@ export interface FileRoutesById {
   '/_authenticated/personal-trainer/students/$id': typeof AuthenticatedPersonalTrainerStudentsIdRoute
   '/_authenticated/portal/pt/treino': typeof AuthenticatedPortalPtTreinoRoute
   '/_authenticated/portal/pt/': typeof AuthenticatedPortalPtIndexRoute
+  '/_authenticated/portal/pt/sessao/$sessionId': typeof AuthenticatedPortalPtSessaoSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -612,6 +622,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/students/$id'
     | '/portal/pt/treino'
     | '/portal/pt/'
+    | '/portal/pt/sessao/$sessionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -670,6 +681,7 @@ export interface FileRouteTypes {
     | '/personal-trainer/students/$id'
     | '/portal/pt/treino'
     | '/portal/pt'
+    | '/portal/pt/sessao/$sessionId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -729,6 +741,7 @@ export interface FileRouteTypes {
     | '/_authenticated/personal-trainer/students/$id'
     | '/_authenticated/portal/pt/treino'
     | '/_authenticated/portal/pt/'
+    | '/_authenticated/portal/pt/sessao/$sessionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1154,6 +1167,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortalPtTreinoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/portal/pt/sessao/$sessionId': {
+      id: '/_authenticated/portal/pt/sessao/$sessionId'
+      path: '/portal/pt/sessao/$sessionId'
+      fullPath: '/portal/pt/sessao/$sessionId'
+      preLoaderRoute: typeof AuthenticatedPortalPtSessaoSessionIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -1196,6 +1216,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPersonalTrainerStudentsIdRoute: typeof AuthenticatedPersonalTrainerStudentsIdRoute
   AuthenticatedPortalPtTreinoRoute: typeof AuthenticatedPortalPtTreinoRoute
   AuthenticatedPortalPtIndexRoute: typeof AuthenticatedPortalPtIndexRoute
+  AuthenticatedPortalPtSessaoSessionIdRoute: typeof AuthenticatedPortalPtSessaoSessionIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1245,6 +1266,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedPersonalTrainerStudentsIdRoute,
   AuthenticatedPortalPtTreinoRoute: AuthenticatedPortalPtTreinoRoute,
   AuthenticatedPortalPtIndexRoute: AuthenticatedPortalPtIndexRoute,
+  AuthenticatedPortalPtSessaoSessionIdRoute:
+    AuthenticatedPortalPtSessaoSessionIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
