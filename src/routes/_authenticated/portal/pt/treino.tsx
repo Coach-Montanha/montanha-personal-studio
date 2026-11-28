@@ -4,8 +4,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getActiveLocalSessionId,
+  loadLocalSessionSnapshot,
   startOrResumeWorkoutSession,
+  type WorkoutSessionRow,
 } from "@/lib/workout-session-store";
+import { HevyTreinoHomeView } from "@/components/pt/HevyTreinoHomeView";
 import {
   ArrowLeft,
   CalendarDays,
@@ -119,41 +122,38 @@ function PTTreinoPage() {
   // Mantém a tela ligada enquanto o aluno estiver visualizando um treino específico
   useWakeLock(!!selectedDayId);
 
-  // Ao abrir o app, se existir sessão 'em_andamento' do usuário, vai direto para ela
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-
-    async function resumeActiveSession() {
-      const localId = getActiveLocalSessionId(user!.id);
-      if (localId) {
-        navigate({ to: "/portal/pt/sessao/$sessionId", params: { sessionId: localId }, replace: true });
-        return;
-      }
-
+  // Busca sessões novas (workout_sessions) para calendário semanal, próximo treino e card "em andamento"
+  const { data: userWorkoutSessions = [] } = useQuery({
+    queryKey: ["pt-portal-workout-sessions", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
       const { data } = await supabase
         .from("workout_sessions" as never)
-        .select("id")
+        .select("*")
         .eq("user_id", user!.id)
-        .eq("status", "em_andamento")
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(120);
+      return (data || []) as WorkoutSessionRow[];
+    },
+  });
 
-      if (!cancelled && (data as any)?.id) {
-        navigate({
-          to: "/portal/pt/sessao/$sessionId",
-          params: { sessionId: (data as any).id },
-          replace: true,
-        });
+  const inProgressSession = useMemo(() => {
+    const dbActive = userWorkoutSessions.find((s) => s.status === "em_andamento");
+    if (dbActive) return dbActive;
+    if (user?.id) {
+      const localId = getActiveLocalSessionId(user.id);
+      const snap = localId ? loadLocalSessionSnapshot(localId) : null;
+      if (snap?.session && snap.session.status === "em_andamento") {
+        return snap.session;
       }
     }
+    return null;
+  }, [userWorkoutSessions, user?.id]);
 
-    resumeActiveSession();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id, navigate]);
+  const completedWorkoutSessions = useMemo(
+    () => userWorkoutSessions.filter((s) => s.status === "concluido"),
+    [userWorkoutSessions]
+  );
 
   // 1. Busca resiliente via Server Function com service role (bypassa RLS, auto-vincula e traz PT + Studio)
   const { data: serverPortalData, isLoading: loadingServerData } = useQuery({
@@ -374,31 +374,6 @@ function PTTreinoPage() {
         />
       )}
 
-      {!selectedDay && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-title text-foreground">Meu Programa de Treino</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Acompanhe suas rotinas de treino, execuções e evolução de cargas.
-            </p>
-          </div>
-          {student && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 shadow-sm"
-              onClick={() => {
-                setSelectedProgressEx(null);
-                setProgressionOpen(true);
-              }}
-            >
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Evolução de Cargas
-            </Button>
-          )}
-        </div>
-      )}
-
       {isLoading ? (
         <Card className="p-6">
           <p className="text-sm text-muted-foreground">Carregando…</p>
@@ -461,91 +436,51 @@ function PTTreinoPage() {
           userId={student!.user_id}
         />
       ) : (
-        <div className="space-y-3">
-          {programs.map((p) => {
-            const programDays = days.filter((d) => d.program_id === p.id);
-            const doneToday = programDays.some((d) =>
-              executions.some(
-                (x) => x.training_day_id === d.id && isSameDay(x.executed_at, new Date()),
-              ),
-            );
-            const lastExec = executions.find((x) =>
-              programDays.some((d) => d.id === x.training_day_id),
-            );
-
-            return (
-              <Card
-                key={p.id}
-                onClick={() => setSelectedProgramId(p.id)}
-                className={cn(
-                  "group relative overflow-hidden rounded-2xl border bg-card p-4 sm:p-5 shadow-xs transition-all duration-200 cursor-pointer",
-                  "hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md active:translate-y-0",
-                  doneToday && "border-emerald-500/30 bg-emerald-500/5",
-                )}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div
-                      className={cn(
-                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all",
-                        doneToday
-                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                          : "bg-primary/10 text-primary group-hover:scale-105 group-hover:bg-primary/15",
-                      )}
-                    >
-                      <Dumbbell className="h-6 w-6" />
-                    </div>
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-base sm:text-lg font-bold text-foreground leading-tight truncate">
-                          {p.name}
-                        </h2>
-                        {doneToday && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                            <CheckCircle2 className="h-3 w-3" /> Feito hoje
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1">
-                          <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                          {formatDateBR(p.start_date)}
-                        </span>
-                        <span>•</span>
-                        <span className="font-semibold text-foreground/80">
-                          {programDays.length} {programDays.length === 1 ? "treino" : "treinos"}
-                        </span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                          {CATEGORY_LABELS[p.category] ?? p.category}
-                        </span>
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                          {LEVEL_LABELS[p.level] ?? p.level}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="hidden sm:inline-flex gap-1.5 rounded-xl font-semibold text-primary group-hover:bg-primary/10 transition-colors"
-                    >
-                      <span>Abrir rotina</span>
-                      <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                    </Button>
-                    <div className="sm:hidden flex h-9 w-9 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
-                      <ChevronRight className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
+        <div className="space-y-4">
+          <HevyTreinoHomeView
+            studentName={student?.name || user?.user_metadata?.full_name}
+            programs={programs}
+            days={days}
+            exercises={exercises}
+            completedSessions={completedWorkoutSessions}
+            legacyExecutions={executions}
+            inProgressSession={inProgressSession}
+            startingDayId={startingSessionDayId}
+            onContinueSession={(sessId) =>
+              navigate({ to: "/portal/pt/sessao/$sessionId", params: { sessionId: sessId } })
+            }
+            onStartDay={async (dayItem) => {
+              if (!user?.id) {
+                setSelectedDayId(dayItem.id);
+                return;
+              }
+              try {
+                setStartingSessionDayId(dayItem.id);
+                const dayExercises = exercises.filter((e) => e.training_day_id === dayItem.id);
+                const session = await startOrResumeWorkoutSession({
+                  userId: user.id,
+                  routineDayId: dayItem.id,
+                  exercises: dayExercises,
+                });
+                navigate({
+                  to: "/portal/pt/sessao/$sessionId",
+                  params: { sessionId: session.id },
+                });
+              } catch {
+                setSelectedDayId(dayItem.id);
+              } finally {
+                setStartingSessionDayId(null);
+              }
+            }}
+            onOpenEvolution={() => {
+              setSelectedProgressEx(null);
+              setProgressionOpen(true);
+            }}
+            onSelectOtherProgram={(progId) => setSelectedProgramId(progId)}
+          />
 
           {student?.training_plan && (
-            <Card className="p-4 sm:p-5">
+            <Card className="mx-auto max-w-xl p-4 sm:p-5">
               <h3 className="mb-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Orientações Gerais do Personal
               </h3>
