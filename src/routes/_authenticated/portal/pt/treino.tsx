@@ -46,7 +46,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { WorkoutSummaryDialog } from "@/components/pt/WorkoutSummaryDialog";
-import { WorkoutProgressionDialog } from "@/components/pt/WorkoutProgressionDialog";
+import { HevyExerciseEvolutionDialog } from "@/components/pt/HevyExerciseEvolutionDialog";
 import { RestCountdownTimer, parseSafeSeconds } from "@/components/pt/RestCountdownTimer";
 import { FocusedDayView } from "@/components/pt/FocusedDayView";
 import { ClinicalAlertBadge } from "@/components/pt/ClinicalAlertBadge";
@@ -760,7 +760,7 @@ function PTTreinoPage() {
       </Dialog>
 
       {student && (
-        <WorkoutProgressionDialog
+        <HevyExerciseEvolutionDialog
           open={progressionOpen}
           onOpenChange={setProgressionOpen}
           studentId={student.id}

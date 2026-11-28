@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { getMyTrainingPortalDataServerFn } from "@/lib/student-access.functions";
 import { HevyWorkoutSessionView } from "@/components/pt/HevyWorkoutSessionView";
-import { WorkoutProgressionDialog } from "@/components/pt/WorkoutProgressionDialog";
+import { HevyExerciseEvolutionDialog } from "@/components/pt/HevyExerciseEvolutionDialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,7 @@ function WorkoutSessionPage() {
 
   const [progressionOpen, setProgressionOpen] = useState(false);
   const [selectedProgressEx, setSelectedProgressEx] = useState<string | null>(null);
+  const [selectedProgressExId, setSelectedProgressExId] = useState<string | null>(null);
 
   const localSnapshot = loadLocalSessionSnapshot(sessionId);
 
@@ -134,6 +135,7 @@ function WorkoutSessionPage() {
         exercises={exercises}
         userId={user.id}
         studentId={portalData?.student?.id}
+        studentName={portalData?.student?.name}
         onBack={() => navigate({ to: "/portal/pt/treino" })}
         onFinished={() => {
           qc.invalidateQueries({ queryKey: ["workout-session", sessionId] });
@@ -143,16 +145,18 @@ function WorkoutSessionPage() {
         }}
         onOpenExerciseEvolution={(ex) => {
           setSelectedProgressEx(ex.name);
+          setSelectedProgressExId(ex.id);
           setProgressionOpen(true);
         }}
       />
 
       {portalData?.student?.id && (
-        <WorkoutProgressionDialog
+        <HevyExerciseEvolutionDialog
           open={progressionOpen}
           onOpenChange={setProgressionOpen}
           studentId={portalData.student.id}
           initialExerciseName={selectedProgressEx}
+          initialExerciseId={selectedProgressExId}
         />
       )}
     </>

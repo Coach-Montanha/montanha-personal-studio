@@ -58,12 +58,22 @@ import {
   type WorkoutSessionRow,
 } from "@/lib/workout-session-store";
 
+import {
+  computeSessionSummaryData,
+  fetchUserExerciseBaselines,
+  isSetPersonalRecord,
+  type DetectedPRItem,
+  type ExerciseHistoricalBaseline,
+} from "@/lib/workout-records";
+import { HevyWorkoutSummaryDialog } from "@/components/pt/HevyWorkoutSummaryDialog";
+
 interface HevyWorkoutSessionViewProps {
   session: WorkoutSessionRow;
   day: any;
   exercises: any[];
   userId: string;
   studentId?: string;
+  studentName?: string;
   onBack: () => void;
   onFinished: () => void;
   onOpenExerciseEvolution?: (exercise: any) => void;
@@ -82,6 +92,7 @@ export function HevyWorkoutSessionView({
   exercises: initialExercises,
   userId,
   studentId,
+  studentName,
   onBack,
   onFinished,
   onOpenExerciseEvolution,
@@ -111,6 +122,20 @@ export function HevyWorkoutSessionView({
   const [noteModalEx, setNoteModalEx] = useState<any | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [completing, setCompleting] = useState(false);
+
+  // Etapa 2: Baselines de PR + diálogo de confirmação + resumo do treino
+  const [baselines, setBaselines] = useState<Record<string, ExerciseHistoricalBaseline>>({});
+  const [lastSameDayVolumeKg, setLastSameDayVolumeKg] = useState<number | null>(null);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [summaryPayload, setSummaryPayload] = useState<{
+    finishedAtIso: string;
+    durationSeconds: number;
+    totalVolumeKg: number;
+    completedSetsCount: number;
+    prs: DetectedPRItem[];
+    bestSets: Array<{ exerciseId: string; exerciseName: string; weightKg: number; reps: number }>;
+  } | null>(null);
 
   // Swipe left para remover série
   const touchStartXRef = useRef<Record<string, number>>({});
@@ -163,7 +188,7 @@ export function HevyWorkoutSessionView({
       // Flush de pendências antes de puxar do servidor
       await flushOfflineQueue(userId);
 
-      const [{ data: dbSets }, { data: dbNotes }, prevData] = await Promise.all([
+      const [{ data: dbSets }, { data: dbNotes }, prevData, baselineData] = await Promise.all([
         supabase
           .from("set_logs" as never)
           .select("*")
@@ -178,10 +203,13 @@ export function HevyWorkoutSessionView({
           initialExercises.map((e) => e.id),
           initialSession.id
         ),
+        fetchUserExerciseBaselines(userId, day.id, initialSession.id),
       ]);
 
       if (cancelled) return;
       setPreviousMap(prevData);
+      setBaselines(baselineData.baselines);
+      setLastSameDayVolumeKg(baselineData.lastSameDayVolumeKg);
 
       const remoteSets = (dbSets || []) as SetLogRow[];
       if (remoteSets.length > 0 && (!local || local.sets.length === 0)) {
@@ -505,27 +533,40 @@ export function HevyWorkoutSessionView({
     toast.success("Nota salva");
   };
 
+  const handleRequestFinish = () => {
+    const hasUncompleted = sets.some((s) => !s.completed);
+    if (hasUncompleted) {
+      setDiscardDialogOpen(true);
+      return;
+    }
+    handleFinishSession();
+  };
+
   const handleFinishSession = async () => {
     if (completing) return;
+    setDiscardDialogOpen(false);
     setCompleting(true);
     try {
       const finishedAt = new Date().toISOString();
       const finalDuration = session.started_at
         ? Math.max(0, Math.floor((Date.now() - new Date(session.started_at).getTime()) / 1000))
         : 0;
+      const completedSetsOnly = sets.filter((s) => s.completed);
+      const finalMetrics = computeSessionMetrics(completedSetsOnly);
+
       const finalSession: WorkoutSessionRow = {
         ...session,
         started_at: session.started_at || finishedAt,
         finished_at: finishedAt,
         duration_seconds: finalDuration,
-        total_volume_kg: metrics.totalVolumeKg,
+        total_volume_kg: finalMetrics.totalVolumeKg,
         status: "concluido",
       };
 
       setSession(finalSession);
       saveLocalSessionSnapshot({
         session: finalSession,
-        sets,
+        sets: completedSetsOnly,
         notes,
         updatedAt: Date.now(),
       });
@@ -538,8 +579,8 @@ export function HevyWorkoutSessionView({
       if (studentId) {
         const loadsMap: Record<string, string> = {};
         const completedMap: Record<string, number[]> = {};
-        for (const s of sets) {
-          if (!s.completed || s.set_type === "aquecimento") continue;
+        for (const s of completedSetsOnly) {
+          if (s.set_type === "aquecimento") continue;
           loadsMap[s.exercise_id] = s.weightInput || formatDecimalBR(s.weight_kg);
           completedMap[s.exercise_id] = [...(completedMap[s.exercise_id] || []), s.set_order];
         }
@@ -552,14 +593,27 @@ export function HevyWorkoutSessionView({
             loads: loadsMap,
             completedSets: completedMap,
             timerSeconds: finalDuration,
-            totalVolumeKg: metrics.totalVolumeKg,
+            totalVolumeKg: finalMetrics.totalVolumeKg,
             workoutSessionId: session.id,
           }),
         } as never);
       }
 
-      toast.success("Treino concluído e salvo!");
-      onFinished();
+      const summary = computeSessionSummaryData({
+        sets: completedSetsOnly,
+        exercises: orderedExercises,
+        baselines,
+      });
+
+      setSummaryPayload({
+        finishedAtIso: finishedAt,
+        durationSeconds: finalDuration,
+        totalVolumeKg: finalMetrics.totalVolumeKg,
+        completedSetsCount: finalMetrics.completedNonWarmup,
+        prs: summary.prs,
+        bestSets: summary.bestSets,
+      });
+      setSummaryOpen(true);
     } catch {
       toast.error("Não foi possível finalizar agora, mas seus dados estão salvos localmente.");
     } finally {
@@ -630,7 +684,7 @@ export function HevyWorkoutSessionView({
 
               <Button
                 size="sm"
-                onClick={handleFinishSession}
+                onClick={handleRequestFinish}
                 disabled={completing}
                 className="h-9 rounded-xl px-4 font-bold shadow-xs"
               >
@@ -797,6 +851,7 @@ export function HevyWorkoutSessionView({
                       ? `${prev.weight_kg !== null ? formatDecimalBR(prev.weight_kg) : "0"} kg × ${prev.reps ?? "0"}`
                       : "—";
                   const placeholders = getPlaceholders(ex, setRow);
+                  const hitPR = isSetPersonalRecord(setRow, baselines[ex.id]);
 
                   return (
                     <div
@@ -832,15 +887,22 @@ export function HevyWorkoutSessionView({
                         {badge.text}
                       </button>
 
-                      {/* Coluna ANTERIOR */}
-                      <button
-                        type="button"
-                        onClick={() => handleCopyPrevious(ex, setRow)}
-                        disabled={!prev}
-                        className="truncate text-left text-xs font-medium text-muted-foreground hover:text-foreground disabled:pointer-events-none"
-                      >
-                        {prevLabel}
-                      </button>
+                      {/* Coluna ANTERIOR + Selo PR laranja */}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => handleCopyPrevious(ex, setRow)}
+                          disabled={!prev}
+                          className="truncate text-left text-xs font-medium text-muted-foreground hover:text-foreground disabled:pointer-events-none"
+                        >
+                          {prevLabel}
+                        </button>
+                        {hitPR && (
+                          <span className="shrink-0 rounded bg-orange-500/15 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-orange-600">
+                            PR
+                          </span>
+                        )}
+                      </div>
 
                       {/* Coluna KG */}
                       <Input
@@ -1003,6 +1065,57 @@ export function HevyWorkoutSessionView({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Diálogo: Descartar séries não feitas? */}
+      <Dialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
+        <DialogContent className="max-w-xs rounded-2xl p-5 space-y-4">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold">
+              Descartar séries não feitas?
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            Existem séries não marcadas neste treino. Deseja concluir descartando as séries não feitas ou voltar ao treino?
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button onClick={handleFinishSession} className="w-full font-bold">
+              Descartar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setDiscardDialogOpen(false)}
+              className="w-full font-semibold"
+            >
+              Voltar ao treino
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tela 2: Resumo do Treino */}
+      {summaryPayload && (
+        <HevyWorkoutSummaryDialog
+          open={summaryOpen}
+          onOpenChange={(open) => {
+            setSummaryOpen(open);
+            if (!open) onFinished();
+          }}
+          firstName={(studentName || "Atleta").trim().split(/\s+/)[0]}
+          workoutTitle={`${day?.day_label ? `${day.day_label} · ` : ""}${day?.name || "Treino"}`}
+          finishedAtIso={summaryPayload.finishedAtIso}
+          durationSeconds={summaryPayload.durationSeconds}
+          totalVolumeKg={summaryPayload.totalVolumeKg}
+          lastSameDayVolumeKg={lastSameDayVolumeKg}
+          dayNumberLabel={day?.day_label || "Dia"}
+          completedSetsCount={summaryPayload.completedSetsCount}
+          prs={summaryPayload.prs}
+          bestSets={summaryPayload.bestSets}
+          onSaveAndExit={() => {
+            setSummaryOpen(false);
+            onFinished();
+          }}
+        />
+      )}
     </div>
   );
 }
